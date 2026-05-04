@@ -4,23 +4,21 @@ namespace App\Models;
 
 use CodeIgniter\Model;
 
-class VoucherModel extends Model
+class StudentArchiveModel extends Model
 {
-    protected $table      = 'vouchers';
-    protected $primaryKey = 'voucher_id';
+    protected $table      = 'student_archive';
+    protected $primaryKey = 'archive_id';
 
     protected $allowedFields = [
+        'voucher_id',
         'voucher_no',
-        'voucher_date',
         'recipient_name',
         'senior_high_school',
         'amount_in_words',
         'amount',
-        'created_by',
-        'signatory_1_id',
-        'signatory_2_id',
-        'signatory_3_id',
         'school_year',
         'voucher_status',
+        'archive_reason',
+        'archived_by',
     ];
 }

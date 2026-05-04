@@ -1,8 +1,20 @@
-<?php namespace App\Models;
+<?php
+
+namespace App\Models;
+
 use CodeIgniter\Model;
 
-class UserModel extends Model {
-    protected $table = 'user';
+class UserModel extends Model
+{
+    protected $table      = 'users';
     protected $primaryKey = 'user_id';
-    protected $allowedFields = ['fullname', 'gender', 'contact_no'];
+
+    protected $allowedFields = [
+        'username',
+        'password',
+        'role',
+        'full_name',
+        'is_active',
+        'last_login',
+    ];
 }
