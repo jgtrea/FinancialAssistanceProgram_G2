@@ -1,0 +1,21 @@
+:root {
+            --binan-green: #198754;
+            --binan-dark: #145a32;
+        }
+        .bg-info-box {
+            background-color: var(--binan-green);
+            background-image: linear-gradient(135deg, var(--binan-green) 0%, var(--binan-dark) 100%);
+        }
+        .btn-custom {
+            background-color: var(--binan-green);
+            color: white;
+            transition: 0.3s;
+        }
+        .btn-custom:hover {
+            background-color: var(--binan-dark);
+            color: white;
+        }
+        .playfair-display-header {
+            font-weight: 700;
+            color: #333;
+        }

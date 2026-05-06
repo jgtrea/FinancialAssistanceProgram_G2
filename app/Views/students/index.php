@@ -5,10 +5,41 @@
     <div class="page-actions mb-3">
         <h3>Students</h3>
         <a href="<?= base_url('/students/form') ?>" class="btn btn-primary">Add Student</a>
-        <button type="button" class="btn btn-success">
+        <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#importModal">
             Import Excel
         </button>
-        <!--==================importing HERE==============-->
+
+        <!-- Import Modal -->
+        <div class="modal fade" id="importModal" tabindex="-1">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title fw-bold">Import Excel File</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+
+                        <?php if (session()->getFlashdata('error')): ?>
+                            <div class="alert alert-danger">
+                                ❌ <?= session()->getFlashdata('error') ?>
+                            </div>
+                        <?php endif; ?>
+
+                        <p class="text-muted small">Expected columns: <code>voucher_no, voucher_date, full_name, rank_no, gwa, gender, junior_high_school, preferred_shs, contact_number, remarks</code></p>
+
+                        <form action="<?= base_url('import_data') ?>" method="POST" enctype="multipart/form-data">
+                            <?= csrf_field() ?>
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold">Select Excel File (.xlsx, .xls)</label>
+                                <input type="file" name="excel_file" class="form-control" accept=".xlsx,.xls" required>
+                            </div>
+                            <button type="submit" class="btn btn-success w-100">Import</button>
+                        </form>
+
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
     <?php if (session()->getFlashdata('success')): ?>

@@ -1,0 +1,27 @@
+.files input {
+    background-color: #eeeeee;
+    border: 2px dashed #444444;
+    padding: 100px 0px 100px 10px;
+    text-align: center !important;
+    width: 100% !important;
+    height: auto !important;
+    cursor: pointer;
+    transition: background-color 0.2s ease-in-out;
+}
+
+.files input:hover {
+    background-color: #e2e2e2;
+}
+
+.files input:focus {
+    outline: none;
+    border-color: #000000;
+}
+
+.files {
+    position: relative;
+}
+
+.files input::file-selector-button {
+    display: none;
+}

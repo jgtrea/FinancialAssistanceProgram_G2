@@ -1,75 +1,103 @@
-<?php 
+<?php
 
 namespace App\Controllers;
 
-use App\Models\UserModel;
+use App\Controllers\BaseController;
+use App\Models\StudentModel;
 use App\Models\VoucherModel;
-use App\Models\UserVoucherModel;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 
-class VoucherImport extends BaseController {
-
-    public function index() {
-        return view('FileConvertView');
+class VoucherImport extends BaseController
+{
+    public function index()
+    {
+        return redirect()->to('/students');
     }
 
-    public function import() {
+    public function import()
+    {
         $file = $this->request->getFile('excel_file');
 
-        // Basic validation to ensure a file was uploaded
-        if (!$file->isValid()) {
+        if (!$file || !$file->isValid()) {
             return redirect()->back()->with('error', 'Please upload a valid Excel file.');
         }
 
-        $spreadsheet = IOFactory::load($file->getTempName());
-        $sheetData = $spreadsheet->getActiveSheet()->toArray();
+        $ext = strtolower($file->getClientExtension());
+        if (!in_array($ext, ['xlsx', 'xls'])) {
+            return redirect()->back()->with('error', 'Only .xlsx or .xls files are allowed.');
+        }
 
-        $userModel = new UserModel();
+        try {
+            $spreadsheet = IOFactory::load($file->getTempName());
+            $sheetData   = $spreadsheet->getActiveSheet()->toArray();
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Failed to read file: ' . $e->getMessage());
+        }
+
+        $studentModel = new StudentModel();
         $voucherModel = new VoucherModel();
-        $uvModel = new UserVoucherModel();
-        
-        $count = 0;
-        // Start from $i = 1 to skip the header row
+
+        $count      = 0;
+        $errors     = [];
+        $schoolYear = '2025-2026';
+        $createdBy  = session()->get('user_id');
+
         for ($i = 1; $i < count($sheetData); $i++) {
             $row = $sheetData[$i];
 
-            // Skip empty rows
-            if (empty($row[0])) continue;
+            if (empty($row[0]) && empty($row[2])) continue;
 
-            $userData = [
-                'fullname'   => $row[2], 
-                'gender'     => $row[5],
-                'contact_no' => $row[8]
-            ];
-            $userId = $userModel->insert($userData);
+            try {
+                $studentId = $studentModel->insert([
+                    'voucher_no'                   => $row[0] ?? null,
+                    'voucher_date'                 => $row[1] ?? date('Y-m-d'),
+                    'full_name'                    => $row[2] ?? null,
+                    'rank_no'                      => $row[3] ?? null,
+                    'gwa'                          => $row[4] ?? null,
+                    'gender'                       => $row[5] ?? null,
+                    'junior_high_school'           => $row[6] ?? null,
+                    'preferred_senior_high_school' => $row[7] ?? null,
+                    'contact_number'               => $row[8] ?? null,
+                    'remarks_status'               => $row[9] ?? null,
+                    'school_year'                  => $schoolYear,
+                    'eligibility_status'           => 'eligible',
+                    'is_archived'                  => 0
+                ]);
 
-            $voucherData = [
-                'voucher_no'    => $row[0],
-                'voucher_date'  => $row[1],
-                'rank'          => $row[3],
-                'gwa'           => $row[4],
-                'jhr'           => $row[6],
-                'preferred_shr' => $row[7],
-                'remarks'       => $row[9]
-            ];
-            $voucherModel->insert($voucherData);
+                if (!$studentId) {
+                    $errors[] = "Row " . ($i + 1) . ": Failed to insert student.";
+                    continue;
+                }
 
-            $uvModel->insert([
-                'user_id'    => $userId,
-                'voucher_no' => $row[0]
-            ]);
-            
-            $count++;
+                $voucherId = $voucherModel->insert([
+                    'voucher_no'         => $row[0] ?? null,
+                    'voucher_date'       => $row[1] ?? date('Y-m-d'),
+                    'recipient_name'     => $row[2] ?? null,
+                    'senior_high_school' => $row[7] ?? null,
+                    'amount_in_words'    => '',
+                    'amount'             => 0,
+                    'created_by'         => $createdBy,
+                    'school_year'        => $schoolYear,
+                    'voucher_status'     => 'not_generated',
+                    'student_id'         => $studentId
+                ]);
+
+                if (!$voucherId) {
+                    $errors[] = "Row " . ($i + 1) . ": Failed to insert voucher.";
+                    continue;
+                }
+
+                $count++;
+
+            } catch (\Exception $e) {
+                $errors[] = "Row " . ($i + 1) . ": " . $e->getMessage();
+            }
         }
 
-        $this->writeAuditLog(
-            'voucher_imported',
-            'Imported ' . $count . ' voucher records from Excel.'
-        );
+        if (!empty($errors)) {
+            return redirect()->to('/students')->with('error', implode('<br>', $errors));
+        }
 
-        return view('FileConvertView', [
-            'status'  => 'success',
-            'message' => $count . ' records were successfully imported.'
-        ]);
+        return redirect()->to('/students')->with('success', $count . ' records successfully imported.');
     }
 }
