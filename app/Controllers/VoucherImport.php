@@ -62,6 +62,11 @@ class VoucherImport extends BaseController {
             $count++;
         }
 
+        $this->writeAuditLog(
+            'voucher_imported',
+            'Imported ' . $count . ' voucher records from Excel.'
+        );
+
         return view('FileConvertView', [
             'status'  => 'success',
             'message' => $count . ' records were successfully imported.'

@@ -22,5 +22,6 @@ class StudentModel extends Model
         'remarks_status',
         'school_year',
         'eligibility_status',
+        'is_archived',
     ];
 }

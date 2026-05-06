@@ -2,6 +2,7 @@
 
 namespace App\Controllers;
 
+use App\Models\AuditLogModel;
 use CodeIgniter\Controller;
 use CodeIgniter\HTTP\RequestInterface;
 use CodeIgniter\HTTP\ResponseInterface;
@@ -25,7 +26,7 @@ abstract class BaseController extends Controller
      * The creation of dynamic property is deprecated in PHP 8.2.
      */
 
-    // protected $session;
+    protected $helpers = ['url', 'form', 'html'];
 
     /**
      * @return void
@@ -41,5 +42,25 @@ abstract class BaseController extends Controller
 
         // Preload any models, libraries, etc, here.
         // $this->session = service('session');
+    }
+
+    protected function writeAuditLog(string $action, string $description, ?int $voucherId = null): void
+    {
+        try {
+            $userAgent = $this->request->getUserAgent();
+
+            (new AuditLogModel())->insert([
+                'user_id' => session()->get('user_id') ?? 1,
+                'voucher_id' => $voucherId,
+                'action' => $action,
+                'description' => $description,
+                'ip_address' => $this->request->getIPAddress(),
+                'user_agent' => $userAgent ? $userAgent->getAgentString() : '',
+            ]);
+        } catch (\Throwable $e) {
+            log_message('error', 'Audit log failed: {message}', [
+                'message' => $e->getMessage(),
+            ]);
+        }
     }
 }

@@ -1,0 +1,19 @@
+.page-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.page-actions h3 {
+    flex-basis: 100%;
+    margin-bottom: 0.25rem;
+}
+
+.actions-column {
+    width: 260px;
+}
+
+.actions-cell {
+    white-space: nowrap;
+}
