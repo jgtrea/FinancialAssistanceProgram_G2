@@ -9,7 +9,7 @@ class UsersController extends BaseController
     public function index()
     {
         $model = new UserLogin();
-        $data['users'] = $model->findAll();
+        $data['users'] = $model->where('is_active', 1)->findAll();
         return view('admin/user_management/index', $data);
     }
 
@@ -48,10 +48,25 @@ class UsersController extends BaseController
         return $this->response->setJSON(['status' => 'success', 'message' => $message]);
     }
 
-    public function delete($id)
+    public function archive($id)
     {
         $model = new UserLogin();
-        $model->delete($id, true); 
-        return $this->response->setJSON(['status' => 'success', 'message' => 'User removed successfully.']);
+        $model->update($id, ['is_active' => 0]);
+        return $this->response->setJSON(['status' => 'success', 'message' => 'User archived successfully.']);
+    }
+
+    // Loads view
+    public function archived()
+    {
+        $model = new UserLogin();
+        $data['users'] = $model->where('is_active', 0)->findAll();
+        return view('admin/user_management/archived', $data);
+    }
+
+    public function restore($id)
+    {
+        $model = new UserLogin();
+        $model->update($id, ['is_active' => 1]);
+        return $this->response->setJSON(['status' => 'success', 'message' => 'User restored successfully.']);
     }
 }

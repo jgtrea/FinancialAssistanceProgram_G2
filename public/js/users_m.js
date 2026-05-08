@@ -11,32 +11,7 @@
         return postData;
     }
 
-    $(document).on('click', '.deleteUserBtn', function () {
-        var deleteUrl = $(this).data('delete-url');
-
-        if (!deleteUrl || !confirm('Are you sure you want to remove this user?')) {
-            return;
-        }
-
-        $.ajax({
-            url: deleteUrl,
-            type: 'POST',
-            data: getCsrfData(),
-            dataType: 'json',
-            success: function (response) {
-                alert(response.message);
-
-                if (response.status === 'success') {
-                    location.reload();
-                }
-            },
-            error: function (xhr) {
-                console.log(xhr.responseText);
-                alert('Failed to remove user. Check console.');
-            }
-        });
-    });
-
+    // Save User (Create / Update)
     $(document).on('submit', '#userForm', function (event) {
         event.preventDefault();
 
@@ -57,6 +32,58 @@
             error: function (xhr) {
                 console.log(xhr.responseText);
                 $('#alertBox').html('<div class="alert alert-danger">Something went wrong. Check console.</div>');
+            }
+        });
+    });
+
+    // Archive User
+    $(document).on('click', '.archiveUserBtn', function () {
+        var archiveUrl = $(this).data('archive-url');
+
+        if (!archiveUrl || !confirm('Archive this user?')) {
+            return;
+        }
+
+        $.ajax({
+            url: archiveUrl,
+            type: 'POST',
+            data: getCsrfData(),
+            dataType: 'json',
+            success: function (response) {
+                alert(response.message);
+                if (response.status === 'success') {
+                    location.reload();
+                }
+            },
+            error: function (xhr) {
+                console.log(xhr.responseText);
+                alert('Failed to archive user. Check console.');
+            }
+        });
+    });
+
+    // Restore User
+    $(document).on('click', '.restoreUserBtn', function () {
+        var restoreUrl = $(this).data('restore-url');
+
+        if (!restoreUrl || !confirm('Restore this user?')) {
+            return;
+        }
+
+        $.ajax({
+            url: restoreUrl,
+            type: 'POST',
+            data: getCsrfData(),
+            dataType: 'json',
+            success: function (response) {
+                alert(response.message);
+                if (response.status === 'success') {
+                    location.reload();
+                }
+            },
+            error: function (xhr) {
+                console.log(xhr.responseText);
+                alert('Failed to restore user. Check console.');
             }
         });
     });

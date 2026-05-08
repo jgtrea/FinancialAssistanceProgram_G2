@@ -23,6 +23,7 @@
 
         <div class="navbar-nav">
             <a class="nav-link" href="<?= base_url('admin/user_management') ?>">Users</a>
+            <a class="nav-link" href="<?= base_url('admin/archived_users') ?>">Archived Users</a>
             <a class="nav-link" href="<?= base_url('admin/audit-logs') ?>">Audit Logs</a>
         </div>
 

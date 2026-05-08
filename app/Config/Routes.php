@@ -20,7 +20,9 @@ $routes->get('admin/user_management', 'UsersController::index');
 $routes->get('admin/user_management/form', 'UsersController::form');
 $routes->get('admin/user_management/form/(:num)', 'UsersController::form/$1');
 $routes->post('admin/user_management/save', 'UsersController::save');
-$routes->post('admin/user_management/delete/(:num)', 'UsersController::delete/$1');
+$routes->post('admin/user_management/archive/(:num)', 'UsersController::archive/$1');
+$routes->get('admin/archived_users', 'UsersController::archived');
+$routes->post('admin/user_management/restore/(:num)', 'UsersController::restore/$1');
 $routes->get('admin/audit-logs', 'AuditLogController::index');
 
 // Student routes
