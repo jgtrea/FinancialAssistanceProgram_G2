@@ -32,7 +32,7 @@ class AuditLogController extends BaseController
             ->orderBy('action', 'ASC')
             ->findAll();
 
-        return view('audit_logs/index', [
+        return view('admin/audit_logs/index', [  // REVIEW: FOR ADMIN 
             'title' => 'Audit Logs',
             'logs' => $auditModel
                 ->orderBy('created_at', 'DESC')

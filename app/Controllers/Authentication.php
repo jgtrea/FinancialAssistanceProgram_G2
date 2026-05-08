@@ -12,7 +12,7 @@ class Authentication extends BaseController
     }
 
     public function authenticate()
-    {
+{
         $model = new UserLogin();
 
         $username = $this->request->getPost('username');
@@ -20,8 +20,8 @@ class Authentication extends BaseController
 
         $user = $model->where('username', $username)->first();
 
-        if (!$user) {
-            return redirect()->to('/')->with('error', 'Invalid username or password.');
+        if (!$user || ($user['is_active'] == 0)) { 
+            return redirect()->to('/')->with('error', 'Invalid account or access denied.');
         }
 
         if ($password !== $user['password']) {
@@ -32,12 +32,15 @@ class Authentication extends BaseController
             'user_id'    => $user['user_id'],
             'username'   => $user['username'],
             'full_name'  => $user['full_name'],
-            'role'       => $user['role'],
+            'role'       => $user['role'], 
             'isLoggedIn' => true
         ]);
 
-        // both roles go to students for now
-        return redirect()->to('/students');
+        if ($user['role'] === 'admin') {
+            return redirect()->to('/admin/user_management')->with('success', 'Logged as Admin.');
+        } else {
+            return redirect()->to('/students')->with('success', 'Logged in successfully.');
+        }
     }
 
     public function logout()

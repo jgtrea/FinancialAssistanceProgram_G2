@@ -15,6 +15,14 @@ $routes->get('logout', 'Authentication::logout');
 $routes->get('import', 'VoucherImport::index');
 $routes->post('import_data', 'VoucherImport::import');
 
+// Admin routes
+$routes->get('admin/user_management', 'UsersController::index');
+$routes->get('admin/user_management/form', 'UsersController::form');
+$routes->get('admin/user_management/form/(:num)', 'UsersController::form/$1');
+$routes->post('admin/user_management/save', 'UsersController::save');
+$routes->post('admin/user_management/delete/(:num)', 'UsersController::delete/$1');
+$routes->get('admin/audit-logs', 'AuditLogController::index');
+
 // Student routes
 $routes->get('/students', 'StudentController::index');
 $routes->get('/students/form', 'StudentController::form');
@@ -35,6 +43,3 @@ $routes->get('/signatories', 'SignatoryController::index');
 $routes->get('/signatories/edit/(:num)', 'SignatoryController::edit/$1');
 $routes->post('/signatories/save', 'SignatoryController::save');
 $routes->post('/signatories/status/(:num)/(:alpha)', 'SignatoryController::setStatus/$1/$2');
-
-// Audit logs
-$routes->get('/audit-logs', 'AuditLogController::index');
