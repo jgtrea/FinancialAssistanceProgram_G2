@@ -12,7 +12,7 @@ class Authentication extends BaseController
     }
 
     public function authenticate()
-{
+    {
         $model = new UserLogin();
 
         $username = $this->request->getPost('username');
@@ -24,7 +24,7 @@ class Authentication extends BaseController
             return redirect()->to('/')->with('error', 'Invalid account or access denied.');
         }
 
-        if ($password !== $user['password']) {
+        if (!password_verify($password, $user['password'])) {
             return redirect()->to('/')->with('error', 'Invalid username or password.');
         }
 
@@ -67,11 +67,18 @@ class Authentication extends BaseController
         $model = new UserLogin(); 
         $users = $model->findAll();
 
+        $count = 0;
         foreach ($users as $user) {
+            if (str_starts_with($user['password'], '$argon2') || str_starts_with($user['password'], '$2y$')) {
+                continue;
+            }
+
             $model->update($user['user_id'], [
                 'password' => password_hash($user['password'], PASSWORD_ARGON2ID)
             ]);
+            $count++;
         }
-        echo "All passwords hashed successfully.";
+
+        echo "Done. {$count} password(s) hashed. Skipped already-hashed accounts.";
     }
 }

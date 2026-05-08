@@ -51,7 +51,7 @@ class UsersController extends BaseController
     public function delete($id)
     {
         $model = new UserLogin();
-        $model->delete($id);
-        return $this->response->setJSON(['status' => 'success', 'message' => 'User deleted successfully.']);
+        $model->delete($id, true); 
+        return $this->response->setJSON(['status' => 'success', 'message' => 'User removed successfully.']);
     }
 }

@@ -54,7 +54,7 @@
                             </a>
                             <button class="btn btn-danger btn-sm deleteUserBtn"
                                     data-delete-url="<?= base_url('admin/user_management/delete/' . $user['user_id']) ?>">
-                                Delete
+                                Remove
                             </button>
                         </td>
                     </tr>

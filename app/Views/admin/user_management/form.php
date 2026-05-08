@@ -53,7 +53,7 @@
         <?php if (isset($user)): ?>
         <button type="button" class="btn btn-danger deleteUserBtn ms-auto"
                 data-delete-url="<?= base_url('admin/user_management/delete/' . $user['user_id']) ?>">
-            Delete User
+            Remove
         </button>
         <?php endif; ?>
     </div>

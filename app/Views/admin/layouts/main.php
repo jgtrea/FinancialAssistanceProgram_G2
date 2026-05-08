@@ -9,7 +9,7 @@
     <title><?= $title ?? 'Voucher System' ?></title>
 
     <?= link_tag('https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css') ?>
-    <?= link_tag('css/app.css') ?>
+    <?= link_tag(base_url('css/app.css')) ?>
 </head>
 
 <body>
@@ -35,7 +35,7 @@
 
 <?= script_tag('https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js') ?>
 <?= script_tag('https://code.jquery.com/jquery-3.7.1.min.js') ?>
-<?= script_tag('js/users_m.js') ?>
+<?= script_tag(base_url('js/users_m.js')) ?>
 <?= $this->renderSection('scripts') ?>
 </body>
 </html>
