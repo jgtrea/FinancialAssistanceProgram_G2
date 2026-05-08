@@ -1,21 +1,92 @@
 :root {
-            --binan-green: #198754;
-            --binan-dark: #145a32;
-        }
-        .bg-info-box {
-            background-color: var(--binan-green);
-            background-image: linear-gradient(135deg, var(--binan-green) 0%, var(--binan-dark) 100%);
-        }
-        .btn-custom {
-            background-color: var(--binan-green);
-            color: white;
-            transition: 0.3s;
-        }
-        .btn-custom:hover {
-            background-color: var(--binan-dark);
-            color: white;
-        }
-        .playfair-display-header {
-            font-weight: 700;
-            color: #333;
-        }
+    --primary: #4e73df;
+    --success: #1cc88a;
+    --info: #36b9cc;
+    --danger: #e74a3b;
+    --dark-green: #145a32;
+    --biñan-green: #198754;
+    
+    --gray-100: #f8f9fc;
+    --gray-200: #eaecf4;
+    --gray-300: #dddfeb;
+    --gray-600: #858796;
+    --gray-800: #5a5c69;
+}
+
+.btn-base {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.5rem 1.25rem;
+    font-size: 0.85rem;
+    font-weight: 700;
+    border-radius: 5px;
+    border: 1px solid transparent;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-decoration: none;
+    gap: 8px;
+}
+
+.btn-blue  { background-color: var(--primary); color: #fff; }
+.btn-blue:hover { background-color: #2e59d9; color: #fff; }
+
+.btn-red   { background-color: var(--danger); color: #fff; }
+.btn-red:hover { background-color: #be2617; color: #fff; }
+
+.btn-white { background-color: #fff; color: var(--gray-800); border-color: var(--gray-300); }
+.btn-white:hover { background-color: var(--gray-100); }
+
+.btn-green { background-color: var(--biñan-green); color: #fff; }
+.btn-green:hover { background-color: var(--dark-green); color: #fff; }
+
+/* Main Card Structure */
+.card-main {
+    background: #fff;
+    border: 1px solid var(--gray-200);
+    border-radius: 0.35rem;
+    margin-bottom: 1.5rem;
+    overflow: hidden;
+}
+
+/* Card Header Variants */
+.card-header-flex {
+    padding: 0.75rem 1.25rem;
+    background-color: var(--gray-100);
+    border-bottom: 1px solid var(--gray-200);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.card-title-text {
+    font-weight: 800;
+    color: var(--primary);
+    margin: 0;
+    text-transform: uppercase;
+    font-size: 0.8rem;
+}
+
+/* Card Body */
+.card-body-custom {
+    padding: 1.25rem;
+}
+
+/* Left Border Accents (Summary Cards) */
+.border-l-blue   { border-left: 0.25rem solid var(--primary) !important; }
+.border-l-green  { border-left: 0.25rem solid var(--success) !important; }
+.border-l-info   { border-left: 0.25rem solid var(--info) !important; }
+.border-l-yellow { border-left: 0.25rem solid #f6c23e !important; }
+
+/* Gradients */
+.bg-gradient-green {
+    background: linear-gradient(135deg, var(--biñan-green) 0%, var(--dark-green) 100%);
+    color: white;
+}
+
+/* Shadows */
+.shadow-soft { box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.15); }
+
+/* Typography */
+.text-label { font-size: 0.7rem; font-weight: 700; color: var(--gray-600); text-transform: uppercase; }
+.text-value { font-size: 1.25rem; font-weight: 700; color: var(--gray-800); }

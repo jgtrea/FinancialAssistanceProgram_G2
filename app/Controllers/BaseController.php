@@ -26,7 +26,7 @@ abstract class BaseController extends Controller
      * The creation of dynamic property is deprecated in PHP 8.2.
      */
 
-    protected $helpers = ['url', 'form', 'html'];
+    protected $helpers = ['url', 'form', 'html', 'asset'];
 
     /**
      * @return void
