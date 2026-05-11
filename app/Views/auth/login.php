@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Biñan City</title>
     <?php pre_style('default_lay'); ?>
-    <?php pre_style('test'); ?>
+    <?php pre_style('sbadmin2'); ?>
 </head>
 <body style="background-image: url('<?= base_url('images/bg_binan.jpg') ?>'); background-size: cover; background-position: center; background-repeat: no-repeat; min-height: 100vh; margin: 0; padding: 0;">
 
@@ -31,7 +31,6 @@
                 </div>
             </div>
 
-            <!-- Right: Login Form -->
             <div class="col-lg-5">
                 <div style="background: white; border-radius: 12px; padding: 3rem 2.5rem; box-shadow: 0 10px 40px rgba(0,0,0,0.3);">
 
