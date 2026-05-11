@@ -2,9 +2,8 @@
 
 namespace App\Controllers;
 
-use App\Models\UserModel;
+use App\Models\StudentModel;
 use App\Models\VoucherModel;
-use App\Models\UserVoucherModel;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 
 class VoucherImport extends BaseController {
@@ -16,49 +15,75 @@ class VoucherImport extends BaseController {
     public function import() {
         $file = $this->request->getFile('excel_file');
 
-        // Basic validation to ensure a file was uploaded
-        if (!$file->isValid()) {
+        if (!$file || !$file->isValid()) {
             return redirect()->back()->with('error', 'Please upload a valid Excel file.');
         }
 
         $spreadsheet = IOFactory::load($file->getTempName());
         $sheetData = $spreadsheet->getActiveSheet()->toArray();
 
-        $userModel = new UserModel();
+        $studentModel = new StudentModel();
         $voucherModel = new VoucherModel();
-        $uvModel = new UserVoucherModel();
-        
+
         $count = 0;
-        // Start from $i = 1 to skip the header row
         for ($i = 1; $i < count($sheetData); $i++) {
             $row = $sheetData[$i];
 
-            // Skip empty rows
-            if (empty($row[0])) continue;
+            if (empty($row[0])) {
+                continue;
+            }
 
-            $userData = [
-                'fullname'   => $row[2], 
-                'gender'     => $row[5],
-                'contact_no' => $row[8]
-            ];
-            $userId = $userModel->insert($userData);
+            $voucherNo = trim((string) ($row[0] ?? ''));
+            $voucherDate = trim((string) ($row[1] ?? ''));
+            $fullName = trim((string) ($row[2] ?? ''));
+            $rankNo = trim((string) ($row[3] ?? ''));
+            $gwa = trim((string) ($row[4] ?? ''));
+            $gender = trim((string) ($row[5] ?? ''));
+            $juniorHighSchool = trim((string) ($row[6] ?? ''));
+            $preferredSeniorHighSchool = trim((string) ($row[7] ?? ''));
+            $contactNumber = trim((string) ($row[8] ?? ''));
+            $remarksStatus = trim((string) ($row[9] ?? ''));
 
-            $voucherData = [
-                'voucher_no'    => $row[0],
-                'voucher_date'  => $row[1],
-                'rank'          => $row[3],
-                'gwa'           => $row[4],
-                'jhr'           => $row[6],
-                'preferred_shr' => $row[7],
-                'remarks'       => $row[9]
-            ];
-            $voucherModel->insert($voucherData);
+            if ($voucherNo === '' || $voucherDate === '' || $fullName === '') {
+                continue;
+            }
 
-            $uvModel->insert([
-                'user_id'    => $userId,
-                'voucher_no' => $row[0]
+            // Skip duplicate voucher records
+            if ($voucherModel->where('voucher_no', $voucherNo)->first()) {
+                continue;
+            }
+
+            $studentId = $studentModel->insert([
+                'voucher_no'                => $voucherNo,
+                'voucher_date'              => $voucherDate,
+                'full_name'                 => $fullName,
+                'rank_no'                   => is_numeric($rankNo) ? (int) $rankNo : null,
+                'gwa'                       => is_numeric($gwa) ? (float) $gwa : null,
+                'gender'                    => $gender,
+                'junior_high_school'        => $juniorHighSchool,
+                'preferred_senior_high_school' => $preferredSeniorHighSchool,
+                'contact_number'            => $contactNumber,
+                'remarks_status'            => $remarksStatus,
+                'school_year'               => date('Y'),
+                'eligibility_status'        => 'eligible',
             ]);
-            
+
+            $voucherModel->insert([
+                'voucher_no'        => $voucherNo,
+                'voucher_date'      => $voucherDate,
+                'recipient_name'    => $fullName,
+                'senior_high_school'=> $preferredSeniorHighSchool,
+                'amount_in_words'   => '',
+                'amount'            => 0.00,
+                'created_by'        => null,
+                'signatory_1_id'    => null,
+                'signatory_2_id'    => null,
+                'signatory_3_id'    => null,
+                'school_year'       => date('Y'),
+                'voucher_status'    => 'not_generated',
+                'student_id'        => $studentId,
+            ]);
+
             $count++;
         }
 
