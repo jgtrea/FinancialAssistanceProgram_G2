@@ -7,9 +7,8 @@
     <meta name="csrf-token-name" content="<?= csrf_token() ?>">
     <meta name="csrf-token-value" content="<?= csrf_hash() ?>">
     <title><?= $title ?? 'Voucher System' ?></title>
-
-    <?= link_tag('https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css') ?>
-    <?= link_tag('css/app.css') ?>
+    <?php pre_style('default_lay') ?>
+    
 </head>
 
 <body>

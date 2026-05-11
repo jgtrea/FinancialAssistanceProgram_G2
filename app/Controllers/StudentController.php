@@ -3,21 +3,24 @@
 namespace App\Controllers;
 
 use App\Models\StudentModel;
+use App\Models\StudentArchiveModel;
+use App\Models\SignatoryModel;
 
 class StudentController extends BaseController
 {
-   public function index()
-{
-    $studentModel = new StudentModel();
+    public function index()
+    {
+        $studentModel = new StudentModel();
 
-    return view('students/index', [
-        'title' => 'Students',
-        'students' => $studentModel
-            ->where('is_archived', 0)
-            ->orderBy('student_id', 'DESC')
-            ->findAll()
-    ]);
-}   
+        return view('students/index', [
+            'title' => 'Students',
+            'students' => $studentModel
+                ->where('is_archived', 0)
+                ->orderBy('student_id', 'DESC')
+                ->findAll()
+        ]);
+    }
+
     public function form($id = null)
     {
         $studentModel = new StudentModel();
@@ -36,14 +39,23 @@ class StudentController extends BaseController
 
     public function save()
     {
-        $studentModel = new StudentModel();
+        if (!$this->request->isAJAX()) {
+            return $this->response->setJSON([
+                'status' => 'error',
+                'message' => 'Invalid request.'
+            ]);
+        }
 
+        $studentModel = new StudentModel();
         $studentId = $this->request->getPost('student_id');
 
         $data = [
             'voucher_no' => $this->request->getPost('voucher_no'),
             'voucher_date' => $this->request->getPost('voucher_date'),
-            'full_name' => $this->request->getPost('full_name'),
+            'first_name' => $this->request->getPost('first_name'),
+            'middle_name' => $this->request->getPost('middle_name'),
+            'last_name' => $this->request->getPost('last_name'),
+            'suffix' => $this->request->getPost('suffix'),
             'rank_no' => $this->request->getPost('rank_no'),
             'gwa' => $this->request->getPost('gwa'),
             'gender' => $this->request->getPost('gender'),
@@ -53,82 +65,117 @@ class StudentController extends BaseController
             'remarks_status' => $this->request->getPost('remarks_status'),
             'school_year' => $this->request->getPost('school_year'),
             'eligibility_status' => $this->request->getPost('eligibility_status'),
+            'voucher_status' => $this->request->getPost('voucher_status') ?? 'not_generated',
         ];
 
         if ($studentId) {
             $studentModel->update($studentId, $data);
             $message = 'Student updated successfully.';
-            $this->writeAuditLog(
-                'student_updated',
-                'Updated student: ' . ($data['full_name'] ?: 'Student #' . $studentId)
-            );
         } else {
-            $newStudentId = $studentModel->insert($data);
+            $studentModel->insert($data);
             $message = 'Student added successfully.';
-            $this->writeAuditLog(
-                'student_added',
-                'Added student: ' . ($data['full_name'] ?: 'Student #' . $newStudentId)
-            );
         }
 
-        if ($this->request->isAJAX()) {
+        return $this->response->setJSON([
+            'status' => 'success',
+            'message' => $message
+        ]);
+    }
+
+    public function archive($id)
+    {
+        if (!$this->request->isAJAX()) {
             return $this->response->setJSON([
-                'status' => 'success',
-                'message' => $message
+                'status' => 'error',
+                'message' => 'Invalid request.'
             ]);
         }
 
-        return redirect()->to('/students')->with('success', $message);
-    }
+        $studentModel = new StudentModel();
+        $archiveModel = new StudentArchiveModel();
 
-    public function delete($id)
-{
-    if (!$this->request->isAJAX()) {
+        $student = $studentModel->find($id);
+
+        if (!$student) {
+            return $this->response->setJSON([
+                'status' => 'error',
+                'message' => 'Student not found.'
+            ]);
+        }
+
+        $userId = session()->get('user_id') ?? 1;
+
+        $archiveModel->insert([
+            'student_id' => $student['student_id'],
+            'voucher_no' => $student['voucher_no'],
+            'voucher_date' => $student['voucher_date'],
+            'first_name' => $student['first_name'],
+            'middle_name' => $student['middle_name'],
+            'last_name' => $student['last_name'],
+            'suffix' => $student['suffix'],
+            'rank_no' => $student['rank_no'],
+            'gwa' => $student['gwa'],
+            'gender' => $student['gender'],
+            'junior_high_school' => $student['junior_high_school'],
+            'preferred_senior_high_school' => $student['preferred_senior_high_school'],
+            'contact_number' => $student['contact_number'],
+            'remarks_status' => $student['remarks_status'],
+            'school_year' => $student['school_year'],
+            'eligibility_status' => $student['eligibility_status'],
+            'voucher_status' => $student['voucher_status'],
+            'archive_reason' => 'Manually archived',
+            'archived_by' => $userId,
+        ]);
+
+        $studentModel->update($id, [
+            'is_archived' => 1
+        ]);
+
         return $this->response->setJSON([
-            'status' => 'error',
-            'message' => 'Invalid request.'
+            'status' => 'success',
+            'message' => 'Student archived successfully.'
         ]);
     }
 
-    $studentModel = new \App\Models\StudentModel();
-    $archiveModel = new \App\Models\StudentArchiveModel();
+    public function voucher($id)
+    {
+        $studentModel = new StudentModel();
+        $signatoryModel = new SignatoryModel();
 
-    $student = $studentModel->find($id);
+        $student = $studentModel->find($id);
 
-    if (!$student) {
-        return $this->response->setJSON([
-            'status' => 'error',
-            'message' => 'Student not found.'
+        if (!$student) {
+            return redirect()->to('/students')->with('error', 'Student not found.');
+        }
+
+        return view('students/voucher', [
+            'title' => 'Voucher Preview',
+            'student' => $student,
+            'signatories' => $signatoryModel
+                ->where('is_active', 1)
+                ->orderBy('signatory_id', 'ASC')
+                ->findAll()
         ]);
     }
 
-    // archive snapshot
-    $archiveModel->insert([
-        'voucher_id' => null,
-        'voucher_no' => $student['voucher_no'],
-        'recipient_name' => $student['full_name'],
-        'senior_high_school' => $student['preferred_senior_high_school'],
-        'amount_in_words' => 'TEN THOUSAND PESOS ONLY',
-        'amount' => 10000,
-        'school_year' => $student['school_year'],
-        'voucher_status' => 'not_generated',
-        'archive_reason' => 'Manually archived',
-        'archived_by' => 1,
-    ]);
+    public function markGenerated($id)
+    {
+        if (!$this->request->isAJAX()) {
+            return $this->response->setJSON([
+                'status' => 'error',
+                'message' => 'Invalid request.'
+            ]);
+        }
 
-    // soft archive only
-    $studentModel->update($id, [
-        'is_archived' => 1
-    ]);
+        $studentModel = new StudentModel();
 
-    $this->writeAuditLog(
-        'student_archived',
-        'Archived student: ' . ($student['full_name'] ?: 'Student #' . $id)
-    );
+        $studentModel->update($id, [
+            'voucher_status' => 'generated'
+        ]);
 
-    return $this->response->setJSON([
-        'status' => 'success',
-        'message' => 'Student archived successfully.'
-    ]);
-}
+        return $this->response->setJSON([
+            'status' => 'success',
+            'message' => 'Voucher marked as generated.'
+        ]);
+    }
 }
