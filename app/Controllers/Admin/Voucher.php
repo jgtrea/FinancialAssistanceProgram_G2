@@ -37,14 +37,14 @@ class Voucher extends Controller
         return session()->get('user_id') ?? $this->getFallbackUserId();
     }
 
-    // ── List all vouchers ──────────────────────────────────────────────────────
+    // ── List all students / vouchers ───────────────────────────────────────────
     public function index()
     {
-        $vouchers = $this->voucherModel->getVouchersForListing();
+        $students = $this->voucherModel->getVouchersForListing();
 
         return view('vouchers/index', [
             'title'    => 'Vouchers',
-            'vouchers' => $vouchers,
+            'vouchers' => $students,
             'role'     => session()->get('role') ?: 'admin',
         ]);
     }
@@ -54,33 +54,26 @@ class Voucher extends Controller
     {
         helper(['form']);
 
-        $db          = \Config\Database::connect();
-        $students    = $db->table('students')->select('student_id, full_name')->orderBy('full_name', 'ASC')->get()->getResultArray();
-        $signatories = $db->table('signatories')->select('signatory_id, full_name')->where('is_active', 1)->orderBy('full_name', 'ASC')->get()->getResultArray();
-
         return view('vouchers/form', [
-            'title'       => 'Add Voucher',
-            'action'      => site_url('admin/vouchers/store'),
-            'voucher'     => [],
-            'students'    => $students,
-            'signatories' => $signatories,
-            'validation'  => \Config\Services::validation(),
+            'title'      => 'Add Student Voucher',
+            'action'     => site_url('admin/vouchers/store'),
+            'voucher'    => [],
+            'validation' => \Config\Services::validation(),
         ]);
     }
 
-    // ── Persist a new voucher ──────────────────────────────────────────────────
+    // ── Persist a new student/voucher ──────────────────────────────────────────
     public function store()
     {
         helper(['form']);
 
         $rules = [
-            'voucher_no'         => 'required|max_length[50]',
-            'voucher_date'       => 'required|valid_date',
-            'recipient_name'     => 'required|max_length[200]',
-            'senior_high_school' => 'required|max_length[200]',
-            'amount'             => 'required|numeric',
-            'amount_in_words'    => 'required|max_length[255]',
-            'school_year'        => 'required|max_length[20]',
+            'voucher_no'                   => 'required|max_length[50]',
+            'voucher_date'                 => 'required|valid_date',
+            'first_name'                   => 'required|max_length[100]',
+            'last_name'                    => 'required|max_length[100]',
+            'preferred_senior_high_school' => 'required|max_length[200]',
+            'school_year'                  => 'required|max_length[20]',
         ];
 
         if (!$this->validate($rules)) {
@@ -88,34 +81,42 @@ class Voucher extends Controller
         }
 
         $this->voucherModel->insert([
-            'voucher_no'         => $this->request->getPost('voucher_no'),
-            'voucher_date'       => $this->request->getPost('voucher_date'),
-            'recipient_name'     => $this->request->getPost('recipient_name'),
-            'senior_high_school' => $this->request->getPost('senior_high_school'),
-            'amount'             => $this->request->getPost('amount'),
-            'amount_in_words'    => $this->request->getPost('amount_in_words'),
-            'school_year'        => $this->request->getPost('school_year'),
-            'voucher_status'     => $this->request->getPost('voucher_status') ?: 'not_generated',
-            'student_id'         => $this->request->getPost('student_id') ?: null,
-            'signatory_1_id'     => $this->request->getPost('signatory_1_id') ?: null,
-            'signatory_2_id'     => $this->request->getPost('signatory_2_id') ?: null,
-            'signatory_3_id'     => $this->request->getPost('signatory_3_id') ?: null,
-            'created_by'         => $this->getCurrentUserId(),
+            'voucher_no'                   => $this->request->getPost('voucher_no'),
+            'voucher_date'                 => $this->request->getPost('voucher_date'),
+            'first_name'                   => $this->request->getPost('first_name'),
+            'middle_name'                  => $this->request->getPost('middle_name') ?: '',
+            'last_name'                    => $this->request->getPost('last_name'),
+            'suffix'                       => $this->request->getPost('suffix') ?: '',
+            'rank_no'                      => $this->request->getPost('rank_no') ?: null,
+            'gwa'                          => $this->request->getPost('gwa') ?: null,
+            'gender'                       => $this->request->getPost('gender') ?: '',
+            'junior_high_school'           => $this->request->getPost('junior_high_school') ?: '',
+            'preferred_senior_high_school' => $this->request->getPost('preferred_senior_high_school'),
+            'contact_number'               => $this->request->getPost('contact_number') ?: '',
+            'remarks_status'               => $this->request->getPost('remarks_status') ?: '',
+            'school_year'                  => $this->request->getPost('school_year'),
+            'eligibility_status'           => $this->request->getPost('eligibility_status') ?: 'eligible',
+            'voucher_status'               => $this->request->getPost('voucher_status') ?: 'not_generated',
+            'is_archived'                  => 0,
         ]);
 
-        return redirect()->to(site_url('admin/vouchers'))->with('message', 'Voucher created successfully.');
+        return redirect()->to(site_url('admin/vouchers'))->with('message', 'Student voucher created successfully.');
     }
 
-    // ── Show a voucher detail page ─────────────────────────────────────────────
+    // ── Show a student/voucher detail page ────────────────────────────────────
     public function view(int $id)
     {
-        $voucher = $this->voucherModel->getVoucherWithSignatories($id);
+        $student = $this->voucherModel->getStudentById($id);
 
-        if (!$voucher) {
-            return redirect()->to(site_url('admin/vouchers'))->with('error', 'Voucher not found.');
+        if (!$student) {
+            return redirect()->to(site_url('admin/vouchers'))->with('error', 'Student not found.');
         }
 
-        return view('vouchers/view', ['title' => 'Voucher Details', 'voucher' => $voucher]);
+        return view('vouchers/view', [
+            'title'   => 'Voucher Details',
+            'voucher' => $student,
+            'role'    => session()->get('role') ?: 'admin',
+        ]);
     }
 
     // ── Show edit form ─────────────────────────────────────────────────────────
@@ -123,38 +124,31 @@ class Voucher extends Controller
     {
         helper(['form']);
 
-        $voucher = $this->voucherModel->getVoucherWithSignatories($id);
-        if (!$voucher) {
-            return redirect()->to(site_url('admin/vouchers'))->with('error', 'Voucher not found.');
+        $student = $this->voucherModel->getStudentById($id);
+        if (!$student) {
+            return redirect()->to(site_url('admin/vouchers'))->with('error', 'Student not found.');
         }
 
-        $db          = \Config\Database::connect();
-        $students    = $db->table('students')->select('student_id, full_name')->orderBy('full_name', 'ASC')->get()->getResultArray();
-        $signatories = $db->table('signatories')->select('signatory_id, full_name')->where('is_active', 1)->orderBy('full_name', 'ASC')->get()->getResultArray();
-
         return view('vouchers/form', [
-            'title'       => 'Edit Voucher',
-            'action'      => site_url('admin/vouchers/update/' . $id),
-            'voucher'     => $voucher,
-            'students'    => $students,
-            'signatories' => $signatories,
-            'validation'  => \Config\Services::validation(),
+            'title'      => 'Edit Student Voucher',
+            'action'     => site_url('admin/vouchers/update/' . $id),
+            'voucher'    => $student,
+            'validation' => \Config\Services::validation(),
         ]);
     }
 
-    // ── Persist voucher edits ──────────────────────────────────────────────────
+    // ── Persist student/voucher edits ─────────────────────────────────────────
     public function update(int $id)
     {
         helper(['form']);
 
         $rules = [
-            'voucher_no'         => 'required|max_length[50]',
-            'voucher_date'       => 'required|valid_date',
-            'recipient_name'     => 'required|max_length[200]',
-            'senior_high_school' => 'required|max_length[200]',
-            'amount'             => 'required|numeric',
-            'amount_in_words'    => 'required|max_length[255]',
-            'school_year'        => 'required|max_length[20]',
+            'voucher_no'                   => 'required|max_length[50]',
+            'voucher_date'                 => 'required|valid_date',
+            'first_name'                   => 'required|max_length[100]',
+            'last_name'                    => 'required|max_length[100]',
+            'preferred_senior_high_school' => 'required|max_length[200]',
+            'school_year'                  => 'required|max_length[20]',
         ];
 
         if (!$this->validate($rules)) {
@@ -162,42 +156,51 @@ class Voucher extends Controller
         }
 
         $this->voucherModel->update($id, [
-            'voucher_no'         => $this->request->getPost('voucher_no'),
-            'voucher_date'       => $this->request->getPost('voucher_date'),
-            'recipient_name'     => $this->request->getPost('recipient_name'),
-            'senior_high_school' => $this->request->getPost('senior_high_school'),
-            'amount'             => $this->request->getPost('amount'),
-            'amount_in_words'    => $this->request->getPost('amount_in_words'),
-            'school_year'        => $this->request->getPost('school_year'),
-            'voucher_status'     => $this->request->getPost('voucher_status') ?: 'not_generated',
-            'student_id'         => $this->request->getPost('student_id') ?: null,
-            'signatory_1_id'     => $this->request->getPost('signatory_1_id') ?: null,
-            'signatory_2_id'     => $this->request->getPost('signatory_2_id') ?: null,
-            'signatory_3_id'     => $this->request->getPost('signatory_3_id') ?: null,
+            'voucher_no'                   => $this->request->getPost('voucher_no'),
+            'voucher_date'                 => $this->request->getPost('voucher_date'),
+            'first_name'                   => $this->request->getPost('first_name'),
+            'middle_name'                  => $this->request->getPost('middle_name') ?: '',
+            'last_name'                    => $this->request->getPost('last_name'),
+            'suffix'                       => $this->request->getPost('suffix') ?: '',
+            'rank_no'                      => $this->request->getPost('rank_no') ?: null,
+            'gwa'                          => $this->request->getPost('gwa') ?: null,
+            'gender'                       => $this->request->getPost('gender') ?: '',
+            'junior_high_school'           => $this->request->getPost('junior_high_school') ?: '',
+            'preferred_senior_high_school' => $this->request->getPost('preferred_senior_high_school'),
+            'contact_number'               => $this->request->getPost('contact_number') ?: '',
+            'remarks_status'               => $this->request->getPost('remarks_status') ?: '',
+            'school_year'                  => $this->request->getPost('school_year'),
+            'eligibility_status'           => $this->request->getPost('eligibility_status') ?: 'eligible',
+            'voucher_status'               => $this->request->getPost('voucher_status') ?: 'not_generated',
         ]);
 
-        return redirect()->to(site_url('admin/vouchers'))->with('message', 'Voucher updated successfully.');
+        return redirect()->to(site_url('admin/vouchers'))->with('message', 'Student voucher updated successfully.');
     }
 
-    // ── Generate PDF synchronously and return download URL ────────────────────
+    // ── Generate PDF and mark students as generated ───────────────────────────
     public function generatePdf()
     {
         $ids = $this->request->getPost('voucher_ids');
 
         if (empty($ids)) {
-            return $this->response->setJSON(['success' => false, 'message' => 'No vouchers selected.']);
+            return $this->response->setJSON(['success' => false, 'message' => 'No students selected.']);
         }
 
         $ids      = array_map('intval', (array) $ids);
-        $vouchers = $this->voucherModel->getVouchersByIds($ids);
+        $students = $this->voucherModel->getVouchersByIds($ids);
 
-        if (empty($vouchers)) {
-            return $this->response->setJSON(['success' => false, 'message' => 'Selected vouchers not found.']);
+        if (empty($students)) {
+            return $this->response->setJSON(['success' => false, 'message' => 'Selected students not found.']);
         }
 
         try {
-            $pdfBytes = VoucherPdf::generate($vouchers);
+            $pdfBytes = VoucherPdf::generate($students);
             $jobId    = $this->savePdfFile($ids, $this->getCurrentUserId(), $pdfBytes);
+
+            \Config\Database::connect()
+                ->table('students')
+                ->whereIn('student_id', $ids)
+                ->update(['voucher_status' => 'generated']);
 
             return $this->response->setJSON([
                 'success'      => true,
@@ -266,47 +269,58 @@ class Voucher extends Controller
             ->setBody(file_get_contents($filePath));
     }
 
-    // ── Archive selected vouchers ──────────────────────────────────────────────
+    // ── Archive selected students ─────────────────────────────────────────────
     public function archive()
     {
         $ids    = $this->request->getPost('voucher_ids');
         $reason = $this->request->getPost('archive_reason') ?? 'Archived by admin';
 
         if (empty($ids)) {
-            return $this->response->setJSON(['success' => false, 'message' => 'No vouchers selected.']);
+            return $this->response->setJSON(['success' => false, 'message' => 'No students selected.']);
         }
 
         $ids      = array_map('intval', (array) $ids);
-        $vouchers = $this->voucherModel->getVouchersByIds($ids);
+        $students = $this->voucherModel->getVouchersByIds($ids);
         $userId   = session()->get('user_id');
         $now      = date('Y-m-d H:i:s');
         $archived = 0;
 
-        foreach ($vouchers as $v) {
+        foreach ($students as $s) {
             $this->archiveModel->insert([
-                'voucher_id'         => $v['voucher_id'],
-                'voucher_no'         => $v['voucher_no'],
-                'recipient_name'     => $v['recipient_name'],
-                'senior_high_school' => $v['senior_high_school'],
-                'amount_in_words'    => $v['amount_in_words'],
-                'amount'             => $v['amount'],
-                'school_year'        => $v['school_year'],
-                'voucher_status'     => $v['voucher_status'],
-                'archive_reason'     => $reason,
-                'archived_by'        => $userId,
-                'archived_at'        => $now,
+                'student_id'                   => $s['student_id'],
+                'voucher_no'                   => $s['voucher_no'],
+                'voucher_date'                 => $s['voucher_date'],
+                'first_name'                   => $s['first_name'],
+                'middle_name'                  => $s['middle_name'],
+                'last_name'                    => $s['last_name'],
+                'suffix'                       => $s['suffix'],
+                'rank_no'                      => $s['rank_no'],
+                'gwa'                          => $s['gwa'],
+                'gender'                       => $s['gender'],
+                'junior_high_school'           => $s['junior_high_school'],
+                'preferred_senior_high_school' => $s['preferred_senior_high_school'],
+                'contact_number'               => $s['contact_number'],
+                'remarks_status'               => $s['remarks_status'],
+                'school_year'                  => $s['school_year'],
+                'eligibility_status'           => $s['eligibility_status'],
+                'voucher_status'               => $s['voucher_status'],
+                'archive_reason'               => $reason,
+                'archived_by'                  => $userId,
+                'archived_at'                  => $now,
             ]);
 
-            log_action($userId, 'ARCHIVE_VOUCHER',
-                "Voucher {$v['voucher_no']} archived by user ID {$userId}",
-                $v['voucher_id']);
+            $this->voucherModel->update($s['student_id'], ['is_archived' => 1]);
+
+            log_action($userId, 'ARCHIVE_STUDENT',
+                "Student {$s['full_name']} (Voucher {$s['voucher_no']}) archived",
+                $s['student_id']);
 
             $archived++;
         }
 
         return $this->response->setJSON([
             'success' => true,
-            'message' => "{$archived} voucher(s) archived successfully.",
+            'message' => "{$archived} student(s) archived successfully.",
         ]);
     }
 
@@ -339,16 +353,5 @@ class Voucher extends Controller
             ]);
 
         return $jobId;
-    }
-
-    // ── Build PDF bytes via shared library (kept for direct use) ──────────────
-    protected function buildPdf(array $vouchers): \CodeIgniter\HTTP\Response
-    {
-        $filename = 'vouchers_' . date('Ymd_His') . '.pdf';
-
-        return $this->response
-            ->setHeader('Content-Type', 'application/pdf')
-            ->setHeader('Content-Disposition', "attachment; filename=\"{$filename}\"")
-            ->setBody(VoucherPdf::generate($vouchers));
     }
 }

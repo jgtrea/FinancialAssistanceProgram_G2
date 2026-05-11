@@ -13,7 +13,7 @@
     </div>
     <div class="vs-stat-body">
       <div class="vs-stat-value"><?= number_format($myVouchers) ?></div>
-      <div class="vs-stat-label">My Vouchers</div>
+      <div class="vs-stat-label">Total Vouchers</div>
     </div>
   </div>
 
@@ -63,20 +63,19 @@
 <!-- Recent vouchers -->
 <div class="vs-panel">
   <div class="vs-panel-header">
-    <h6 class="vs-panel-title">My Recent Vouchers</h6>
+    <h6 class="vs-panel-title">Recent Vouchers</h6>
     <a href="<?= site_url('user/vouchers') ?>" class="vs-panel-link">View all</a>
   </div>
   <div class="vs-panel-body">
     <?php if (empty($recentVouchers)): ?>
-      <p class="vs-empty">No vouchers found. Contact your administrator.</p>
+      <p class="vs-empty">No vouchers found.</p>
     <?php else: ?>
       <table class="vs-mini-table">
         <thead>
           <tr>
             <th>Voucher No.</th>
-            <th>Recipient</th>
-            <th>School</th>
-            <th>Amount</th>
+            <th>Name</th>
+            <th>Preferred School</th>
             <th>Status</th>
             <th>Date</th>
           </tr>
@@ -85,9 +84,8 @@
           <?php foreach ($recentVouchers as $v): ?>
           <tr>
             <td><span class="vs-id-badge"><?= esc($v['voucher_no']) ?></span></td>
-            <td><?= esc($v['recipient_name']) ?></td>
-            <td><?= esc($v['senior_high_school']) ?></td>
-            <td class="vs-amount">₱<?= number_format($v['amount'], 2) ?></td>
+            <td><?= esc($v['full_name']) ?></td>
+            <td><?= esc($v['preferred_senior_high_school']) ?></td>
             <td><?= voucher_status_badge($v['voucher_status']) ?></td>
             <td><?= date('M d, Y', strtotime($v['created_at'])) ?></td>
           </tr>

@@ -6,7 +6,7 @@
 <div class="vs-page-header mb-4">
   <div>
     <h4 class="vs-page-title"><?= esc($title) ?></h4>
-    <p class="vs-page-sub">Enter voucher details and save to create a new voucher record.</p>
+    <p class="vs-page-sub">Enter student and voucher details.</p>
   </div>
   <a href="<?= site_url('admin/vouchers') ?>" class="vs-btn vs-btn-outline">Back to vouchers</a>
 </div>
@@ -27,93 +27,123 @@
       <?= csrf_field() ?>
 
       <div class="vs-grid vs-grid-2 gap-3">
+
+        <!-- Voucher Info -->
         <div>
           <label class="vs-label" for="voucher_no">Voucher No.</label>
-          <input id="voucher_no" name="voucher_no" type="text" class="vs-input <?= ($validation && $validation->hasError('voucher_no')) ? 'vs-input-error' : '' ?>" value="<?= old('voucher_no', $voucher['voucher_no'] ?? '') ?>">
+          <input id="voucher_no" name="voucher_no" type="text"
+                 class="vs-input <?= ($validation && $validation->hasError('voucher_no')) ? 'vs-input-error' : '' ?>"
+                 value="<?= old('voucher_no', $voucher['voucher_no'] ?? '') ?>">
         </div>
 
         <div>
           <label class="vs-label" for="voucher_date">Voucher Date</label>
-          <input id="voucher_date" name="voucher_date" type="date" class="vs-input <?= ($validation && $validation->hasError('voucher_date')) ? 'vs-input-error' : '' ?>" value="<?= old('voucher_date', $voucher['voucher_date'] ?? '') ?>">
+          <input id="voucher_date" name="voucher_date" type="date"
+                 class="vs-input <?= ($validation && $validation->hasError('voucher_date')) ? 'vs-input-error' : '' ?>"
+                 value="<?= old('voucher_date', $voucher['voucher_date'] ?? '') ?>">
+        </div>
+
+        <!-- Name fields -->
+        <div>
+          <label class="vs-label" for="first_name">First Name</label>
+          <input id="first_name" name="first_name" type="text"
+                 class="vs-input <?= ($validation && $validation->hasError('first_name')) ? 'vs-input-error' : '' ?>"
+                 value="<?= old('first_name', $voucher['first_name'] ?? '') ?>">
         </div>
 
         <div>
-          <label class="vs-label" for="recipient_name">Recipient Name</label>
-          <input id="recipient_name" name="recipient_name" type="text" class="vs-input <?= ($validation && $validation->hasError('recipient_name')) ? 'vs-input-error' : '' ?>" value="<?= old('recipient_name', $voucher['recipient_name'] ?? '') ?>">
+          <label class="vs-label" for="middle_name">Middle Name</label>
+          <input id="middle_name" name="middle_name" type="text" class="vs-input"
+                 value="<?= old('middle_name', $voucher['middle_name'] ?? '') ?>">
         </div>
 
         <div>
-          <label class="vs-label" for="senior_high_school">Senior High School</label>
-          <input id="senior_high_school" name="senior_high_school" type="text" class="vs-input <?= ($validation && $validation->hasError('senior_high_school')) ? 'vs-input-error' : '' ?>" value="<?= old('senior_high_school', $voucher['senior_high_school'] ?? '') ?>">
+          <label class="vs-label" for="last_name">Last Name</label>
+          <input id="last_name" name="last_name" type="text"
+                 class="vs-input <?= ($validation && $validation->hasError('last_name')) ? 'vs-input-error' : '' ?>"
+                 value="<?= old('last_name', $voucher['last_name'] ?? '') ?>">
         </div>
 
         <div>
-          <label class="vs-label" for="amount">Amount</label>
-          <input id="amount" name="amount" type="number" step="0.01" class="vs-input <?= ($validation && $validation->hasError('amount')) ? 'vs-input-error' : '' ?>" value="<?= old('amount', $voucher['amount'] ?? '') ?>">
+          <label class="vs-label" for="suffix">Suffix</label>
+          <input id="suffix" name="suffix" type="text" class="vs-input"
+                 value="<?= old('suffix', $voucher['suffix'] ?? '') ?>" placeholder="e.g. Jr., III">
+        </div>
+
+        <!-- Academic Info -->
+        <div>
+          <label class="vs-label" for="gender">Gender</label>
+          <select id="gender" name="gender" class="vs-input">
+            <?php $gender = old('gender', $voucher['gender'] ?? '') ?>
+            <option value="">-- Select --</option>
+            <option value="Male"   <?= $gender === 'Male'   ? 'selected' : '' ?>>Male</option>
+            <option value="Female" <?= $gender === 'Female' ? 'selected' : '' ?>>Female</option>
+          </select>
         </div>
 
         <div>
-          <label class="vs-label" for="amount_in_words">Amount In Words</label>
-          <input id="amount_in_words" name="amount_in_words" type="text" class="vs-input <?= ($validation && $validation->hasError('amount_in_words')) ? 'vs-input-error' : '' ?>" value="<?= old('amount_in_words', $voucher['amount_in_words'] ?? '') ?>">
+          <label class="vs-label" for="gwa">GWA</label>
+          <input id="gwa" name="gwa" type="number" step="0.01" class="vs-input"
+                 value="<?= old('gwa', $voucher['gwa'] ?? '') ?>">
+        </div>
+
+        <div>
+          <label class="vs-label" for="rank_no">Rank No.</label>
+          <input id="rank_no" name="rank_no" type="number" class="vs-input"
+                 value="<?= old('rank_no', $voucher['rank_no'] ?? '') ?>">
+        </div>
+
+        <div>
+          <label class="vs-label" for="contact_number">Contact Number</label>
+          <input id="contact_number" name="contact_number" type="text" class="vs-input"
+                 value="<?= old('contact_number', $voucher['contact_number'] ?? '') ?>">
+        </div>
+
+        <div>
+          <label class="vs-label" for="junior_high_school">Junior High School</label>
+          <input id="junior_high_school" name="junior_high_school" type="text" class="vs-input"
+                 value="<?= old('junior_high_school', $voucher['junior_high_school'] ?? '') ?>">
+        </div>
+
+        <div>
+          <label class="vs-label" for="preferred_senior_high_school">Preferred Senior High School</label>
+          <input id="preferred_senior_high_school" name="preferred_senior_high_school" type="text"
+                 class="vs-input <?= ($validation && $validation->hasError('preferred_senior_high_school')) ? 'vs-input-error' : '' ?>"
+                 value="<?= old('preferred_senior_high_school', $voucher['preferred_senior_high_school'] ?? '') ?>">
+        </div>
+
+        <div>
+          <label class="vs-label" for="remarks_status">Remarks</label>
+          <input id="remarks_status" name="remarks_status" type="text" class="vs-input"
+                 value="<?= old('remarks_status', $voucher['remarks_status'] ?? '') ?>">
         </div>
 
         <div>
           <label class="vs-label" for="school_year">School Year</label>
-          <input id="school_year" name="school_year" type="text" class="vs-input <?= ($validation && $validation->hasError('school_year')) ? 'vs-input-error' : '' ?>" value="<?= old('school_year', $voucher['school_year'] ?? '') ?>">
+          <input id="school_year" name="school_year" type="text" class="vs-input"
+                 class="vs-input <?= ($validation && $validation->hasError('school_year')) ? 'vs-input-error' : '' ?>"
+                 value="<?= old('school_year', $voucher['school_year'] ?? '') ?>"
+                 placeholder="e.g. 2025-2026">
         </div>
 
         <div>
-          <label class="vs-label" for="voucher_status">Status</label>
+          <label class="vs-label" for="eligibility_status">Eligibility</label>
+          <select id="eligibility_status" name="eligibility_status" class="vs-input">
+            <?php $eligibility = old('eligibility_status', $voucher['eligibility_status'] ?? 'eligible') ?>
+            <option value="eligible"     <?= $eligibility === 'eligible'     ? 'selected' : '' ?>>Eligible</option>
+            <option value="not_eligible" <?= $eligibility === 'not_eligible' ? 'selected' : '' ?>>Not Eligible</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="vs-label" for="voucher_status">Voucher Status</label>
           <select id="voucher_status" name="voucher_status" class="vs-input">
             <?php $status = old('voucher_status', $voucher['voucher_status'] ?? 'not_generated') ?>
             <option value="not_generated" <?= $status === 'not_generated' ? 'selected' : '' ?>>Not Generated</option>
-            <option value="generated" <?= $status === 'generated' ? 'selected' : '' ?>>Generated</option>
+            <option value="generated"     <?= $status === 'generated'     ? 'selected' : '' ?>>Generated</option>
           </select>
         </div>
 
-        <div>
-          <label class="vs-label" for="student_id">Student</label>
-          <select id="student_id" name="student_id" class="vs-input">
-            <option value="">-- Select student (optional) --</option>
-            <?php foreach ($students as $student): ?>
-              <?php $selected = old('student_id', $voucher['student_id'] ?? '') == $student['student_id'] ? 'selected' : '' ?>
-              <option value="<?= esc($student['student_id']) ?>" <?= $selected ?>><?= esc($student['full_name']) ?></option>
-            <?php endforeach ?>
-          </select>
-        </div>
-
-        <div>
-          <label class="vs-label" for="signatory_1_id">Signatory 1</label>
-          <select id="signatory_1_id" name="signatory_1_id" class="vs-input">
-            <option value="">-- Select signatory --</option>
-            <?php foreach ($signatories as $signatory): ?>
-              <?php $selected = old('signatory_1_id', $voucher['signatory_1_id'] ?? '') == $signatory['signatory_id'] ? 'selected' : '' ?>
-              <option value="<?= esc($signatory['signatory_id']) ?>" <?= $selected ?>><?= esc($signatory['full_name']) ?></option>
-            <?php endforeach ?>
-          </select>
-        </div>
-
-        <div>
-          <label class="vs-label" for="signatory_2_id">Signatory 2</label>
-          <select id="signatory_2_id" name="signatory_2_id" class="vs-input">
-            <option value="">-- Select signatory --</option>
-            <?php foreach ($signatories as $signatory): ?>
-              <?php $selected = old('signatory_2_id', $voucher['signatory_2_id'] ?? '') == $signatory['signatory_id'] ? 'selected' : '' ?>
-              <option value="<?= esc($signatory['signatory_id']) ?>" <?= $selected ?>><?= esc($signatory['full_name']) ?></option>
-            <?php endforeach ?>
-          </select>
-        </div>
-
-        <div>
-          <label class="vs-label" for="signatory_3_id">Signatory 3</label>
-          <select id="signatory_3_id" name="signatory_3_id" class="vs-input">
-            <option value="">-- Select signatory --</option>
-            <?php foreach ($signatories as $signatory): ?>
-              <?php $selected = old('signatory_3_id', $voucher['signatory_3_id'] ?? '') == $signatory['signatory_id'] ? 'selected' : '' ?>
-              <option value="<?= esc($signatory['signatory_id']) ?>" <?= $selected ?>><?= esc($signatory['full_name']) ?></option>
-            <?php endforeach ?>
-          </select>
-        </div>
       </div>
 
       <div class="mt-4 d-flex gap-2">

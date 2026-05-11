@@ -225,55 +225,74 @@ document.addEventListener('DOMContentLoaded', function () {
   const vouchersTable = document.getElementById('vouchersTable');
   if (!vouchersTable) return;
 
+  // Columns: 0=checkbox 1=StudentID 2=VoucherNo 3=Name 4=School 5=SchoolYear
+  //          6=Eligibility 7=Status 8=Date 9=Actions
   const dt = $('#vouchersTable').DataTable({
+    destroy: true,
     pageLength: 25,
-    order: [[9, 'desc']],
-    columnDefs: [{ orderable: false, targets: [0, 10] }],
+    order: [[8, 'desc']],
+    columnDefs: [{ orderable: false, targets: [0, 9] }],
     language: {
       search: '',
       searchPlaceholder: 'Search vouchers...',
       lengthMenu: 'Show _MENU_ entries',
-      info:       'Showing _START_–_END_ of _Total_',
+      info:       'Showing _START_–_END_ of _TOTAL_',
       paginate:   { previous: '&#8249;', next: '&#8250;' },
     },
   });
 
-  // ── Checkboxes ───────────────────────────────────────────────────────────────
+  // ── Cross-page selection (Set of string IDs) ──────────────────────────────────
+  const selectedIds = new Set();
+
   const checkAll   = document.getElementById('checkAll');
   const actionBar  = document.getElementById('actionBar');
   const countLabel = document.getElementById('selectedCount');
 
-  function getChecked() {
-    return [...document.querySelectorAll('.vs-row-check:checked')];
-  }
-
   function updateActionBar() {
-    const checked = getChecked();
-    const count   = checked.length;
+    const count         = selectedIds.size;
+    const totalFiltered = dt.rows({ search: 'applied' }).count();
     countLabel.textContent  = count;
     actionBar.style.display = count > 0 ? 'flex' : 'none';
-
-    const all = [...document.querySelectorAll('.vs-row-check')];
-    checkAll.checked       = all.length > 0 && all.every(c => c.checked);
-    checkAll.indeterminate = count > 0 && count < all.length;
+    checkAll.checked        = count > 0 && count >= totalFiltered;
+    checkAll.indeterminate  = count > 0 && count < totalFiltered;
   }
 
-  checkAll.addEventListener('change', function () {
-    dt.rows({ search: 'applied', page: 'current' }).nodes().each(function (row) {
+  // Sync visible checkboxes to reflect the Set after any DataTable redraw
+  function syncPageCheckboxes() {
+    dt.rows({ page: 'current' }).nodes().each(function (row) {
       const cb = row.querySelector('.vs-row-check');
-      if (cb) { cb.checked = checkAll.checked; row.classList.toggle('vs-row-selected', checkAll.checked); }
+      if (cb) {
+        cb.checked = selectedIds.has(cb.value);
+        row.classList.toggle('vs-row-selected', cb.checked);
+      }
     });
+    updateActionBar();
+  }
+
+  dt.on('page.dt search.dt order.dt', syncPageCheckboxes);
+
+  // Select / deselect ALL filtered rows across every page
+  checkAll.addEventListener('change', function () {
+    const filteredIds = dt.rows({ search: 'applied' }).ids().toArray()
+      .map(function (rid) { return rid.replace('row-', ''); });
+    if (this.checked) {
+      filteredIds.forEach(function (id) { selectedIds.add(id); });
+    } else {
+      filteredIds.forEach(function (id) { selectedIds.delete(id); });
+    }
+    syncPageCheckboxes();
+  });
+
+  // Individual row toggle
+  vouchersTable.addEventListener('change', function (e) {
+    if (!e.target.classList.contains('vs-row-check')) return;
+    if (e.target.checked) selectedIds.add(e.target.value);
+    else                   selectedIds.delete(e.target.value);
+    e.target.closest('tr').classList.toggle('vs-row-selected', e.target.checked);
     updateActionBar();
   });
 
-  vouchersTable.addEventListener('change', function (e) {
-    if (e.target.classList.contains('vs-row-check')) {
-      e.target.closest('tr').classList.toggle('vs-row-selected', e.target.checked);
-      updateActionBar();
-    }
-  });
-
-  // ── Generate PDF — AJAX + background job polling ─────────────────────────────
+  // ── Generate PDF ──────────────────────────────────────────────────────────────
   const btnGeneratePdf = document.getElementById('btnGeneratePdf');
   const pdfForm        = document.getElementById('pdfForm');
   const pdfModal       = document.getElementById('pdfProgressModal');
@@ -281,8 +300,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
   if (btnGeneratePdf && pdfForm) {
     btnGeneratePdf.addEventListener('click', async function () {
-      const checked = getChecked();
-      if (!checked.length) return;
+      if (!selectedIds.size) return;
 
       pdfModal.style.display  = 'flex';
       pdfStatusEl.textContent = 'Generating PDF, please wait...';
@@ -291,7 +309,7 @@ document.addEventListener('DOMContentLoaded', function () {
       const csrf     = getCsrfToken();
       const formData = new FormData();
       formData.append(csrf.name, csrf.token);
-      checked.forEach(cb => formData.append('voucher_ids[]', cb.value));
+      selectedIds.forEach(id => formData.append('voucher_ids[]', id));
 
       try {
         const res  = await fetch(pdfForm.action, { method: 'POST', body: formData });
@@ -302,6 +320,19 @@ document.addEventListener('DOMContentLoaded', function () {
           showAlert(data.message || 'Failed to generate PDF.', 'error');
           return;
         }
+
+        // Update status badge for generated rows still visible on current page
+        selectedIds.forEach(id => {
+          const cb  = document.querySelector(`.vs-row-check[value="${id}"]`);
+          const row = cb ? cb.closest('tr') : null;
+          if (row) {
+            const cell = row.cells[7]; // Status column
+            if (cell) cell.innerHTML = '<span class="vs-status-badge vs-status-generated">Generated</span>';
+          }
+        });
+
+        selectedIds.clear();
+        syncPageCheckboxes();
 
         pdfStatusEl.textContent = 'PDF ready! Downloading...';
         setTimeout(() => {
@@ -330,12 +361,11 @@ document.addEventListener('DOMContentLoaded', function () {
   const archiveBtnSpinner = document.getElementById('archiveBtnSpinner');
 
   const archiveUrl = pdfForm ? pdfForm.action.replace('/generate-pdf', '/archive') : '';
-  const csrf       = getCsrfToken();
 
   const closeArchiveModal = () => { if (archiveModal) archiveModal.style.display = 'none'; };
 
   btnArchive        && btnArchive.addEventListener('click', () => {
-    if (archiveCount)  archiveCount.textContent = getChecked().length;
+    if (archiveCount)  archiveCount.textContent = selectedIds.size;
     if (archiveReason) archiveReason.value = '';
     if (archiveModal)  archiveModal.style.display = 'flex';
   });
@@ -345,17 +375,17 @@ document.addEventListener('DOMContentLoaded', function () {
 
   if (archiveConfirm) {
     archiveConfirm.addEventListener('click', async function () {
-      const checked = getChecked();
-      if (!checked.length) return;
+      if (!selectedIds.size) return;
 
       archiveBtnText    && (archiveBtnText.style.display    = 'none');
       archiveBtnSpinner && (archiveBtnSpinner.style.display = 'inline-block');
       archiveConfirm.disabled = true;
 
+      const csrf     = getCsrfToken();
       const formData = new FormData();
       formData.append(csrf.name, csrf.token);
       formData.append('archive_reason', archiveReason ? archiveReason.value : '');
-      checked.forEach(cb => formData.append('voucher_ids[]', cb.value));
+      selectedIds.forEach(id => formData.append('voucher_ids[]', id));
 
       try {
         const res  = await fetch(archiveUrl, { method: 'POST', body: formData });
@@ -364,11 +394,15 @@ document.addEventListener('DOMContentLoaded', function () {
 
         if (data.success) {
           showAlert(data.message, 'success');
-          checked.forEach(cb => {
-            const row = cb.closest('tr');
-            if (row) dt.row(row).remove().draw();
+          // Remove archived rows from DataTable (only those currently in DOM)
+          selectedIds.forEach(id => {
+            const cb  = document.querySelector(`.vs-row-check[value="${id}"]`);
+            const row = cb ? cb.closest('tr') : null;
+            if (row) dt.row(row).remove();
           });
-          updateActionBar();
+          dt.draw();
+          selectedIds.clear();
+          syncPageCheckboxes();
         } else {
           showAlert(data.message || 'Archive failed.', 'error');
         }
@@ -383,25 +417,28 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   }
 
-  // ── CSV Export ─────────────────────────────────────────────────────────────────
+  // ── CSV Export ────────────────────────────────────────────────────────────────
   const btnExport = document.getElementById('btnExport');
   if (btnExport) {
     btnExport.addEventListener('click', function () {
       const rows    = dt.rows({ search: 'applied' }).data();
-      const headers = ['Voucher No', 'Recipient', 'School', 'Amount', 'School Year', 'Status', 'Date'];
+      const headers = ['Voucher No', 'Name', 'Preferred School', 'School Year', 'Eligibility', 'Status', 'Date'];
       const clean   = str => '"' + String(str).replace(/<[^>]*>/g, '').replace(/"/g, '""').trim() + '"';
       const csvRows = [headers.join(',')];
 
       rows.each(row => csvRows.push([
         clean(row[2]), clean(row[3]), clean(row[4]),
-        clean(row[5]), clean(row[6]), clean(row[7]), clean(row[9]),
+        clean(row[5]), clean(row[6]), clean(row[7]), clean(row[8]),
       ].join(',')));
 
       const blob = new Blob([csvRows.join('\n')], { type: 'text/csv' });
       const url  = URL.createObjectURL(blob);
       const a    = document.createElement('a');
       a.href = url; a.download = 'vouchers_' + new Date().toISOString().slice(0, 10) + '.csv';
-      a.click(); URL.revokeObjectURL(url);
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      setTimeout(function () { URL.revokeObjectURL(url); }, 100);
     });
   }
 

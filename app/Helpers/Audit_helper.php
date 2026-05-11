@@ -1,15 +1,7 @@
 <?php
 
-/**
- * Audit Log Helper
- * Usage: log_action($userId, 'ACTION_NAME', 'description', $voucherId);
- *
- * Load in controller: $this->load->helper('audit');
- * Or autoload in app/Config/Autoload.php helpers array.
- */
-
 if (!function_exists('log_action')) {
-    function log_action(?int $userId, string $action, string $description = '', ?int $voucherId = null): void
+    function log_action(?int $userId, string $action, string $description = '', ?int $studentId = null): void
     {
         try {
             $db      = \Config\Database::connect();
@@ -17,7 +9,7 @@ if (!function_exists('log_action')) {
 
             $db->table('audit_log')->insert([
                 'user_id'     => $userId,
-                'voucher_id'  => $voucherId,
+                'student_id'  => $studentId,
                 'action'      => $action,
                 'description' => $description,
                 'ip_address'  => $request->getIPAddress(),

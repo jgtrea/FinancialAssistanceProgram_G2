@@ -13,10 +13,12 @@
       <p class="vs-page-sub">Manage and generate financial assistance vouchers</p>
     </div>
     <div class="d-flex gap-2">
+      <?php if ($role === 'admin'): ?>
       <a href="<?= site_url('admin/vouchers/create') ?>" class="vs-btn vs-btn-primary">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-        Add Voucher
+        Add Student
       </a>
+      <?php endif ?>
       <button class="vs-btn vs-btn-outline" id="btnExport">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
         Export
@@ -60,54 +62,46 @@
             <th class="vs-th-check">
               <input type="checkbox" id="checkAll" class="vs-check">
             </th>
-            <th>VOC-ID</th>
+            <th>Student ID</th>
             <th>Voucher No.</th>
-            <th>Recipient</th>
-            <th>School</th>
-            <th>Amount</th>
+            <th>Name</th>
+            <th>Preferred School</th>
             <th>School Year</th>
+            <th>Eligibility</th>
             <th>Status</th>
-            <?php if ($role === 'admin'): ?>
-            <th>Created By</th>
-            <?php endif ?>
             <th>Date</th>
             <th>Actions</th>
           </tr>
         </thead>
         <tbody>
           <?php foreach ($vouchers as $v): ?>
-          <tr>
+          <tr id="row-<?= $v['student_id'] ?>">
             <td>
               <input type="checkbox" class="vs-check vs-row-check"
-                     value="<?= $v['voucher_id'] ?>"
-                     data-voucher='<?= json_encode([
-                       'id'     => $v['voucher_id'],
-                       'no'     => $v['voucher_no'],
-                       'name'   => $v['recipient_name'],
-                       'status' => $v['voucher_status'],
-                     ]) ?>'>
+                     value="<?= $v['student_id'] ?>">
             </td>
-            <td><span class="vs-id-badge">VOC-<?= str_pad($v['voucher_id'], 4, '0', STR_PAD_LEFT) ?></span></td>
+            <td><span class="vs-id-badge">STD-<?= str_pad($v['student_id'], 4, '0', STR_PAD_LEFT) ?></span></td>
             <td><?= esc($v['voucher_no']) ?></td>
-            <td><?= esc($v['recipient_name']) ?></td>
-            <td><?= esc($v['senior_high_school']) ?></td>
-            <td class="vs-amount">₱ <?= number_format($v['amount'], 2) ?></td>
+            <td><?= esc($v['full_name']) ?></td>
+            <td><?= esc($v['preferred_senior_high_school']) ?></td>
             <td><?= esc($v['school_year']) ?></td>
+            <td>
+              <span class="vs-status-badge vs-status-<?= $v['eligibility_status'] ?>">
+                <?= ucfirst(str_replace('_', ' ', $v['eligibility_status'])) ?>
+              </span>
+            </td>
             <td>
               <span class="vs-status-badge vs-status-<?= $v['voucher_status'] ?>">
                 <?= ucfirst(str_replace('_', ' ', $v['voucher_status'])) ?>
               </span>
             </td>
-            <?php if ($role === 'admin'): ?>
-            <td><?= esc($v['created_by_name'] ?? $v['username']) ?></td>
-            <?php endif ?>
             <td><?= date('M d, Y', strtotime($v['created_at'])) ?></td>
             <td>
               <div class="d-flex gap-1">
-                <a href="<?= site_url(($role === 'admin' ? 'admin' : 'user') . '/vouchers/view/' . $v['voucher_id']) ?>"
+                <a href="<?= site_url(($role === 'admin' ? 'admin' : 'user') . '/vouchers/view/' . $v['student_id']) ?>"
                    class="vs-tbl-btn vs-tbl-btn-view">View</a>
                 <?php if ($role === 'admin'): ?>
-                <a href="<?= site_url('admin/vouchers/edit/' . $v['voucher_id']) ?>"
+                <a href="<?= site_url('admin/vouchers/edit/' . $v['student_id']) ?>"
                    class="vs-tbl-btn vs-tbl-btn-edit">Edit</a>
                 <?php endif ?>
               </div>
@@ -138,11 +132,11 @@
 <div class="vs-modal-overlay" id="archiveModal" style="display:none">
   <div class="vs-modal">
     <div class="vs-modal-header">
-      <h5>Archive Vouchers</h5>
+      <h5>Archive Students</h5>
       <button class="vs-modal-close" id="archiveModalClose">&times;</button>
     </div>
     <div class="vs-modal-body">
-      <p>You are about to archive <strong id="archiveCount">0</strong> voucher(s). This will move them to the archive table.</p>
+      <p>You are about to archive <strong id="archiveCount">0</strong> student(s). This will move them to the archive.</p>
       <label class="vs-label" for="archiveReason">Reason (optional)</label>
       <input type="text" id="archiveReason" class="vs-input" placeholder="e.g. End of school year">
     </div>

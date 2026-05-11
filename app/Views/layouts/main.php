@@ -70,14 +70,6 @@ $displayRole = ucfirst(session()->get('role') ?: 'Admin');
 
 </div><!-- /.vs-layout -->
 
-  <main class="vs-content">
-    <?= $this->renderSection('content') ?>
-  </main>
-
-</div><!-- /.vs-main -->
-
-</div><!-- /.vs-layout -->
-
 <!-- jQuery -->
 <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 <!-- Bootstrap -->
@@ -87,7 +79,7 @@ $displayRole = ucfirst(session()->get('role') ?: 'Admin');
 <script src="https://cdn.datatables.net/1.13.8/js/dataTables.bootstrap5.min.js"></script>
 
 <!-- App scripts -->
-<script src="<?= base_url('js/script.js') ?>"></script>
+<script src="<?= base_url('js/script.js') ?>?v=2"></script>
 
 </body>
 </html>

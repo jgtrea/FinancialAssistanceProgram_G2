@@ -41,30 +41,24 @@
 <body>
 
 <?php
-// ── x = left position, y = top position (mm from slot top-left) ─────────────
-$y_voucher = 80;   // y — Voucher No. + Date row
-$y_recip   = 150;   // y — Recipient row
-$y_school  = 160;   // y — School row
+$y_voucher = 80;
+$y_recip   = 150;
+$y_school  = 160;
 
-$x_vno    = 47;    // x — Voucher No.
-$x_date   = 165;   // x — Date  (column starts here)
-$x_recip  = 52;    // x — Recipient
-$x_school = 55;    // x — School
-// ─────────────────────────────────────────────────────────────────────────────
+$x_vno    = 47;
+$x_date   = 165;
+$x_recip  = 52;
+$x_school = 55;
 
-// Row heights (must total 99mm)
-$h1 = $y_voucher;              // spacer row
-$h2 = $y_recip  - $y_voucher;  // voucher + date row
-$h3 = $y_school - $y_recip;    // recipient row
-$h4 = 99        - $y_school;   // school row
+$h1 = $y_voucher;
+$h2 = $y_recip  - $y_voucher;
+$h3 = $y_school - $y_recip;
+$h4 = 99        - $y_school;
 
-// Column widths (must total 210mm)
-// Col A = spacer  |  Col B = voucher-no area  |  Col C = date area
 $cA = $x_vno;
 $cB = $x_date - $x_vno;
 $cC = 210 - $x_date;
 
-// Extra left padding for recipient and school (they start a bit right of Col A)
 $pad_recip  = $x_recip  - $x_vno;
 $pad_school = $x_school - $x_vno;
 
@@ -82,23 +76,19 @@ foreach ($chunks as $chunk):
         <col style="width:<?= $cB ?>mm">
         <col style="width:<?= $cC ?>mm">
       </colgroup>
-      <!-- Spacer row pushes content down to y_voucher -->
       <tr style="height:<?= $h1 ?>mm"><td colspan="3"></td></tr>
-      <!-- Voucher No. and Date -->
       <tr style="height:<?= $h2 ?>mm">
         <td></td>
         <td style="vertical-align:bottom;"><?= esc($v['voucher_no']) ?></td>
         <td style="vertical-align:bottom;"><?= date('m/d/Y', strtotime($v['voucher_date'] ?? 'now')) ?></td>
       </tr>
-      <!-- Recipient -->
       <tr style="height:<?= $h3 ?>mm">
         <td></td>
-        <td colspan="2" style="vertical-align:bottom; padding-left:<?= $pad_recip ?>mm;"><?= esc($v['recipient_name']) ?></td>
+        <td colspan="2" style="vertical-align:bottom; padding-left:<?= $pad_recip ?>mm;"><?= esc($v['full_name']) ?></td>
       </tr>
-      <!-- School -->
       <tr style="height:<?= $h4 ?>mm">
         <td></td>
-        <td colspan="2" style="vertical-align:top; padding-left:<?= $pad_school ?>mm;"><?= esc($v['senior_high_school']) ?></td>
+        <td colspan="2" style="vertical-align:top; padding-left:<?= $pad_school ?>mm;"><?= esc($v['preferred_senior_high_school']) ?></td>
       </tr>
     </table>
     <?php endif; ?>

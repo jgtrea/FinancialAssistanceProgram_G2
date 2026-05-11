@@ -90,8 +90,7 @@
           <thead>
             <tr>
               <th>Voucher No.</th>
-              <th>Recipient</th>
-              <th>Amount</th>
+              <th>Name</th>
               <th>Status</th>
             </tr>
           </thead>
@@ -99,8 +98,7 @@
             <?php foreach ($recentVouchers as $v): ?>
             <tr>
               <td><span class="vs-id-badge"><?= esc($v['voucher_no']) ?></span></td>
-              <td><?= esc($v['recipient_name']) ?></td>
-              <td class="vs-amount">₱<?= number_format($v['amount'], 2) ?></td>
+              <td><?= esc($v['full_name']) ?></td>
               <td>
                 <span class="vs-status-badge vs-status-<?= $v['voucher_status'] ?>">
                   <?= ucfirst(str_replace('_', ' ', $v['voucher_status'])) ?>

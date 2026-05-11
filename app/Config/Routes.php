@@ -36,18 +36,6 @@ $routes->group('admin', function ($routes) {
     $routes->get('vouchers/pdf-download/(:num)', 'Admin\Voucher::downloadPdf/$1');
     $routes->post('vouchers/archive',            'Admin\Voucher::archive');
 
-    // Students
-    $routes->get('students',                   'Admin\Student::index');
-    $routes->get('students/view/(:num)',       'Admin\Student::view/$1');
-
-    // Signatories
-    $routes->get('signatories',                'Admin\Signatory::index');
-    $routes->get('signatories/create',         'Admin\Signatory::create');
-    $routes->post('signatories/store',         'Admin\Signatory::store');
-    $routes->get('signatories/edit/(:num)',    'Admin\Signatory::edit/$1');
-    $routes->post('signatories/update/(:num)','Admin\Signatory::update/$1');
-    $routes->post('signatories/delete/(:num)','Admin\Signatory::delete/$1');
-
     // Archive
     $routes->get('archive', 'Admin\Archive::index');
 
@@ -69,7 +57,5 @@ $routes->group('user', function ($routes) {
     $routes->get('vouchers/pdf-download/(:num)', 'User\Voucher::downloadPdf/$1');
     $routes->post('vouchers/archive',            'User\Voucher::archive');
 
-    // Records
-    $routes->get('records',           'User\Record::index');
-    $routes->post('records/generate', 'User\Record::generate');
+
 });

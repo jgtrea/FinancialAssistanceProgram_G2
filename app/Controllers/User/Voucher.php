@@ -5,47 +5,46 @@ namespace App\Controllers\User;
 use App\Libraries\VoucherPdf;
 use App\Controllers\Admin\Voucher as AdminVoucher;
 
-/**
- * User\Voucher extends Admin\Voucher but scopes
- * all queries to the currently logged-in user.
- */
 class Voucher extends AdminVoucher
 {
-    // ── List only this user's vouchers ────────────────────────────────────────
+    // ── List all vouchers (user view) ─────────────────────────────────────────
     public function index()
     {
-        $userId   = session()->get('user_id');
-        $vouchers = $this->voucherModel->getVouchersForListing($userId);
+        $students = $this->voucherModel->getVouchersForListing();
 
         return view('vouchers/index', [
-            'title'    => 'My Vouchers',
-            'vouchers' => $vouchers,
-            'role'     => session()->get('role') ?: 'admin',
+            'title'    => 'Vouchers',
+            'vouchers' => $students,
+            'role'     => session()->get('role') ?: 'user',
         ]);
     }
 
-    // ── Generate PDF — only for vouchers owned by this user ───────────────────
+    // ── Generate PDF ──────────────────────────────────────────────────────────
     public function generatePdf()
     {
         $ids    = $this->request->getPost('voucher_ids');
         $userId = session()->get('user_id');
 
         if (empty($ids)) {
-            return $this->response->setJSON(['success' => false, 'message' => 'No vouchers selected.']);
+            return $this->response->setJSON(['success' => false, 'message' => 'No students selected.']);
         }
 
         $ids      = array_map('intval', (array) $ids);
-        $vouchers = $this->voucherModel->getVouchersByIds($ids);
-        $vouchers = array_values(array_filter($vouchers, fn($v) => (int) $v['created_by'] === $userId));
+        $students = $this->voucherModel->getVouchersByIds($ids);
 
-        if (empty($vouchers)) {
-            return $this->response->setJSON(['success' => false, 'message' => 'No valid vouchers found.']);
+        if (empty($students)) {
+            return $this->response->setJSON(['success' => false, 'message' => 'No valid students found.']);
         }
 
         try {
-            $pdfBytes    = VoucherPdf::generate($vouchers);
-            $filteredIds = array_column($vouchers, 'voucher_id');
-            $jobId       = $this->savePdfFile($filteredIds, $userId, $pdfBytes);
+            $pdfBytes   = VoucherPdf::generate($students);
+            $studentIds = array_column($students, 'student_id');
+            $jobId      = $this->savePdfFile($studentIds, $userId, $pdfBytes);
+
+            \Config\Database::connect()
+                ->table('students')
+                ->whereIn('student_id', $studentIds)
+                ->update(['voucher_status' => 'generated']);
 
             return $this->response->setJSON([
                 'success'      => true,
@@ -57,7 +56,7 @@ class Voucher extends AdminVoucher
         }
     }
 
-    // ── Archive — only user's own vouchers ───────────────────────────────────
+    // ── Archive selected students ─────────────────────────────────────────────
     public function archive()
     {
         $ids    = $this->request->getPost('voucher_ids');
@@ -65,39 +64,45 @@ class Voucher extends AdminVoucher
         $reason = $this->request->getPost('archive_reason') ?? 'Archived by user';
 
         if (empty($ids)) {
-            return $this->response->setJSON([
-                'success' => false,
-                'message' => 'No vouchers selected.',
-            ]);
+            return $this->response->setJSON(['success' => false, 'message' => 'No students selected.']);
         }
 
         $ids      = array_map('intval', (array) $ids);
-        $vouchers = $this->voucherModel->getVouchersByIds($ids);
-        $vouchers = array_filter($vouchers, fn($v) => (int)$v['created_by'] === $userId);
+        $students = $this->voucherModel->getVouchersByIds($ids);
         $now      = date('Y-m-d H:i:s');
         $archived = 0;
 
-        foreach ($vouchers as $v) {
+        foreach ($students as $s) {
             $this->archiveModel->insert([
-                'voucher_id'         => $v['voucher_id'],
-                'voucher_no'         => $v['voucher_no'],
-                'recipient_name'     => $v['recipient_name'],
-                'senior_high_school' => $v['senior_high_school'],
-                'amount_in_words'    => $v['amount_in_words'],
-                'amount'             => $v['amount'],
-                'school_year'        => $v['school_year'],
-                'voucher_status'     => $v['voucher_status'],
-                'archive_reason'     => $reason,
-                'archived_by'        => $userId,
-                'archived_at'        => $now,
+                'student_id'                   => $s['student_id'],
+                'voucher_no'                   => $s['voucher_no'],
+                'voucher_date'                 => $s['voucher_date'],
+                'first_name'                   => $s['first_name'],
+                'middle_name'                  => $s['middle_name'],
+                'last_name'                    => $s['last_name'],
+                'suffix'                       => $s['suffix'],
+                'rank_no'                      => $s['rank_no'],
+                'gwa'                          => $s['gwa'],
+                'gender'                       => $s['gender'],
+                'junior_high_school'           => $s['junior_high_school'],
+                'preferred_senior_high_school' => $s['preferred_senior_high_school'],
+                'contact_number'               => $s['contact_number'],
+                'remarks_status'               => $s['remarks_status'],
+                'school_year'                  => $s['school_year'],
+                'eligibility_status'           => $s['eligibility_status'],
+                'voucher_status'               => $s['voucher_status'],
+                'archive_reason'               => $reason,
+                'archived_by'                  => $userId,
+                'archived_at'                  => $now,
             ]);
 
+            $this->voucherModel->update($s['student_id'], ['is_archived' => 1]);
             $archived++;
         }
 
         return $this->response->setJSON([
             'success' => true,
-            'message' => "{$archived} voucher(s) archived successfully.",
+            'message' => "{$archived} student(s) archived successfully.",
         ]);
     }
 }
