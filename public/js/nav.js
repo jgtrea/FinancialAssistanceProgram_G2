@@ -2,16 +2,13 @@ function userNav() {
     return `
         <nav class="navbar navbar-expand navbar-light bg-white topbar mb-4 static-top shadow">
             <div class="container">
-                <!-- Logo/Text Left -->
                 <a class="navbar-brand d-flex align-items-center fw-bold text-uppercase" href="${baseUrl}/">
-                    <img src="${baseUrl}images/logo_binan.png" width="30" height="30" class="me-2" alt="Logo">
+                    <img src="${baseUrl}images/logo_binan.png" class="navbar-logo me-2" alt="Logo">
                     Biñan City
                 </a>
-                <!-- Hamburger for Mobile -->
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                     <span class="navbar-toggler-icon"></span>
                 </button>
-                <!-- Links moved to the Right using ms-auto -->
                 <div class="collapse navbar-collapse" id="navbarNav">
                     <div class="navbar-nav ms-auto">
                         <a class="nav-link" href="${baseUrl}/students">
@@ -41,7 +38,7 @@ function adminNav() {
         <nav class="navbar navbar-expand navbar-light bg-white topbar mb-4 static-top shadow">
             <div class="container">
                 <a class="navbar-brand d-flex align-items-center fw-bold text-uppercase" href="${baseUrl}/">
-                    <img src="${baseUrl}images/logo_binan.png" width="30" height="30" class="me-2" alt="Logo">
+                    <img src="${baseUrl}images/logo_binan.png" class="navbar-logo me-2" alt="Logo">
                     Biñan City
                 </a>
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
@@ -70,7 +67,7 @@ function authNav() {
         <nav class="navbar navbar-expand navbar-light bg-white topbar mb-4 fixed-top shadow">
             <div class="container">
                 <a class="navbar-brand d-flex align-items-center fw-bold text-uppercase" href="#">
-                    <img src="${baseUrl}images/logo_binan.png" width="30" height="30" class="me-2" alt="Logo">
+                    <img src="${baseUrl}images/logo_binan.png" class="navbar-logo me-2" alt="Logo">
                     Biñan City
                 </a>
             </div>

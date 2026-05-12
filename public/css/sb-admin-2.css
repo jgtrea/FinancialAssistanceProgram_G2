@@ -4189,6 +4189,11 @@ input[type="button"].btn-block {
   overflow-y: auto;
 }
 
+.navbar-logo {
+  width: 30px;
+  height: 30px;
+}
+
 @media (max-width: 575.98px) {
   .navbar-expand-sm > .container,
   .navbar-expand-sm > .container-fluid, .navbar-expand-sm > .container-sm, .navbar-expand-sm > .container-md, .navbar-expand-sm > .container-lg, .navbar-expand-sm > .container-xl {
