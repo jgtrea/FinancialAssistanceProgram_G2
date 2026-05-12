@@ -2,8 +2,6 @@
 
 namespace App\Controllers;
 
-use App\Controllers\BaseController;
-use App\Models\StudentModel;
 use App\Models\VoucherModel;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 
@@ -11,7 +9,7 @@ class VoucherImport extends BaseController
 {
     public function index()
     {
-        return redirect()->to('/students');
+        return view('FileConvertView');
     }
 
     public function import()
@@ -34,64 +32,55 @@ class VoucherImport extends BaseController
             return redirect()->back()->with('error', 'Failed to read file: ' . $e->getMessage());
         }
 
-        $studentModel = new StudentModel();
         $voucherModel = new VoucherModel();
-
-        $count      = 0;
-        $errors     = [];
-        $schoolYear = '2025-2026';
-        $createdBy  = session()->get('user_id');
+        $count        = 0;
 
         for ($i = 1; $i < count($sheetData); $i++) {
             $row = $sheetData[$i];
 
-            if (empty($row[0]) && empty($row[2])) continue;
+            if (empty($row[0])) continue;
 
-            try {
-                $studentId = $studentModel->insert([
-                    'voucher_no'                   => $row[0] ?? null,
-                    'voucher_date'                 => $row[1] ?? date('Y-m-d'),
-                    'full_name'                    => $row[2] ?? null,
-                    'rank_no'                      => $row[3] ?? null,
-                    'gwa'                          => $row[4] ?? null,
-                    'gender'                       => $row[5] ?? null,
-                    'junior_high_school'           => $row[6] ?? null,
-                    'preferred_senior_high_school' => $row[7] ?? null,
-                    'contact_number'               => $row[8] ?? null,
-                    'remarks_status'               => $row[9] ?? null,
-                    'school_year'                  => $schoolYear,
-                    'eligibility_status'           => 'eligible',
-                    'is_archived'                  => 0
-                ]);
+            $voucherNo   = trim((string) ($row[0] ?? ''));
+            $voucherDate = trim((string) ($row[1] ?? ''));
+            $fullName    = trim((string) ($row[2] ?? ''));
+            $rankNo      = trim((string) ($row[3] ?? ''));
+            $gwa         = trim((string) ($row[4] ?? ''));
+            $gender      = trim((string) ($row[5] ?? ''));
+            $jhsSchool   = trim((string) ($row[6] ?? ''));
+            $shsSchool   = trim((string) ($row[7] ?? ''));
+            $contact     = trim((string) ($row[8] ?? ''));
+            $remarks     = trim((string) ($row[9] ?? ''));
 
-                if (!$studentId) {
-                    $errors[] = "Row " . ($i + 1) . ": Failed to insert student.";
-                    continue;
-                }
+            if ($voucherNo === '' || $voucherDate === '' || $fullName === '') continue;
 
-                $voucherId = $voucherModel->insert([
-                    'voucher_no'         => $row[0] ?? null,
-                    'voucher_date'       => $row[1] ?? date('Y-m-d'),
-                    'recipient_name'     => $row[2] ?? null,
-                    'senior_high_school' => $row[7] ?? null,
-                    'amount_in_words'    => '',
-                    'amount'             => 0,
-                    'created_by'         => $createdBy,
-                    'school_year'        => $schoolYear,
-                    'voucher_status'     => 'not_generated',
-                    'student_id'         => $studentId
-                ]);
+            if ($voucherModel->where('voucher_no', $voucherNo)->first()) continue;
 
-                if (!$voucherId) {
-                    $errors[] = "Row " . ($i + 1) . ": Failed to insert voucher.";
-                    continue;
-                }
+            $nameParts  = explode(' ', $fullName);
+            $firstName  = array_shift($nameParts) ?? '';
+            $lastName   = !empty($nameParts) ? array_pop($nameParts) : '';
+            $middleName = implode(' ', $nameParts);
 
-                $count++;
+            $voucherModel->insert([
+                'voucher_no'                   => $voucherNo,
+                'voucher_date'                 => $voucherDate,
+                'first_name'                   => $firstName,
+                'middle_name'                  => $middleName,
+                'last_name'                    => $lastName,
+                'suffix'                       => '',
+                'rank_no'                      => is_numeric($rankNo) ? (int) $rankNo : null,
+                'gwa'                          => is_numeric($gwa) ? (float) $gwa : null,
+                'gender'                       => $gender,
+                'junior_high_school'           => $jhsSchool,
+                'preferred_senior_high_school' => $shsSchool,
+                'contact_number'               => $contact,
+                'remarks_status'               => $remarks,
+                'school_year'                  => date('Y'),
+                'eligibility_status'           => 'eligible',
+                'voucher_status'               => 'not_generated',
+                'is_archived'                  => 0,
+            ]);
 
-            } catch (\Exception $e) {
-                $errors[] = "Row " . ($i + 1) . ": " . $e->getMessage();
-            }
+            $count++;
         }
 
         if (!empty($errors)) {
