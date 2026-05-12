@@ -7,6 +7,15 @@ function getCsrfToken() {
   return input ? { name: input.name, token: input.value } : { name: 'csrf_token', token: '' };
 }
 
+function refreshCsrfToken() {
+  // Read the updated token from the CSRF cookie and sync it back into the DOM input
+  const cookieMatch = document.cookie.match(/csrf_cookie_name=([^;]+)/);
+  if (!cookieMatch) return;
+  const newToken = decodeURIComponent(cookieMatch[1]);
+  const input = document.querySelector('input[name^="csrf"]');
+  if (input) input.value = newToken;
+}
+
 function showAlert(message, type = 'success') {
   const map = { success: 'vs-alert-success', error: 'vs-alert-error', warning: 'vs-alert-warning' };
   const el  = document.createElement('div');
@@ -343,6 +352,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
         selectedIds.clear();
         syncPageCheckboxes();
+        refreshCsrfToken();
 
         pdfStatusEl.textContent = 'PDF ready! Downloading...';
         setTimeout(() => {
@@ -413,6 +423,7 @@ document.addEventListener('DOMContentLoaded', function () {
           dt.draw();
           selectedIds.clear();
           syncPageCheckboxes();
+          refreshCsrfToken();
         } else {
           showAlert(data.message || 'Archive failed.', 'error');
         }
