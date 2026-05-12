@@ -98,6 +98,11 @@ class VoucherImport extends BaseController
             return redirect()->to('/students')->with('error', implode('<br>', $errors));
         }
 
+        $this->writeAuditLog(
+            'records_imported',
+            'Imported ' . $count . ' student/voucher record(s) from ' . $file->getClientName() . '.'
+        );
+
         return redirect()->to('/students')->with('success', $count . ' records successfully imported.');
     }
 }

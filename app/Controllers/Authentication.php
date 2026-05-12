@@ -21,10 +21,12 @@ class Authentication extends BaseController
         $user = $model->where('username', $username)->first();
 
         if (!$user || ($user['is_active'] == 0)) { 
+            $this->writeAuditLog('login_failed', 'Failed login attempt for username "' . $username . '".');
             return redirect()->to('/')->with('error', 'Invalid account or access denied.');
         }
 
         if (!password_verify($password, $user['password'])) {
+            $this->writeAuditLog('login_failed', 'Failed password attempt for username "' . $username . '".');
             return redirect()->to('/')->with('error', 'Invalid username or password.');
         }
 
@@ -36,6 +38,12 @@ class Authentication extends BaseController
             'isLoggedIn' => true
         ]);
 
+        $model->update($user['user_id'], [
+            'last_login' => date('Y-m-d H:i:s'),
+        ]);
+
+        $this->writeAuditLog('login_success', $user['full_name'] . ' logged in.');
+
         if ($user['role'] === 'admin') {
             return redirect()->to('/admin/user_management')->with('success', 'Logged as Admin.');
         } else {
@@ -45,6 +53,9 @@ class Authentication extends BaseController
 
     public function logout()
     {
+        $username = session()->get('username') ?? 'Unknown user';
+        $this->writeAuditLog('logout', $username . ' logged out.');
+
         session()->destroy();
         return redirect()->to('/');
     }

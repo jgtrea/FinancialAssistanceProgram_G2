@@ -28,13 +28,15 @@ $routes->post('admin/user_management/archive/(:num)', 'UsersController::archive/
 $routes->get('admin/archived_users', 'UsersController::archived');
 $routes->post('admin/user_management/restore/(:num)', 'UsersController::restore/$1');
 $routes->get('admin/audit-logs', 'AuditLogController::index');
+$routes->get('audit-logs', 'AuditLogController::index');
 
 // Student routes
 $routes->get('/students', 'StudentController::index');
 $routes->get('/students/form', 'StudentController::form');
 $routes->get('/students/form/(:num)', 'StudentController::form/$1');
 $routes->post('/students/save', 'StudentController::save');
-$routes->post('/students/delete/(:num)', 'StudentController::delete/$1');
+$routes->post('/students/archive/(:num)', 'StudentController::archive/$1');
+$routes->post('/students/mark-generated/(:num)', 'StudentController::markGenerated/$1');
 
 // Archiving
 $routes->get('/archive', 'ArchiveController::index');
@@ -46,6 +48,7 @@ $routes->post('/vouchers/store', 'VoucherController::store');
 
 // Signatories
 $routes->get('/signatories', 'SignatoryController::index');
-$routes->get('/signatories/edit/(:num)', 'SignatoryController::edit/$1');
+$routes->get('/signatories/form', 'SignatoryController::form');
+$routes->get('/signatories/form/(:num)', 'SignatoryController::form/$1');
 $routes->post('/signatories/save', 'SignatoryController::save');
-$routes->post('/signatories/status/(:num)/(:alpha)', 'SignatoryController::setStatus/$1/$2');
+$routes->post('/signatories/deactivate/(:num)', 'SignatoryController::deactivate/$1');

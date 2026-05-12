@@ -56,7 +56,7 @@ class VoucherController extends BaseController
             'school_year' => $this->request->getPost('school_year'),
             'voucher_status' => 'generated',
 
-            'created_by' => 1
+            'created_by' => session()->get('user_id')
         ]);
 
         $this->writeAuditLog(

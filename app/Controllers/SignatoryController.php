@@ -49,21 +49,39 @@ class SignatoryController extends BaseController
 
         if ($id) {
             $signatoryModel->update($id, $data);
+            $this->writeAuditLog('signatory_updated', 'Updated signatory ' . $this->formatSignatoryName($data) . ' (ID #' . $id . ').');
             return redirect()->to('/signatories')->with('success', 'Signatory updated successfully.');
         }
 
-        $signatoryModel->insert($data);
+        $newSignatoryId = $signatoryModel->insert($data);
+        $this->writeAuditLog('signatory_created', 'Added signatory ' . $this->formatSignatoryName($data) . ' (ID #' . $newSignatoryId . ').');
+
         return redirect()->to('/signatories')->with('success', 'Signatory added successfully.');
     }
 
     public function deactivate($id)
     {
         $signatoryModel = new SignatoryModel();
+        $signatory = $signatoryModel->find($id);
 
         $signatoryModel->update($id, [
             'is_active' => 0
         ]);
 
+        $this->writeAuditLog('signatory_deactivated', 'Deactivated signatory ' . ($signatory ? $this->formatSignatoryName($signatory) : 'ID #' . $id) . '.');
+
         return redirect()->to('/signatories')->with('success', 'Signatory deactivated successfully.');
+    }
+
+    private function formatSignatoryName(array $signatory): string
+    {
+        $name = trim(
+            ($signatory['first_name'] ?? '') . ' ' .
+            ($signatory['middle_name'] ?? '') . ' ' .
+            ($signatory['last_name'] ?? '') . ' ' .
+            ($signatory['suffix'] ?? '')
+        );
+
+        return $name !== '' ? $name : 'Unnamed signatory';
     }
 }

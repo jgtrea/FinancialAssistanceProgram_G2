@@ -39,9 +39,11 @@ class UsersController extends BaseController
 
         if ($id) {
             $model->update($id, $data);
+            $this->writeAuditLog('user_updated', 'Updated user ' . $data['full_name'] . ' (ID #' . $id . ').');
             $message = 'User updated successfully.';
         } else {
-            $model->insert($data);
+            $newUserId = $model->insert($data);
+            $this->writeAuditLog('user_created', 'Created user ' . $data['full_name'] . ' (ID #' . $newUserId . ').');
             $message = 'User created successfully.';
         }
 
@@ -51,7 +53,11 @@ class UsersController extends BaseController
     public function archive($id)
     {
         $model = new UserLogin();
+        $user = $model->find($id);
+
         $model->update($id, ['is_active' => 0]);
+        $this->writeAuditLog('user_archived', 'Archived user ' . ($user['full_name'] ?? 'ID #' . $id) . '.');
+
         return $this->response->setJSON(['status' => 'success', 'message' => 'User archived successfully.']);
     }
 
@@ -66,7 +72,11 @@ class UsersController extends BaseController
     public function restore($id)
     {
         $model = new UserLogin();
+        $user = $model->find($id);
+
         $model->update($id, ['is_active' => 1]);
+        $this->writeAuditLog('user_restored', 'Restored user ' . ($user['full_name'] ?? 'ID #' . $id) . '.');
+
         return $this->response->setJSON(['status' => 'success', 'message' => 'User restored successfully.']);
     }
 }

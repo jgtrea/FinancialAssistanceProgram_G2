@@ -14,6 +14,10 @@
     width: 260px;
 }
 
+.actions-column--sm {
+    width: 180px;
+}
+
 .actions-cell {
     white-space: nowrap;
 }
