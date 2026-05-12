@@ -66,6 +66,16 @@ function showAlert(message, type = 'success') {
   }
 }
 
+function ajaxOptions(options = {}) {
+  return {
+    ...options,
+    headers: {
+      'X-Requested-With': 'XMLHttpRequest',
+      ...(options.headers || {}),
+    },
+  };
+}
+
 function initPasswordToggles() {
   document.querySelectorAll('.vs-pw-toggle').forEach(btn => {
     btn.addEventListener('click', function () {
@@ -204,7 +214,7 @@ document.addEventListener('DOMContentLoaded', function () {
       const url  = base + '/users/delete/' + deleteTargetId;
 
       try {
-        const res  = await fetch(url, { method: 'POST', body: formData });
+        const res  = await fetch(url, ajaxOptions({ method: 'POST', body: formData }));
         const data = await res.json();
         closeDeleteModal();
 
@@ -240,7 +250,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
       this.disabled = true;
       try {
-        const res  = await fetch(url, { method: 'POST', body: formData });
+        const res  = await fetch(url, ajaxOptions({ method: 'POST', body: formData }));
         const data = await res.json();
 
         if (data.success) {
@@ -357,7 +367,7 @@ document.addEventListener('DOMContentLoaded', function () {
       selectedIds.forEach(id => formData.append('voucher_ids[]', id));
 
       try {
-        const res  = await fetch(pdfForm.action, { method: 'POST', body: formData });
+        const res  = await fetch(pdfForm.action, ajaxOptions({ method: 'POST', body: formData }));
         const data = await res.json();
 
         refreshCsrfToken();
@@ -437,7 +447,7 @@ document.addEventListener('DOMContentLoaded', function () {
       selectedIds.forEach(id => formData.append('voucher_ids[]', id));
 
       try {
-        const res  = await fetch(archiveUrl, { method: 'POST', body: formData });
+        const res  = await fetch(archiveUrl, ajaxOptions({ method: 'POST', body: formData }));
         const data = await res.json();
         closeArchiveModal();
 
