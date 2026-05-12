@@ -6,7 +6,8 @@ function pre_style($mode = 'default_lay') {
         $styles = [
             base_url('css/sb-admin-2.min.css'),
             base_url('css/font.css'),
-
+            base_url('css/style.css'),
+            base_url('css/layouts.css'),
             'https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css'
         ];        
     } elseif ($mode == 'sbadmin2') {

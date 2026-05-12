@@ -28,7 +28,7 @@ class Dashboard extends Controller
             ->limit(6)
             ->get()->getResultArray();
 
-        return view('user/dashboard', [
+        return view('dashboard/index', [
             'title'          => 'Dashboard',
             'myVouchers'     => $myVouchers,
             'generated'      => $generated,

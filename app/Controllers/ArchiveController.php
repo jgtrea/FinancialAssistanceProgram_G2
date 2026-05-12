@@ -10,7 +10,7 @@ class ArchiveController extends BaseController
     {
         $archiveModel = new StudentArchiveModel();
 
-        return view('archive/index', [
+        return view('archive/student_archive', [
             'title' => 'Student Archive',
             'archives' => $archiveModel->orderBy('archive_id', 'DESC')->findAll()
         ]);

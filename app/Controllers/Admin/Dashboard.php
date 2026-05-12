@@ -22,6 +22,7 @@ class Dashboard extends Controller
             ->select("
                 voucher_no,
                 CONCAT_WS(' ', NULLIF(first_name,''), NULLIF(middle_name,''), NULLIF(last_name,''), NULLIF(suffix,'')) AS full_name,
+                preferred_senior_high_school,
                 voucher_status,
                 created_at
             ")
@@ -30,22 +31,13 @@ class Dashboard extends Controller
             ->limit(6)
             ->get()->getResultArray();
 
-        $recentLogs = $db->table('audit_log a')
-            ->select('a.action, a.description, a.ip_address, a.created_at, u.username')
-            ->join('users u', 'u.user_id = a.user_id', 'left')
-            ->orderBy('a.created_at', 'DESC')
-            ->limit(8)
-            ->get()->getResultArray();
-
-        return view('admin/dashboard', [
+        return view('dashboard/index', [
             'title'          => 'Dashboard',
-            'totalUsers'     => $totalUsers,
-            'totalVouchers'  => $totalVouchers,
-            'generatedCount' => $generatedCount,
-            'pendingCount'   => $pendingCount,
-            'totalArchived'  => $totalArchived,
+            'myVouchers'     => $totalVouchers,
+            'generated'      => $generatedCount,
+            'pending'        => $pendingCount,
+            'archived'       => $totalArchived,
             'recentVouchers' => $recentVouchers,
-            'recentLogs'     => $recentLogs,
         ]);
     }
 }

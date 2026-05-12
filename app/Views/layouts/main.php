@@ -11,9 +11,7 @@
     pre_style('sbadmin2');
     ?>
 </head>
-<body class="vs-app">
-
-<body class="bg-white">
+<body class="vs-app bg-white">
 
 <div id="nav-container"></div>
 
@@ -31,9 +29,9 @@
 <?php if (session('isLoggedIn') && session('role') === 'admin'): ?>
     <?= script_tag(base_url('js/users_m.js')) ?>
 <?php else: ?>
-    <?= script_tag('js/students.js') ?>
+    <?= script_tag(base_url('js/students.js')) ?>
 <?php endif; ?>
-<?= script_tag('js/nav.js') ?>
+<?= script_tag(base_url('js/nav.js')) ?>
 <?= $this->renderSection('scripts') ?>
 </body>
 </html>

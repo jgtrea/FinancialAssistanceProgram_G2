@@ -11,20 +11,20 @@ function userNav() {
                 </button>
                 <div class="collapse navbar-collapse" id="navbarNav">
                     <div class="navbar-nav ms-auto">
-                        <a class="nav-link" href="${baseUrl}/students">
-                            <i class="fas fa-users"></i> Students
+                        <a class="nav-link" href="${baseUrl}user/dashboard">
+                            <i class="fas fa-home"></i> Home
                         </a>
-                        <a class="nav-link" href="${baseUrl}/vouchers">
-                            <i class="fas fa-ticket-alt"></i> Vouchers
+                        <a class="nav-link" href="${baseUrl}user/vouchers">
+                            <i class="fas fa-users"></i> Students
                         </a>
                         <a class="nav-link" href="${baseUrl}/signatories">
                             <i class="fas fa-signature"></i> Signatories
                         </a>
-                        <a class="nav-link" href="${baseUrl}/archive">
-                            <i class="fas fa-archive"></i> Archive
-                        </a>
                         <a class="nav-link" href="${baseUrl}/audit-logs">
                             <i class="fas fa-clipboard-list"></i> Audit Logs
+                        </a>
+                        <a class="nav-link" href="${baseUrl}logout">
+                            <i class="fas fa-sign-out-alt"></i> Logout
                         </a>
                     </div>
                 </div>
@@ -46,14 +46,29 @@ function adminNav() {
                 </button>
                 <div class="collapse navbar-collapse" id="navbarNav">
                     <div class="navbar-nav ms-auto">
-                        <a class="nav-link" href="${baseUrl}admin/user_management">
-                            <i class="fas fa-users"></i> Users
+                        <a class="nav-link" href="${baseUrl}admin/dashboard">
+                            <i class="fas fa-home"></i> Home
+                        </a>
+                        <a class="nav-link" href="${baseUrl}admin/">
+                            <i class="fas fa-users-cog"></i> Users
+                        </a>
+                        <a class="nav-link" href="${baseUrl}user/vouchers">
+                            <i class="fas fa-users"></i> Students
+                        </a>
+                        <a class="nav-link" href="${baseUrl}/signatories">
+                            <i class="fas fa-signature"></i> Signatories
+                        </a>
+                        <a class="nav-link" href="${baseUrl}/archive">
+                            <i class="fas fa-archive"></i> Student Archive
                         </a>
                         <a class="nav-link" href="${baseUrl}admin/archived_users">
-                            <i class="fas fa-archive"></i> Archived Users
+                            <i class="fas fa-user-slash"></i> User Archive
                         </a>
-                        <a class="nav-link" href="${baseUrl}admin/audit-logs">
+                        <a class="nav-link" href="${baseUrl}/audit-logs">
                             <i class="fas fa-clipboard-list"></i> Audit Logs
+                        </a>
+                        <a class="nav-link" href="${baseUrl}logout">
+                            <i class="fas fa-sign-out-alt"></i> Logout
                         </a>
                     </div>
                 </div>

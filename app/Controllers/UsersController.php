@@ -10,7 +10,7 @@ class UsersController extends BaseController
     {
         $model = new UserLogin();
         $data['users'] = $model->where('is_active', 1)->findAll();
-        return view('admin/user_management/index', $data);
+        return view('admin/index', $data);
     }
 
     public function form($id = null)
@@ -66,7 +66,7 @@ class UsersController extends BaseController
     {
         $model = new UserLogin();
         $data['users'] = $model->where('is_active', 0)->findAll();
-        return view('admin/user_management/archived', $data);
+        return view('archive/user_archive', $data);
     }
 
     public function restore($id)

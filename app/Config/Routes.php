@@ -18,14 +18,18 @@ $routes->get('import',      'VoucherImport::index');
 $routes->post('import_data', 'VoucherImport::import');
 
 // Admin routes
-$routes->get('admin/user_management', 'UsersController::index');
-$routes->get('admin/user_management/form', 'UsersController::form');
-$routes->get('admin/user_management/form/(:num)', 'UsersController::form/$1');
-$routes->post('admin/user_management/save', 'UsersController::save');
-$routes->post('admin/user_management/archive/(:num)', 'UsersController::archive/$1');
-$routes->get('admin/archived_users', 'UsersController::archived');
-$routes->post('admin/user_management/restore/(:num)', 'UsersController::restore/$1');
-$routes->get('admin/audit-logs', 'AuditLogController::index');
+$routes->group('admin', function ($routes) {
+    $routes->get('/', 'UsersController::index');
+    $routes->get('dashboard', 'Admin\Dashboard::index');
+    $routes->get('user_management', 'UsersController::index');
+    $routes->get('user_management/form', 'UsersController::form');
+    $routes->get('user_management/form/(:num)', 'UsersController::form/$1');
+    $routes->post('user_management/save', 'UsersController::save');
+    $routes->post('user_management/archive/(:num)', 'UsersController::archive/$1');
+    $routes->get('archived_users', 'UsersController::archived');
+    $routes->post('user_management/restore/(:num)', 'UsersController::restore/$1');
+    $routes->get('audit-logs', 'AuditLogController::index');
+});
 $routes->get('audit-logs', 'AuditLogController::index');
 
 // Student routes
@@ -65,7 +69,7 @@ $routes->get('/signatories/form/(:num)', 'SignatoryController::form/$1');
 $routes->post('/signatories/save', 'SignatoryController::save');
 $routes->post('/signatories/deactivate/(:num)', 'SignatoryController::deactivate/$1');
     // Archive & Logs
-    $routes->get('archive', 'Admin\Archive::index');
+    $routes->get('archive', 'ArchiveController::index');
     $routes->get('logs',    'Admin\Report::logs');
 
 

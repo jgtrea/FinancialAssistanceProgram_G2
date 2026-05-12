@@ -18,140 +18,65 @@
         Add Student
       </a>
       <button class="vs-btn vs-btn-outline" id="btnExport">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7,10 12,15 17,10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
         Export
       </button>
     </div>
   </div>
 
-  <!-- Flash messages -->
-  <?php if (session()->getFlashdata('error')): ?>
-    <div class="vs-alert vs-alert-error mb-3">
-      <?= esc(session()->getFlashdata('error')) ?>
-    </div>
-  <?php endif ?>
-  <?php if (session()->getFlashdata('message')): ?>
-    <div class="vs-alert vs-alert-success mb-3">
-      <?= esc(session()->getFlashdata('message')) ?>
-    </div>
-  <?php endif ?>
-
-  <!-- Action bar — shown when rows are selected -->
-  <div class="vs-action-bar" id="actionBar" style="display:none">
-    <span class="vs-action-bar-count"><span id="selectedCount">0</span> selected</span>
-    <div class="d-flex gap-2">
-      <button class="vs-btn vs-btn-primary" id="btnGeneratePdf">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
-        Generate Vouchers
-      </button>
-      <button class="vs-btn vs-btn-danger" id="btnArchive">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="21 8 21 21 3 21 3 8"/><rect x="1" y="3" width="22" height="5"/><line x1="10" y1="12" x2="14" y2="12"/></svg>
-        Archive
-      </button>
-    </div>
-  </div>
-
-  <!-- DataTable card -->
-  <div class="vs-card">
-    <div class="vs-card-body">
-      <table id="vouchersTable" class="vs-datatable" style="width:100%">
-        <thead>
-          <tr>
-            <th class="vs-th-check">
-              <input type="checkbox" id="checkAll" class="vs-check">
-            </th>
-            <th>Student ID</th>
-            <th>Voucher No.</th>
-            <th>Name</th>
-            <th>Preferred School</th>
-            <th>School Year</th>
-            <th>Eligibility</th>
-            <th>Status</th>
-            <th>Date</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          <?php foreach ($vouchers as $v): ?>
-          <tr id="row-<?= $v['student_id'] ?>">
-            <td>
-              <input type="checkbox" class="vs-check vs-row-check"
-                     value="<?= $v['student_id'] ?>">
-            </td>
-            <td><span class="vs-id-badge">STD-<?= str_pad($v['student_id'], 4, '0', STR_PAD_LEFT) ?></span></td>
-            <td><?= esc($v['voucher_no']) ?></td>
-            <td><?= esc($v['full_name']) ?></td>
-            <td><?= esc($v['preferred_senior_high_school']) ?></td>
-            <td><?= esc($v['school_year']) ?></td>
-            <td>
-              <span class="vs-status-badge vs-status-<?= $v['eligibility_status'] ?>">
-                <?= ucfirst(str_replace('_', ' ', $v['eligibility_status'])) ?>
-              </span>
-            </td>
-            <td>
-              <span class="vs-status-badge vs-status-<?= $v['voucher_status'] ?>">
-                <?= ucfirst(str_replace('_', ' ', $v['voucher_status'])) ?>
-              </span>
-            </td>
-            <td><?= date('M d, Y', strtotime($v['created_at'])) ?></td>
-            <td>
-              <div class="d-flex gap-1">
-                <a href="<?= site_url(($role === 'admin' ? 'admin' : 'user') . '/vouchers/view/' . $v['student_id']) ?>"
-                   class="vs-tbl-btn vs-tbl-btn-view">View</a>
-                <a href="<?= site_url(($role === 'admin' ? 'admin' : 'user') . '/vouchers/edit/' . $v['student_id']) ?>"
-                   class="vs-tbl-btn vs-tbl-btn-edit">Edit</a>
-              </div>
-            </td>
-          </tr>
-          <?php endforeach ?>
-        </tbody>
-      </table>
+  <!-- Table -->
+  <div class="card">
+    <div class="card-body p-0">
+      <div class="table-responsive">
+        <table class="table table-hover mb-0" id="vouchersTable">
+          <thead class="table-light">
+            <tr>
+              <th><input type="checkbox" id="selectAll"></th>
+              <th>Voucher No</th>
+              <th>Full Name</th>
+              <th>School</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <?php if (!empty($vouchers)): ?>
+              <?php foreach ($vouchers as $voucher): ?>
+                <tr>
+                  <td><input type="checkbox" class="voucher-checkbox" value="<?= $voucher['student_id'] ?>"></td>
+                  <td><?= esc($voucher['voucher_no']) ?></td>
+                  <td>
+                    <?= esc(trim($voucher['first_name'] . ' ' . ($voucher['middle_name'] ?? '') . ' ' . $voucher['last_name'] . ' ' . ($voucher['suffix'] ?? ''))) ?>
+                  </td>
+                  <td><?= esc($voucher['preferred_senior_high_school']) ?></td>
+                  <td>
+                    <span class="badge bg-<?= $voucher['voucher_status'] == 'generated' ? 'success' : 'warning' ?>">
+                      <?= ucfirst($voucher['voucher_status']) ?>
+                    </span>
+                  </td>
+                  <td>
+                    <div class="btn-group" role="group">
+                      <a href="<?= site_url(($role === 'admin' ? 'admin' : 'user') . '/vouchers/view/' . $voucher['student_id']) ?>" class="btn btn-sm btn-outline-primary" title="View">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                      </a>
+                      <a href="<?= site_url(($role === 'admin' ? 'admin' : 'user') . '/vouchers/edit/' . $voucher['student_id']) ?>" class="btn btn-sm btn-outline-secondary" title="Edit">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                      </a>
+                    </div>
+                  </td>
+                </tr>
+              <?php endforeach; ?>
+            <?php else: ?>
+              <tr>
+                <td colspan="6" class="text-center py-4">No students found.</td>
+              </tr>
+            <?php endif; ?>
+          </tbody>
+        </table>
+      </div>
     </div>
   </div>
 
 </div>
-
-<!-- PDF Progress modal -->
-<div class="vs-modal-overlay" id="pdfProgressModal" style="display:none">
-  <div class="vs-modal">
-    <div class="vs-modal-header">
-      <h5>Generating PDF</h5>
-    </div>
-    <div class="vs-modal-body text-center py-4">
-      <div class="vs-spinner" style="width:32px;height:32px;display:inline-block"></div>
-      <p class="mt-3 mb-0" id="pdfStatusText">Starting PDF generation...</p>
-    </div>
-  </div>
-</div>
-
-<!-- Archive modal -->
-<div class="vs-modal-overlay" id="archiveModal" style="display:none">
-  <div class="vs-modal">
-    <div class="vs-modal-header">
-      <h5>Archive Students</h5>
-      <button class="vs-modal-close" id="archiveModalClose">&times;</button>
-    </div>
-    <div class="vs-modal-body">
-      <p>You are about to archive <strong id="archiveCount">0</strong> student(s). This will move them to the archive.</p>
-      <label class="vs-label" for="archiveReason">Reason (optional)</label>
-      <input type="text" id="archiveReason" class="vs-input" placeholder="e.g. End of school year">
-    </div>
-    <div class="vs-modal-footer">
-      <button class="vs-btn vs-btn-outline" id="archiveModalCancel">Cancel</button>
-      <button class="vs-btn vs-btn-danger" id="archiveConfirm">
-        <span id="archiveBtnText">Confirm Archive</span>
-        <span id="archiveBtnSpinner" class="vs-spinner" style="display:none"></span>
-      </button>
-    </div>
-  </div>
-</div>
-
-<!-- Hidden form for PDF POST -->
-<form id="pdfForm" method="POST"
-      action="<?= site_url(($role === 'admin' ? 'admin' : 'user') . '/vouchers/generate-pdf') ?>"
-      style="display:none">
-  <?= csrf_field() ?>
-  <div id="pdfInputs"></div>
-</form>
 
 <?= $this->endSection() ?>
