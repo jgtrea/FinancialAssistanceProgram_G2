@@ -11,9 +11,8 @@
     <?php pre_style('sbadmin2'); ?>
 </head>
 
-<body class="bg-gradient-primary vh-100 d-flex align-items-center overflow-hidden" 
-      style="background-image: url('<?= base_url('images/bg_binan.jpg') ?>'); background-size: cover; background-position: center;">
-
+<body class="bg-white vh-100 d-flex align-items-center overflow-hidden">
+    <div id="nav-container"></div>
     <div class="container">
         <div class="row justify-content-center">
             <div class="col-xl-10 col-lg-12 col-md-9">
@@ -32,6 +31,7 @@
                             
                             <div class="col-lg-6 bg-white">
                                 <div class="p-5">
+
                                     <?php if (session()->getFlashdata('error')): ?>
                                         <div class="alert alert-danger small py-2">
                                             <?= session()->getFlashdata('error') ?>
@@ -66,13 +66,19 @@
                                     </div>
                                 </div>
                             </div>
-                        </div> <!-- End Row -->
+                        </div> 
                     </div>
                 </div>
 
             </div>
         </div>
     </div>
+
+<script>
+    var navType = 'auth';
+    var baseUrl = '<?= base_url() ?>';
+</script>
+<script src="<?= base_url('js/nav.js') ?>"></script>
 
 </body>
 </html>

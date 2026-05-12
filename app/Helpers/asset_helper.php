@@ -5,14 +5,13 @@ function pre_style($mode = 'default_lay') {
     if ($mode == 'default_lay') {
         $styles = [
             base_url('css/font.css'),
-            base_url('css/layout.css'),
 
             'https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css'
         ];        
     } elseif ($mode == 'sbadmin2') {
         $styles = [
-            base_url('vendor/fontawesome-free/css/all.min.css'),            
-            base_url('css/sb-admin-2.min.css'),    
+            base_url('vendor/fontawesome-free/css/all.min.css'),
+            base_url('css/sb-admin-2.css'),    
 
             base_url('vendor/jquery/jquery.min.js'),
             base_url('vendor/bootstrap/js/bootstrap.bundle.min.js'),
