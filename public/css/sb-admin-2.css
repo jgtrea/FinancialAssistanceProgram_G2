@@ -4189,6 +4189,11 @@ input[type="button"].btn-block {
   overflow-y: auto;
 }
 
+.navbar-logo {
+  width: 30px;
+  height: 30px;
+}
+
 @media (max-width: 575.98px) {
   .navbar-expand-sm > .container,
   .navbar-expand-sm > .container-fluid, .navbar-expand-sm > .container-sm, .navbar-expand-sm > .container-md, .navbar-expand-sm > .container-lg, .navbar-expand-sm > .container-xl {
@@ -10293,6 +10298,23 @@ a:focus {
   .topbar .dropdown-list .dropdown-item .text-truncate {
     max-width: 13.375rem;
   }
+}
+
+/* NAVBAR */
+
+.login-navbar {
+    background: #fff !important;
+    backdrop-filter: blur(10px);
+    position: absolute;
+    top: 0;
+    width: 100%;
+    z-index: 1000;
+}
+.navbar-brand-text {
+    color: #000 !important;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
 }
 
 .topbar.navbar-dark .navbar-nav .nav-item .nav-link {

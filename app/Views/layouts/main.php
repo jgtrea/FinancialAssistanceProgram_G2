@@ -2,41 +2,38 @@
 <html lang="en">
 
 <head>
-    <meta charset="UTF-8">  
+    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token-name" content="<?= csrf_token() ?>">
     <meta name="csrf-token-value" content="<?= csrf_hash() ?>">
     <title><?= $title ?? 'Voucher System' ?></title>
-    <?php pre_style('sbadmin2') ?>
-    
+    <?php
+    pre_style('default_lay');
+    pre_style('sbadmin2');
+    ?>
 </head>
 
-<body class="app-shell">
+<body class="bg-white">
 
-<nav class="navbar navbar-dark bg-dark app-navbar">
-    <div class="container app-navbar__inner">
-
-        <a class="navbar-brand app-navbar__brand" href="<?= base_url('/') ?>">
-            Voucher System
-        </a>
-
-        <div class="navbar-nav app-navbar__links">
-            <a class="nav-link" href="<?= base_url('/students') ?>">Students</a>
-            <a class="nav-link" href="<?= base_url('/vouchers') ?>">Vouchers</a>
-            <a class="nav-link" href="<?= base_url('/signatories') ?>">Signatories</a>
-            <a class="nav-link" href="<?= base_url('/archive') ?>">Archive</a>
-            <a class="nav-link" href="<?= base_url('/audit-logs') ?>">Audit Logs</a>
-        </div>
-
-    </div>
-</nav>
+<div id="nav-container"></div>
 
 <main class="container app-content">
     <?= $this->renderSection('content') ?>
-</main>
+</div>
+
+<script>
+    var navType = '<?= !session('isLoggedIn') ? 'auth' : (session('role') === 'admin' ? 'admin' : 'user') ?>';
+    var baseUrl = '<?= base_url() ?>';
+</script>
+
 <?= script_tag('https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js') ?>
 <?= script_tag('https://code.jquery.com/jquery-3.7.1.min.js') ?>
-<?= script_tag(base_url('js/students.js')) ?>
+<?php if (session('isLoggedIn') && session('role') === 'admin'): ?>
+    <?= script_tag(base_url('js/users_m.js')) ?>
+<?php else: ?>
+    <?= script_tag('js/students.js') ?>
+<?php endif; ?>
+<?= script_tag('js/nav.js') ?>
 <?= $this->renderSection('scripts') ?>
 </body>
 </html>

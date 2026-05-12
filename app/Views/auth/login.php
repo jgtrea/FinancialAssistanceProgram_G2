@@ -1,81 +1,84 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="vh-100">
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bi&ntilde;an City</title>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>Biñan City - Login</title>
+
+    <?php pre_style('default_lay'); ?>
     <?php pre_style('sbadmin2'); ?>
 </head>
-<body class="login-page" style="--login-bg: url('<?= base_url('images/bg_binan.jpg') ?>');">
 
-    <nav class="navbar navbar-light login-navbar">
-        <div class="d-flex align-items-center">
-            <img src="<?= base_url('images/logo_binan.png') ?>"
-                 alt="Bi&ntilde;an City Logo"
-                 class="login-navbar__logo">
-            <span class="navbar-brand mb-0 h1 login-navbar__brand">Bi&ntilde;an City</span>
-        </div>
-    </nav>
+<body class="bg-white vh-100 d-flex align-items-center overflow-hidden">
+    <div id="nav-container"></div>
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-xl-10 col-lg-12 col-md-9">
 
-    <main class="container-fluid login-main">
-        <div class="row justify-content-center w-100 align-items-center login-panel">
-            <div class="col-lg-6">
-                <div class="login-copy">
-                    <p class="inter-normal login-copy__eyebrow">WELCOME TO</p>
-                    <h1 class="playfair-display-header login-copy__title">Grants and Scholarships Program</h1>
-                    <hr class="login-copy__rule">
-                    <p class="login-copy__subtitle">Login to Access Dashboard</p>
-                </div>
-            </div>
-
-            <div class="col-lg-5">
-                <section class="login-card">
-                    <?php if (session()->getFlashdata('error')): ?>
-                        <div class="alert alert-danger mb-3">
-                            <?= session()->getFlashdata('error') ?>
-                        </div>
-                    <?php endif; ?>
-
-                    <form class="user" action="<?= base_url('auth_login') ?>" method="POST">
-                        <?= csrf_field() ?>
-
-                        <div class="form-group">
-                            <input type="text" name="username"
-                                class="form-control form-control-user"
-                                placeholder="Enter your Email"
-                                autocomplete="username"
-                                required>
-                        </div>
-
-                        <div class="form-group">
-                            <input type="password" name="password"
-                                class="form-control form-control-user"
-                                placeholder="Enter your Password"
-                                autocomplete="current-password"
-                                required>
-                        </div>
-
-                        <div class="form-group">
-                            <div class="custom-control custom-checkbox small">
-                                <input type="checkbox" class="custom-control-input" id="customCheck">
-                                <label class="custom-control-label" for="customCheck">Remember Me</label>
+                <div class="card o-hidden border-0 shadow-lg">
+                    <div class="card-body p-0">
+                        <div class="row">
+                            <div class="col-lg-6 d-none d-lg-flex flex-column justify-content-center align-items-end text-right p-5 text-white" 
+                                 style="background: url('<?= base_url('images/bg_binan.jpg') ?>'); background-size: cover; background-position: center;">
+                                
+                                <p class="small mb-0 font-weight-bold" style="letter-spacing: 2px;">WELCOME TO</p>
+                                <h1 class="font-weight-bold mb-3" style="font-size: 2.2rem;">Grants and Scholarships Program</h1>
+                                <hr class="w-50 border-white" style="opacity: 0.5; margin-right: 0;">
+                                <p class="mb-0 mt-2">Login to Access Dashboard</p>
                             </div>
-                        </div>
+                            
+                            <div class="col-lg-6 bg-white">
+                                <div class="p-5">
 
-                        <button type="submit" class="btn btn-primary btn-user btn-block">
-                            Login
-                        </button>
-                    </form>
+                                    <?php if (session()->getFlashdata('error')): ?>
+                                        <div class="alert alert-danger small py-2">
+                                            <?= session()->getFlashdata('error') ?>
+                                        </div>
+                                    <?php endif; ?>
 
-                    <hr>
-
-                    <div class="text-center">
-                        <a href="#" class="small text-decoration-none text-muted">Forgot Password?</a>
+                                    <form class="user" action="<?= base_url('auth_login') ?>" method="POST">
+                                        <?= csrf_field() ?>
+                                        
+                                        <div class="form-group">
+                                            <input type="email" name="username" class="form-control form-control-user"
+                                                placeholder="Enter Email Address..." required>
+                                        </div>
+                                        <div class="form-group">
+                                            <input type="password" name="password" class="form-control form-control-user"
+                                                placeholder="Password" required>
+                                        </div>
+                                        <div class="form-group">
+                                            <div class="custom-control custom-checkbox small">
+                                                <input type="checkbox" class="custom-control-input" id="customCheck">
+                                                <label class="custom-control-label" for="customCheck">Remember Me</label>
+                                            </div>
+                                        </div>
+                                        <button type="submit" class="btn btn-primary btn-user btn-block shadow-sm">
+                                            Login
+                                        </button>
+                                    </form>
+                                    
+                                    <hr>
+                                    <div class="text-center">
+                                        <a class="small text-decoration-none text-muted" href="#">Forgot Password?</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div> 
                     </div>
-                </section>
+                </div>
+
             </div>
         </div>
     </main>
+
+<script>
+    var navType = 'auth';
+    var baseUrl = '<?= base_url() ?>';
+</script>
+<script src="<?= base_url('js/nav.js') ?>"></script>
 
 </body>
 </html>
