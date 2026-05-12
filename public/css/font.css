@@ -1,0 +1,27 @@
+/* 
+    https://fonts.google.com/selection/embed 
+*/
+
+.playfair-display-header {
+  font-family: "Playfair Display", serif;
+  font-optical-sizing: auto;
+  font-weight: 1000;
+  font-style: normal;
+  src: url(https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&display=swap);  
+}
+
+.playfair-display-header-2 {
+  font-family: "Playfair Display", serif;
+  font-optical-sizing: auto;
+  font-weight: 750;
+  font-style: normal;
+  src: url(https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&display=swap);  
+}
+
+.inter-normal {
+  font-family: "Inter", sans-serif;
+  font-optical-sizing: auto;
+  font-weight: 250;
+  font-style: normal;
+  src: url(https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap);
+}

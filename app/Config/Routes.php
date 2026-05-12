@@ -4,27 +4,40 @@ use CodeIgniter\Router\RouteCollection;
 
 /** @var RouteCollection $routes */
 
-// ─── Public ───────────────────────────────────────────────────────────────────
-$routes->get('/',      'Admin\Dashboard::index');
-$routes->match(['get', 'post'], 'login', 'Auth::login');
-$routes->get('logout', 'Auth::logout');
+// Login
+$routes->get('/', 'Authentication::index');
+$routes->post('auth_login', 'Authentication::authenticate');
+$routes->get('logout', 'Authentication::logout');
 
-// ─── Admin ────────────────────────────────────────────────────────────────────
-$routes->group('admin', function ($routes) {
+$routes->get('generate-hash', function() {
+    echo password_hash('test', PASSWORD_ARGON2ID);
+});
 
-    // Dashboard
-    $routes->get('dashboard', 'Admin\Dashboard::index');
+// Import
+$routes->get('import', 'VoucherImport::index');
+$routes->post('import_data', 'VoucherImport::import');
 
-    // Users CRUD
-    $routes->get('users',                      'Admin\UserManager::index');
-    $routes->get('users/create',               'Admin\UserManager::create');
-    $routes->post('users/store',               'Admin\UserManager::store');
-    $routes->get('users/edit/(:num)',          'Admin\UserManager::edit/$1');
-    $routes->post('users/update/(:num)',       'Admin\UserManager::update/$1');
-    $routes->post('users/delete/(:num)',       'Admin\UserManager::delete/$1');
-    $routes->post('users/toggle-status/(:num)','Admin\UserManager::toggleStatus/$1');
+// Admin routes
+$routes->get('admin/user_management', 'UsersController::index');
+$routes->get('admin/user_management/form', 'UsersController::form');
+$routes->get('admin/user_management/form/(:num)', 'UsersController::form/$1');
+$routes->post('admin/user_management/save', 'UsersController::save');
+$routes->post('admin/user_management/archive/(:num)', 'UsersController::archive/$1');
+$routes->get('admin/archived_users', 'UsersController::archived');
+$routes->post('admin/user_management/restore/(:num)', 'UsersController::restore/$1');
+$routes->get('admin/audit-logs', 'AuditLogController::index');
 
-    // Vouchers
+// Student routes
+$routes->get('/students', 'StudentController::index');
+$routes->get('/students/form', 'StudentController::form');
+$routes->get('/students/form/(:num)', 'StudentController::form/$1');
+$routes->post('/students/save', 'StudentController::save');
+$routes->post('/students/delete/(:num)', 'StudentController::delete/$1');
+
+// Archiving
+$routes->get('/archive', 'ArchiveController::index');
+
+// Vouchers
     $routes->get('vouchers',                   'Admin\Voucher::index');
     $routes->get('vouchers/create',            'Admin\Voucher::create');
     $routes->post('vouchers/store',            'Admin\Voucher::store');
@@ -36,20 +49,6 @@ $routes->group('admin', function ($routes) {
     $routes->get('vouchers/pdf-download/(:num)', 'Admin\Voucher::downloadPdf/$1');
     $routes->post('vouchers/archive',            'Admin\Voucher::archive');
 
-    // Archive
-    $routes->get('archive', 'Admin\Archive::index');
-
-    // Logs
-    $routes->get('logs', 'Admin\Report::logs');
-});
-
-// ─── User ─────────────────────────────────────────────────────────────────────
-$routes->group('user', function ($routes) {
-
-    // Dashboard
-    $routes->get('dashboard', 'User\Dashboard::index');
-
-    // Vouchers
     $routes->get('vouchers',                   'User\Voucher::index');
     $routes->get('vouchers/view/(:num)',       'User\Voucher::view/$1');
     $routes->post('vouchers/generate-pdf',       'User\Voucher::generatePdf');
@@ -57,5 +56,8 @@ $routes->group('user', function ($routes) {
     $routes->get('vouchers/pdf-download/(:num)', 'User\Voucher::downloadPdf/$1');
     $routes->post('vouchers/archive',            'User\Voucher::archive');
 
-
-});
+// Signatories
+$routes->get('/signatories', 'SignatoryController::index');
+$routes->get('/signatories/edit/(:num)', 'SignatoryController::edit/$1');
+$routes->post('/signatories/save', 'SignatoryController::save');
+$routes->post('/signatories/status/(:num)/(:alpha)', 'SignatoryController::setStatus/$1/$2');

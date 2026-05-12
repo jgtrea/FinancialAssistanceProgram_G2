@@ -2,6 +2,8 @@
 
 namespace App\Controllers;
 
+use App\Controllers\BaseController;
+use App\Models\StudentModel;
 use App\Models\VoucherModel;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 
@@ -9,75 +11,97 @@ class VoucherImport extends BaseController
 {
     public function index()
     {
-        return view('FileConvertView');
+        return redirect()->to('/students');
     }
 
+    public function import()
+    {
     public function import()
     {
         $file = $this->request->getFile('excel_file');
 
         if (!$file || !$file->isValid()) {
+        if (!$file || !$file->isValid()) {
             return redirect()->back()->with('error', 'Please upload a valid Excel file.');
         }
 
-        $spreadsheet = IOFactory::load($file->getTempName());
-        $sheetData   = $spreadsheet->getActiveSheet()->toArray();
+        $ext = strtolower($file->getClientExtension());
+        if (!in_array($ext, ['xlsx', 'xls'])) {
+            return redirect()->back()->with('error', 'Only .xlsx or .xls files are allowed.');
+        }
 
+        try {
+            $spreadsheet = IOFactory::load($file->getTempName());
+            $sheetData   = $spreadsheet->getActiveSheet()->toArray();
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Failed to read file: ' . $e->getMessage());
+        }
+
+        $studentModel = new StudentModel();
         $voucherModel = new VoucherModel();
-        $count        = 0;
+
+        $count      = 0;
+        $errors     = [];
+        $schoolYear = '2025-2026';
+        $createdBy  = session()->get('user_id');
 
         for ($i = 1; $i < count($sheetData); $i++) {
             $row = $sheetData[$i];
 
-            if (empty($row[0])) continue;
+            if (empty($row[0]) && empty($row[2])) continue;
 
-            $voucherNo   = trim((string) ($row[0] ?? ''));
-            $voucherDate = trim((string) ($row[1] ?? ''));
-            $fullName    = trim((string) ($row[2] ?? ''));
-            $rankNo      = trim((string) ($row[3] ?? ''));
-            $gwa         = trim((string) ($row[4] ?? ''));
-            $gender      = trim((string) ($row[5] ?? ''));
-            $jhsSchool   = trim((string) ($row[6] ?? ''));
-            $shsSchool   = trim((string) ($row[7] ?? ''));
-            $contact     = trim((string) ($row[8] ?? ''));
-            $remarks     = trim((string) ($row[9] ?? ''));
+            try {
+                $studentId = $studentModel->insert([
+                    'voucher_no'                   => $row[0] ?? null,
+                    'voucher_date'                 => $row[1] ?? date('Y-m-d'),
+                    'full_name'                    => $row[2] ?? null,
+                    'rank_no'                      => $row[3] ?? null,
+                    'gwa'                          => $row[4] ?? null,
+                    'gender'                       => $row[5] ?? null,
+                    'junior_high_school'           => $row[6] ?? null,
+                    'preferred_senior_high_school' => $row[7] ?? null,
+                    'contact_number'               => $row[8] ?? null,
+                    'remarks_status'               => $row[9] ?? null,
+                    'school_year'                  => $schoolYear,
+                    'eligibility_status'           => 'eligible',
+                    'is_archived'                  => 0
+                ]);
 
-            if ($voucherNo === '' || $voucherDate === '' || $fullName === '') continue;
+                if (!$studentId) {
+                    $errors[] = "Row " . ($i + 1) . ": Failed to insert student.";
+                    continue;
+                }
 
-            if ($voucherModel->where('voucher_no', $voucherNo)->first()) continue;
+                $voucherId = $voucherModel->insert([
+                    'voucher_no'         => $row[0] ?? null,
+                    'voucher_date'       => $row[1] ?? date('Y-m-d'),
+                    'recipient_name'     => $row[2] ?? null,
+                    'senior_high_school' => $row[7] ?? null,
+                    'amount_in_words'    => '',
+                    'amount'             => 0,
+                    'created_by'         => $createdBy,
+                    'school_year'        => $schoolYear,
+                    'voucher_status'     => 'not_generated',
+                    'student_id'         => $studentId
+                ]);
 
-            // Split full name: first word = first_name, last word = last_name, rest = middle_name
-            $nameParts  = explode(' ', $fullName);
-            $firstName  = array_shift($nameParts) ?? '';
-            $lastName   = !empty($nameParts) ? array_pop($nameParts) : '';
-            $middleName = implode(' ', $nameParts);
+                if (!$voucherId) {
+                    $errors[] = "Row " . ($i + 1) . ": Failed to insert voucher.";
+                    continue;
+                }
 
-            $voucherModel->insert([
-                'voucher_no'                   => $voucherNo,
-                'voucher_date'                 => $voucherDate,
-                'first_name'                   => $firstName,
-                'middle_name'                  => $middleName,
-                'last_name'                    => $lastName,
-                'suffix'                       => '',
-                'rank_no'                      => is_numeric($rankNo) ? (int) $rankNo : null,
-                'gwa'                          => is_numeric($gwa) ? (float) $gwa : null,
-                'gender'                       => $gender,
-                'junior_high_school'           => $jhsSchool,
-                'preferred_senior_high_school' => $shsSchool,
-                'contact_number'               => $contact,
-                'remarks_status'               => $remarks,
-                'school_year'                  => date('Y'),
-                'eligibility_status'           => 'eligible',
-                'voucher_status'               => 'not_generated',
-                'is_archived'                  => 0,
-            ]);
+                $count++;
 
-            $count++;
+            } catch (\Exception $e) {
+                $errors[] = "Row " . ($i + 1) . ": " . $e->getMessage();
+            }
         }
 
-        return view('FileConvertView', [
-            'status'  => 'success',
-            'message' => $count . ' records were successfully imported.',
-        ]);
+        if (!empty($errors)) {
+            return redirect()->to('/students')->with('error', implode('<br>', $errors));
+        }
+
+        return redirect()->to('/students')->with('success', $count . ' records successfully imported.');
     }
 }
+    
