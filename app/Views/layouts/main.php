@@ -79,7 +79,7 @@ $displayRole = ucfirst(session()->get('role') ?: 'Admin');
 <script src="https://cdn.datatables.net/1.13.8/js/dataTables.bootstrap5.min.js"></script>
 
 <!-- App scripts -->
-<script src="<?= base_url('js/script.js') ?>?v=2"></script>
+<script src="<?= base_url('js/script.js') ?>?v=4"></script>
 
 </body>
 </html>

@@ -8,12 +8,49 @@ function getCsrfToken() {
 }
 
 function refreshCsrfToken() {
-  // Read the updated token from the CSRF cookie and sync it back into the DOM input
   const cookieMatch = document.cookie.match(/csrf_cookie_name=([^;]+)/);
   if (!cookieMatch) return;
   const newToken = decodeURIComponent(cookieMatch[1]);
   const input = document.querySelector('input[name^="csrf"]');
   if (input) input.value = newToken;
+}
+
+function showPdfToast(message) {
+  let toast = document.getElementById('pdfToast');
+  if (!toast) {
+    toast = document.createElement('div');
+    toast.id = 'pdfToast';
+    toast.style.cssText = [
+      'position:fixed', 'bottom:24px', 'right:24px', 'z-index:9999',
+      'background:#1e293b', 'color:#f8fafc', 'border-radius:10px',
+      'padding:14px 20px', 'display:flex', 'align-items:center', 'gap:12px',
+      'box-shadow:0 4px 20px rgba(0,0,0,.35)', 'font-size:14px',
+      'min-width:220px', 'transition:opacity .3s ease',
+    ].join(';');
+    document.body.appendChild(toast);
+  }
+  toast.style.opacity = '1';
+  toast.innerHTML =
+    '<div class="vs-spinner" style="width:16px;height:16px;flex-shrink:0"></div>' +
+    '<span id="pdfToastMsg">' + message + '</span>';
+  return {
+    update: function (msg, done) {
+      const el = document.getElementById('pdfToastMsg');
+      if (el) el.textContent = msg;
+      if (done) {
+        const spinner = toast.querySelector('.vs-spinner');
+        if (spinner) spinner.style.display = 'none';
+        setTimeout(function () {
+          toast.style.opacity = '0';
+          setTimeout(function () { if (toast.parentNode) toast.remove(); }, 300);
+        }, 2000);
+      }
+    },
+    remove: function () {
+      toast.style.opacity = '0';
+      setTimeout(function () { if (toast.parentNode) toast.remove(); }, 300);
+    },
+  };
 }
 
 function showAlert(message, type = 'success') {
@@ -311,9 +348,8 @@ document.addEventListener('DOMContentLoaded', function () {
     btnGeneratePdf.addEventListener('click', async function () {
       if (!selectedIds.size) return;
 
-      pdfModal.style.display  = 'flex';
-      pdfStatusEl.textContent = 'Generating PDF, please wait...';
       btnGeneratePdf.disabled = true;
+      const toast = showPdfToast('Generating PDF...');
 
       const csrf     = getCsrfToken();
       const formData = new FormData();
@@ -324,36 +360,39 @@ document.addEventListener('DOMContentLoaded', function () {
         const res  = await fetch(pdfForm.action, { method: 'POST', body: formData });
         const data = await res.json();
 
+        refreshCsrfToken();
+        btnGeneratePdf.disabled = false;
+
         if (!data.success) {
-          pdfModal.style.display = 'none';
-          showAlert(data.message || 'Failed to generate PDF.', 'error');
+          toast.remove();
+          showAlert(data.message || 'PDF generation failed.', 'error');
           return;
         }
 
-        // Update status badge for generated rows still visible on current page
-        selectedIds.forEach(id => {
-          const cb  = document.querySelector(`.vs-row-check[value="${id}"]`);
+        selectedIds.forEach(function (id) {
+          const cb  = document.querySelector('.vs-row-check[value="' + id + '"]');
           const row = cb ? cb.closest('tr') : null;
           if (row) {
-            const cell = row.cells[7]; // Status column
+            const cell = row.cells[7];
             if (cell) cell.innerHTML = '<span class="vs-status-badge vs-status-generated">Generated</span>';
           }
         });
 
         selectedIds.clear();
         syncPageCheckboxes();
-        refreshCsrfToken();
 
-        pdfStatusEl.textContent = 'PDF ready! Downloading...';
-        setTimeout(() => {
-          pdfModal.style.display = 'none';
-          window.location.href   = data.download_url;
-        }, 400);
+        toast.update('PDF ready! Downloading...', true);
+
+        if (data.download_url) {
+          window.location.href = data.download_url;
+        } else {
+          showAlert('PDF generated but download link is missing.', 'error');
+        }
+
       } catch (err) {
-        pdfModal.style.display = 'none';
+        toast.remove();
         showAlert('Failed to generate PDF.', 'error');
         console.error(err);
-      } finally {
         btnGeneratePdf.disabled = false;
       }
     });

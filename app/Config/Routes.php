@@ -18,7 +18,7 @@ $routes->get('import',      'VoucherImport::index');
 $routes->post('import_data', 'VoucherImport::import');
 
 // ─── Admin ────────────────────────────────────────────────────────────────────
-$routes->group('admin', function ($routes) {
+$routes->group('admin', ['filter' => 'role:admin'], function ($routes) {
 
     // Dashboard
     $routes->get('dashboard', 'Admin\Dashboard::index');
@@ -51,7 +51,7 @@ $routes->group('admin', function ($routes) {
 });
 
 // ─── User / Staff ─────────────────────────────────────────────────────────────
-$routes->group('user', function ($routes) {
+$routes->group('user', ['filter' => 'auth'], function ($routes) {
 
     // Dashboard
     $routes->get('dashboard', 'User\Dashboard::index');

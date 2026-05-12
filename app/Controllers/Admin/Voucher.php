@@ -177,7 +177,7 @@ class Voucher extends Controller
         return redirect()->to(site_url('admin/vouchers'))->with('message', 'Student voucher updated successfully.');
     }
 
-    // ── Generate PDF and mark students as generated ───────────────────────────
+    // ── Generate PDF (synchronous — UI stays live via async fetch) ────────────
     public function generatePdf()
     {
         $ids = $this->request->getPost('voucher_ids');
@@ -193,21 +193,50 @@ class Voucher extends Controller
             return $this->response->setJSON(['success' => false, 'message' => 'Selected students not found.']);
         }
 
+        $db = \Config\Database::connect();
+        $db->table('pdf_jobs')->insert([
+            'voucher_ids' => json_encode(array_values($ids)),
+            'status'      => 'processing',
+            'created_by'  => $this->getCurrentUserId(),
+            'created_at'  => date('Y-m-d H:i:s'),
+        ]);
+        $jobId = (int) $db->insertID();
+
         try {
             $pdfBytes = VoucherPdf::generate($students);
-            $jobId    = $this->savePdfFile($ids, $this->getCurrentUserId(), $pdfBytes);
 
-            \Config\Database::connect()
-                ->table('students')
-                ->whereIn('student_id', $ids)
-                ->update(['voucher_status' => 'generated']);
+            $dir = WRITEPATH . 'pdfs' . DIRECTORY_SEPARATOR;
+            if (!is_dir($dir)) {
+                mkdir($dir, 0755, true);
+            }
+
+            $filename = 'vouchers_job' . $jobId . '_' . date('Ymd_His') . '.pdf';
+            file_put_contents($dir . $filename, $pdfBytes);
+
+            $db->table('students')->whereIn('student_id', $ids)->update(['voucher_status' => 'generated']);
+
+            $db->table('pdf_jobs')->where('job_id', $jobId)->update([
+                'status'       => 'done',
+                'file_path'    => $filename,
+                'completed_at' => date('Y-m-d H:i:s'),
+            ]);
+
+            $role   = session()->get('role') ?: 'admin';
+            $prefix = $role === 'admin' ? 'admin' : 'user';
 
             return $this->response->setJSON([
                 'success'      => true,
-                'download_url' => site_url('admin/vouchers/pdf-download/' . $jobId),
+                'job_id'       => $jobId,
+                'download_url' => site_url("{$prefix}/vouchers/pdf-download/{$jobId}"),
             ]);
+
         } catch (\Throwable $e) {
-            log_message('error', '[generatePdf] ' . $e->getMessage());
+            $db->table('pdf_jobs')->where('job_id', $jobId)->update([
+                'status'        => 'failed',
+                'error_message' => $e->getMessage(),
+                'completed_at'  => date('Y-m-d H:i:s'),
+            ]);
+
             return $this->response->setJSON(['success' => false, 'message' => 'PDF generation failed: ' . $e->getMessage()]);
         }
     }
@@ -324,34 +353,4 @@ class Voucher extends Controller
         ]);
     }
 
-    // ── Save generated PDF bytes to disk and record the job ───────────────────
-    protected function savePdfFile(array $ids, int $userId, string $pdfBytes): int
-    {
-        $dir = WRITEPATH . 'pdfs' . DIRECTORY_SEPARATOR;
-        if (!is_dir($dir)) {
-            mkdir($dir, 0755, true);
-        }
-
-        $db = \Config\Database::connect();
-        $db->table('pdf_jobs')->insert([
-            'voucher_ids' => json_encode(array_values($ids)),
-            'status'      => 'pending',
-            'created_by'  => $userId,
-            'created_at'  => date('Y-m-d H:i:s'),
-        ]);
-        $jobId    = (int) $db->insertID();
-        $filename = 'vouchers_job' . $jobId . '_' . date('Ymd_His') . '.pdf';
-
-        file_put_contents($dir . $filename, $pdfBytes);
-
-        $db->table('pdf_jobs')
-            ->where('job_id', $jobId)
-            ->update([
-                'status'       => 'done',
-                'file_path'    => $filename,
-                'completed_at' => date('Y-m-d H:i:s'),
-            ]);
-
-        return $jobId;
-    }
 }

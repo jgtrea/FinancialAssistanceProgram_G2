@@ -10,8 +10,8 @@ class AuthFilter implements FilterInterface
 {
     public function before(RequestInterface $request, $arguments = null)
     {
-        if (!session()->get('logged_in')) {
-            return redirect()->to('/login')->with('error', 'Please log in to continue.');
+        if (!session()->get('isLoggedIn')) {
+            return redirect()->to('/')->with('error', 'Please log in to continue.');
         }
     }
 

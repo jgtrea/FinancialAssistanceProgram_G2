@@ -8,6 +8,11 @@ class Authentication extends BaseController
 {
     public function index()
     {
+        if (session()->get('isLoggedIn')) {
+            $role = session()->get('role');
+            return redirect()->to($role === 'admin' ? site_url('admin/dashboard') : site_url('user/vouchers'));
+        }
+
         return view('auth/login');
     }
 
@@ -20,7 +25,7 @@ class Authentication extends BaseController
 
         $user = $model->where('username', $username)->first();
 
-        if (!$user || ($user['is_active'] == 0)) { 
+        if (!$user || $user['is_active'] == 0) {
             return redirect()->to('/')->with('error', 'Invalid account or access denied.');
         }
 
