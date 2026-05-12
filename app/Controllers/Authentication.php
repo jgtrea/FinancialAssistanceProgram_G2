@@ -37,9 +37,9 @@ class Authentication extends BaseController
         ]);
 
         if ($user['role'] === 'admin') {
-            return redirect()->to('/admin/user_management')->with('success', 'Logged as Admin.');
+            return redirect()->to('admin/dashboard')->with('success', 'Logged as Admin.');
         } else {
-            return redirect()->to('/students')->with('success', 'Logged in successfully.');
+            return redirect()->to('user/vouchers')->with('success', 'Logged in successfully.');
         }
     }
 

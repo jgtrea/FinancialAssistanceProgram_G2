@@ -7,19 +7,124 @@ use App\Controllers\Admin\Voucher as AdminVoucher;
 
 class Voucher extends AdminVoucher
 {
-    // ── List all vouchers (user view) ─────────────────────────────────────────
     public function index()
     {
         $students = $this->voucherModel->getVouchersForListing();
 
         return view('vouchers/index', [
-            'title'    => 'Vouchers',
+            'title'    => 'Students',
             'vouchers' => $students,
-            'role'     => session()->get('role') ?: 'user',
+            'role'     => 'user',
         ]);
     }
 
-    // ── Generate PDF ──────────────────────────────────────────────────────────
+    public function create()
+    {
+        helper(['form']);
+
+        return view('vouchers/form', [
+            'title'      => 'Add Student',
+            'action'     => site_url('user/vouchers/store'),
+            'voucher'    => [],
+            'validation' => \Config\Services::validation(),
+        ]);
+    }
+
+    public function store()
+    {
+        helper(['form']);
+
+        $rules = [
+            'voucher_no'                   => 'required|max_length[50]',
+            'voucher_date'                 => 'required|valid_date',
+            'first_name'                   => 'required|max_length[100]',
+            'last_name'                    => 'required|max_length[100]',
+            'preferred_senior_high_school' => 'required|max_length[200]',
+            'school_year'                  => 'required|max_length[20]',
+        ];
+
+        if (!$this->validate($rules)) {
+            return $this->create();
+        }
+
+        $this->voucherModel->insert([
+            'voucher_no'                   => $this->request->getPost('voucher_no'),
+            'voucher_date'                 => $this->request->getPost('voucher_date'),
+            'first_name'                   => $this->request->getPost('first_name'),
+            'middle_name'                  => $this->request->getPost('middle_name') ?: '',
+            'last_name'                    => $this->request->getPost('last_name'),
+            'suffix'                       => $this->request->getPost('suffix') ?: '',
+            'rank_no'                      => $this->request->getPost('rank_no') ?: null,
+            'gwa'                          => $this->request->getPost('gwa') ?: null,
+            'gender'                       => $this->request->getPost('gender') ?: '',
+            'junior_high_school'           => $this->request->getPost('junior_high_school') ?: '',
+            'preferred_senior_high_school' => $this->request->getPost('preferred_senior_high_school'),
+            'contact_number'               => $this->request->getPost('contact_number') ?: '',
+            'remarks_status'               => $this->request->getPost('remarks_status') ?: '',
+            'school_year'                  => $this->request->getPost('school_year'),
+            'eligibility_status'           => $this->request->getPost('eligibility_status') ?: 'eligible',
+            'voucher_status'               => 'not_generated',
+            'is_archived'                  => 0,
+        ]);
+
+        return redirect()->to(site_url('user/vouchers'))->with('message', 'Student added successfully.');
+    }
+
+    public function edit(int $id)
+    {
+        helper(['form']);
+
+        $student = $this->voucherModel->getStudentById($id);
+        if (!$student) {
+            return redirect()->to(site_url('user/vouchers'))->with('error', 'Student not found.');
+        }
+
+        return view('vouchers/form', [
+            'title'      => 'Edit Student',
+            'action'     => site_url('user/vouchers/update/' . $id),
+            'voucher'    => $student,
+            'validation' => \Config\Services::validation(),
+        ]);
+    }
+
+    public function update(int $id)
+    {
+        helper(['form']);
+
+        $rules = [
+            'voucher_no'                   => 'required|max_length[50]',
+            'voucher_date'                 => 'required|valid_date',
+            'first_name'                   => 'required|max_length[100]',
+            'last_name'                    => 'required|max_length[100]',
+            'preferred_senior_high_school' => 'required|max_length[200]',
+            'school_year'                  => 'required|max_length[20]',
+        ];
+
+        if (!$this->validate($rules)) {
+            return $this->edit($id);
+        }
+
+        $this->voucherModel->update($id, [
+            'voucher_no'                   => $this->request->getPost('voucher_no'),
+            'voucher_date'                 => $this->request->getPost('voucher_date'),
+            'first_name'                   => $this->request->getPost('first_name'),
+            'middle_name'                  => $this->request->getPost('middle_name') ?: '',
+            'last_name'                    => $this->request->getPost('last_name'),
+            'suffix'                       => $this->request->getPost('suffix') ?: '',
+            'rank_no'                      => $this->request->getPost('rank_no') ?: null,
+            'gwa'                          => $this->request->getPost('gwa') ?: null,
+            'gender'                       => $this->request->getPost('gender') ?: '',
+            'junior_high_school'           => $this->request->getPost('junior_high_school') ?: '',
+            'preferred_senior_high_school' => $this->request->getPost('preferred_senior_high_school'),
+            'contact_number'               => $this->request->getPost('contact_number') ?: '',
+            'remarks_status'               => $this->request->getPost('remarks_status') ?: '',
+            'school_year'                  => $this->request->getPost('school_year'),
+            'eligibility_status'           => $this->request->getPost('eligibility_status') ?: 'eligible',
+        ]);
+
+        return redirect()->to(site_url('user/vouchers'))->with('message', 'Student updated successfully.');
+    }
+
     public function generatePdf()
     {
         $ids    = $this->request->getPost('voucher_ids');
@@ -56,7 +161,6 @@ class Voucher extends AdminVoucher
         }
     }
 
-    // ── Archive selected students ─────────────────────────────────────────────
     public function archive()
     {
         $ids    = $this->request->getPost('voucher_ids');

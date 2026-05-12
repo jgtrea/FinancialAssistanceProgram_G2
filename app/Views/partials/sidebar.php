@@ -41,12 +41,10 @@ function isActive(string $segment, string $uri): string {
     <a href="<?= site_url('admin/vouchers') ?>"
        class="vs-nav-item <?= isActive('admin/vouchers', $uri) ?>">
       <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-        <polyline points="14 2 14 8 20 8"/>
-        <line x1="9" y1="15" x2="15" y2="15"/>
-        <line x1="12" y1="12" x2="12" y2="18"/>
+        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+        <circle cx="12" cy="7" r="4"/>
       </svg>
-      Vouchers
+      Students
     </a>
 
     <a href="<?= site_url('admin/archive') ?>"
@@ -61,8 +59,8 @@ function isActive(string $segment, string $uri): string {
 
     <div class="vs-nav-section">MANAGE</div>
 
-    <a href="<?= site_url('admin/users') ?>"
-       class="vs-nav-item <?= isActive('admin/users', $uri) ?>">
+    <a href="<?= site_url('admin/user_management') ?>"
+       class="vs-nav-item <?= isActive('admin/user_management', $uri) ?>">
       <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
         <circle cx="12" cy="7" r="4"/>
@@ -70,8 +68,8 @@ function isActive(string $segment, string $uri): string {
       Users
     </a>
 
-    <a href="<?= site_url('admin/logs') ?>"
-       class="vs-nav-item <?= isActive('admin/logs', $uri) ?>">
+    <a href="<?= site_url('admin/audit-logs') ?>"
+       class="vs-nav-item <?= isActive('admin/audit-logs', $uri) ?>">
       <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
         <polyline points="14 2 14 8 20 8"/>
@@ -98,10 +96,10 @@ function isActive(string $segment, string $uri): string {
     <a href="<?= site_url('user/vouchers') ?>"
        class="vs-nav-item <?= isActive('user/vouchers', $uri) ?>">
       <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-        <polyline points="14 2 14 8 20 8"/>
+        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+        <circle cx="12" cy="7" r="4"/>
       </svg>
-      Vouchers
+      Students
     </a>
 
     <?php endif ?>

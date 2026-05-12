@@ -43,7 +43,7 @@ class Voucher extends Controller
         $students = $this->voucherModel->getVouchersForListing();
 
         return view('vouchers/index', [
-            'title'    => 'Vouchers',
+            'title'    => 'Students',
             'vouchers' => $students,
             'role'     => session()->get('role') ?: 'admin',
         ]);

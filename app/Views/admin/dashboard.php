@@ -13,7 +13,7 @@
     </div>
     <div class="vs-stat-body">
       <div class="vs-stat-value"><?= number_format($totalVouchers) ?></div>
-      <div class="vs-stat-label">Total Vouchers</div>
+      <div class="vs-stat-label">Total Students</div>
     </div>
   </div>
 
@@ -79,7 +79,7 @@
   <!-- Recent Vouchers -->
   <div class="vs-panel">
     <div class="vs-panel-header">
-      <h6 class="vs-panel-title">Recent Vouchers</h6>
+      <h6 class="vs-panel-title">Recent Students</h6>
       <a href="<?= site_url('admin/vouchers') ?>" class="vs-panel-link">View all</a>
     </div>
     <div class="vs-panel-body">
@@ -116,7 +116,7 @@
   <div class="vs-panel">
     <div class="vs-panel-header">
       <h6 class="vs-panel-title">Recent Activity</h6>
-      <a href="<?= site_url('admin/logs') ?>" class="vs-panel-link">View all</a>
+      <a href="<?= site_url('admin/audit-logs') ?>" class="vs-panel-link">View all</a>
     </div>
     <div class="vs-panel-body">
       <?php if (empty($recentLogs)): ?>

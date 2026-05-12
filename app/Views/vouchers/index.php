@@ -10,15 +10,13 @@
   <div class="vs-page-header mb-4">
     <div>
       <h4 class="vs-page-title"><?= esc($title) ?></h4>
-      <p class="vs-page-sub">Manage and generate financial assistance vouchers</p>
+      <p class="vs-page-sub">Manage student financial assistance records</p>
     </div>
     <div class="d-flex gap-2">
-      <?php if ($role === 'admin'): ?>
-      <a href="<?= site_url('admin/vouchers/create') ?>" class="vs-btn vs-btn-primary">
+      <a href="<?= site_url(($role === 'admin' ? 'admin' : 'user') . '/vouchers/create') ?>" class="vs-btn vs-btn-primary">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
         Add Student
       </a>
-      <?php endif ?>
       <button class="vs-btn vs-btn-outline" id="btnExport">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
         Export
@@ -100,10 +98,8 @@
               <div class="d-flex gap-1">
                 <a href="<?= site_url(($role === 'admin' ? 'admin' : 'user') . '/vouchers/view/' . $v['student_id']) ?>"
                    class="vs-tbl-btn vs-tbl-btn-view">View</a>
-                <?php if ($role === 'admin'): ?>
-                <a href="<?= site_url('admin/vouchers/edit/' . $v['student_id']) ?>"
+                <a href="<?= site_url(($role === 'admin' ? 'admin' : 'user') . '/vouchers/edit/' . $v['student_id']) ?>"
                    class="vs-tbl-btn vs-tbl-btn-edit">Edit</a>
-                <?php endif ?>
               </div>
             </td>
           </tr>

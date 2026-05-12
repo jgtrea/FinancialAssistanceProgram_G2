@@ -13,7 +13,7 @@
     </div>
     <div class="vs-stat-body">
       <div class="vs-stat-value"><?= number_format($myVouchers) ?></div>
-      <div class="vs-stat-label">Total Vouchers</div>
+      <div class="vs-stat-label">Total Students</div>
     </div>
   </div>
 
@@ -63,7 +63,7 @@
 <!-- Recent vouchers -->
 <div class="vs-panel">
   <div class="vs-panel-header">
-    <h6 class="vs-panel-title">Recent Vouchers</h6>
+    <h6 class="vs-panel-title">Recent Students</h6>
     <a href="<?= site_url('user/vouchers') ?>" class="vs-panel-link">View all</a>
   </div>
   <div class="vs-panel-body">
