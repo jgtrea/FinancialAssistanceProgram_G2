@@ -23,7 +23,7 @@ class Voucher extends AdminVoucher
 
         return view('vouchers/form', [
             'title'      => 'Add Student',
-            'action'     => site_url('user/vouchers/store'),
+            'action'     => site_url('user/students/store'),
             'voucher'    => [],
             'validation' => \Config\Services::validation(),
         ]);
@@ -66,7 +66,7 @@ class Voucher extends AdminVoucher
             'is_archived'                  => 0,
         ]);
 
-        return redirect()->to(site_url('user/vouchers'))->with('message', 'Student added successfully.');
+        return redirect()->to(site_url('user/students'))->with('message', 'Student added successfully.');
     }
 
     public function edit(int $id)
@@ -75,12 +75,12 @@ class Voucher extends AdminVoucher
 
         $student = $this->voucherModel->getStudentById($id);
         if (!$student) {
-            return redirect()->to(site_url('user/vouchers'))->with('error', 'Student not found.');
+            return redirect()->to(site_url('user/students'))->with('error', 'Student not found.');
         }
 
         return view('vouchers/form', [
             'title'      => 'Edit Student',
-            'action'     => site_url('user/vouchers/update/' . $id),
+            'action'     => site_url('user/students/update/' . $id),
             'voucher'    => $student,
             'validation' => \Config\Services::validation(),
         ]);
@@ -121,7 +121,7 @@ class Voucher extends AdminVoucher
             'eligibility_status'           => $this->request->getPost('eligibility_status') ?: 'eligible',
         ]);
 
-        return redirect()->to(site_url('user/vouchers'))->with('message', 'Student updated successfully.');
+        return redirect()->to(site_url('user/students'))->with('message', 'Student updated successfully.');
     }
 
     public function archive()

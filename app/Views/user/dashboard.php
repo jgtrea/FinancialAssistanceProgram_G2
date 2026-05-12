@@ -64,7 +64,7 @@
 <div class="vs-panel">
   <div class="vs-panel-header">
     <h6 class="vs-panel-title">Recent Students</h6>
-    <a href="<?= site_url('user/vouchers') ?>" class="vs-panel-link">View all</a>
+    <a href="<?= site_url('user/students') ?>" class="vs-panel-link">View all</a>
   </div>
   <div class="vs-panel-body">
     <?php if (empty($recentVouchers)): ?>

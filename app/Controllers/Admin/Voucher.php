@@ -221,13 +221,12 @@ class Voucher extends Controller
                 'completed_at' => date('Y-m-d H:i:s'),
             ]);
 
-            $role   = session()->get('role') ?: 'admin';
-            $prefix = $role === 'admin' ? 'admin' : 'user';
+            $role = session()->get('role') ?: 'admin';
 
             return $this->response->setJSON([
                 'success'      => true,
                 'job_id'       => $jobId,
-                'download_url' => site_url("{$prefix}/vouchers/pdf-download/{$jobId}"),
+                'download_url' => site_url($role === 'admin' ? "admin/vouchers/pdf-download/{$jobId}" : "user/students/pdf-download/{$jobId}"),
             ]);
 
         } catch (\Throwable $e) {
@@ -258,9 +257,8 @@ class Voucher extends Controller
             return $this->response->setJSON(['status' => 'forbidden']);
         }
 
-        $prefix      = $role === 'admin' ? 'admin' : 'user';
         $downloadUrl = $job->status === 'done'
-            ? site_url("{$prefix}/vouchers/pdf-download/{$jobId}")
+            ? site_url($role === 'admin' ? "admin/vouchers/pdf-download/{$jobId}" : "user/students/pdf-download/{$jobId}")
             : null;
 
         return $this->response->setJSON([

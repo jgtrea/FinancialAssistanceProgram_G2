@@ -10,7 +10,7 @@ class Authentication extends BaseController
     {
         if (session()->get('isLoggedIn')) {
             $role = session()->get('role');
-            return redirect()->to($role === 'admin' ? site_url('admin/dashboard') : site_url('user/vouchers'));
+            return redirect()->to($role === 'admin' ? site_url('admin/dashboard') : site_url('user/dashboard'));
         }
 
         return view('auth/login');
@@ -44,7 +44,7 @@ class Authentication extends BaseController
         if ($user['role'] === 'admin') {
             return redirect()->to('admin/dashboard')->with('success', 'Logged as Admin.');
         } else {
-            return redirect()->to('user/vouchers')->with('success', 'Logged in successfully.');
+            return redirect()->to('user/dashboard')->with('success', 'Logged in successfully.');
         }
     }
 

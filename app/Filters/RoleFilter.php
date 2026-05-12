@@ -21,7 +21,7 @@ class RoleFilter implements FilterInterface
                 if ($userRole === 'admin') {
                     return redirect()->to(site_url('admin/dashboard'))->with('error', 'Access denied.');
                 }
-                return redirect()->to(site_url('user/vouchers'))->with('error', 'Access denied.');
+                return redirect()->to(site_url('user/dashboard'))->with('error', 'Access denied.');
             }
         }
     }
