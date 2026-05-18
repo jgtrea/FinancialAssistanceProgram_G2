@@ -26,6 +26,9 @@ function userNav() {
                         <a class="nav-link" href="${baseUrl}/audit-logs">
                             <i class="fas fa-clipboard-list"></i> Audit Logs
                         </a>
+                        <a class="nav-link text-danger" href="${baseUrl}logout">
+                            Logout
+                        </a>
                     </div>
                 </div>
             </div>

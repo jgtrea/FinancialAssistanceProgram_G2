@@ -1,4 +1,4 @@
-<?= $this->extend('layouts/main') ?>
+<?= $this->extend(str_starts_with(uri_string(), 'admin/') ? 'admin/layouts/main' : 'layouts/main') ?>
 <?= $this->section('content') ?>
 
 <?php helper('form') ?>

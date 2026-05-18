@@ -1,4 +1,4 @@
-<?= $this->extend('layouts/main') ?>
+<?= $this->extend(($role ?? 'admin') === 'admin' ? 'admin/layouts/main' : 'layouts/main') ?>
 <?= $this->section('content') ?>
 
 <?php $role = $role ?? 'admin' ?>

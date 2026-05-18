@@ -48,7 +48,8 @@ class AuditLogController extends BaseController
             ->orderBy('action', 'ASC')
             ->findAll();
 
-        $isAdminRoute = str_starts_with(trim($this->request->getUri()->getPath(), '/'), 'admin/');
+        $path = trim($this->request->getUri()->getPath(), '/');
+        $isAdminRoute = str_contains('/' . $path, '/admin/audit-logs');
         $view = $isAdminRoute ? 'admin/audit_logs/index' : 'audit_logs/index';
         $resetUrl = $isAdminRoute ? 'admin/audit-logs' : 'audit-logs';
 

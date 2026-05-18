@@ -1,4 +1,4 @@
-<?= $this->extend('layouts/main') ?>
+<?= $this->extend('admin/layouts/main') ?>
 <?= $this->section('content') ?>
 
 <!-- Stat cards -->
