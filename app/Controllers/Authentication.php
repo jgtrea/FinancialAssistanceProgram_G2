@@ -53,37 +53,4 @@ class Authentication extends BaseController
         session()->destroy();
         return redirect()->to('/');
     }
-
-    public function debugUsers()
-    {
-        $model = new UserLogin(); 
-        $allUsers = $model->findAll();
-        $jsonUsers = json_encode($allUsers);
-
-        echo "<script>
-            console.log('--- Debug: All Users in Table ---');
-            console.table($jsonUsers);
-        </script>";
-        echo "Check your browser console (F12 -> Console) to see the user list.";
-    }
-
-    public function hashPasswords()
-    {
-        $model = new UserLogin(); 
-        $users = $model->findAll();
-
-        $count = 0;
-        foreach ($users as $user) {
-            if (str_starts_with($user['password'], '$argon2') || str_starts_with($user['password'], '$2y$')) {
-                continue;
-            }
-
-            $model->update($user['user_id'], [
-                'password' => password_hash($user['password'], PASSWORD_ARGON2ID)
-            ]);
-            $count++;
-        }
-
-        echo "Done. {$count} password(s) hashed. Skipped already-hashed accounts.";
-    }
 }

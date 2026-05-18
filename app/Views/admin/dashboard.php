@@ -80,7 +80,7 @@
   <div class="vs-panel">
     <div class="vs-panel-header">
       <h6 class="vs-panel-title">Recent Students</h6>
-      <a href="<?= site_url('admin/vouchers') ?>" class="vs-panel-link">View all</a>
+      <a href="<?= site_url('admin/students') ?>" class="vs-panel-link">View all</a>
     </div>
     <div class="vs-panel-body">
       <?php if (empty($recentVouchers)): ?>

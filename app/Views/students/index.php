@@ -1,7 +1,6 @@
 <?= $this->extend('layouts/main') ?>
 
 <?= $this->section('content') ?>
- <?php pre_style('sbadmin2'); ?>
 
 <div class="mb-3">
     <h3>Students</h3>

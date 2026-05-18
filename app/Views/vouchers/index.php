@@ -13,7 +13,7 @@
       <p class="vs-page-sub">Manage student financial assistance records</p>
     </div>
     <div class="d-flex gap-2">
-      <a href="<?= site_url(($role === 'admin' ? 'admin' : 'user') . '/vouchers/create') ?>" class="vs-btn vs-btn-primary">
+      <a href="<?= site_url(($role === 'admin' ? 'admin' : 'user') . '/students/create') ?>" class="vs-btn vs-btn-primary">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
         Add Student
       </a>
@@ -96,9 +96,9 @@
             <td><?= date('M d, Y', strtotime($v['created_at'])) ?></td>
             <td>
               <div class="d-flex gap-1">
-                <a href="<?= site_url(($role === 'admin' ? 'admin' : 'user') . '/vouchers/view/' . $v['student_id']) ?>"
+                <a href="<?= site_url(($role === 'admin' ? 'admin' : 'user') . '/students/view/' . $v['student_id']) ?>"
                    class="vs-tbl-btn vs-tbl-btn-view">View</a>
-                <a href="<?= site_url(($role === 'admin' ? 'admin' : 'user') . '/vouchers/edit/' . $v['student_id']) ?>"
+                <a href="<?= site_url(($role === 'admin' ? 'admin' : 'user') . '/students/edit/' . $v['student_id']) ?>"
                    class="vs-tbl-btn vs-tbl-btn-edit">Edit</a>
               </div>
             </td>
@@ -148,7 +148,7 @@
 
 <!-- Hidden form for PDF POST -->
 <form id="pdfForm" method="POST"
-      action="<?= site_url(($role === 'admin' ? 'admin' : 'user') . '/vouchers/generate-pdf') ?>"
+      action="<?= site_url(($role === 'admin' ? 'admin' : 'user') . '/students/generate-pdf') ?>"
       style="display:none">
   <?= csrf_field() ?>
   <div id="pdfInputs"></div>

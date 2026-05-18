@@ -38,8 +38,8 @@ function isActive(string $segment, string $uri): string {
       Dashboard
     </a>
 
-    <a href="<?= site_url('admin/vouchers') ?>"
-       class="vs-nav-item <?= isActive('admin/vouchers', $uri) ?>">
+    <a href="<?= site_url('admin/students') ?>"
+       class="vs-nav-item <?= isActive('admin/students', $uri) ?>">
       <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
         <circle cx="12" cy="7" r="4"/>

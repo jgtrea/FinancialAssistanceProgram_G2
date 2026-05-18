@@ -33,17 +33,17 @@ $routes->group('admin', ['filter' => 'role:admin'], function ($routes) {
     $routes->post('user_management/restore/(:num)', 'UsersController::restore/$1');
     $routes->get('audit-logs',                    'AuditLogController::index');
 
-    // Vouchers
-    $routes->get('vouchers',                      'Admin\Voucher::index');
-    $routes->get('vouchers/create',               'Admin\Voucher::create');
-    $routes->post('vouchers/store',               'Admin\Voucher::store');
-    $routes->get('vouchers/view/(:num)',          'Admin\Voucher::view/$1');
-    $routes->get('vouchers/edit/(:num)',          'Admin\Voucher::edit/$1');
-    $routes->post('vouchers/update/(:num)',       'Admin\Voucher::update/$1');
-    $routes->post('vouchers/generate-pdf',        'Admin\Voucher::generatePdf');
-    $routes->get('vouchers/pdf-status/(:num)',    'Admin\Voucher::checkPdfJob/$1');
-    $routes->get('vouchers/pdf-download/(:num)', 'Admin\Voucher::downloadPdf/$1');
-    $routes->post('vouchers/archive',             'Admin\Voucher::archive');
+    // Students
+    $routes->get('students',                      'Admin\Voucher::index');
+    $routes->get('students/create',               'Admin\Voucher::create');
+    $routes->post('students/store',               'Admin\Voucher::store');
+    $routes->get('students/view/(:num)',          'Admin\Voucher::view/$1');
+    $routes->get('students/edit/(:num)',          'Admin\Voucher::edit/$1');
+    $routes->post('students/update/(:num)',       'Admin\Voucher::update/$1');
+    $routes->post('students/generate-pdf',        'Admin\Voucher::generatePdf');
+    $routes->get('students/pdf-status/(:num)',    'Admin\Voucher::checkPdfJob/$1');
+    $routes->get('students/pdf-download/(:num)', 'Admin\Voucher::downloadPdf/$1');
+    $routes->post('students/archive',             'Admin\Voucher::archive');
 
     // Archive & Logs
     $routes->get('archive', 'Admin\Archive::index');
@@ -57,16 +57,16 @@ $routes->group('user', ['filter' => 'auth'], function ($routes) {
     $routes->get('dashboard', 'User\Dashboard::index');
 
     // Students
-    $routes->get('students',                     'User\Voucher::index');
-    $routes->get('students/create',              'User\Voucher::create');
-    $routes->post('students/store',              'User\Voucher::store');
-    $routes->get('students/view/(:num)',         'User\Voucher::view/$1');
-    $routes->get('students/edit/(:num)',         'User\Voucher::edit/$1');
-    $routes->post('students/update/(:num)',      'User\Voucher::update/$1');
-    $routes->post('students/generate-pdf',       'User\Voucher::generatePdf');
-    $routes->get('students/pdf-status/(:num)',   'User\Voucher::checkPdfJob/$1');
-    $routes->get('students/pdf-download/(:num)', 'User\Voucher::downloadPdf/$1');
-    $routes->post('students/archive',            'User\Voucher::archive');
+    $routes->get('students',                      'User\Voucher::index');
+    $routes->get('students/create',               'User\Voucher::create');
+    $routes->post('students/store',               'User\Voucher::store');
+    $routes->get('students/view/(:num)',          'User\Voucher::view/$1');
+    $routes->get('students/edit/(:num)',          'User\Voucher::edit/$1');
+    $routes->post('students/update/(:num)',       'User\Voucher::update/$1');
+    $routes->post('students/generate-pdf',        'User\Voucher::generatePdf');
+    $routes->get('students/pdf-status/(:num)',    'User\Voucher::checkPdfJob/$1');
+    $routes->get('students/pdf-download/(:num)',  'User\Voucher::downloadPdf/$1');
+    $routes->post('students/archive',             'User\Voucher::archive');
 });
 
 // ─── Students (madridbranch) ──────────────────────────────────────────────────

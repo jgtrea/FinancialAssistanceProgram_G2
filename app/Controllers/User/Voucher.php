@@ -2,6 +2,7 @@
 
 namespace App\Controllers\User;
 
+use App\Libraries\VoucherPdf;
 use App\Controllers\Admin\Voucher as AdminVoucher;
 
 class Voucher extends AdminVoucher
@@ -122,6 +123,42 @@ class Voucher extends AdminVoucher
         ]);
 
         return redirect()->to(site_url('user/students'))->with('message', 'Student updated successfully.');
+    }
+
+    public function generatePdf()
+    {
+        $ids    = $this->request->getPost('voucher_ids');
+        $userId = session()->get('user_id');
+
+        if (empty($ids)) {
+            return $this->response->setJSON(['success' => false, 'message' => 'No students selected.']);
+        }
+
+        $ids      = array_map('intval', (array) $ids);
+        $students = $this->voucherModel->getVouchersByIds($ids);
+
+        if (empty($students)) {
+            return $this->response->setJSON(['success' => false, 'message' => 'No valid students found.']);
+        }
+
+        try {
+            $pdfBytes   = VoucherPdf::generate($students);
+            $studentIds = array_column($students, 'student_id');
+            $jobId      = $this->savePdfFile($studentIds, $userId, $pdfBytes);
+
+            \Config\Database::connect()
+                ->table('students')
+                ->whereIn('student_id', $studentIds)
+                ->update(['voucher_status' => 'generated']);
+
+            return $this->response->setJSON([
+                'success'      => true,
+                'download_url' => site_url('user/students/pdf-download/' . $jobId),
+            ]);
+        } catch (\Throwable $e) {
+            log_message('error', '[generatePdf user] ' . $e->getMessage());
+            return $this->response->setJSON(['success' => false, 'message' => 'PDF generation failed: ' . $e->getMessage()]);
+        }
     }
 
     public function archive()
