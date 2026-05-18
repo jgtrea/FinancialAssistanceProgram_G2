@@ -11,7 +11,14 @@
 </head>
 
 <body class="login-screen">
-    <div id="nav-container"></div>
+    <nav class="navbar navbar-expand navbar-light bg-white topbar fixed-top shadow-sm">
+        <div class="container">
+            <a class="navbar-brand d-flex align-items-center fw-bold text-uppercase" href="<?= site_url('/') ?>">
+                <img src="<?= base_url('images/logo_binan.png') ?>" class="navbar-logo me-2" alt="Biñan City">
+                Biñan City
+            </a>
+        </div>
+    </nav>
 
     <main class="login-shell">
         <section class="login-card-modern">
@@ -68,12 +75,6 @@
             </div>
         </section>
     </main>
-
-<script>
-    var navType = 'auth';
-    var baseUrl = '<?= base_url() ?>';
-</script>
-<script src="<?= base_url('js/nav.js') ?>"></script>
 
 </body>
 </html>
