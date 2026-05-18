@@ -31,7 +31,7 @@ $routes->group('admin', function ($routes) {
     $routes->get('audit-logs', 'AuditLogController::index');
 });
 $routes->get('audit-logs', 'AuditLogController::index');
-
+$routes->get('admin/dashboard', 'Admin\Dashboard::index');
 // Student routes
 $routes->get('/students', 'StudentController::index');
 $routes->get('/students/form', 'StudentController::form');
