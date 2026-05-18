@@ -12,20 +12,20 @@
       <h4 class="vs-page-title"><?= esc($title) ?></h4>
       <p class="vs-page-sub">Manage student financial assistance records</p>
     </div>
-    <div class="d-flex gap-2">
-      <a href="<?= site_url(($role === 'admin' ? 'admin' : 'user') . '/vouchers/create') ?>" class="vs-btn vs-btn-primary">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-        Add Student
-      </a>
-      <a href="<?= site_url('import') ?>" class="vs-btn vs-btn-outline">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 3 17 10"/><line x1="12" y1="3" x2="12" y2="21"/></svg>
-        Import
-      </a>
-      <button class="vs-btn vs-btn-outline" id="btnGeneratePdf">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
-        Generate Voucher PDF
-      </button>
-    </div>
+     <div class="d-flex gap-2">
+       <a href="<?= site_url(($role === 'admin' ? 'admin' : 'user') . '/vouchers/create') ?>" class="vs-btn vs-btn-primary">
+         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+         Add Student
+       </a>
+       <a href="<?= site_url('import') ?>" class="vs-btn vs-btn-outline">
+         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 3 17 10"/><line x1="12" y1="3" x2="12" y2="21"/></svg>
+         Import
+       </a>
+       <button class="vs-btn vs-btn-primary" id="btnGeneratePdf" disabled>
+         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
+         Generate Voucher PDF
+       </button>
+     </div>
   </div>
 
   <!-- Table -->
@@ -101,7 +101,30 @@
   });
 
   // ── Generate PDF ──────────────────────────────────────────────────────────
-  document.getElementById('btnGeneratePdf').addEventListener('click', function () {
+   const btnGenerate = document.getElementById('btnGeneratePdf');
+
+  function updateGenerateButton() {
+    const hasSelection = document.querySelectorAll('.vs-row-check:checked').length > 0;
+    btnGenerate.disabled = !hasSelection;
+  }
+
+  // Enable/disable button when checkboxes change
+  document.querySelectorAll('.vs-row-check').forEach(cb => {
+    cb.addEventListener('change', updateGenerateButton);
+  });
+
+  // Also update when "Check All" is used
+  const checkAll = document.getElementById('checkAll');
+  if (checkAll) {
+    checkAll.addEventListener('change', () => {
+      document.querySelectorAll('.vs-row-check').forEach(cb => {
+        cb.checked = checkAll.checked;
+      });
+      updateGenerateButton();
+    });
+  }
+
+  btnGenerate.addEventListener('click', function () {
     const checked = document.querySelectorAll('.vs-row-check:checked');
 
     if (checked.length === 0) {
@@ -121,9 +144,7 @@
     formData.append(csrfName, csrfValue);
     checked.forEach(cb => formData.append('voucher_ids[]', cb.value));
 
-    const role      = <?= json_encode($role) ?>;
-    const prefix    = role === 'admin' ? 'admin' : 'user';
-    const generateUrl = <?= json_encode(site_url(($role === 'admin' ? 'admin' : 'user') . '/vouchers/generate-pdf')) ?>;
+    const generateUrl = <?= json_encode(site_url('admin/vouchers/generate-pdf')) ?>;
 
     fetch(generateUrl, {
       method : 'POST',
