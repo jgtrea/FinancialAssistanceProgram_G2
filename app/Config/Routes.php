@@ -87,6 +87,7 @@ $routes->group('user', function ($routes) {
     $routes->get('vouchers/edit/(:num)',         'User\Voucher::edit/$1');
     $routes->post('vouchers/update/(:num)',      'User\Voucher::update/$1');
     $routes->post('vouchers/generate-pdf',       'User\Voucher::generatePdf');
+    $routes->post('/admin/vouchers/generate-pdf', 'VoucherController::generatePdf');
     $routes->get('vouchers/pdf-status/(:num)',   'User\Voucher::checkPdfJob/$1');
     $routes->get('vouchers/pdf-download/(:num)', 'User\Voucher::downloadPdf/$1');
     $routes->post('vouchers/archive',            'User\Voucher::archive');

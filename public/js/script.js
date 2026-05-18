@@ -4,7 +4,14 @@
 
 function getCsrfToken() {
   const input = document.querySelector('input[name^="csrf"]');
-  return input ? { name: input.name, token: input.value } : { name: 'csrf_token', token: '' };
+  if (input) return { name: input.name, token: input.value };
+
+  const metaName  = document.querySelector('meta[name="csrf-token-name"]');
+  const metaValue = document.querySelector('meta[name="csrf-token-value"]');
+  if (metaName && metaValue) {
+    return { name: metaName.content, token: metaValue.content };
+  }
+  return { name: 'csrf_token', token: '' };
 }
 
 function refreshCsrfToken() {
@@ -244,13 +251,12 @@ document.addEventListener('DOMContentLoaded', function () {
   const vouchersTable = document.getElementById('vouchersTable');
   if (!vouchersTable) return;
 
-  // Columns: 0=checkbox 1=StudentID 2=VoucherNo 3=Name 4=School 5=SchoolYear
-  //          6=Eligibility 7=Status 8=Date 9=Actions
+  // Columns: 0=checkbox 1=VoucherNo 2=Name 3=School 4=Status 5=Actions
   const dt = $('#vouchersTable').DataTable({
     destroy: true,
     pageLength: 25,
-    order: [[8, 'desc']],
-    columnDefs: [{ orderable: false, targets: [0, 9] }],
+    order: [[1, 'asc']],
+    columnDefs: [{ orderable: false, targets: [0, 5] }],
     language: {
       search: '',
       searchPlaceholder: 'Search vouchers...',
@@ -270,10 +276,12 @@ document.addEventListener('DOMContentLoaded', function () {
   function updateActionBar() {
     const count         = selectedIds.size;
     const totalFiltered = dt.rows({ search: 'applied' }).count();
-    countLabel.textContent  = count;
-    actionBar.style.display = count > 0 ? 'flex' : 'none';
-    checkAll.checked        = count > 0 && count >= totalFiltered;
-    checkAll.indeterminate  = count > 0 && count < totalFiltered;
+    if (countLabel) countLabel.textContent = count;
+    if (actionBar) actionBar.style.display = count > 0 ? 'flex' : 'none';
+    if (checkAll) {
+      checkAll.checked = count > 0 && count >= totalFiltered;
+      checkAll.indeterminate = count > 0 && count < totalFiltered;
+    }
   }
 
   // Sync visible checkboxes to reflect the Set after any DataTable redraw

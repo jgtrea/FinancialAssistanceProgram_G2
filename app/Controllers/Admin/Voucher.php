@@ -222,16 +222,15 @@ class Voucher extends Controller
             return $this->response->setJSON(['status' => 'not_found']);
         }
 
-        $role   = session()->get('role') ?: 'admin';
         $userId = $this->getCurrentUserId();
 
-        if ($role !== 'admin' && (int) $job->created_by !== $userId) {
+        // Admins can view any job; non-admins only their own.
+        if (session()->get('role') !== 'admin' && (int) $job->created_by !== $userId) {
             return $this->response->setJSON(['status' => 'forbidden']);
         }
 
-        $prefix      = $role === 'admin' ? 'admin' : 'user';
         $downloadUrl = $job->status === 'done'
-            ? site_url("{$prefix}/vouchers/pdf-download/{$jobId}")
+            ? site_url('admin/vouchers/pdf-download/' . $jobId)
             : null;
 
         return $this->response->setJSON([
@@ -246,10 +245,9 @@ class Voucher extends Controller
     {
         $db     = \Config\Database::connect();
         $job    = $db->table('pdf_jobs')->where('job_id', $jobId)->get()->getRow();
-        $role   = session()->get('role') ?: 'admin';
         $userId = $this->getCurrentUserId();
 
-        if (!$job || ($role !== 'admin' && (int) $job->created_by !== $userId)) {
+        if (!$job || (session()->get('role') !== 'admin' && (int) $job->created_by !== $userId)) {
             return redirect()->back()->with('error', 'PDF not found or access denied.');
         }
 

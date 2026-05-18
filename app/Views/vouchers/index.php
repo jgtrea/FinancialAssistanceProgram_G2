@@ -17,9 +17,13 @@
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
         Add Student
       </a>
-      <button class="vs-btn vs-btn-outline" id="btnExport">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7,10 12,15 17,10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-        Export
+      <a href="<?= site_url('import') ?>" class="vs-btn vs-btn-outline">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 3 17 10"/><line x1="12" y1="3" x2="12" y2="21"/></svg>
+        Import
+      </a>
+      <button class="vs-btn vs-btn-outline" id="btnGeneratePdf">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
+        Generate Voucher PDF
       </button>
     </div>
   </div>
@@ -31,7 +35,7 @@
         <table class="table table-hover mb-0" id="vouchersTable">
           <thead class="table-light">
             <tr>
-              <th><input type="checkbox" id="selectAll"></th>
+              <th><input type="checkbox" id="checkAll"></th>
               <th>Voucher No</th>
               <th>Full Name</th>
               <th>School</th>
@@ -43,15 +47,15 @@
             <?php if (!empty($vouchers)): ?>
               <?php foreach ($vouchers as $voucher): ?>
                 <tr>
-                  <td><input type="checkbox" class="voucher-checkbox" value="<?= $voucher['student_id'] ?>"></td>
+                  <td><input type="checkbox" class="vs-row-check" value="<?= $voucher['student_id'] ?>"></td>
                   <td><?= esc($voucher['voucher_no']) ?></td>
                   <td>
                     <?= esc(trim($voucher['first_name'] . ' ' . ($voucher['middle_name'] ?? '') . ' ' . $voucher['last_name'] . ' ' . ($voucher['suffix'] ?? ''))) ?>
                   </td>
                   <td><?= esc($voucher['preferred_senior_high_school']) ?></td>
                   <td>
-                    <span class="badge bg-<?= $voucher['voucher_status'] == 'generated' ? 'success' : 'warning' ?>">
-                      <?= ucfirst($voucher['voucher_status']) ?>
+                    <span class="badge bg-<?= $voucher['voucher_status'] === 'generated' ? 'success' : 'warning' ?>">
+                      <?= ucfirst(str_replace('_', ' ', $voucher['voucher_status'])) ?>
                     </span>
                   </td>
                   <td>
@@ -79,4 +83,71 @@
 
 </div>
 
+<!-- PDF Progress Modal -->
+<div id="pdfProgressModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); align-items:center; justify-content:center; z-index:9999;">
+  <div style="background:white; padding:2rem; border-radius:8px; text-align:center; min-width:280px;">
+    <div class="spinner-border mb-3" role="status"></div>
+    <div id="pdfStatusText">Generating PDF…</div>
+  </div>
+</div>
+
+<?= $this->endSection() ?>
+
+<?= $this->section('scripts') ?>
+<script>
+  // ── Check-all toggle ──────────────────────────────────────────────────────
+  document.getElementById('checkAll').addEventListener('change', function () {
+    document.querySelectorAll('.vs-row-check').forEach(cb => cb.checked = this.checked);
+  });
+
+  // ── Generate PDF ──────────────────────────────────────────────────────────
+  document.getElementById('btnGeneratePdf').addEventListener('click', function () {
+    const checked = document.querySelectorAll('.vs-row-check:checked');
+
+    if (checked.length === 0) {
+      alert('Please select at least one student.');
+      return;
+    }
+
+    const modal      = document.getElementById('pdfProgressModal');
+    const statusText = document.getElementById('pdfStatusText');
+    modal.style.display = 'flex';
+    statusText.textContent = 'Generating PDF…';
+
+    const csrfName  = document.querySelector('meta[name="csrf-token-name"]').getAttribute('content');
+    const csrfValue = document.querySelector('meta[name="csrf-token-value"]').getAttribute('content');
+
+    const formData = new FormData();
+    formData.append(csrfName, csrfValue);
+    checked.forEach(cb => formData.append('voucher_ids[]', cb.value));
+
+    const role      = <?= json_encode($role) ?>;
+    const prefix    = role === 'admin' ? 'admin' : 'user';
+    const generateUrl = <?= json_encode(site_url(($role === 'admin' ? 'admin' : 'user') . '/vouchers/generate-pdf')) ?>;
+
+    fetch(generateUrl, {
+      method : 'POST',
+      headers: { 'X-Requested-With': 'XMLHttpRequest' },
+      body   : formData,
+    })
+    .then(res => {
+      if (!res.ok) throw new Error(`Server responded with status ${res.status}`);
+      return res.json();
+    })
+    .then(data => {
+      modal.style.display = 'none';
+
+      if (data.success && data.download_url) {
+        window.location.href = data.download_url;
+      } else {
+        alert(data.message || 'PDF generation failed.');
+      }
+    })
+    .catch(err => {
+      modal.style.display = 'none';
+      alert('An unexpected error occurred. Please try again.');
+      console.error('[generatePdf]', err);
+    });
+  });
+</script>
 <?= $this->endSection() ?>

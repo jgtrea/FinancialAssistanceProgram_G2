@@ -33,7 +33,6 @@ class Autoload extends AutoloadConfig
         'user',     // app/Helpers/user_helper.php     → current_user(), is_admin()
         'url',      // CI4 built-in: base_url(), site_url()
         'form',     // CI4 built-in: csrf_field(), form_error()
-<<<<<<< HEAD
         'html',     // CI4 built-in: script_tag(), link_tag()
     ];
 }
