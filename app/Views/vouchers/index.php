@@ -4,7 +4,7 @@
 
 <?php $role = $role ?? 'admin' ?>
 
-<div class="container-fluid px-4 py-4">
+<div>
 
   <!-- Page header -->
   <div class="vs-page-header mb-4">

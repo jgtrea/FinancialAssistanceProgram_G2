@@ -1,19 +1,23 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token-name" content="<?= csrf_token() ?>">
     <meta name="csrf-token-value" content="<?= csrf_hash() ?>">
-    <title><?= $title ?? 'Voucher System' ?></title>
-    <?php
-    pre_style('default_lay');
-    pre_style('sbadmin2');
-    ?>
+    <title><?= esc($title ?? 'Voucher System') ?></title>
+    <?php pre_style('app'); ?>
 </head>
 <body class="vs-app bg-white">
 
-<div id="nav-container"></div>
+<body class="sb-nav-fixed">
+    <?= $this->include('partials/topbar') ?>
+
+    <div id="layoutSidenav">
+        <div id="layoutSidenav_nav">
+            <?= $this->include('partials/sidebar') ?>
+        </div>
 
 <main class="container app-content">
     <?= $this->renderSection('content') ?>
@@ -33,5 +37,19 @@
 <?php endif; ?>
 <?= script_tag(base_url('js/nav.js')) ?>
 <?= $this->renderSection('scripts') ?>
+        <div id="layoutSidenav_content">
+            <main>
+                <div class="container-fluid px-4 py-4">
+                    <?= $this->renderSection('content') ?>
+                </div>
+            </main>
+
+            <?= $this->include('partials/footer') ?>
+        </div>
+    </div>
+
+    <?php pre_script('app'); ?>
+    <?= $this->renderSection('scripts') ?>
 </body>
+
 </html>
