@@ -27,6 +27,7 @@ class Autoload extends AutoloadConfig
      */
     public $helpers = [
         'asset',
+        'asset',
         'audit',    // app/Helpers/audit_helper.php   → log_action()
         'voucher',  // app/Helpers/voucher_helper.php  → generate_voucher_no(), amount_to_words()
         'user',     // app/Helpers/user_helper.php     → current_user(), is_admin()
