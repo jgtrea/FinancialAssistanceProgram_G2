@@ -27,7 +27,7 @@ $routes->get('admin/archived_users', 'UsersController::archived');
 $routes->post('admin/user_management/restore/(:num)', 'UsersController::restore/$1');
 $routes->get('admin/audit-logs', 'AuditLogController::index');
 $routes->get('audit-logs', 'AuditLogController::index');
-
+$routes->get('admin/dashboard', 'Admin\Dashboard::index');
 // Student routes
 $routes->get('/students', 'StudentController::index');
 $routes->get('/students/form', 'StudentController::form');
