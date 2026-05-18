@@ -50,17 +50,17 @@ $routes->post('/students/mark-generated/(:num)', 'StudentController::markGenerat
     $routes->post('user_management/restore/(:num)', 'UsersController::restore/$1');
     $routes->get('audit-logs',                    'AuditLogController::index');
 
-    // Vouchers
-    $routes->get('vouchers',                      'Admin\Voucher::index');
-    $routes->get('vouchers/create',               'Admin\Voucher::create');
-    $routes->post('vouchers/store',               'Admin\Voucher::store');
-    $routes->get('vouchers/view/(:num)',          'Admin\Voucher::view/$1');
-    $routes->get('vouchers/edit/(:num)',          'Admin\Voucher::edit/$1');
-    $routes->post('vouchers/update/(:num)',       'Admin\Voucher::update/$1');
-    $routes->post('vouchers/generate-pdf',        'Admin\Voucher::generatePdf');
-    $routes->get('vouchers/pdf-status/(:num)',    'Admin\Voucher::checkPdfJob/$1');
-    $routes->get('vouchers/pdf-download/(:num)', 'Admin\Voucher::downloadPdf/$1');
-    $routes->post('vouchers/archive',             'Admin\Voucher::archive');
+    // Vouchers (admin)
+    $routes->get('admin/vouchers',                      'Admin\Voucher::index');
+    $routes->get('admin/vouchers/create',               'Admin\Voucher::create');
+    $routes->post('admin/vouchers/store',               'Admin\Voucher::store');
+    $routes->get('admin/vouchers/view/(:num)',          'Admin\Voucher::view/$1');
+    $routes->get('admin/vouchers/edit/(:num)',          'Admin\Voucher::edit/$1');
+    $routes->post('admin/vouchers/update/(:num)',       'Admin\Voucher::update/$1');
+    $routes->post('admin/vouchers/generate-pdf',        'Admin\Voucher::generatePdf');
+    $routes->get('admin/vouchers/pdf-status/(:num)',    'Admin\Voucher::checkPdfJob/$1');
+    $routes->get('admin/vouchers/pdf-download/(:num)', 'Admin\Voucher::downloadPdf/$1');
+    $routes->post('admin/vouchers/archive',             'Admin\Voucher::archive');
 
 // Signatories
 $routes->get('/signatories', 'SignatoryController::index');
