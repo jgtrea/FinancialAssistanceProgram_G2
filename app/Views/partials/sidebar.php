@@ -31,19 +31,15 @@ $isActive = static function (array|string $paths) use ($uri): string {
                     <div class="sb-nav-link-icon">G</div>
                     Signatories
                 </a>
-                <a class="nav-link <?= $isActive('archive') ?>" href="<?= site_url('archive') ?>">
-                    <div class="sb-nav-link-icon">A</div>
-                    Archive
-                </a>
 
                 <div class="sb-sidenav-menu-heading">Manage</div>
                 <a class="nav-link <?= $isActive('admin/user_management') ?>" href="<?= site_url('admin/user_management') ?>">
                     <div class="sb-nav-link-icon">U</div>
                     Users
                 </a>
-                <a class="nav-link <?= $isActive('admin/archived_users') ?>" href="<?= site_url('admin/archived_users') ?>">
+                <a class="nav-link <?= $isActive('archive?type=user') ?>" href="<?= site_url('archive?type=user') ?>">
                     <div class="sb-nav-link-icon">R</div>
-                    Archived Users
+                    Archive
                 </a>
                 <a class="nav-link <?= $isActive('admin/audit-logs') ?>" href="<?= site_url('admin/audit-logs') ?>">
                     <div class="sb-nav-link-icon">L</div>
@@ -58,7 +54,7 @@ $isActive = static function (array|string $paths) use ($uri): string {
                     <div class="sb-nav-link-icon">G</div>
                     Signatories
                 </a>
-                <a class="nav-link <?= $isActive('archive') ?>" href="<?= site_url('archive') ?>">
+                <a class="nav-link <?= $isActive('archive?type=voucher') ?>" href="<?= site_url('archive?type=voucher') ?>">
                     <div class="sb-nav-link-icon">A</div>
                     Archive
                 </a>

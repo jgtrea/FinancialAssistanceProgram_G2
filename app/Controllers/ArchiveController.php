@@ -8,11 +8,25 @@ class ArchiveController extends BaseController
 {
     public function index()
     {
-        $archiveModel = new StudentArchiveModel();
+        $role = session('role') ?: 'user';
+        $type = $this->request->getGet('type') ?? ($role === 'admin' ? 'user' : 'voucher');
 
-        return view('archive/student_archive', [
-            'title' => 'Student Archive',
-            'archives' => $archiveModel->orderBy('archive_id', 'DESC')->findAll()
-        ]);
+        // Prevent non-admin users from accessing user archive
+        if ($type === 'user' && $role !== 'admin') {
+            $type = 'voucher';
+        }
+
+        $data = [
+            'title' => 'Archive',
+            'type'  => $type,
+        ];
+
+        if ($type === 'user') {
+            $data['users'] = [];
+        } else {
+            $data['vouchers'] = [];
+        }
+
+        return view('archive/index', $data);
     }
 }
