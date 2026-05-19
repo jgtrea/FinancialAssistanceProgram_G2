@@ -139,15 +139,6 @@
           </select>
         </div>
 
-        <div>
-          <label class="vs-label" for="voucher_status">Voucher Status</label>
-          <select id="voucher_status" name="voucher_status" class="vs-input">
-            <?php $status = old('voucher_status', $voucher['voucher_status'] ?? 'not_generated') ?>
-            <option value="not_generated" <?= $status === 'not_generated' ? 'selected' : '' ?>>Not Generated</option>
-            <option value="generated"     <?= $status === 'generated'     ? 'selected' : '' ?>>Generated</option>
-          </select>
-        </div>
-
       </div>
 
       <div class="mt-4 d-flex gap-2">

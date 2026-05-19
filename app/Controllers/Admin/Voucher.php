@@ -79,7 +79,6 @@ class Voucher extends Controller
         helper(['form']);
 
         $rules = [
-            'voucher_no'                   => 'required|max_length[50]',
             'voucher_date'                 => 'required|valid_date',
             'first_name'                   => 'required|max_length[100]',
             'last_name'                    => 'required|max_length[100]',
@@ -94,7 +93,7 @@ class Voucher extends Controller
         }
 
         $studentId = (int) $this->voucherModel->insert([
-            'voucher_no'                   => $this->request->getPost('voucher_no'),
+            'voucher_no'                   => null,
             'voucher_date'                 => $this->request->getPost('voucher_date'),
             'first_name'                   => $this->request->getPost('first_name'),
             'middle_name'                  => $this->request->getPost('middle_name') ?: '',
@@ -109,13 +108,13 @@ class Voucher extends Controller
             'remarks_status'               => $this->request->getPost('remarks_status') ?: '',
             'school_year'                  => $this->request->getPost('school_year'),
             'eligibility_status'           => $this->request->getPost('eligibility_status') ?: 'eligible',
-            'voucher_status'               => $this->request->getPost('voucher_status') ?: 'not_generated',
+            'voucher_status'               => 'not_generated',
             'is_archived'                  => 0,
         ]);
 
         $name = trim($this->request->getPost('first_name') . ' ' . $this->request->getPost('last_name'));
         log_action($this->getCurrentUserId(), 'CREATE_STUDENT',
-            "Created student {$name} (Voucher {$this->request->getPost('voucher_no')})", $studentId);
+            "Created student {$name}", $studentId);
 
         return redirect()->to(site_url('admin/students'))->with('message', 'Student voucher created successfully.');
     }
@@ -160,7 +159,6 @@ class Voucher extends Controller
         helper(['form']);
 
         $rules = [
-            'voucher_no'                   => 'required|max_length[50]',
             'voucher_date'                 => 'required|valid_date',
             'first_name'                   => 'required|max_length[100]',
             'last_name'                    => 'required|max_length[100]',
@@ -175,7 +173,6 @@ class Voucher extends Controller
         }
 
         $this->voucherModel->update($id, [
-            'voucher_no'                   => $this->request->getPost('voucher_no'),
             'voucher_date'                 => $this->request->getPost('voucher_date'),
             'first_name'                   => $this->request->getPost('first_name'),
             'middle_name'                  => $this->request->getPost('middle_name') ?: '',
@@ -190,12 +187,11 @@ class Voucher extends Controller
             'remarks_status'               => $this->request->getPost('remarks_status') ?: '',
             'school_year'                  => $this->request->getPost('school_year'),
             'eligibility_status'           => $this->request->getPost('eligibility_status') ?: 'eligible',
-            'voucher_status'               => $this->request->getPost('voucher_status') ?: 'not_generated',
         ]);
 
         $name = trim($this->request->getPost('first_name') . ' ' . $this->request->getPost('last_name'));
         log_action($this->getCurrentUserId(), 'UPDATE_STUDENT',
-            "Updated student {$name} (Voucher {$this->request->getPost('voucher_no')})", $id);
+            "Updated student {$name}", $id);
 
         return redirect()->to(site_url('admin/students'))->with('message', 'Student voucher updated successfully.');
     }
@@ -210,27 +206,29 @@ class Voucher extends Controller
         }
 
         $ids      = array_map('intval', (array) $ids);
-        $students = $this->voucherModel->getVouchersByIds($ids);
+        $students = $this->prepareStudentsForGeneration($ids);
 
         if (empty($students)) {
             return $this->response->setJSON(['success' => false, 'message' => 'Selected students not found.']);
         }
 
         try {
+            $studentIds = array_column($students, 'student_id');
             $pdfBytes = VoucherPdf::generate($students);
             $userId = $this->getCurrentUserId();
-            $jobId  = $this->savePdfFile($ids, $userId, $pdfBytes);
+            $jobId  = $this->savePdfFile($studentIds, $userId, $pdfBytes);
 
             \Config\Database::connect()
                 ->table('students')
-                ->whereIn('student_id', $ids)
+                ->whereIn('student_id', $studentIds)
                 ->update(['voucher_status' => 'generated']);
 
-            log_action($userId, 'GENERATE_PDF', 'Generated PDF for ' . \count($ids) . ' student(s)');
+            log_action($userId, 'GENERATE_PDF', 'Generated PDF for ' . \count($studentIds) . ' student(s)');
 
             return $this->response->setJSON([
                 'success'      => true,
                 'download_url' => site_url('admin/vouchers/pdf-download/' . $jobId),
+                'vouchers'     => array_column($students, 'voucher_no', 'student_id'),
             ]);
         } catch (\Throwable $e) {
             log_message('error', '[generatePdf] ' . $e->getMessage());
@@ -380,5 +378,25 @@ class Voucher extends Controller
             ]);
 
         return $jobId;
+    }
+
+    protected function prepareStudentsForGeneration(array $ids): array
+    {
+        $students = $this->voucherModel->getVouchersByIds($ids);
+        if (empty($students)) {
+            return [];
+        }
+
+        foreach ($students as $student) {
+            if (!empty($student['voucher_no'])) {
+                continue;
+            }
+
+            $this->voucherModel->update((int) $student['student_id'], [
+                'voucher_no' => generate_voucher_no(),
+            ]);
+        }
+
+        return $this->voucherModel->getVouchersByIds($ids);
     }
 }

@@ -23,7 +23,6 @@
     <table id="userManagementTable" class="table table-bordered table-striped align-middle js-data-table" data-search-placeholder="Search users..." style="width:100%">
         <thead>
             <tr>
-                <th>ID</th>
                 <th>Full Name</th>
                 <th>Username</th>
                 <th>Role</th>
@@ -34,11 +33,10 @@
         <tbody>
             <?php foreach ($users as $user): ?>
                 <tr>
-                    <td><?= esc($user['user_id']) ?></td>
                     <td><?= esc($user['full_name']) ?></td>
                     <td><?= esc($user['username']) ?></td>
                     <td><span class="badge bg-info text-dark"><?= esc($user['role']) ?></span></td>
-                    <td><?= $user['last_login'] ?? 'Never' ?></td>
+                    <td><?= !empty($user['last_login']) ? esc(date('M d, Y h:i A', strtotime($user['last_login']))) : 'Never' ?></td>
                     <td class="actions-cell">
                         <a href="<?= base_url('admin/user_management/form/' . $user['user_id']) ?>" class="btn btn-warning btn-sm">
                             Edit

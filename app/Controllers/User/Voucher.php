@@ -46,7 +46,6 @@ class Voucher extends AdminVoucher
         helper(['form']);
 
         $rules = [
-            'voucher_no'                   => 'required|max_length[50]',
             'voucher_date'                 => 'required|valid_date',
             'first_name'                   => 'required|max_length[100]',
             'last_name'                    => 'required|max_length[100]',
@@ -61,7 +60,7 @@ class Voucher extends AdminVoucher
         }
 
         $studentId = (int) $this->voucherModel->insert([
-            'voucher_no'                   => $this->request->getPost('voucher_no'),
+            'voucher_no'                   => null,
             'voucher_date'                 => $this->request->getPost('voucher_date'),
             'first_name'                   => $this->request->getPost('first_name'),
             'middle_name'                  => $this->request->getPost('middle_name') ?: '',
@@ -82,7 +81,7 @@ class Voucher extends AdminVoucher
 
         $name = trim($this->request->getPost('first_name') . ' ' . $this->request->getPost('last_name'));
         log_action(session()->get('user_id'), 'CREATE_STUDENT',
-            "Created student {$name} (Voucher {$this->request->getPost('voucher_no')})", $studentId);
+            "Created student {$name}", $studentId);
 
         return redirect()->to(site_url('user/students'))->with('message', 'Student added successfully.');
     }
@@ -109,7 +108,6 @@ class Voucher extends AdminVoucher
         helper(['form']);
 
         $rules = [
-            'voucher_no'                   => 'required|max_length[50]',
             'voucher_date'                 => 'required|valid_date',
             'first_name'                   => 'required|max_length[100]',
             'last_name'                    => 'required|max_length[100]',
@@ -124,7 +122,6 @@ class Voucher extends AdminVoucher
         }
 
         $this->voucherModel->update($id, [
-            'voucher_no'                   => $this->request->getPost('voucher_no'),
             'voucher_date'                 => $this->request->getPost('voucher_date'),
             'first_name'                   => $this->request->getPost('first_name'),
             'middle_name'                  => $this->request->getPost('middle_name') ?: '',
@@ -143,7 +140,7 @@ class Voucher extends AdminVoucher
 
         $name = trim($this->request->getPost('first_name') . ' ' . $this->request->getPost('last_name'));
         log_action(session()->get('user_id'), 'UPDATE_STUDENT',
-            "Updated student {$name} (Voucher {$this->request->getPost('voucher_no')})", $id);
+            "Updated student {$name}", $id);
 
         return redirect()->to(site_url('user/students'))->with('message', 'Student updated successfully.');
     }
@@ -158,7 +155,7 @@ class Voucher extends AdminVoucher
         }
 
         $ids      = array_map('intval', (array) $ids);
-        $students = $this->voucherModel->getVouchersByIds($ids);
+        $students = $this->prepareStudentsForGeneration($ids);
 
         if (empty($students)) {
             return $this->response->setJSON(['success' => false, 'message' => 'No valid students found.']);
@@ -174,11 +171,12 @@ class Voucher extends AdminVoucher
                 ->whereIn('student_id', $studentIds)
                 ->update(['voucher_status' => 'generated']);
 
-            log_action($userId, 'GENERATE_PDF', 'Generated PDF for ' . \count($ids) . ' student(s)');
+            log_action($userId, 'GENERATE_PDF', 'Generated PDF for ' . \count($studentIds) . ' student(s)');
 
             return $this->response->setJSON([
                 'success'      => true,
                 'download_url' => site_url('user/vouchers/pdf-download/' . $jobId),
+                'vouchers'     => array_column($students, 'voucher_no', 'student_id'),
             ]);
         } catch (\Throwable $e) {
             log_message('error', '[generatePdf user] ' . $e->getMessage());

@@ -108,7 +108,15 @@ class VoucherModel extends Model
             ->orderBy('created_at', 'DESC')
             ->get()->getResultArray();
 
-        return array_map(fn ($row) => $this->uppercaseRow($row), $rows);
+        $rows = array_map(fn ($row) => $this->uppercaseRow($row), $rows);
+        $counts = $this->getGenerateCounts(array_column($rows, 'student_id'));
+
+        foreach ($rows as &$row) {
+            $row['generate_count'] = $counts[(int) $row['student_id']] ?? 0;
+        }
+        unset($row);
+
+        return $rows;
     }
 
     public function getStudentById(int $studentId): ?array
@@ -146,9 +154,40 @@ class VoucherModel extends Model
             ")
             ->whereIn('student_id', $ids)
             ->where('is_archived', 0)
-            ->orderBy('voucher_no', 'ASC')
+            ->orderBy('student_id', 'ASC')
             ->get()->getResultArray();
 
         return array_map(fn ($row) => $this->uppercaseRow($row), $rows);
+    }
+
+    public function getGenerateCounts(array $studentIds): array
+    {
+        $studentIds = array_values(array_unique(array_map('intval', $studentIds)));
+        if (empty($studentIds)) {
+            return [];
+        }
+
+        $counts = array_fill_keys($studentIds, 0);
+        $jobs = $this->db->table('pdf_jobs')
+            ->select('voucher_ids')
+            ->where('status', 'done')
+            ->get()
+            ->getResultArray();
+
+        foreach ($jobs as $job) {
+            $ids = json_decode((string) ($job['voucher_ids'] ?? ''), true);
+            if (!is_array($ids)) {
+                continue;
+            }
+
+            foreach ($ids as $id) {
+                $id = (int) $id;
+                if (array_key_exists($id, $counts)) {
+                    $counts[$id]++;
+                }
+            }
+        }
+
+        return $counts;
     }
 }

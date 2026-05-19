@@ -322,7 +322,7 @@ document.addEventListener('DOMContentLoaded', function () {
     pageLength: 25,
     responsive: true,
     order: [[1, 'asc']],
-    columnDefs: [{ orderable: false, targets: [0, 9] }],
+    columnDefs: [{ orderable: false, targets: [0, 8] }],
     language: {
       search: '',
       searchPlaceholder: 'Search vouchers...',
@@ -427,8 +427,16 @@ document.addEventListener('DOMContentLoaded', function () {
           const cb  = document.querySelector('.vs-row-check[value="' + id + '"]');
           const row = cb ? cb.closest('tr') : null;
           if (row) {
-            const cell = row.cells[7];
-            if (cell) cell.innerHTML = '<span class="vs-status-badge vs-status-generated">Generated</span>';
+            const voucherCell = row.querySelector('.js-voucher-no');
+            if (voucherCell && data.vouchers && data.vouchers[id]) {
+              voucherCell.textContent = data.vouchers[id];
+            }
+
+            const countCell = row.querySelector('.js-generate-count');
+            if (countCell) {
+              const count = parseInt(countCell.textContent, 10) || 0;
+              countCell.textContent = count + 1;
+            }
           }
         });
 
@@ -531,13 +539,13 @@ document.addEventListener('DOMContentLoaded', function () {
   if (btnExport) {
     btnExport.addEventListener('click', function () {
       const rows    = dt.rows({ search: 'applied' }).data();
-      const headers = ['Voucher No', 'Name', 'Preferred School', 'School Year', 'Eligibility', 'Status', 'Date'];
+      const headers = ['Voucher No', 'Name', 'Preferred School', 'School Year', 'Eligibility', 'Generate Count', 'Date'];
       const clean   = str => '"' + String(str).replace(/<[^>]*>/g, '').replace(/"/g, '""').trim() + '"';
       const csvRows = [headers.join(',')];
 
       rows.each(row => csvRows.push([
-        clean(row[2]), clean(row[3]), clean(row[4]),
-        clean(row[5]), clean(row[6]), clean(row[7]), clean(row[8]),
+        clean(row[1]), clean(row[2]), clean(row[3]),
+        clean(row[4]), clean(row[5]), clean(row[6]), clean(row[7]),
       ].join(',')));
 
       const blob = new Blob([csvRows.join('\n')], { type: 'text/csv' });
