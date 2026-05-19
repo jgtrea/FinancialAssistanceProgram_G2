@@ -63,6 +63,17 @@ class Voucher extends Controller
         ]);
     }
 
+    public function generate()
+    {
+        $students = $this->voucherModel->getVouchersForListing();
+
+        return view('vouchers/generate', [
+            'title'    => 'Voucher Generation',
+            'vouchers' => $students,
+            'role'     => session()->get('role') ?: 'admin',
+        ]);
+    }
+
     // ── Show create form ───────────────────────────────────────────────────────
     public function create()
     {
@@ -82,11 +93,12 @@ class Voucher extends Controller
         helper(['form']);
 
         $rules = [
-            'voucher_no'                   => 'required|max_length[50]',
             'voucher_date'                 => 'required|valid_date',
             'first_name'                   => 'required|max_length[100]',
             'last_name'                    => 'required|max_length[100]',
+            'suffix'                       => 'permit_empty|in_list[JR.,SR.,II,III,IV]',
             'preferred_senior_high_school' => 'required|max_length[200]',
+            'remarks_status'               => 'permit_empty|in_list[PASSED,FOR REVIEW,FAILED]',
             'school_year'                  => 'required|max_length[20]',
         ];
 
@@ -95,7 +107,7 @@ class Voucher extends Controller
         }
 
         $studentId = (int) $this->voucherModel->insert([
-            'voucher_no'                   => $this->request->getPost('voucher_no'),
+            'voucher_no'                   => null,
             'voucher_date'                 => $this->request->getPost('voucher_date'),
             'first_name'                   => $this->request->getPost('first_name'),
             'middle_name'                  => $this->request->getPost('middle_name') ?: '',
@@ -110,15 +122,15 @@ class Voucher extends Controller
             'remarks_status'               => $this->request->getPost('remarks_status') ?: '',
             'school_year'                  => $this->request->getPost('school_year'),
             'eligibility_status'           => $this->request->getPost('eligibility_status') ?: 'eligible',
-            'voucher_status'               => $this->request->getPost('voucher_status') ?: 'not_generated',
+            'voucher_status'               => 'not_generated',
             'is_archived'                  => 0,
         ]);
 
         $name = trim($this->request->getPost('first_name') . ' ' . $this->request->getPost('last_name'));
         log_action($this->getCurrentUserId(), 'CREATE_STUDENT',
-            "Created student {$name} (Voucher {$this->request->getPost('voucher_no')})", $studentId);
+            "Created student {$name}", $studentId);
 
-        return redirect()->to(site_url('admin/vouchers'))->with('message', 'Student voucher created successfully.');
+        return redirect()->to(site_url('admin/students'))->with('message', 'Student voucher created successfully.');
     }
 
     // ── Show a student/voucher detail page ────────────────────────────────────
@@ -127,7 +139,7 @@ class Voucher extends Controller
         $student = $this->voucherModel->getStudentById($id);
 
         if (!$student) {
-            return redirect()->to(site_url('admin/vouchers'))->with('error', 'Student not found.');
+            return redirect()->to(site_url('admin/students'))->with('error', 'Student not found.');
         }
 
         return view('vouchers/view', [
@@ -144,7 +156,7 @@ class Voucher extends Controller
 
         $student = $this->voucherModel->getStudentById($id);
         if (!$student) {
-            return redirect()->to(site_url('admin/vouchers'))->with('error', 'Student not found.');
+            return redirect()->to(site_url('admin/students'))->with('error', 'Student not found.');
         }
 
         return view('vouchers/form', [
@@ -161,11 +173,12 @@ class Voucher extends Controller
         helper(['form']);
 
         $rules = [
-            'voucher_no'                   => 'required|max_length[50]',
             'voucher_date'                 => 'required|valid_date',
             'first_name'                   => 'required|max_length[100]',
             'last_name'                    => 'required|max_length[100]',
+            'suffix'                       => 'permit_empty|in_list[JR.,SR.,II,III,IV]',
             'preferred_senior_high_school' => 'required|max_length[200]',
+            'remarks_status'               => 'permit_empty|in_list[PASSED,FOR REVIEW,FAILED]',
             'school_year'                  => 'required|max_length[20]',
         ];
 
@@ -174,7 +187,6 @@ class Voucher extends Controller
         }
 
         $this->voucherModel->update($id, [
-            'voucher_no'                   => $this->request->getPost('voucher_no'),
             'voucher_date'                 => $this->request->getPost('voucher_date'),
             'first_name'                   => $this->request->getPost('first_name'),
             'middle_name'                  => $this->request->getPost('middle_name') ?: '',
@@ -189,14 +201,13 @@ class Voucher extends Controller
             'remarks_status'               => $this->request->getPost('remarks_status') ?: '',
             'school_year'                  => $this->request->getPost('school_year'),
             'eligibility_status'           => $this->request->getPost('eligibility_status') ?: 'eligible',
-            'voucher_status'               => $this->request->getPost('voucher_status') ?: 'not_generated',
         ]);
 
         $name = trim($this->request->getPost('first_name') . ' ' . $this->request->getPost('last_name'));
         log_action($this->getCurrentUserId(), 'UPDATE_STUDENT',
-            "Updated student {$name} (Voucher {$this->request->getPost('voucher_no')})", $id);
+            "Updated student {$name}", $id);
 
-        return redirect()->to(site_url('admin/vouchers'))->with('message', 'Student voucher updated successfully.');
+        return redirect()->to(site_url('admin/students'))->with('message', 'Student voucher updated successfully.');
     }
 
     // ── Queue PDF generation; the spark worker processes the job in the background ─
@@ -208,7 +219,9 @@ class Voucher extends Controller
             return $this->response->setJSON(['success' => false, 'message' => 'No students selected.']);
         }
 
-        $students = $this->voucherModel->getVouchersByIds($ids);
+        // Assign voucher numbers up front (fast DB op). The slow PDF render
+        // is then queued for background processing.
+        $students = $this->prepareStudentsForGeneration($ids);
 
         if (empty($students)) {
             return $this->response->setJSON(['success' => false, 'message' => 'Selected students not found.']);
@@ -225,6 +238,7 @@ class Voucher extends Controller
             'queued'     => true,
             'job_id'     => $jobId,
             'status_url' => site_url("{$prefix}/vouchers/pdf-status/{$jobId}"),
+            'vouchers'   => array_column($students, 'voucher_no', 'student_id'),
         ]);
     }
 
@@ -400,5 +414,25 @@ class Voucher extends Controller
             ]);
 
         return $jobId;
+    }
+
+    protected function prepareStudentsForGeneration(array $ids): array
+    {
+        $students = $this->voucherModel->getVouchersByIds($ids);
+        if (empty($students)) {
+            return [];
+        }
+
+        foreach ($students as $student) {
+            if (!empty($student['voucher_no'])) {
+                continue;
+            }
+
+            $this->voucherModel->update((int) $student['student_id'], [
+                'voucher_no' => generate_voucher_no(),
+            ]);
+        }
+
+        return $this->voucherModel->getVouchersByIds($ids);
     }
 }

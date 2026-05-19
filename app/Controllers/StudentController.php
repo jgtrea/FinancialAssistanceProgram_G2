@@ -50,7 +50,7 @@ class StudentController extends BaseController
         $studentId = $this->request->getPost('student_id');
 
         $data = [
-            'voucher_no' => $this->request->getPost('voucher_no'),
+            'voucher_no' => $this->request->getPost('voucher_no') ?: null,
             'voucher_date' => $this->request->getPost('voucher_date'),
             'first_name' => $this->request->getPost('first_name'),
             'middle_name' => $this->request->getPost('middle_name'),
@@ -173,7 +173,15 @@ class StudentController extends BaseController
 
         $studentModel = new StudentModel();
 
+        $student = $studentModel->find($id);
+        $voucherNo = $student['voucher_no'] ?? null;
+
+        if (empty($voucherNo)) {
+            $voucherNo = generate_voucher_no();
+        }
+
         $studentModel->update($id, [
+            'voucher_no' => $voucherNo,
             'voucher_status' => 'generated'
         ]);
 

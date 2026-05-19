@@ -106,6 +106,7 @@ body {
 .vs-input:focus { border-color: var(--navy-md); background: #fff; box-shadow: 0 0 0 3px rgba(26,58,92,.08); }
 .vs-input::placeholder { color: #b5b2ac; }
 .vs-input-error { border-color: var(--danger) !important; }
+.vs-uppercase { text-transform: uppercase; }
 .vs-input-wrap { position: relative; }
 .vs-input-wrap .vs-input { padding-right: 2.5rem; }
 .vs-input-icon { position: absolute; left: .85rem; top: 50%; transform: translateY(-50%); color: #b5b2ac; pointer-events: none; display: flex; align-items: center; }
@@ -130,6 +131,23 @@ body {
 /* ── Card ── */
 .vs-card { background: var(--card-bg); border-radius: 12px; border: 1px solid var(--border); overflow: hidden; }
 .vs-card-body { padding: 1.25rem; }
+
+.vs-form-grid {
+  display: grid;
+  gap: 1rem;
+  align-items: start;
+}
+.vs-form-grid-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.vs-span-2 { grid-column: span 2; }
+
+@media (max-width: 1100px) {
+  .vs-form-grid-4 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (max-width: 640px) {
+  .vs-form-grid-4 { grid-template-columns: 1fr; }
+  .vs-span-2 { grid-column: span 1; }
+}
 
 /* ── ID badge ── */
 .vs-id-badge { font-size: .72rem; font-weight: 600; font-family: var(--font-mono); color: var(--navy-md); background: var(--surface); border: 1px solid var(--border); border-radius: 5px; padding: .15rem .5rem; white-space: nowrap; }
@@ -182,6 +200,7 @@ body {
 /* ── Checkboxes ── */
 .vs-check { width: 15px; height: 15px; accent-color: var(--navy); cursor: pointer; }
 .vs-th-check { width: 38px; }
+.vs-sidebar-icon { width: 18px; height: 18px; display: block; }
 
 /* ── Action bar ── */
 .vs-action-bar { display: flex; align-items: center; justify-content: space-between; background: var(--navy); color: #fff; border-radius: 10px; padding: .75rem 1.25rem; margin-bottom: 1rem; gap: 1rem; flex-wrap: wrap; }

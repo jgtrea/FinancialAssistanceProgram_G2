@@ -98,6 +98,33 @@ function initAlertDismiss() {
   });
 }
 
+function initGenericDataTables() {
+  if (!window.jQuery || !$.fn.DataTable) return;
+
+  document.querySelectorAll('table.js-data-table').forEach(table => {
+    if ($.fn.DataTable.isDataTable(table)) return;
+
+    const lastColumn = table.querySelectorAll('thead th').length - 1;
+    const actionTargets = lastColumn >= 0 ? [lastColumn] : [];
+
+    $(table).DataTable({
+      pageLength: 25,
+      responsive: true,
+      scrollX: true,
+      autoWidth: false,
+      order: [],
+      columnDefs: actionTargets.length ? [{ orderable: false, targets: actionTargets }] : [],
+      language: {
+        search: '',
+        searchPlaceholder: table.dataset.searchPlaceholder || 'Search...',
+        emptyTable: table.dataset.emptyText || 'No records found.',
+        lengthMenu: 'Show _MENU_ entries',
+        info: 'Showing _START_ to _END_ of _TOTAL_',
+      },
+    });
+  });
+}
+
 
 /* ============================================================
    PDF JOB TRACKING — survives page navigation via localStorage
@@ -220,6 +247,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
   initPasswordToggles();
   initAlertDismiss();
+  initGenericDataTables();
 
 });
 
@@ -387,8 +415,9 @@ document.addEventListener('DOMContentLoaded', function () {
   const dt = $('#vouchersTable').DataTable({
     destroy: true,
     pageLength: 25,
+    responsive: true,
     order: [[1, 'asc']],
-    columnDefs: [{ orderable: false, targets: [0, 5] }],
+    columnDefs: [{ orderable: false, targets: [0, 8] }],
     language: {
       search: '',
       searchPlaceholder: 'Search vouchers...',
@@ -431,7 +460,7 @@ document.addEventListener('DOMContentLoaded', function () {
   dt.on('page.dt search.dt order.dt', syncPageCheckboxes);
 
   // Select / deselect ALL filtered rows across every page
-  checkAll.addEventListener('change', function () {
+  if (checkAll) checkAll.addEventListener('change', function () {
     const filteredIds = dt.rows({ search: 'applied' }).ids().toArray()
       .map(function (rid) { return rid.replace('row-', ''); });
     if (this.checked) {
@@ -495,8 +524,16 @@ document.addEventListener('DOMContentLoaded', function () {
           const cb  = document.querySelector('.vs-row-check[value="' + id + '"]');
           const row = cb ? cb.closest('tr') : null;
           if (row) {
-            const cell = row.cells[7];
-            if (cell) cell.innerHTML = '<span class="vs-status-badge vs-status-generated">Generated</span>';
+            const voucherCell = row.querySelector('.js-voucher-no');
+            if (voucherCell && data.vouchers && data.vouchers[id]) {
+              voucherCell.textContent = data.vouchers[id];
+            }
+
+            const countCell = row.querySelector('.js-generate-count');
+            if (countCell) {
+              const count = parseInt(countCell.textContent, 10) || 0;
+              countCell.textContent = count + 1;
+            }
           }
         });
 
@@ -612,13 +649,13 @@ document.addEventListener('DOMContentLoaded', function () {
   if (btnExport) {
     btnExport.addEventListener('click', function () {
       const rows    = dt.rows({ search: 'applied' }).data();
-      const headers = ['Voucher No', 'Name', 'Preferred School', 'School Year', 'Eligibility', 'Status', 'Date'];
+      const headers = ['Voucher No', 'Name', 'Preferred School', 'School Year', 'Eligibility', 'Generate Count', 'Date'];
       const clean   = str => '"' + String(str).replace(/<[^>]*>/g, '').replace(/"/g, '""').trim() + '"';
       const csvRows = [headers.join(',')];
 
       rows.each(row => csvRows.push([
-        clean(row[2]), clean(row[3]), clean(row[4]),
-        clean(row[5]), clean(row[6]), clean(row[7]), clean(row[8]),
+        clean(row[1]), clean(row[2]), clean(row[3]),
+        clean(row[4]), clean(row[5]), clean(row[6]), clean(row[7]),
       ].join(',')));
 
       const blob = new Blob([csvRows.join('\n')], { type: 'text/csv' });

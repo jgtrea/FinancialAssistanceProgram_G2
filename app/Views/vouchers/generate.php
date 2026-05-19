@@ -10,21 +10,17 @@
   <div class="vs-page-header mb-4">
     <div>
       <h4 class="vs-page-title"><?= esc($title) ?></h4>
-      <p class="vs-page-sub">Manage student financial assistance records.</p>
+      <p class="vs-page-sub">Select students and generate printable voucher PDFs.</p>
     </div>
     <div class="d-flex gap-2">
-      <a href="<?= site_url($prefix . '/students/create') ?>" class="vs-btn vs-btn-primary">
-        <?= asset_icon('add', ['stroke-width' => '2.5']) ?>
-        Add Student
+      <a href="<?= site_url($prefix . '/students') ?>" class="vs-btn vs-btn-outline">
+        <?= asset_icon('students') ?>
+        Student Management
       </a>
-      <a href="<?= site_url($prefix . '/vouchers') ?>" class="vs-btn vs-btn-outline">
-        <?= asset_icon('voucher-add') ?>
-        Generate Vouchers
-      </a>
-      <a href="<?= site_url('import') ?>" class="vs-btn vs-btn-outline">
-        <?= asset_icon('import') ?>
-        Import
-      </a>
+      <button class="vs-btn vs-btn-outline" id="btnExport">
+        <?= asset_icon('download') ?>
+        Export
+      </button>
     </div>
   </div>
 
@@ -35,11 +31,20 @@
     <div class="vs-alert vs-alert-success mb-3"><?= esc(session()->getFlashdata('message')) ?></div>
   <?php endif ?>
 
+  <div class="vs-action-bar" id="actionBar" style="display:none">
+    <span class="vs-action-bar-count"><span id="selectedCount">0</span> selected</span>
+    <button class="vs-btn vs-btn-primary" id="btnGeneratePdf">
+      <?= asset_icon('voucher-add') ?>
+      Generate Vouchers
+    </button>
+  </div>
+
   <div class="vs-card">
     <div class="vs-card-body">
-      <table id="studentsTable" class="vs-datatable js-data-table" data-search-placeholder="Search students..." style="width:100%">
+      <table id="vouchersTable" class="vs-datatable" style="width:100%">
         <thead>
           <tr>
+            <th class="vs-th-check"><input type="checkbox" id="checkAll" class="vs-check"></th>
             <th>Voucher No.</th>
             <th>Name</th>
             <th>Preferred School</th>
@@ -52,8 +57,9 @@
         </thead>
         <tbody>
           <?php foreach ($vouchers as $v): ?>
-          <tr>
-            <td><?= esc($v['voucher_no'] ?: '-') ?></td>
+          <tr id="row-<?= esc($v['student_id'], 'attr') ?>">
+            <td><input type="checkbox" class="vs-check vs-row-check" value="<?= esc($v['student_id'], 'attr') ?>"></td>
+            <td class="js-voucher-no"><?= esc($v['voucher_no'] ?: '-') ?></td>
             <td><?= esc($v['full_name']) ?></td>
             <td><?= esc($v['preferred_senior_high_school']) ?></td>
             <td><?= esc($v['school_year']) ?></td>
@@ -63,14 +69,11 @@
               </span>
             </td>
             <td>
-              <?= esc((string) ($v['generate_count'] ?? 0)) ?>
+              <span class="js-generate-count"><?= esc((string) ($v['generate_count'] ?? 0)) ?></span>
             </td>
             <td><?= date('M d, Y', strtotime($v['created_at'])) ?></td>
             <td>
-              <div class="d-flex gap-1">
-                <a href="<?= site_url($prefix . '/students/view/' . $v['student_id']) ?>" class="vs-tbl-btn vs-tbl-btn-view">View</a>
-                <a href="<?= site_url($prefix . '/students/edit/' . $v['student_id']) ?>" class="vs-tbl-btn vs-tbl-btn-edit">Edit</a>
-              </div>
+              <a href="<?= site_url($prefix . '/students/view/' . $v['student_id']) ?>" class="vs-tbl-btn vs-tbl-btn-view">View</a>
             </td>
           </tr>
           <?php endforeach ?>
@@ -80,5 +83,9 @@
   </div>
 
 </div>
+
+<form id="pdfForm" method="POST" action="<?= site_url($prefix . '/vouchers/generate-pdf') ?>" style="display:none">
+  <?= csrf_field() ?>
+</form>
 
 <?= $this->endSection() ?>

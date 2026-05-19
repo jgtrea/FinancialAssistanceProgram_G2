@@ -33,8 +33,14 @@ $routes->group('admin', ['filter' => 'role:admin'], function ($routes) {
     $routes->post('user_management/restore/(:num)', 'UsersController::restore/$1');
     $routes->get('audit-logs',                    'AuditLogController::index');
 
+    // Students
+    $routes->get('students',                      'Admin\Voucher::index');
+    $routes->get('students/create',               'Admin\Voucher::create');
+    $routes->get('students/view/(:num)',          'Admin\Voucher::view/$1');
+    $routes->get('students/edit/(:num)',          'Admin\Voucher::edit/$1');
+
     // Vouchers
-    $routes->get('vouchers',                      'Admin\Voucher::index');
+    $routes->get('vouchers',                      'Admin\Voucher::generate');
     $routes->get('vouchers/create',               'Admin\Voucher::create');
     $routes->post('vouchers/store',               'Admin\Voucher::store');
     $routes->get('vouchers/view/(:num)',          'Admin\Voucher::view/$1');
@@ -59,8 +65,14 @@ $routes->group('user', ['filter' => 'auth'], function ($routes) {
     // Audit Logs (own only)
     $routes->get('audit-logs', 'AuditLogController::index');
 
+    // Students
+    $routes->get('students',                      'User\Voucher::index');
+    $routes->get('students/create',               'User\Voucher::create');
+    $routes->get('students/view/(:num)',          'User\Voucher::view/$1');
+    $routes->get('students/edit/(:num)',          'User\Voucher::edit/$1');
+
     // Vouchers
-    $routes->get('vouchers',                      'User\Voucher::index');
+    $routes->get('vouchers',                      'User\Voucher::generate');
     $routes->get('vouchers/create',               'User\Voucher::create');
     $routes->post('vouchers/store',               'User\Voucher::store');
     $routes->get('vouchers/view/(:num)',          'User\Voucher::view/$1');

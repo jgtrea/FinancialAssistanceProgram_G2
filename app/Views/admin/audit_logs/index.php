@@ -43,14 +43,12 @@
 </form>
 
 <div class="table-responsive">
-    <table class="table table-bordered table-striped align-middle">
+    <table id="adminAuditLogsTable" class="table table-bordered table-striped align-middle js-data-table" data-search-placeholder="Search audit logs..." style="width:100%">
         <thead>
             <tr>
                 <th style="width: 80px;">ID</th>
                 <th style="width: 170px;">Date/Time</th>
                 <th style="width: 180px;">User</th>
-                <th style="width: 130px;">Student ID</th>
-                <th style="width: 130px;">Voucher ID</th>
                 <th style="width: 170px;">Action</th>
                 <th>Description</th>
                 <th style="width: 150px;">IP Address</th>
@@ -58,30 +56,31 @@
             </tr>
         </thead>
         <tbody>
-            <?php if (!empty($logs)): ?>
-                <?php foreach ($logs as $log): ?>
-                    <tr>
-                        <td><?= esc($log['audit_id']) ?></td>
-                        <td><?= esc($log['created_at'] ?? '-') ?></td>
-                        <td>
-                            <?= esc($log['full_name'] ?? $log['username'] ?? '-') ?>
-                            <?php if (!empty($log['user_id'])): ?>
-                                <span class="text-muted small">#<?= esc($log['user_id']) ?></span>
-                            <?php endif; ?>
-                        </td>
-                        <td><?= esc($log['student_id'] ?? '-') ?></td>
-                        <td><?= esc($log['voucher_id'] ?? '-') ?></td>
-                        <td><span class="badge text-bg-dark"><?= esc($log['action']) ?></span></td>
-                        <td><?= esc($log['description']) ?></td>
-                        <td><?= esc($log['ip_address']) ?></td>
-                        <td class="small"><?= esc($log['user_agent']) ?></td>
-                    </tr>
-                <?php endforeach; ?>
-            <?php else: ?>
+            <?php foreach ($logs as $log): ?>
                 <tr>
-                    <td colspan="9" class="text-center">No audit logs found.</td>
+                    <td><?= esc($log['audit_id']) ?></td>
+                    <td><?= !empty($log['created_at']) ? esc(date('M d, Y h:i A', strtotime($log['created_at']))) : '-' ?></td>
+                    <td>
+                        <?= esc($log['full_name'] ?? $log['username'] ?? '-') ?>
+                        <?php if (!empty($log['user_id'])): ?>
+                            <span class="text-muted small">#<?= esc($log['user_id']) ?></span>
+                        <?php endif; ?>
+                    </td>
+                    <td><span class="badge text-bg-dark"><?= esc($log['action']) ?></span></td>
+                    <td>
+                        <?= esc($log['description']) ?>
+                        <?php if (!empty($log['student_id']) || !empty($log['voucher_id'])): ?>
+                            <div class="text-muted small">
+                                <?php if (!empty($log['student_id'])): ?>Student ID: <?= esc($log['student_id']) ?><?php endif; ?>
+                                <?php if (!empty($log['student_id']) && !empty($log['voucher_id'])): ?> &middot; <?php endif; ?>
+                                <?php if (!empty($log['voucher_id'])): ?>Voucher ID: <?= esc($log['voucher_id']) ?><?php endif; ?>
+                            </div>
+                        <?php endif; ?>
+                    </td>
+                    <td><?= esc($log['ip_address']) ?></td>
+                    <td class="small"><?= esc($log['user_agent']) ?></td>
                 </tr>
-            <?php endif; ?>
+            <?php endforeach; ?>
         </tbody>
     </table>
 </div>

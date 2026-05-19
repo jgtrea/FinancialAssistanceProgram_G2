@@ -22,7 +22,7 @@
     <div class="vs-detail-grid">
       <div>
         <strong>Voucher No.</strong>
-        <p><?= esc($voucher['voucher_no']) ?></p>
+        <p><?= esc($voucher['voucher_no'] ?: '-') ?></p>
       </div>
       <div>
         <strong>Voucher Date</strong>
@@ -83,10 +83,6 @@
       <div>
         <strong>Eligibility</strong>
         <p><?= esc(ucfirst(str_replace('_', ' ', $voucher['eligibility_status']))) ?></p>
-      </div>
-      <div>
-        <strong>Voucher Status</strong>
-        <p><?= esc(ucfirst(str_replace('_', ' ', $voucher['voucher_status']))) ?></p>
       </div>
     </div>
   </div>

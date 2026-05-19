@@ -1,5 +1,5 @@
 <nav class="sb-topnav navbar navbar-expand navbar-dark bg-dark">
-    <a class="navbar-brand ps-3" href="<?= site_url(session('role') === 'admin' ? 'admin/dashboard' : 'user/vouchers') ?>">
+    <a class="navbar-brand ps-3" href="<?= site_url(session('role') === 'admin' ? 'admin/dashboard' : 'user/dashboard') ?>">
         FAP
     </a>
     <button class="btn btn-link btn-sm order-1 order-lg-0 me-4 me-lg-0 text-white" id="sidebarToggle" type="button" aria-label="Toggle navigation">

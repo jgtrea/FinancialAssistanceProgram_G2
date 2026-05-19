@@ -10,14 +10,14 @@ class UsersController extends BaseController
     {
         $model = new UserLogin();
         $data['users'] = $model->where('is_active', 1)->findAll();
-        return view('admin/user_management/index', $data);
+        return view('admin/index', $data);
     }
 
     public function form($id = null)
     {
         $model = new UserLogin();
         $data['user'] = $id ? $model->find($id) : null;
-        return view('admin/user_management/form', $data);
+        return view('admin/form', $data);
     }
 
     public function save()

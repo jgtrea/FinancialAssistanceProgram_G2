@@ -20,10 +20,9 @@
 <?php endif; ?>
 
 <div class="table-responsive">
-    <table class="table table-bordered table-striped align-middle">
+    <table id="userManagementTable" class="table table-bordered table-striped align-middle js-data-table" data-search-placeholder="Search users..." style="width:100%">
         <thead>
             <tr>
-                <th>ID</th>
                 <th>Full Name</th>
                 <th>Username</th>
                 <th>Role</th>
@@ -32,30 +31,23 @@
             </tr>
         </thead>
         <tbody>
-            <?php if (!empty($users)): ?>
-                <?php foreach ($users as $user): ?>
-                    <tr>
-                        <td><?= esc($user['user_id']) ?></td>
-                        <td><?= esc($user['full_name']) ?></td>
-                        <td><?= esc($user['username']) ?></td>
-                        <td><span class="badge bg-info text-dark"><?= esc($user['role']) ?></span></td>
-                        <td><?= $user['last_login'] ?? 'Never' ?></td>
-                        <td class="actions-cell">
-                            <a href="<?= base_url('admin/user_management/form/' . $user['user_id']) ?>" class="btn btn-warning btn-sm">
-                                Edit
-                            </a>
-                            <button class="btn btn-danger btn-sm archiveUserBtn"
-                                    data-archive-url="<?= base_url('admin/user_management/archive/' . $user['user_id']) ?>">
-                                Archive
-                            </button>
-                        </td>
-                    </tr>
-                <?php endforeach; ?>
-            <?php else: ?>
+            <?php foreach ($users as $user): ?>
                 <tr>
-                    <td colspan="6" class="text-center">No users found.</td>
+                    <td><?= esc($user['full_name']) ?></td>
+                    <td><?= esc($user['username']) ?></td>
+                    <td><span class="badge bg-info text-dark"><?= esc($user['role']) ?></span></td>
+                    <td><?= !empty($user['last_login']) ? esc(date('M d, Y h:i A', strtotime($user['last_login']))) : 'Never' ?></td>
+                    <td class="actions-cell">
+                        <a href="<?= base_url('admin/user_management/form/' . $user['user_id']) ?>" class="btn btn-warning btn-sm">
+                            Edit
+                        </a>
+                        <button class="btn btn-danger btn-sm archiveUserBtn"
+                                data-archive-url="<?= base_url('admin/user_management/archive/' . $user['user_id']) ?>">
+                            Archive
+                        </button>
+                    </td>
                 </tr>
-            <?php endif; ?>
+            <?php endforeach; ?>
         </tbody>
     </table>
 </div>

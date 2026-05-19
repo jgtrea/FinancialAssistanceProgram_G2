@@ -76,7 +76,7 @@
                 </div>
                 <div class="card-body">
                     <div class="table-responsive">
-                        <table class="table table-bordered" width="100%" cellspacing="0">
+                        <table id="recentVouchersTable" class="table table-bordered js-data-table" data-search-placeholder="Search recent vouchers..." width="100%" cellspacing="0">
                             <thead>
                                 <tr>
                                     <th>Voucher No</th>
