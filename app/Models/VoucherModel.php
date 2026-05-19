@@ -21,10 +21,80 @@ class VoucherModel extends Model
     protected $useTimestamps = true;
     protected $createdField  = 'created_at';
     protected $updatedField  = 'updated_at';
+    protected $beforeInsert   = ['normalizeUppercase'];
+    protected $beforeUpdate   = ['normalizeUppercase'];
+    protected $afterFind      = ['normalizeUppercaseResult'];
+
+    protected array $uppercaseFields = [
+        'voucher_no',
+        'first_name',
+        'middle_name',
+        'last_name',
+        'suffix',
+        'gender',
+        'junior_high_school',
+        'preferred_senior_high_school',
+        'contact_number',
+        'remarks_status',
+        'school_year',
+    ];
+
+    protected function normalizeUppercase(array $data): array
+    {
+        if (!isset($data['data']) || !is_array($data['data'])) {
+            return $data;
+        }
+
+        foreach ($this->uppercaseFields as $field) {
+            if (isset($data['data'][$field]) && is_string($data['data'][$field])) {
+                $data['data'][$field] = $this->upper(trim($data['data'][$field]));
+            }
+        }
+
+        return $data;
+    }
+
+    protected function normalizeUppercaseResult(array $data): array
+    {
+        if (empty($data['data'])) {
+            return $data;
+        }
+
+        if (isset($data['data'][0]) && is_array($data['data'][0])) {
+            foreach ($data['data'] as &$row) {
+                $row = $this->uppercaseRow($row);
+            }
+            unset($row);
+        } elseif (is_array($data['data'])) {
+            $data['data'] = $this->uppercaseRow($data['data']);
+        }
+
+        return $data;
+    }
+
+    protected function uppercaseRow(array $row): array
+    {
+        foreach ($this->uppercaseFields as $field) {
+            if (isset($row[$field]) && is_string($row[$field])) {
+                $row[$field] = $this->upper($row[$field]);
+            }
+        }
+
+        if (isset($row['full_name']) && is_string($row['full_name'])) {
+            $row['full_name'] = $this->upper($row['full_name']);
+        }
+
+        return $row;
+    }
+
+    protected function upper(string $value): string
+    {
+        return function_exists('mb_strtoupper') ? mb_strtoupper($value, 'UTF-8') : strtoupper($value);
+    }
 
     public function getVouchersForListing(): array
     {
-        return $this->db->table('students')
+        $rows = $this->db->table('students')
             ->select("
                 student_id, voucher_no, voucher_date,
                 first_name, middle_name, last_name, suffix,
@@ -37,11 +107,13 @@ class VoucherModel extends Model
             ->where('is_archived', 0)
             ->orderBy('created_at', 'DESC')
             ->get()->getResultArray();
+
+        return array_map(fn ($row) => $this->uppercaseRow($row), $rows);
     }
 
     public function getStudentById(int $studentId): ?array
     {
-        return $this->db->table('students')
+        $row = $this->db->table('students')
             ->select("
                 student_id, voucher_no, voucher_date,
                 first_name, middle_name, last_name, suffix,
@@ -54,13 +126,15 @@ class VoucherModel extends Model
             ")
             ->where('student_id', $studentId)
             ->get()->getRowArray() ?: null;
+
+        return $row ? $this->uppercaseRow($row) : null;
     }
 
     public function getVouchersByIds(array $ids): array
     {
         if (empty($ids)) return [];
 
-        return $this->db->table('students')
+        $rows = $this->db->table('students')
             ->select("
                 student_id, voucher_no, voucher_date,
                 first_name, middle_name, last_name, suffix,
@@ -74,5 +148,7 @@ class VoucherModel extends Model
             ->where('is_archived', 0)
             ->orderBy('voucher_no', 'ASC')
             ->get()->getResultArray();
+
+        return array_map(fn ($row) => $this->uppercaseRow($row), $rows);
     }
 }

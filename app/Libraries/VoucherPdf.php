@@ -59,12 +59,26 @@ class VoucherPdf
                 if ($s !== null) {
                     $mpdf->Text(self::X_VOUCHER_NO, $st + self::Y_VOUCHER_NO, $s['voucher_no'] ?? '');
                     $mpdf->Text(self::X_DATE,        $st + self::Y_VOUCHER_NO, date('m/d/Y', strtotime($s['voucher_date'] ?? 'now')));
-                    $mpdf->Text(self::X_RECIPIENT,   $st + self::Y_RECIPIENT,  $s['full_name'] ?? '');
+                    $mpdf->Text(self::X_RECIPIENT,   $st + self::Y_RECIPIENT,  self::formatVoucherName($s['full_name'] ?? ''));
                     $mpdf->Text(self::X_SCHOOL,      $st + self::Y_SCHOOL,     $s['preferred_senior_high_school'] ?? '');
                 }
             }
         }
 
         return $mpdf->Output('', 'S');
+    }
+
+    protected static function formatVoucherName(string $name): string
+    {
+        $name = trim(preg_replace('/\s+/', ' ', $name));
+        if ($name === '') {
+            return '';
+        }
+
+        $name = function_exists('mb_convert_case')
+            ? mb_convert_case($name, MB_CASE_TITLE, 'UTF-8')
+            : ucwords(strtolower($name));
+
+        return str_replace([' Jr.', ' Sr.', ' Ii', ' Iii', ' Iv'], [' Jr.', ' Sr.', ' II', ' III', ' IV'], $name);
     }
 }

@@ -10,21 +10,17 @@
   <div class="vs-page-header mb-4">
     <div>
       <h4 class="vs-page-title"><?= esc($title) ?></h4>
-      <p class="vs-page-sub">Manage student financial assistance records.</p>
+      <p class="vs-page-sub">Select students and generate printable voucher PDFs.</p>
     </div>
     <div class="d-flex gap-2">
-      <a href="<?= site_url($prefix . '/students/create') ?>" class="vs-btn vs-btn-primary">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-        Add Student
+      <a href="<?= site_url($prefix . '/students') ?>" class="vs-btn vs-btn-outline">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 18a5 5 0 0 0-10 0"/><circle cx="12" cy="8" r="4"/><path d="M4 22h16"/></svg>
+        Student Management
       </a>
-      <a href="<?= site_url($prefix . '/vouchers') ?>" class="vs-btn vs-btn-outline">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
-        Generate Vouchers
-      </a>
-      <a href="<?= site_url('import') ?>" class="vs-btn vs-btn-outline">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-        Import
-      </a>
+      <button class="vs-btn vs-btn-outline" id="btnExport">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Export
+      </button>
     </div>
   </div>
 
@@ -35,11 +31,20 @@
     <div class="vs-alert vs-alert-success mb-3"><?= esc(session()->getFlashdata('message')) ?></div>
   <?php endif ?>
 
+  <div class="vs-action-bar" id="actionBar" style="display:none">
+    <span class="vs-action-bar-count"><span id="selectedCount">0</span> selected</span>
+    <button class="vs-btn vs-btn-primary" id="btnGeneratePdf">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
+      Generate Vouchers
+    </button>
+  </div>
+
   <div class="vs-card">
     <div class="vs-card-body">
-      <table id="studentsTable" class="vs-datatable js-data-table" data-search-placeholder="Search students..." style="width:100%">
+      <table id="vouchersTable" class="vs-datatable" style="width:100%">
         <thead>
           <tr>
+            <th class="vs-th-check"><input type="checkbox" id="checkAll" class="vs-check"></th>
             <th>Student ID</th>
             <th>Voucher No.</th>
             <th>Name</th>
@@ -53,7 +58,8 @@
         </thead>
         <tbody>
           <?php foreach ($vouchers as $v): ?>
-          <tr>
+          <tr id="row-<?= esc($v['student_id'], 'attr') ?>">
+            <td><input type="checkbox" class="vs-check vs-row-check" value="<?= esc($v['student_id'], 'attr') ?>"></td>
             <td><span class="vs-id-badge">STD-<?= str_pad($v['student_id'], 4, '0', STR_PAD_LEFT) ?></span></td>
             <td><?= esc($v['voucher_no']) ?></td>
             <td><?= esc($v['full_name']) ?></td>
@@ -71,10 +77,7 @@
             </td>
             <td><?= date('M d, Y', strtotime($v['created_at'])) ?></td>
             <td>
-              <div class="d-flex gap-1">
-                <a href="<?= site_url($prefix . '/students/view/' . $v['student_id']) ?>" class="vs-tbl-btn vs-tbl-btn-view">View</a>
-                <a href="<?= site_url($prefix . '/students/edit/' . $v['student_id']) ?>" class="vs-tbl-btn vs-tbl-btn-edit">Edit</a>
-              </div>
+              <a href="<?= site_url($prefix . '/students/view/' . $v['student_id']) ?>" class="vs-tbl-btn vs-tbl-btn-view">View</a>
             </td>
           </tr>
           <?php endforeach ?>
@@ -84,5 +87,9 @@
   </div>
 
 </div>
+
+<form id="pdfForm" method="POST" action="<?= site_url($prefix . '/vouchers/generate-pdf') ?>" style="display:none">
+  <?= csrf_field() ?>
+</form>
 
 <?= $this->endSection() ?>

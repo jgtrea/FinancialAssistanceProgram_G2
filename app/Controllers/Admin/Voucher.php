@@ -49,6 +49,17 @@ class Voucher extends Controller
         ]);
     }
 
+    public function generate()
+    {
+        $students = $this->voucherModel->getVouchersForListing();
+
+        return view('vouchers/generate', [
+            'title'    => 'Voucher Generation',
+            'vouchers' => $students,
+            'role'     => session()->get('role') ?: 'admin',
+        ]);
+    }
+
     // ── Show create form ───────────────────────────────────────────────────────
     public function create()
     {
@@ -72,7 +83,9 @@ class Voucher extends Controller
             'voucher_date'                 => 'required|valid_date',
             'first_name'                   => 'required|max_length[100]',
             'last_name'                    => 'required|max_length[100]',
+            'suffix'                       => 'permit_empty|in_list[JR.,SR.,II,III,IV]',
             'preferred_senior_high_school' => 'required|max_length[200]',
+            'remarks_status'               => 'permit_empty|in_list[PASSED,FOR REVIEW,FAILED]',
             'school_year'                  => 'required|max_length[20]',
         ];
 
@@ -104,7 +117,7 @@ class Voucher extends Controller
         log_action($this->getCurrentUserId(), 'CREATE_STUDENT',
             "Created student {$name} (Voucher {$this->request->getPost('voucher_no')})", $studentId);
 
-        return redirect()->to(site_url('admin/vouchers'))->with('message', 'Student voucher created successfully.');
+        return redirect()->to(site_url('admin/students'))->with('message', 'Student voucher created successfully.');
     }
 
     // ── Show a student/voucher detail page ────────────────────────────────────
@@ -113,7 +126,7 @@ class Voucher extends Controller
         $student = $this->voucherModel->getStudentById($id);
 
         if (!$student) {
-            return redirect()->to(site_url('admin/vouchers'))->with('error', 'Student not found.');
+            return redirect()->to(site_url('admin/students'))->with('error', 'Student not found.');
         }
 
         return view('vouchers/view', [
@@ -130,7 +143,7 @@ class Voucher extends Controller
 
         $student = $this->voucherModel->getStudentById($id);
         if (!$student) {
-            return redirect()->to(site_url('admin/vouchers'))->with('error', 'Student not found.');
+            return redirect()->to(site_url('admin/students'))->with('error', 'Student not found.');
         }
 
         return view('vouchers/form', [
@@ -151,7 +164,9 @@ class Voucher extends Controller
             'voucher_date'                 => 'required|valid_date',
             'first_name'                   => 'required|max_length[100]',
             'last_name'                    => 'required|max_length[100]',
+            'suffix'                       => 'permit_empty|in_list[JR.,SR.,II,III,IV]',
             'preferred_senior_high_school' => 'required|max_length[200]',
+            'remarks_status'               => 'permit_empty|in_list[PASSED,FOR REVIEW,FAILED]',
             'school_year'                  => 'required|max_length[20]',
         ];
 
@@ -182,7 +197,7 @@ class Voucher extends Controller
         log_action($this->getCurrentUserId(), 'UPDATE_STUDENT',
             "Updated student {$name} (Voucher {$this->request->getPost('voucher_no')})", $id);
 
-        return redirect()->to(site_url('admin/vouchers'))->with('message', 'Student voucher updated successfully.');
+        return redirect()->to(site_url('admin/students'))->with('message', 'Student voucher updated successfully.');
     }
 
     // ── Generate PDF and mark students as generated ───────────────────────────

@@ -20,7 +20,7 @@ class Authentication extends BaseController
     {
         $model = new UserLogin();
 
-        $username = $this->request->getPost('username');
+        $username = strtolower(trim((string) $this->request->getPost('username')));
         $password = $this->request->getPost('password');
 
         $user = $model->where('username', $username)->first();

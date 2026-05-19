@@ -17,7 +17,7 @@
 <?php endif; ?>
 
 <div class="table-responsive page-table">
-    <table class="table table-bordered table-striped mb-0">
+    <table id="signatoriesTable" class="table table-bordered table-striped mb-0 js-data-table" data-search-placeholder="Search signatories..." style="width:100%">
         <thead>
             <tr>
                 <th>Full Name</th>
@@ -28,46 +28,40 @@
         </thead>
 
         <tbody>
-            <?php if (!empty($signatories)): ?>
-                <?php foreach ($signatories as $signatory): ?>
-                    <?php
-                        $fullName = trim(
-                            $signatory['first_name'] . ' ' .
-                            ($signatory['middle_name'] ?? '') . ' ' .
-                            $signatory['last_name'] . ' ' .
-                            ($signatory['suffix'] ?? '')
-                        );
-                    ?>
+            <?php foreach ($signatories as $signatory): ?>
+                <?php
+                    $fullName = trim(
+                        $signatory['first_name'] . ' ' .
+                        ($signatory['middle_name'] ?? '') . ' ' .
+                        $signatory['last_name'] . ' ' .
+                        ($signatory['suffix'] ?? '')
+                    );
+                ?>
 
-                    <tr>
-                        <td><?= esc($fullName) ?></td>
-                        <td><?= esc($signatory['position_title']) ?></td>
-                        <td><?= $signatory['is_active'] ? 'Active' : 'Inactive' ?></td>
-                        <td class="actions-cell">
-                            <a href="<?= base_url('/signatories/form/' . $signatory['signatory_id']) ?>"
-                               class="btn btn-warning btn-sm">
-                                Edit
-                            </a>
-
-                            <?php if ($signatory['is_active']): ?>
-                                <form action="<?= base_url('/signatories/deactivate/' . $signatory['signatory_id']) ?>"
-                                      method="post"
-                                      class="inline-form">
-                                    <?= csrf_field() ?>
-                                    <button class="btn btn-danger btn-sm"
-                                            onclick="return confirm('Deactivate this signatory?')">
-                                        Deactivate
-                                    </button>
-                                </form>
-                            <?php endif; ?>
-                        </td>
-                    </tr>
-                <?php endforeach; ?>
-            <?php else: ?>
                 <tr>
-                    <td colspan="4" class="text-center">No signatories found.</td>
+                    <td><?= esc($fullName) ?></td>
+                    <td><?= esc($signatory['position_title']) ?></td>
+                    <td><?= $signatory['is_active'] ? 'Active' : 'Inactive' ?></td>
+                    <td class="actions-cell">
+                        <a href="<?= base_url('/signatories/form/' . $signatory['signatory_id']) ?>"
+                           class="btn btn-warning btn-sm">
+                            Edit
+                        </a>
+
+                        <?php if ($signatory['is_active']): ?>
+                            <form action="<?= base_url('/signatories/deactivate/' . $signatory['signatory_id']) ?>"
+                                  method="post"
+                                  class="inline-form">
+                                <?= csrf_field() ?>
+                                <button class="btn btn-danger btn-sm"
+                                        onclick="return confirm('Deactivate this signatory?')">
+                                    Deactivate
+                                </button>
+                            </form>
+                        <?php endif; ?>
+                    </td>
                 </tr>
-            <?php endif; ?>
+            <?php endforeach; ?>
         </tbody>
     </table>
 </div>

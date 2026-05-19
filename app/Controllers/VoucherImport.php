@@ -91,6 +91,6 @@ class VoucherImport extends BaseController
             "Imported {$count} student/voucher record(s) from " . $file->getClientName()
         );
 
-        return redirect()->to(site_url("{$prefix}/vouchers"))->with('success', $count . ' records successfully imported.');
+        return redirect()->to(site_url("{$prefix}/students"))->with('success', $count . ' records successfully imported.');
     }
 }

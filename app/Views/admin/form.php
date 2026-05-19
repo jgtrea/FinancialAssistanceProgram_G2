@@ -1,7 +1,13 @@
 <?= $this->extend('layouts/main') ?>   
 <?= $this->section('content') ?>
 
-<h3><?= isset($user) ? 'Edit User' : 'Add User' ?></h3>
+<div class="vs-page-header mb-4">
+    <div>
+        <h4 class="vs-page-title"><?= isset($user) ? 'Edit User' : 'Add User' ?></h4>
+        <p class="vs-page-sub">Manage login details and account access.</p>
+    </div>
+    <a href="<?= base_url('admin/user_management') ?>" class="vs-btn vs-btn-outline">Back to users</a>
+</div>
 
 <div id="alertBox"></div>
 
@@ -10,48 +16,52 @@
 
     <input type="hidden" name="user_id" value="<?= $user['user_id'] ?? '' ?>">
 
-    <div class="row card-main p-4 shadow-soft">
-        <div class="col-md-6 mb-3">
-            <label class="text-label">Full Name</label>
-            <input type="text" name="full_name" class="form-control" required value="<?= esc($user['full_name'] ?? '') ?>">
+    <div class="vs-card">
+      <div class="vs-card-body">
+        <div class="vs-form-grid vs-form-grid-4">
+        <div class="vs-span-2">
+            <label class="vs-label">Full Name</label>
+            <input type="text" name="full_name" class="vs-input vs-uppercase" required value="<?= esc($user['full_name'] ?? '') ?>">
         </div>
 
-        <div class="col-md-6 mb-3">
-            <label class="text-label">Username</label>
-            <input type="text" name="username" class="form-control" required value="<?= esc($user['username'] ?? '') ?>">
+        <div>
+            <label class="vs-label">Username</label>
+            <input type="email" name="username" class="vs-input" required value="<?= esc($user['username'] ?? '') ?>">
         </div>
 
-        <div class="col-md-6 mb-3">
-            <label class="text-label">Password <?= isset($user) ? '<small class="text-muted">(Leave blank to keep current)</small>' : '' ?></label>
-            <input type="password" name="password" class="form-control" <?= isset($user) ? '' : 'required' ?>>
+        <div>
+            <label class="vs-label">Password <?= isset($user) ? '<span class="vs-label-hint">(leave blank to keep current)</span>' : '' ?></label>
+            <input type="password" name="password" class="vs-input" <?= isset($user) ? '' : 'required' ?>>
         </div>
 
-        <div class="col-md-3 mb-3">
-            <label class="text-label">Role</label>
-            <select name="role" class="form-control" required>
+        <div>
+            <label class="vs-label">Role</label>
+            <select name="role" class="vs-input" required>
                 <option value="admin" <?= (($user['role'] ?? '') === 'admin') ? 'selected' : '' ?>>Admin</option>
                 <option value="staff" <?= (($user['role'] ?? '') === 'staff') ? 'selected' : '' ?>>Staff</option>
                 <option value="viewer" <?= (($user['role'] ?? '') === 'viewer') ? 'selected' : '' ?>>Viewer</option>
             </select>
         </div>
 
-        <div class="col-md-3 mb-3">
-            <label class="text-label">Account Status</label>
-            <select name="is_active" class="form-control">
+        <div>
+            <label class="vs-label">Account Status</label>
+            <select name="is_active" class="vs-input">
                 <option value="1" <?= (($user['is_active'] ?? '1') == '1') ? 'selected' : '' ?>>Active</option>
                 <option value="0" <?= (($user['is_active'] ?? '') == '0') ? 'selected' : '' ?>>Inactive</option>
             </select>
         </div>
+        </div>
+      </div>
     </div>
 
     <div class="mt-4 d-flex gap-2">
-        <button type="submit" class="btn btn-primary">
+        <button type="submit" class="vs-btn vs-btn-primary">
             <?= isset($user) ? 'Update User' : 'Save User' ?>
         </button>
-        <a href="<?= base_url('admin/user_management') ?>" class="btn btn-secondary">Back</a>
+        <a href="<?= base_url('admin/user_management') ?>" class="vs-btn vs-btn-outline">Cancel</a>
 
         <?php if (isset($user)): ?>
-        <button type="button" class="btn btn-danger deleteUserBtn ms-auto"
+        <button type="button" class="vs-btn vs-btn-danger deleteUserBtn ms-auto"
                 data-delete-url="<?= base_url('admin/user_management/delete/' . $user['user_id']) ?>">
             Remove
         </button>

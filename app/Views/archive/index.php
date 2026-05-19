@@ -28,7 +28,7 @@
                 <h5 class="mb-0">Archived Users</h5>
             </div>
             <div class="card-body">
-                <table class="table table-bordered table-hover">
+                <table id="archivedUsersTable" class="table table-bordered table-hover js-data-table" data-search-placeholder="Search archived users..." style="width:100%">
                     <thead>
                         <tr>
                             <th>ID</th>
@@ -40,24 +40,18 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <?php if (!empty($users)): ?>
-                            <?php foreach ($users as $user): ?>
-                                <tr>
-                                    <td><?= esc($user['user_id']) ?></td>
-                                    <td><?= esc($user['name']) ?></td>
-                                    <td><?= esc($user['email']) ?></td>
-                                    <td><?= esc($user['role']) ?></td>
-                                    <td><?= esc($user['archived_at']) ?></td>
-                                    <td>
-                                        <a href="<?= site_url('archive/restore/user/' . $user['user_id']) ?>" class="btn btn-sm btn-success">Restore</a>
-                                    </td>
-                                </tr>
-                            <?php endforeach; ?>
-                        <?php else: ?>
+                        <?php foreach ($users as $user): ?>
                             <tr>
-                                <td colspan="6" class="text-center">No archived users found.</td>
+                                <td><?= esc($user['user_id']) ?></td>
+                                <td><?= esc($user['name'] ?? $user['full_name'] ?? '') ?></td>
+                                <td><?= esc($user['email'] ?? $user['username'] ?? '') ?></td>
+                                <td><?= esc($user['role']) ?></td>
+                                <td><?= esc($user['archived_at'] ?? '') ?></td>
+                                <td>
+                                    <a href="<?= site_url('archive/restore/user/' . $user['user_id']) ?>" class="btn btn-sm btn-success">Restore</a>
+                                </td>
                             </tr>
-                        <?php endif; ?>
+                        <?php endforeach; ?>
                     </tbody>
                 </table>
             </div>
@@ -70,7 +64,7 @@
                 <h5 class="mb-0">Archived Vouchers / Students</h5>
             </div>
             <div class="card-body">
-                <table class="table table-bordered table-hover">
+                <table id="archivedVouchersTable" class="table table-bordered table-hover js-data-table" data-search-placeholder="Search archived students..." style="width:100%">
                     <thead>
                         <tr>
                             <th>ID</th>
@@ -83,25 +77,19 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <?php if (!empty($vouchers)): ?>
-                            <?php foreach ($vouchers as $voucher): ?>
-                                <tr>
-                                    <td><?= esc($voucher['student_id']) ?></td>
-                                    <td><?= esc($voucher['voucher_no']) ?></td>
-                                    <td><?= esc($voucher['full_name']) ?></td>
-                                    <td><?= esc($voucher['preferred_senior_high_school']) ?></td>
-                                    <td><?= esc($voucher['voucher_status']) ?></td>
-                                    <td><?= esc($voucher['archived_at']) ?></td>
-                                    <td>
-                                        <a href="<?= site_url('archive/restore/voucher/' . $voucher['student_id']) ?>" class="btn btn-sm btn-success">Restore</a>
-                                    </td>
-                                </tr>
-                            <?php endforeach; ?>
-                        <?php else: ?>
+                        <?php foreach ($vouchers as $voucher): ?>
                             <tr>
-                                <td colspan="7" class="text-center">No archived vouchers/students found.</td>
+                                <td><?= esc($voucher['student_id']) ?></td>
+                                <td><?= esc($voucher['voucher_no']) ?></td>
+                                <td><?= esc($voucher['full_name']) ?></td>
+                                <td><?= esc($voucher['preferred_senior_high_school']) ?></td>
+                                <td><?= esc($voucher['voucher_status']) ?></td>
+                                <td><?= esc($voucher['archived_at']) ?></td>
+                                <td>
+                                    <a href="<?= site_url('archive/restore/voucher/' . $voucher['student_id']) ?>" class="btn btn-sm btn-success">Restore</a>
+                                </td>
                             </tr>
-                        <?php endif; ?>
+                        <?php endforeach; ?>
                     </tbody>
                 </table>
             </div>

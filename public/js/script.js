@@ -98,6 +98,33 @@ function initAlertDismiss() {
   });
 }
 
+function initGenericDataTables() {
+  if (!window.jQuery || !$.fn.DataTable) return;
+
+  document.querySelectorAll('table.js-data-table').forEach(table => {
+    if ($.fn.DataTable.isDataTable(table)) return;
+
+    const lastColumn = table.querySelectorAll('thead th').length - 1;
+    const actionTargets = lastColumn >= 0 ? [lastColumn] : [];
+
+    $(table).DataTable({
+      pageLength: 25,
+      responsive: true,
+      scrollX: true,
+      autoWidth: false,
+      order: [],
+      columnDefs: actionTargets.length ? [{ orderable: false, targets: actionTargets }] : [],
+      language: {
+        search: '',
+        searchPlaceholder: table.dataset.searchPlaceholder || 'Search...',
+        emptyTable: table.dataset.emptyText || 'No records found.',
+        lengthMenu: 'Show _MENU_ entries',
+        info: 'Showing _START_ to _END_ of _TOTAL_',
+      },
+    });
+  });
+}
+
 
 /* ============================================================
    SIDEBAR
@@ -125,6 +152,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
   initPasswordToggles();
   initAlertDismiss();
+  initGenericDataTables();
 
 });
 
@@ -292,8 +320,9 @@ document.addEventListener('DOMContentLoaded', function () {
   const dt = $('#vouchersTable').DataTable({
     destroy: true,
     pageLength: 25,
+    responsive: true,
     order: [[1, 'asc']],
-    columnDefs: [{ orderable: false, targets: [0, 5] }],
+    columnDefs: [{ orderable: false, targets: [0, 9] }],
     language: {
       search: '',
       searchPlaceholder: 'Search vouchers...',
@@ -336,7 +365,7 @@ document.addEventListener('DOMContentLoaded', function () {
   dt.on('page.dt search.dt order.dt', syncPageCheckboxes);
 
   // Select / deselect ALL filtered rows across every page
-  checkAll.addEventListener('change', function () {
+  if (checkAll) checkAll.addEventListener('change', function () {
     const filteredIds = dt.rows({ search: 'applied' }).ids().toArray()
       .map(function (rid) { return rid.replace('row-', ''); });
     if (this.checked) {
