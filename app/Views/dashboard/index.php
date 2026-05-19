@@ -2,8 +2,13 @@
 
 <?= $this->section('content') ?>
 
-<div class="container-fluid">
-    <h1 class="h3 mb-4 text-gray-800">Dashboard</h1>
+<div class="container-fluid px-4 py-4">
+    <div class="vs-page-header mb-4">
+        <div>
+            <h4 class="vs-page-title">Dashboard</h4>
+            <p class="vs-page-sub">Review voucher activity and recent student records.</p>
+        </div>
+    </div>
 
     <div class="row">
         <div class="col-xl-3 col-md-6 mb-4">
@@ -70,13 +75,16 @@
 
     <div class="row">
         <div class="col-lg-12 mb-4">
-            <div class="card shadow mb-4">
-                <div class="card-header py-3">
-                    <h6 class="m-0 font-weight-bold text-primary">Recent Vouchers</h6>
-                </div>
-                <div class="card-body">
-                    <div class="table-responsive">
-                        <table id="recentVouchersTable" class="table table-bordered js-data-table" data-search-placeholder="Search recent vouchers..." width="100%" cellspacing="0">
+            <div class="vs-card">
+                <div class="vs-card-body">
+                    <div class="vs-page-header mb-3">
+                        <div>
+                            <h4 class="vs-page-title">Recent Vouchers</h4>
+                        </div>
+                        <?php $voucherPrefix = session()->get('role') === 'admin' ? 'admin' : 'user'; ?>
+                        <a href="<?= site_url($voucherPrefix . '/vouchers') ?>" class="vs-btn vs-btn-outline">See All</a>
+                    </div>
+                        <table id="recentVouchersTable" class="vs-datatable" width="100%" cellspacing="0">
                             <thead>
                                 <tr>
                                     <th>Voucher No</th>
@@ -98,7 +106,6 @@
                                 <?php endforeach; ?>
                             </tbody>
                         </table>
-                    </div>
                 </div>
             </div>
         </div>

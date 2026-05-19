@@ -101,16 +101,28 @@ function initAlertDismiss() {
 function initGenericDataTables() {
   if (!window.jQuery || !$.fn.DataTable) return;
 
+  const controlsDom =
+    "<'row align-items-center mb-3'<'col-sm-12 col-md-6'f><'col-sm-12 col-md-6 text-md-end'l>>" +
+    "<'row'<'col-sm-12'tr>>" +
+    "<'row align-items-center mt-3'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7'p>>";
+
   document.querySelectorAll('table.js-data-table').forEach(table => {
     if ($.fn.DataTable.isDataTable(table)) return;
 
-    const lastColumn = table.querySelectorAll('thead th').length - 1;
-    const actionTargets = lastColumn >= 0 ? [lastColumn] : [];
+    const actionTargets = Array.from(table.querySelectorAll('thead th'))
+      .map((th, index) => {
+        const isActions = th.classList.contains('actions-column')
+          || th.textContent.trim().toLowerCase() === 'actions';
+
+        return isActions ? index : -1;
+      })
+      .filter(index => index >= 0);
 
     $(table).DataTable({
+      dom: controlsDom,
       pageLength: 25,
+      lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, 'All']],
       responsive: true,
-      scrollX: true,
       autoWidth: false,
       order: [],
       columnDefs: actionTargets.length ? [{ orderable: false, targets: actionTargets }] : [],
@@ -248,8 +260,54 @@ document.addEventListener('DOMContentLoaded', function () {
   initPasswordToggles();
   initAlertDismiss();
   initGenericDataTables();
+  initStudentArchiveButtons();
 
 });
+
+function initStudentArchiveButtons() {
+  document.addEventListener('click', async function (e) {
+    const btn = e.target.closest('.archiveStudentBtn');
+    if (!btn) return;
+
+    const archiveUrl = btn.dataset.archiveUrl;
+    const studentId = btn.dataset.studentId;
+
+    if (!archiveUrl || !studentId || !confirm('Archive this student?')) {
+      return;
+    }
+
+    const csrf = getCsrfToken();
+    const formData = new FormData();
+    formData.append(csrf.name, csrf.token);
+    formData.append('voucher_ids[]', studentId);
+
+    btn.disabled = true;
+
+    try {
+      const res = await fetch(archiveUrl, ajaxOptions({ method: 'POST', body: formData }));
+      const data = await res.json();
+
+      if (data.success) {
+        const row = btn.closest('tr');
+        const table = row ? row.closest('table') : null;
+        if (row && table && window.jQuery && $.fn.DataTable && $.fn.DataTable.isDataTable(table)) {
+          $(table).DataTable().row(row).remove().draw();
+        } else if (row) {
+          row.remove();
+        }
+        showAlert(data.message || 'Student archived successfully.', 'success');
+        refreshCsrfToken();
+      } else {
+        showAlert(data.message || 'Archive failed.', 'error');
+        btn.disabled = false;
+      }
+    } catch (err) {
+      showAlert('Failed to archive student.', 'error');
+      console.error(err);
+      btn.disabled = false;
+    }
+  });
+}
 
 
 /* ============================================================
@@ -417,15 +475,21 @@ document.addEventListener('DOMContentLoaded', function () {
   // Columns: 0=checkbox 1=VoucherNo 2=Name 3=School 4=SchoolYear 5=Eligibility 6=GenerateCount 7=Date 8=Actions
   const dt = $(vouchersTable).DataTable({
     destroy: true,
+    dom:
+      "<'row align-items-center mb-3'<'col-sm-12 col-md-6'f><'col-sm-12 col-md-6 text-md-end'l>>" +
+      "<'row'<'col-sm-12'tr>>" +
+      "<'row align-items-center mt-3'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7'p>>",
     pageLength: 25,
+    lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, 'All']],
     responsive: true,
+    autoWidth: false,
     order: [[1, 'asc']],
     columnDefs: [{ orderable: false, targets: [0, 8] }],
     language: {
       search: '',
       searchPlaceholder: vouchersTable.dataset.searchPlaceholder || 'Search vouchers...',
       lengthMenu: 'Show _MENU_ entries',
-      info:       'Showing _START_–_END_ of _TOTAL_',
+      info:       'Showing _START_ to _END_ of _TOTAL_',
       paginate:   { previous: '&#8249;', next: '&#8250;' },
     },
   });
@@ -433,19 +497,22 @@ document.addEventListener('DOMContentLoaded', function () {
   // ── Cross-page selection (Set of string IDs) ──────────────────────────────────
   const selectedIds = new Set();
 
-  const checkAll   = document.getElementById('checkAll');
   const actionBar  = document.getElementById('actionBar');
   const countLabel = document.getElementById('selectedCount');
+
+  function getCheckAllBoxes() {
+    return document.querySelectorAll('.vs-check-all');
+  }
 
   function updateActionBar() {
     const count         = selectedIds.size;
     const totalFiltered = dt.rows({ search: 'applied' }).count();
     if (countLabel) countLabel.textContent = count;
     if (actionBar) actionBar.style.display = count > 0 ? 'flex' : 'none';
-    if (checkAll) {
-      checkAll.checked = count > 0 && count >= totalFiltered;
+    getCheckAllBoxes().forEach(checkAll => {
+      checkAll.checked = totalFiltered > 0 && count >= totalFiltered;
       checkAll.indeterminate = count > 0 && count < totalFiltered;
-    }
+    });
   }
 
   // Sync visible checkboxes to reflect the Set after any DataTable redraw
@@ -463,14 +530,20 @@ document.addEventListener('DOMContentLoaded', function () {
   dt.on('page.dt search.dt order.dt', syncPageCheckboxes);
 
   // Select / deselect ALL filtered rows across every page
-  if (checkAll) checkAll.addEventListener('change', function () {
+  document.addEventListener('change', function (e) {
+    if (!e.target.classList.contains('vs-check-all')) return;
+
     const filteredIds = dt.rows({ search: 'applied' }).ids().toArray()
       .map(function (rid) { return rid.replace('row-', ''); });
-    if (this.checked) {
+    if (e.target.checked) {
       filteredIds.forEach(function (id) { selectedIds.add(id); });
     } else {
       filteredIds.forEach(function (id) { selectedIds.delete(id); });
     }
+    getCheckAllBoxes().forEach(checkAll => {
+      checkAll.indeterminate = false;
+      checkAll.checked = e.target.checked;
+    });
     syncPageCheckboxes();
   });
 

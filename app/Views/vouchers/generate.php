@@ -13,10 +13,6 @@
       <p class="vs-page-sub">Select students and generate printable voucher PDFs.</p>
     </div>
     <div class="d-flex gap-2">
-      <a href="<?= site_url($prefix . '/students') ?>" class="vs-btn vs-btn-outline">
-        <?= asset_icon('students') ?>
-        Student Management
-      </a>
       <button class="vs-btn vs-btn-outline" id="btnExport">
         <?= asset_icon('download') ?>
         Export
@@ -44,7 +40,7 @@
       <table id="vouchersTable" class="vs-datatable" style="width:100%">
         <thead>
           <tr>
-            <th class="vs-th-check"><input type="checkbox" id="checkAll" class="vs-check"></th>
+            <th class="vs-th-check"><input type="checkbox" class="vs-check vs-check-all" aria-label="Select all vouchers"></th>
             <th>Voucher No.</th>
             <th>Name</th>
             <th>Preferred School</th>

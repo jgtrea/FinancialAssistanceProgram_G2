@@ -93,9 +93,13 @@ $routes->post('students/delete/(:num)', 'StudentController::delete/$1');
 
 // ─── Archive (madridbranch) ───────────────────────────────────────────────────
 $routes->get('archive', 'ArchiveController::index');
+$routes->get('archive/restore/signatory/(:num)', 'ArchiveController::restoreSignatory/$1');
 
 // ─── Signatories (madridbranch) ───────────────────────────────────────────────
 $routes->get('signatories',                          'SignatoryController::index');
-$routes->get('signatories/edit/(:num)',              'SignatoryController::edit/$1');
+$routes->get('signatories/form',                     'SignatoryController::form');
+$routes->get('signatories/form/(:num)',              'SignatoryController::form/$1');
+$routes->get('signatories/edit/(:num)',              'SignatoryController::form/$1');
 $routes->post('signatories/save',                    'SignatoryController::save');
+$routes->post('signatories/deactivate/(:num)',       'SignatoryController::deactivate/$1');
 $routes->post('signatories/status/(:num)/(:alpha)', 'SignatoryController::setStatus/$1/$2');

@@ -30,7 +30,7 @@ class Dashboard extends Controller
             ")
             ->where('is_archived', 0)
             ->orderBy('created_at', 'DESC')
-            ->limit(6)
+            ->limit(10)
             ->get()->getResultArray();
 
         return view('dashboard/index', [
