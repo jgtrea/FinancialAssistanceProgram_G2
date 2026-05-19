@@ -83,15 +83,14 @@ class VoucherImport extends BaseController
             $count++;
         }
 
-        if (!empty($errors)) {
-            return redirect()->to('/students')->with('error', implode('<br>', $errors));
-        }
+        $prefix = session()->get('role') === 'admin' ? 'admin' : 'user';
 
-        $this->writeAuditLog(
-            'records_imported',
-            'Imported ' . $count . ' student/voucher record(s) from ' . $file->getClientName() . '.'
+        log_action(
+            session()->get('user_id'),
+            'IMPORT_RECORDS',
+            "Imported {$count} student/voucher record(s) from " . $file->getClientName()
         );
 
-        return redirect()->to('/students')->with('success', $count . ' records successfully imported.');
+        return redirect()->to(site_url("{$prefix}/vouchers"))->with('success', $count . ' records successfully imported.');
     }
 }

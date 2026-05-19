@@ -14,9 +14,16 @@ class AuditLogController extends BaseController
         $dateFrom = trim((string) $this->request->getGet('date_from'));
         $dateTo = trim((string) $this->request->getGet('date_to'));
 
+        $path = trim($this->request->getUri()->getPath(), '/');
+        $isAdminRoute = str_contains('/' . $path, '/admin/audit-logs');
+
         $auditModel
             ->select('audit_log.*, users.full_name, users.username')
             ->join('users', 'users.user_id = audit_log.user_id', 'left');
+
+        if (!$isAdminRoute) {
+            $auditModel->where('audit_log.user_id', (int) session()->get('user_id'));
+        }
 
         if ($action !== '') {
             $auditModel->where('audit_log.action', $action);
@@ -42,16 +49,19 @@ class AuditLogController extends BaseController
                 ->groupEnd();
         }
 
-        $actionOptions = (new AuditLogModel())
+        $actionOptionsQuery = (new AuditLogModel())
             ->select('action')
             ->distinct()
-            ->orderBy('action', 'ASC')
-            ->findAll();
+            ->orderBy('action', 'ASC');
 
-        $path = trim($this->request->getUri()->getPath(), '/');
-        $isAdminRoute = str_contains('/' . $path, '/admin/audit-logs');
+        if (!$isAdminRoute) {
+            $actionOptionsQuery->where('user_id', (int) session()->get('user_id'));
+        }
+
+        $actionOptions = $actionOptionsQuery->findAll();
+
         $view = $isAdminRoute ? 'admin/audit_logs/index' : 'audit_logs/index';
-        $resetUrl = $isAdminRoute ? 'admin/audit-logs' : 'audit-logs';
+        $resetUrl = $isAdminRoute ? 'admin/audit-logs' : 'user/audit-logs';
 
         return view($view, [
             'title' => 'Audit Logs',

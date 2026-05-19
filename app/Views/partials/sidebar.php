@@ -46,6 +46,10 @@ $isActive = static function (array|string $paths) use ($uri): string {
                     Audit Logs
                 </a>
             <?php else: ?>
+                <a class="nav-link <?= $isActive('user/dashboard') ?>" href="<?= site_url('user/dashboard') ?>">
+                    <div class="sb-nav-link-icon">D</div>
+                    Dashboard
+                </a>
                 <a class="nav-link <?= $isActive('user/vouchers') ?>" href="<?= site_url('user/vouchers') ?>">
                     <div class="sb-nav-link-icon">S</div>
                     Students
@@ -58,7 +62,7 @@ $isActive = static function (array|string $paths) use ($uri): string {
                     <div class="sb-nav-link-icon">A</div>
                     Archive
                 </a>
-                <a class="nav-link <?= $isActive('audit-logs') ?>" href="<?= site_url('audit-logs') ?>">
+                <a class="nav-link <?= $isActive('user/audit-logs') ?>" href="<?= site_url('user/audit-logs') ?>">
                     <div class="sb-nav-link-icon">L</div>
                     Audit Logs
                 </a>

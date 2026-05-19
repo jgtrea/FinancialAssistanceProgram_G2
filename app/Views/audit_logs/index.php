@@ -6,11 +6,11 @@
     <h3 class="page-title">Audit Logs</h3>
 
     <div class="page-actions">
-        <a href="<?= base_url($resetUrl ?? 'audit-logs') ?>" class="btn btn-secondary btn-sm">Reset</a>
+        <a href="<?= base_url($resetUrl ?? 'user/audit-logs') ?>" class="btn btn-secondary btn-sm">Reset</a>
     </div>
 </div>
 
-<form method="get" action="<?= base_url('/audit-logs') ?>" class="filter-panel">
+<form method="get" action="<?= base_url('/user/audit-logs') ?>" class="filter-panel">
     <div class="row align-items-end">
         <div class="col-md-4 mb-3">
             <label class="form-label">Search</label>

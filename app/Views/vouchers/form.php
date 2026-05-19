@@ -8,7 +8,7 @@
     <h4 class="vs-page-title"><?= esc($title) ?></h4>
     <p class="vs-page-sub">Enter student and voucher details.</p>
   </div>
-  <a href="<?= site_url('admin/students') ?>" class="vs-btn vs-btn-outline">Back to students</a>
+  <a href="<?= site_url('user/vouchers') ?>" class="vs-btn vs-btn-outline">Back to students</a>
 </div>
 
 <?php if (isset($validation) && $validation->getErrors()): ?>
@@ -147,7 +147,7 @@
       </div>
 
       <div class="mt-4 d-flex gap-2">
-        <a href="<?= site_url('admin/students') ?>" class="vs-btn vs-btn-outline">Cancel</a>
+        <a href="<?= site_url('user/vouchers') ?>" class="vs-btn vs-btn-outline">Cancel</a>
         <button type="submit" class="vs-btn vs-btn-primary"><?= esc($title) ?></button>
       </div>
     </form>

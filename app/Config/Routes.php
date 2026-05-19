@@ -56,6 +56,9 @@ $routes->group('user', ['filter' => 'auth'], function ($routes) {
     // Dashboard
     $routes->get('dashboard', 'User\Dashboard::index');
 
+    // Audit Logs (own only)
+    $routes->get('audit-logs', 'AuditLogController::index');
+
     // Vouchers
     $routes->get('vouchers',                      'User\Voucher::index');
     $routes->get('vouchers/create',               'User\Voucher::create');
