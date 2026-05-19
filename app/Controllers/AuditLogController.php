@@ -11,18 +11,34 @@ class AuditLogController extends BaseController
         $auditModel = new AuditLogModel();
         $action = trim((string) $this->request->getGet('action'));
         $keyword = trim((string) $this->request->getGet('q'));
+        $dateFrom = trim((string) $this->request->getGet('date_from'));
+        $dateTo = trim((string) $this->request->getGet('date_to'));
+
+        $auditModel
+            ->select('audit_log.*, users.full_name, users.username')
+            ->join('users', 'users.user_id = audit_log.user_id', 'left');
 
         if ($action !== '') {
-            $auditModel->where('action', $action);
+            $auditModel->where('audit_log.action', $action);
+        }
+
+        if ($dateFrom !== '') {
+            $auditModel->where('audit_log.created_at >=', $dateFrom . ' 00:00:00');
+        }
+
+        if ($dateTo !== '') {
+            $auditModel->where('audit_log.created_at <=', $dateTo . ' 23:59:59');
         }
 
         if ($keyword !== '') {
             $auditModel
                 ->groupStart()
-                ->like('description', $keyword)
-                ->orLike('action', $keyword)
-                ->orLike('ip_address', $keyword)
-                ->orLike('user_agent', $keyword)
+                ->like('audit_log.description', $keyword)
+                ->orLike('audit_log.action', $keyword)
+                ->orLike('audit_log.ip_address', $keyword)
+                ->orLike('audit_log.user_agent', $keyword)
+                ->orLike('users.full_name', $keyword)
+                ->orLike('users.username', $keyword)
                 ->groupEnd();
         }
 
@@ -32,15 +48,23 @@ class AuditLogController extends BaseController
             ->orderBy('action', 'ASC')
             ->findAll();
 
-        return view('admin/audit_logs/index', [  // REVIEW: FOR ADMIN 
+        $path = trim($this->request->getUri()->getPath(), '/');
+        $isAdminRoute = str_contains('/' . $path, '/admin/audit-logs');
+        $view = $isAdminRoute ? 'admin/audit_logs/index' : 'audit_logs/index';
+        $resetUrl = $isAdminRoute ? 'admin/audit-logs' : 'audit-logs';
+
+        return view($view, [
             'title' => 'Audit Logs',
             'logs' => $auditModel
-                ->orderBy('created_at', 'DESC')
-                ->orderBy('audit_id', 'DESC')
-                ->findAll(),
+                ->orderBy('audit_log.created_at', 'DESC')
+                ->orderBy('audit_log.audit_id', 'DESC')
+                ->findAll(200),
             'actionOptions' => $actionOptions,
             'selectedAction' => $action,
             'keyword' => $keyword,
+            'dateFrom' => $dateFrom,
+            'dateTo' => $dateTo,
+            'resetUrl' => $resetUrl,
         ]);
     }
 }

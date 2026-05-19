@@ -56,7 +56,7 @@ class Voucher extends Controller
 
         return view('vouchers/form', [
             'title'      => 'Add Student Voucher',
-            'action'     => site_url('admin/students/store'),
+            'action'     => site_url('admin/vouchers/store'),
             'voucher'    => [],
             'validation' => \Config\Services::validation(),
         ]);
@@ -104,7 +104,7 @@ class Voucher extends Controller
         log_action($this->getCurrentUserId(), 'CREATE_STUDENT',
             "Created student {$name} (Voucher {$this->request->getPost('voucher_no')})", $studentId);
 
-        return redirect()->to(site_url('admin/students'))->with('message', 'Student voucher created successfully.');
+        return redirect()->to(site_url('admin/vouchers'))->with('message', 'Student voucher created successfully.');
     }
 
     // ── Show a student/voucher detail page ────────────────────────────────────
@@ -113,7 +113,7 @@ class Voucher extends Controller
         $student = $this->voucherModel->getStudentById($id);
 
         if (!$student) {
-            return redirect()->to(site_url('admin/students'))->with('error', 'Student not found.');
+            return redirect()->to(site_url('admin/vouchers'))->with('error', 'Student not found.');
         }
 
         return view('vouchers/view', [
@@ -130,12 +130,12 @@ class Voucher extends Controller
 
         $student = $this->voucherModel->getStudentById($id);
         if (!$student) {
-            return redirect()->to(site_url('admin/students'))->with('error', 'Student not found.');
+            return redirect()->to(site_url('admin/vouchers'))->with('error', 'Student not found.');
         }
 
         return view('vouchers/form', [
             'title'      => 'Edit Student Voucher',
-            'action'     => site_url('admin/students/update/' . $id),
+            'action'     => site_url('admin/vouchers/update/' . $id),
             'voucher'    => $student,
             'validation' => \Config\Services::validation(),
         ]);
@@ -182,7 +182,7 @@ class Voucher extends Controller
         log_action($this->getCurrentUserId(), 'UPDATE_STUDENT',
             "Updated student {$name} (Voucher {$this->request->getPost('voucher_no')})", $id);
 
-        return redirect()->to(site_url('admin/students'))->with('message', 'Student voucher updated successfully.');
+        return redirect()->to(site_url('admin/vouchers'))->with('message', 'Student voucher updated successfully.');
     }
 
     // ── Generate PDF and mark students as generated ───────────────────────────
@@ -215,7 +215,7 @@ class Voucher extends Controller
 
             return $this->response->setJSON([
                 'success'      => true,
-                'download_url' => site_url('admin/students/pdf-download/' . $jobId),
+                'download_url' => site_url('admin/vouchers/pdf-download/' . $jobId),
             ]);
         } catch (\Throwable $e) {
             log_message('error', '[generatePdf] ' . $e->getMessage());
@@ -233,16 +233,16 @@ class Voucher extends Controller
             return $this->response->setJSON(['status' => 'not_found']);
         }
 
-        $role   = session()->get('role') ?: 'admin';
         $userId = $this->getCurrentUserId();
 
-        if ($role !== 'admin' && (int) $job->created_by !== $userId) {
+        // Admins can view any job; non-admins only their own.
+        if (session()->get('role') !== 'admin' && (int) $job->created_by !== $userId) {
             return $this->response->setJSON(['status' => 'forbidden']);
         }
 
-        $prefix      = $role === 'admin' ? 'admin' : 'user';
+        $prefix      = session()->get('role') === 'admin' ? 'admin' : 'user';
         $downloadUrl = $job->status === 'done'
-            ? site_url("{$prefix}/students/pdf-download/{$jobId}")
+            ? site_url("{$prefix}/vouchers/pdf-download/{$jobId}")
             : null;
 
         return $this->response->setJSON([
@@ -257,10 +257,9 @@ class Voucher extends Controller
     {
         $db     = \Config\Database::connect();
         $job    = $db->table('pdf_jobs')->where('job_id', $jobId)->get()->getRow();
-        $role   = session()->get('role') ?: 'admin';
         $userId = $this->getCurrentUserId();
 
-        if (!$job || ($role !== 'admin' && (int) $job->created_by !== $userId)) {
+        if (!$job || (session()->get('role') !== 'admin' && (int) $job->created_by !== $userId)) {
             return redirect()->back()->with('error', 'PDF not found or access denied.');
         }
 

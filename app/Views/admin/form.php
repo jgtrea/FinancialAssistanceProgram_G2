@@ -1,4 +1,4 @@
-<?= $this->extend('layouts/main') ?>
+<?= $this->extend('layouts/main') ?>   
 <?= $this->section('content') ?>
 
 <h3><?= isset($user) ? 'Edit User' : 'Add User' ?></h3>

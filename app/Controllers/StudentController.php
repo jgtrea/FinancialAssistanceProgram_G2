@@ -70,9 +70,11 @@ class StudentController extends BaseController
 
         if ($studentId) {
             $studentModel->update($studentId, $data);
+            $this->writeAuditLog('student_updated', 'Updated student ' . $this->formatStudentName($data) . ' (ID #' . $studentId . ').', null, (int) $studentId);
             $message = 'Student updated successfully.';
         } else {
-            $studentModel->insert($data);
+            $newStudentId = $studentModel->insert($data);
+            $this->writeAuditLog('student_created', 'Added student ' . $this->formatStudentName($data) . ' (ID #' . $newStudentId . ').', null, $newStudentId ? (int) $newStudentId : null);
             $message = 'Student added successfully.';
         }
 
@@ -131,6 +133,8 @@ class StudentController extends BaseController
             'is_archived' => 1
         ]);
 
+        $this->writeAuditLog('student_archived', 'Archived student ' . $this->formatStudentName($student) . ' (ID #' . $id . ').', null, (int) $id);
+
         return $this->response->setJSON([
             'status' => 'success',
             'message' => 'Student archived successfully.'
@@ -173,9 +177,29 @@ class StudentController extends BaseController
             'voucher_status' => 'generated'
         ]);
 
+        $student = $studentModel->find($id);
+        $this->writeAuditLog(
+            'voucher_marked_generated',
+            'Marked voucher ' . ($student['voucher_no'] ?? 'for student ID #' . $id) . ' as generated for ' . ($student ? $this->formatStudentName($student) : 'student ID #' . $id) . '.',
+            null,
+            (int) $id
+        );
+
         return $this->response->setJSON([
             'status' => 'success',
             'message' => 'Voucher marked as generated.'
         ]);
+    }
+
+    private function formatStudentName(array $student): string
+    {
+        $name = trim(
+            ($student['first_name'] ?? '') . ' ' .
+            ($student['middle_name'] ?? '') . ' ' .
+            ($student['last_name'] ?? '') . ' ' .
+            ($student['suffix'] ?? '')
+        );
+
+        return $name !== '' ? $name : 'Unnamed student';
     }
 }

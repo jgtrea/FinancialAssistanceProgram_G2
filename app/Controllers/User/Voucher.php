@@ -24,7 +24,7 @@ class Voucher extends AdminVoucher
 
         return view('vouchers/form', [
             'title'      => 'Add Student',
-            'action'     => site_url('user/students/store'),
+            'action'     => site_url('user/vouchers/store'),
             'voucher'    => [],
             'validation' => \Config\Services::validation(),
         ]);
@@ -71,7 +71,7 @@ class Voucher extends AdminVoucher
         log_action(session()->get('user_id'), 'CREATE_STUDENT',
             "Created student {$name} (Voucher {$this->request->getPost('voucher_no')})", $studentId);
 
-        return redirect()->to(site_url('user/students'))->with('message', 'Student added successfully.');
+        return redirect()->to(site_url('user/vouchers'))->with('message', 'Student added successfully.');
     }
 
     public function edit(int $id)
@@ -80,12 +80,12 @@ class Voucher extends AdminVoucher
 
         $student = $this->voucherModel->getStudentById($id);
         if (!$student) {
-            return redirect()->to(site_url('user/students'))->with('error', 'Student not found.');
+            return redirect()->to(site_url('user/vouchers'))->with('error', 'Student not found.');
         }
 
         return view('vouchers/form', [
             'title'      => 'Edit Student',
-            'action'     => site_url('user/students/update/' . $id),
+            'action'     => site_url('user/vouchers/update/' . $id),
             'voucher'    => $student,
             'validation' => \Config\Services::validation(),
         ]);
@@ -130,7 +130,7 @@ class Voucher extends AdminVoucher
         log_action(session()->get('user_id'), 'UPDATE_STUDENT',
             "Updated student {$name} (Voucher {$this->request->getPost('voucher_no')})", $id);
 
-        return redirect()->to(site_url('user/students'))->with('message', 'Student updated successfully.');
+        return redirect()->to(site_url('user/vouchers'))->with('message', 'Student updated successfully.');
     }
 
     public function generatePdf()
@@ -163,7 +163,7 @@ class Voucher extends AdminVoucher
 
             return $this->response->setJSON([
                 'success'      => true,
-                'download_url' => site_url('user/students/pdf-download/' . $jobId),
+                'download_url' => site_url('user/vouchers/pdf-download/' . $jobId),
             ]);
         } catch (\Throwable $e) {
             log_message('error', '[generatePdf user] ' . $e->getMessage());

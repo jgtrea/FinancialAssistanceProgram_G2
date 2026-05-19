@@ -11,10 +11,12 @@ class AuditLogModel extends Model
 
     protected $allowedFields = [
         'user_id',
+        'student_id',
         'voucher_id',
         'action',
         'description',
         'ip_address',
         'user_agent',
+        'created_at',
     ];
 }

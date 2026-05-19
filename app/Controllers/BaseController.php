@@ -44,18 +44,20 @@ abstract class BaseController extends Controller
         // $this->session = service('session');
     }
 
-    protected function writeAuditLog(string $action, string $description, ?int $voucherId = null): void
+    protected function writeAuditLog(string $action, string $description, ?int $voucherId = null, ?int $studentId = null): void
     {
         try {
             $userAgent = $this->request->getUserAgent();
 
             (new AuditLogModel())->insert([
-                'user_id' => session()->get('user_id') ?? 1,
+                'user_id' => session()->get('user_id'),
+                'student_id' => $studentId,
                 'voucher_id' => $voucherId,
                 'action' => $action,
                 'description' => $description,
                 'ip_address' => $this->request->getIPAddress(),
                 'user_agent' => $userAgent ? $userAgent->getAgentString() : '',
+                'created_at' => date('Y-m-d H:i:s'),
             ]);
         } catch (\Throwable $e) {
             log_message('error', 'Audit log failed: {message}', [

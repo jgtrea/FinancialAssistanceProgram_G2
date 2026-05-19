@@ -4,7 +4,7 @@
 
 <div class="d-flex justify-content-between align-items-center mb-3">
     <h3 class="mb-0">Audit Logs</h3>
-    <a href="<?= base_url('/audit-logs') ?>" class="btn btn-secondary btn-sm">Reset</a>
+    <a href="<?= base_url($resetUrl ?? 'admin/audit-logs') ?>" class="btn btn-secondary btn-sm">Reset</a>
 </div>
 
 <form method="get" action="<?= base_url('/admin/audit-logs') ?>" class="border rounded p-3 mb-4">
@@ -27,6 +27,16 @@
         </div>
 
         <div class="col-md-2 mb-3">
+            <label class="form-label">From</label>
+            <input type="date" name="date_from" class="form-control" value="<?= esc($dateFrom ?? '') ?>">
+        </div>
+
+        <div class="col-md-2 mb-3">
+            <label class="form-label">To</label>
+            <input type="date" name="date_to" class="form-control" value="<?= esc($dateTo ?? '') ?>">
+        </div>
+
+        <div class="col-md-2 mb-3">
             <button type="submit" class="btn btn-primary w-100">Filter</button>
         </div>
     </div>
@@ -38,7 +48,8 @@
             <tr>
                 <th style="width: 80px;">ID</th>
                 <th style="width: 170px;">Date/Time</th>
-                <th style="width: 120px;">User ID</th>
+                <th style="width: 180px;">User</th>
+                <th style="width: 130px;">Student ID</th>
                 <th style="width: 130px;">Voucher ID</th>
                 <th style="width: 170px;">Action</th>
                 <th>Description</th>
@@ -52,7 +63,13 @@
                     <tr>
                         <td><?= esc($log['audit_id']) ?></td>
                         <td><?= esc($log['created_at'] ?? '-') ?></td>
-                        <td><?= esc($log['user_id'] ?? '-') ?></td>
+                        <td>
+                            <?= esc($log['full_name'] ?? $log['username'] ?? '-') ?>
+                            <?php if (!empty($log['user_id'])): ?>
+                                <span class="text-muted small">#<?= esc($log['user_id']) ?></span>
+                            <?php endif; ?>
+                        </td>
+                        <td><?= esc($log['student_id'] ?? '-') ?></td>
                         <td><?= esc($log['voucher_id'] ?? '-') ?></td>
                         <td><span class="badge text-bg-dark"><?= esc($log['action']) ?></span></td>
                         <td><?= esc($log['description']) ?></td>
@@ -62,7 +79,7 @@
                 <?php endforeach; ?>
             <?php else: ?>
                 <tr>
-                    <td colspan="8" class="text-center">No audit logs found.</td>
+                    <td colspan="9" class="text-center">No audit logs found.</td>
                 </tr>
             <?php endif; ?>
         </tbody>
