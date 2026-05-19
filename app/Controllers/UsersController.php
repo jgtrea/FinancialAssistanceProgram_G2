@@ -37,11 +37,15 @@ class UsersController extends BaseController
             $data['password'] = password_hash($password, PASSWORD_ARGON2ID);
         }
 
+        $adminId = session()->get('user_id');
+
         if ($id) {
             $model->update($id, $data);
+            log_action($adminId, 'UPDATE_USER', "Updated user #{$id} ({$data['username']})");
             $message = 'User updated successfully.';
         } else {
             $model->insert($data);
+            log_action($adminId, 'CREATE_USER', "Created user {$data['username']}");
             $message = 'User created successfully.';
         }
 
@@ -52,6 +56,7 @@ class UsersController extends BaseController
     {
         $model = new UserLogin();
         $model->update($id, ['is_active' => 0]);
+        log_action(session()->get('user_id'), 'ARCHIVE_USER', "Deactivated user #{$id}");
         return $this->response->setJSON(['status' => 'success', 'message' => 'User archived successfully.']);
     }
 
@@ -67,6 +72,7 @@ class UsersController extends BaseController
     {
         $model = new UserLogin();
         $model->update($id, ['is_active' => 1]);
+        log_action(session()->get('user_id'), 'RESTORE_USER', "Restored user #{$id}");
         return $this->response->setJSON(['status' => 'success', 'message' => 'User restored successfully.']);
     }
 }

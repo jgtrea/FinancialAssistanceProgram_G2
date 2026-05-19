@@ -80,7 +80,7 @@ class Voucher extends Controller
             return $this->create();
         }
 
-        $this->voucherModel->insert([
+        $studentId = (int) $this->voucherModel->insert([
             'voucher_no'                   => $this->request->getPost('voucher_no'),
             'voucher_date'                 => $this->request->getPost('voucher_date'),
             'first_name'                   => $this->request->getPost('first_name'),
@@ -99,6 +99,10 @@ class Voucher extends Controller
             'voucher_status'               => $this->request->getPost('voucher_status') ?: 'not_generated',
             'is_archived'                  => 0,
         ]);
+
+        $name = trim($this->request->getPost('first_name') . ' ' . $this->request->getPost('last_name'));
+        log_action($this->getCurrentUserId(), 'CREATE_STUDENT',
+            "Created student {$name} (Voucher {$this->request->getPost('voucher_no')})", $studentId);
 
         return redirect()->to(site_url('admin/students'))->with('message', 'Student voucher created successfully.');
     }
@@ -174,6 +178,10 @@ class Voucher extends Controller
             'voucher_status'               => $this->request->getPost('voucher_status') ?: 'not_generated',
         ]);
 
+        $name = trim($this->request->getPost('first_name') . ' ' . $this->request->getPost('last_name'));
+        log_action($this->getCurrentUserId(), 'UPDATE_STUDENT',
+            "Updated student {$name} (Voucher {$this->request->getPost('voucher_no')})", $id);
+
         return redirect()->to(site_url('admin/students'))->with('message', 'Student voucher updated successfully.');
     }
 
@@ -195,12 +203,15 @@ class Voucher extends Controller
 
         try {
             $pdfBytes = VoucherPdf::generate($students);
-            $jobId    = $this->savePdfFile($ids, $this->getCurrentUserId(), $pdfBytes);
+            $userId = $this->getCurrentUserId();
+            $jobId  = $this->savePdfFile($ids, $userId, $pdfBytes);
 
             \Config\Database::connect()
                 ->table('students')
                 ->whereIn('student_id', $ids)
                 ->update(['voucher_status' => 'generated']);
+
+            log_action($userId, 'GENERATE_PDF', 'Generated PDF for ' . \count($ids) . ' student(s)');
 
             return $this->response->setJSON([
                 'success'      => true,
@@ -262,6 +273,8 @@ class Voucher extends Controller
         if (!file_exists($filePath)) {
             return redirect()->back()->with('error', 'PDF file is missing from storage.');
         }
+
+        log_action($userId, 'DOWNLOAD_PDF', "Downloaded PDF for job #{$jobId}");
 
         return $this->response
             ->setHeader('Content-Type', 'application/pdf')

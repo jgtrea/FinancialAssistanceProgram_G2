@@ -47,7 +47,7 @@ class Voucher extends AdminVoucher
             return $this->create();
         }
 
-        $this->voucherModel->insert([
+        $studentId = (int) $this->voucherModel->insert([
             'voucher_no'                   => $this->request->getPost('voucher_no'),
             'voucher_date'                 => $this->request->getPost('voucher_date'),
             'first_name'                   => $this->request->getPost('first_name'),
@@ -66,6 +66,10 @@ class Voucher extends AdminVoucher
             'voucher_status'               => 'not_generated',
             'is_archived'                  => 0,
         ]);
+
+        $name = trim($this->request->getPost('first_name') . ' ' . $this->request->getPost('last_name'));
+        log_action(session()->get('user_id'), 'CREATE_STUDENT',
+            "Created student {$name} (Voucher {$this->request->getPost('voucher_no')})", $studentId);
 
         return redirect()->to(site_url('user/students'))->with('message', 'Student added successfully.');
     }
@@ -122,6 +126,10 @@ class Voucher extends AdminVoucher
             'eligibility_status'           => $this->request->getPost('eligibility_status') ?: 'eligible',
         ]);
 
+        $name = trim($this->request->getPost('first_name') . ' ' . $this->request->getPost('last_name'));
+        log_action(session()->get('user_id'), 'UPDATE_STUDENT',
+            "Updated student {$name} (Voucher {$this->request->getPost('voucher_no')})", $id);
+
         return redirect()->to(site_url('user/students'))->with('message', 'Student updated successfully.');
     }
 
@@ -150,6 +158,8 @@ class Voucher extends AdminVoucher
                 ->table('students')
                 ->whereIn('student_id', $studentIds)
                 ->update(['voucher_status' => 'generated']);
+
+            log_action($userId, 'GENERATE_PDF', 'Generated PDF for ' . \count($ids) . ' student(s)');
 
             return $this->response->setJSON([
                 'success'      => true,

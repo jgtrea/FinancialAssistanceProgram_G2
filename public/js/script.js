@@ -354,9 +354,16 @@ document.addEventListener('DOMContentLoaded', function () {
   const pdfModal       = document.getElementById('pdfProgressModal');
   const pdfStatusEl    = document.getElementById('pdfStatusText');
 
+  const MAX_BATCH = 1000;
+
   if (btnGeneratePdf && pdfForm) {
     btnGeneratePdf.addEventListener('click', async function () {
       if (!selectedIds.size) return;
+
+      if (selectedIds.size > MAX_BATCH) {
+        showAlert('You can only generate PDFs for up to ' + MAX_BATCH + ' students at a time. You have ' + selectedIds.size + ' selected.', 'warning');
+        return;
+      }
 
       btnGeneratePdf.disabled = true;
       const toast = showPdfToast('Generating PDF...');
@@ -435,6 +442,11 @@ document.addEventListener('DOMContentLoaded', function () {
   if (archiveConfirm) {
     archiveConfirm.addEventListener('click', async function () {
       if (!selectedIds.size) return;
+
+      if (selectedIds.size > MAX_BATCH) {
+        showAlert('You can only archive up to ' + MAX_BATCH + ' students at a time. You have ' + selectedIds.size + ' selected.', 'warning');
+        return;
+      }
 
       archiveBtnText    && (archiveBtnText.style.display    = 'none');
       archiveBtnSpinner && (archiveBtnSpinner.style.display = 'inline-block');

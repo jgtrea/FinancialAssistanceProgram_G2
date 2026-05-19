@@ -37,9 +37,11 @@ class Authentication extends BaseController
             'user_id'    => $user['user_id'],
             'username'   => $user['username'],
             'full_name'  => $user['full_name'],
-            'role'       => $user['role'], 
+            'role'       => $user['role'],
             'isLoggedIn' => true
         ]);
+
+        log_action($user['user_id'], 'LOGIN', "User {$username} logged in");
 
         if ($user['role'] === 'admin') {
             return redirect()->to('admin/dashboard')->with('success', 'Logged as Admin.');
@@ -50,6 +52,9 @@ class Authentication extends BaseController
 
     public function logout()
     {
+        $userId   = session()->get('user_id');
+        $username = session()->get('username');
+        log_action($userId, 'LOGOUT', "User {$username} logged out");
         session()->destroy();
         return redirect()->to('/');
     }
