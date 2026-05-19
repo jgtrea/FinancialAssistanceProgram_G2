@@ -260,54 +260,8 @@ document.addEventListener('DOMContentLoaded', function () {
   initPasswordToggles();
   initAlertDismiss();
   initGenericDataTables();
-  initStudentArchiveButtons();
 
 });
-
-function initStudentArchiveButtons() {
-  document.addEventListener('click', async function (e) {
-    const btn = e.target.closest('.archiveStudentBtn');
-    if (!btn) return;
-
-    const archiveUrl = btn.dataset.archiveUrl;
-    const studentId = btn.dataset.studentId;
-
-    if (!archiveUrl || !studentId || !confirm('Archive this student?')) {
-      return;
-    }
-
-    const csrf = getCsrfToken();
-    const formData = new FormData();
-    formData.append(csrf.name, csrf.token);
-    formData.append('voucher_ids[]', studentId);
-
-    btn.disabled = true;
-
-    try {
-      const res = await fetch(archiveUrl, ajaxOptions({ method: 'POST', body: formData }));
-      const data = await res.json();
-
-      if (data.success) {
-        const row = btn.closest('tr');
-        const table = row ? row.closest('table') : null;
-        if (row && table && window.jQuery && $.fn.DataTable && $.fn.DataTable.isDataTable(table)) {
-          $(table).DataTable().row(row).remove().draw();
-        } else if (row) {
-          row.remove();
-        }
-        showAlert(data.message || 'Student archived successfully.', 'success');
-        refreshCsrfToken();
-      } else {
-        showAlert(data.message || 'Archive failed.', 'error');
-        btn.disabled = false;
-      }
-    } catch (err) {
-      showAlert('Failed to archive student.', 'error');
-      console.error(err);
-      btn.disabled = false;
-    }
-  });
-}
 
 
 /* ============================================================

@@ -44,7 +44,7 @@
       <table id="studentsTable" class="vs-datatable" data-search-placeholder="Search students..." style="width:100%">
         <thead>
           <tr>
-            <th class="vs-th-check"><input type="checkbox" id="checkAll" class="vs-check"></th>
+            <th class="vs-th-check"><input type="checkbox" class="vs-check vs-check-all" aria-label="Select all students"></th>
             <th>Voucher No.</th>
             <th>Name</th>
             <th>Preferred School</th>
@@ -76,12 +76,6 @@
               <div class="d-flex gap-1">
                 <a href="<?= site_url($prefix . '/students/view/' . $v['student_id']) ?>" class="vs-tbl-btn vs-tbl-btn-view">View</a>
                 <a href="<?= site_url($prefix . '/students/edit/' . $v['student_id']) ?>" class="vs-tbl-btn vs-tbl-btn-edit">Edit</a>
-                <button type="button"
-                        class="vs-tbl-btn vs-tbl-btn-delete archiveStudentBtn"
-                        data-student-id="<?= esc($v['student_id'], 'attr') ?>"
-                        data-archive-url="<?= site_url($prefix . '/vouchers/archive') ?>">
-                  Archive
-                </button>
               </div>
             </td>
           </tr>
