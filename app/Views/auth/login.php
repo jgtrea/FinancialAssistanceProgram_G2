@@ -14,7 +14,7 @@
     <nav class="navbar navbar-expand navbar-light bg-white topbar fixed-top shadow-sm">
         <div class="container">
             <a class="navbar-brand d-flex align-items-center fw-bold text-uppercase" href="<?= site_url('/') ?>">
-                <img src="<?= base_url('images/logo_binan.png') ?>" class="navbar-logo me-2" alt="Biñan City">
+                <img src="<?= base_url('assets/img/logo_binan.png') ?>" class="navbar-logo me-2" alt="Biñan City">
                 Biñan City
             </a>
         </div>
@@ -22,7 +22,7 @@
 
     <main class="login-shell">
         <section class="login-card-modern">
-            <div class="login-visual" style="background-image: linear-gradient(90deg, rgba(8, 32, 24, .86), rgba(8, 32, 24, .42)), url('<?= base_url('images/bg_binan.jpg') ?>');">
+            <div class="login-visual" style="background-image: linear-gradient(90deg, rgba(8, 32, 24, .86), rgba(8, 32, 24, .42)), url('<?= base_url('assets/img/bg_binan.jpg') ?>');">
                 <div class="login-visual-content">
                     <span class="login-eyebrow">Welcome to</span>
                     <h1>Grants and Scholarships Program</h1>
@@ -32,7 +32,6 @@
 
             <div class="login-panel-modern">
                 <div class="login-panel-header">
-                    <img src="<?= base_url('images/logo_binan.png') ?>" alt="Biñan City" class="login-panel-logo">
                     <div>
                         <h2>Sign in</h2>
                         <p>Use your authorized account to continue.</p>
