@@ -35,11 +35,20 @@
     <div class="vs-alert vs-alert-success mb-3"><?= esc(session()->getFlashdata('message')) ?></div>
   <?php endif ?>
 
+  <div class="vs-action-bar" id="actionBar" style="display:none">
+    <span class="vs-action-bar-count"><span id="selectedCount">0</span> selected</span>
+    <button class="vs-btn vs-btn-danger" id="btnArchive">
+      <?= asset_icon('archive') ?>
+      Archive Selected
+    </button>
+  </div>
+
   <div class="vs-card">
     <div class="vs-card-body">
-      <table id="studentsTable" class="vs-datatable js-data-table" data-search-placeholder="Search students..." style="width:100%">
+      <table id="studentsTable" class="vs-datatable" data-search-placeholder="Search students..." style="width:100%">
         <thead>
           <tr>
+            <th class="vs-th-check"><input type="checkbox" id="checkAll" class="vs-check"></th>
             <th>Voucher No.</th>
             <th>Name</th>
             <th>Preferred School</th>
@@ -52,7 +61,8 @@
         </thead>
         <tbody>
           <?php foreach ($vouchers as $v): ?>
-          <tr>
+          <tr id="row-<?= esc($v['student_id'], 'attr') ?>">
+            <td><input type="checkbox" class="vs-check vs-row-check" value="<?= esc($v['student_id'], 'attr') ?>"></td>
             <td><?= esc($v['voucher_no'] ?: '-') ?></td>
             <td><?= esc($v['full_name']) ?></td>
             <td><?= esc($v['preferred_senior_high_school']) ?></td>
@@ -80,5 +90,31 @@
   </div>
 
 </div>
+
+<!-- Archive modal -->
+<div class="vs-modal-overlay" id="archiveModal" style="display:none">
+  <div class="vs-modal">
+    <div class="vs-modal-header">
+      <h5>Archive Students</h5>
+      <button class="vs-modal-close" id="archiveModalClose">&times;</button>
+    </div>
+    <div class="vs-modal-body">
+      <p>You are about to archive <strong id="archiveCount">0</strong> student(s). This will move them to the archive.</p>
+      <label class="vs-label" for="archiveReason">Reason (optional)</label>
+      <input type="text" id="archiveReason" class="vs-input" placeholder="e.g. End of school year">
+    </div>
+    <div class="vs-modal-footer">
+      <button class="vs-btn vs-btn-outline" id="archiveModalCancel">Cancel</button>
+      <button class="vs-btn vs-btn-danger" id="archiveConfirm">
+        <span id="archiveBtnText">Confirm Archive</span>
+        <span id="archiveBtnSpinner" class="vs-spinner" style="display:none"></span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<form id="archiveForm" action="<?= site_url($prefix . '/vouchers/archive') ?>" style="display:none">
+  <?= csrf_field() ?>
+</form>
 
 <?= $this->endSection() ?>

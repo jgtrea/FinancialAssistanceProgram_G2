@@ -408,11 +408,14 @@ document.addEventListener('DOMContentLoaded', function () {
 
 document.addEventListener('DOMContentLoaded', function () {
 
-  const vouchersTable = document.getElementById('vouchersTable');
+  // Handles BOTH the voucher generation page (#vouchersTable) and the
+  // students listing page (#studentsTable). Both have the same column shape.
+  const vouchersTable = document.getElementById('vouchersTable')
+                     || document.getElementById('studentsTable');
   if (!vouchersTable) return;
 
-  // Columns: 0=checkbox 1=VoucherNo 2=Name 3=School 4=Status 5=Actions
-  const dt = $('#vouchersTable').DataTable({
+  // Columns: 0=checkbox 1=VoucherNo 2=Name 3=School 4=SchoolYear 5=Eligibility 6=GenerateCount 7=Date 8=Actions
+  const dt = $(vouchersTable).DataTable({
     destroy: true,
     pageLength: 25,
     responsive: true,
@@ -420,7 +423,7 @@ document.addEventListener('DOMContentLoaded', function () {
     columnDefs: [{ orderable: false, targets: [0, 8] }],
     language: {
       search: '',
-      searchPlaceholder: 'Search vouchers...',
+      searchPlaceholder: vouchersTable.dataset.searchPlaceholder || 'Search vouchers...',
       lengthMenu: 'Show _MENU_ entries',
       info:       'Showing _START_–_END_ of _TOTAL_',
       paginate:   { previous: '&#8249;', next: '&#8250;' },
@@ -581,7 +584,10 @@ document.addEventListener('DOMContentLoaded', function () {
   const archiveBtnText    = document.getElementById('archiveBtnText');
   const archiveBtnSpinner = document.getElementById('archiveBtnSpinner');
 
-  const archiveUrl = pdfForm ? pdfForm.action.replace('/generate-pdf', '/archive') : '';
+  const archiveForm = document.getElementById('archiveForm');
+  const archiveUrl  = archiveForm
+    ? archiveForm.action
+    : (pdfForm ? pdfForm.action.replace('/generate-pdf', '/archive') : '');
 
   const closeArchiveModal = () => { if (archiveModal) archiveModal.style.display = 'none'; };
 

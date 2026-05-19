@@ -160,6 +160,24 @@ class VoucherModel extends Model
         return array_map(fn ($row) => $this->uppercaseRow($row), $rows);
     }
 
+    public function getTotalGeneratedVouchers(): int
+    {
+        $jobs = $this->db->table('pdf_jobs')
+            ->select('voucher_ids')
+            ->where('status', 'done')
+            ->get()
+            ->getResultArray();
+
+        $total = 0;
+        foreach ($jobs as $job) {
+            $ids = json_decode((string) ($job['voucher_ids'] ?? ''), true);
+            if (is_array($ids)) {
+                $total += count($ids);
+            }
+        }
+        return $total;
+    }
+
     public function getGenerateCounts(array $studentIds): array
     {
         $studentIds = array_values(array_unique(array_map('intval', $studentIds)));

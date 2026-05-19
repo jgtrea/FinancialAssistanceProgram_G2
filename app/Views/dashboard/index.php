@@ -26,8 +26,8 @@
                 <div class="card-body">
                     <div class="row no-gutters align-items-center">
                         <div class="col mr-2">
-                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">Generated</div>
-                            <div class="h5 mb-0 font-weight-bold text-gray-800"><?= $generated ?></div>
+                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">Vouchers Generated</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800"><?= number_format($generated) ?></div>
                         </div>
                         <div class="col-auto">
                             <i class="fas fa-check fa-2x text-gray-300"></i>
@@ -92,7 +92,7 @@
                                         <td><?= esc($voucher['voucher_no']) ?></td>
                                         <td><?= esc($voucher['full_name']) ?></td>
                                         <td><?= esc($voucher['preferred_senior_high_school']) ?></td>
-                                        <td><span class="badge bg-<?= $voucher['voucher_status'] == 'generated' ? 'success' : 'warning' ?>"><?= ucfirst($voucher['voucher_status']) ?></span></td>
+                                        <td><span class="badge bg-<?= $voucher['voucher_status'] === 'generated' ? 'success' : 'warning' ?>"><?= esc(ucwords(str_replace('_', ' ', $voucher['voucher_status']))) ?></span></td>
                                         <td><?= date('M d, Y', strtotime($voucher['created_at'])) ?></td>
                                     </tr>
                                 <?php endforeach; ?>
