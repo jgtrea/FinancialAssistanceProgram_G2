@@ -37,6 +37,20 @@ class Voucher extends Controller
         return session()->get('user_id') ?? $this->getFallbackUserId();
     }
 
+    // Accept voucher_ids as either a comma-joined string (preferred — bypasses
+    // max_input_vars for large batches) or an array (legacy).
+    protected function parseVoucherIds($raw): array
+    {
+        if (is_string($raw)) {
+            $raw = explode(',', $raw);
+        }
+        if (!is_array($raw)) {
+            return [];
+        }
+        $ids = array_filter(array_map('intval', $raw), static fn($id) => $id > 0);
+        return array_values(array_unique($ids));
+    }
+
     // ── List all students / vouchers ───────────────────────────────────────────
     public function index()
     {
@@ -185,45 +199,53 @@ class Voucher extends Controller
         return redirect()->to(site_url('admin/vouchers'))->with('message', 'Student voucher updated successfully.');
     }
 
-    // ── Generate PDF and mark students as generated ───────────────────────────
+    // ── Queue PDF generation; the spark worker processes the job in the background ─
     public function generatePdf()
     {
-        $ids = $this->request->getPost('voucher_ids');
+        $ids = $this->parseVoucherIds($this->request->getPost('voucher_ids'));
 
         if (empty($ids)) {
             return $this->response->setJSON(['success' => false, 'message' => 'No students selected.']);
         }
 
-        $ids      = array_map('intval', (array) $ids);
         $students = $this->voucherModel->getVouchersByIds($ids);
 
         if (empty($students)) {
             return $this->response->setJSON(['success' => false, 'message' => 'Selected students not found.']);
         }
 
-        try {
-            $pdfBytes = VoucherPdf::generate($students);
-            $userId = $this->getCurrentUserId();
-            $jobId  = $this->savePdfFile($ids, $userId, $pdfBytes);
+        $userId = $this->getCurrentUserId();
+        $prefix = session()->get('role') === 'admin' ? 'admin' : 'user';
+        $jobId  = $this->queuePdfJob($ids, $userId);
 
-            \Config\Database::connect()
-                ->table('students')
-                ->whereIn('student_id', $ids)
-                ->update(['voucher_status' => 'generated']);
+        log_action($userId, 'QUEUE_PDF', 'Queued PDF for ' . \count($ids) . ' student(s) (job #' . $jobId . ')');
 
-            log_action($userId, 'GENERATE_PDF', 'Generated PDF for ' . \count($ids) . ' student(s)');
+        return $this->response->setJSON([
+            'success'    => true,
+            'queued'     => true,
+            'job_id'     => $jobId,
+            'status_url' => site_url("{$prefix}/vouchers/pdf-status/{$jobId}"),
+        ]);
+    }
 
-            return $this->response->setJSON([
-                'success'      => true,
-                'download_url' => site_url('admin/vouchers/pdf-download/' . $jobId),
-            ]);
-        } catch (\Throwable $e) {
-            log_message('error', '[generatePdf] ' . $e->getMessage());
-            return $this->response->setJSON(['success' => false, 'message' => 'PDF generation failed: ' . $e->getMessage()]);
-        }
+    // Insert a pending pdf_jobs row. The polling endpoint (checkPdfJob)
+    // will atomically claim and process it on the next /pdf-status/<id> call.
+    protected function queuePdfJob(array $ids, int $userId): int
+    {
+        $db = \Config\Database::connect();
+        $db->table('pdf_jobs')->insert([
+            'voucher_ids' => json_encode(array_values($ids)),
+            'status'      => 'pending',
+            'created_by'  => $userId,
+            'created_at'  => date('Y-m-d H:i:s'),
+        ]);
+        return (int) $db->insertID();
     }
 
     // ── Poll job status (AJAX GET) ─────────────────────────────────────────────
+    // This endpoint doubles as the worker: if the job is still pending, the
+    // first poll to land here claims the lease and runs the PDF generation
+    // inline before responding. No daemon required.
     public function checkPdfJob(int $jobId)
     {
         $db  = \Config\Database::connect();
@@ -238,6 +260,20 @@ class Voucher extends Controller
         // Admins can view any job; non-admins only their own.
         if (session()->get('role') !== 'admin' && (int) $job->created_by !== $userId) {
             return $this->response->setJSON(['status' => 'forbidden']);
+        }
+
+        // If this job is still pending, try to grab the lease and run it.
+        // Subsequent concurrent polls (or other tabs) will lose the race and
+        // just see status='processing', so the work runs once.
+        if ($job->status === 'pending' && \App\Libraries\PdfJobRunner::tryClaim($jobId)) {
+            // Keep running even if the user navigates away or the request times out.
+            @ignore_user_abort(true);
+            @set_time_limit(0);
+
+            \App\Libraries\PdfJobRunner::process($jobId);
+
+            // Refresh the row to report the new status
+            $job = $db->table('pdf_jobs')->where('job_id', $jobId)->get()->getRow();
         }
 
         $prefix      = session()->get('role') === 'admin' ? 'admin' : 'user';
@@ -284,14 +320,13 @@ class Voucher extends Controller
     // ── Archive selected students ─────────────────────────────────────────────
     public function archive()
     {
-        $ids    = $this->request->getPost('voucher_ids');
+        $ids    = $this->parseVoucherIds($this->request->getPost('voucher_ids'));
         $reason = $this->request->getPost('archive_reason') ?? 'Archived by admin';
 
         if (empty($ids)) {
             return $this->response->setJSON(['success' => false, 'message' => 'No students selected.']);
         }
 
-        $ids      = array_map('intval', (array) $ids);
         $students = $this->voucherModel->getVouchersByIds($ids);
         $userId   = session()->get('user_id');
         $now      = date('Y-m-d H:i:s');

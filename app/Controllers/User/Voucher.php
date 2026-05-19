@@ -135,45 +135,33 @@ class Voucher extends AdminVoucher
 
     public function generatePdf()
     {
-        $ids    = $this->request->getPost('voucher_ids');
+        $ids    = $this->parseVoucherIds($this->request->getPost('voucher_ids'));
         $userId = session()->get('user_id');
 
         if (empty($ids)) {
             return $this->response->setJSON(['success' => false, 'message' => 'No students selected.']);
         }
 
-        $ids      = array_map('intval', (array) $ids);
         $students = $this->voucherModel->getVouchersByIds($ids);
 
         if (empty($students)) {
             return $this->response->setJSON(['success' => false, 'message' => 'No valid students found.']);
         }
 
-        try {
-            $pdfBytes   = VoucherPdf::generate($students);
-            $studentIds = array_column($students, 'student_id');
-            $jobId      = $this->savePdfFile($studentIds, $userId, $pdfBytes);
+        $jobId = $this->queuePdfJob($ids, $userId);
+        log_action($userId, 'QUEUE_PDF', 'Queued PDF for ' . \count($ids) . ' student(s) (job #' . $jobId . ')');
 
-            \Config\Database::connect()
-                ->table('students')
-                ->whereIn('student_id', $studentIds)
-                ->update(['voucher_status' => 'generated']);
-
-            log_action($userId, 'GENERATE_PDF', 'Generated PDF for ' . \count($ids) . ' student(s)');
-
-            return $this->response->setJSON([
-                'success'      => true,
-                'download_url' => site_url('user/vouchers/pdf-download/' . $jobId),
-            ]);
-        } catch (\Throwable $e) {
-            log_message('error', '[generatePdf user] ' . $e->getMessage());
-            return $this->response->setJSON(['success' => false, 'message' => 'PDF generation failed: ' . $e->getMessage()]);
-        }
+        return $this->response->setJSON([
+            'success'    => true,
+            'queued'     => true,
+            'job_id'     => $jobId,
+            'status_url' => site_url("user/vouchers/pdf-status/{$jobId}"),
+        ]);
     }
 
     public function archive()
     {
-        $ids    = $this->request->getPost('voucher_ids');
+        $ids    = $this->parseVoucherIds($this->request->getPost('voucher_ids'));
         $userId = session()->get('user_id');
         $reason = $this->request->getPost('archive_reason') ?? 'Archived by user';
 
@@ -181,7 +169,6 @@ class Voucher extends AdminVoucher
             return $this->response->setJSON(['success' => false, 'message' => 'No students selected.']);
         }
 
-        $ids      = array_map('intval', (array) $ids);
         $students = $this->voucherModel->getVouchersByIds($ids);
         $now      = date('Y-m-d H:i:s');
         $archived = 0;
