@@ -17,10 +17,6 @@
         <?= asset_icon('add', ['stroke-width' => '2.5']) ?>
         Add Student
       </a>
-      <a href="<?= site_url($prefix . '/vouchers') ?>" class="vs-btn vs-btn-outline">
-        <?= asset_icon('voucher-add') ?>
-        Generate Vouchers
-      </a>
       <a href="<?= site_url('import') ?>" class="vs-btn vs-btn-outline">
         <?= asset_icon('import') ?>
         Import
@@ -70,6 +66,12 @@
               <div class="d-flex gap-1">
                 <a href="<?= site_url($prefix . '/students/view/' . $v['student_id']) ?>" class="vs-tbl-btn vs-tbl-btn-view">View</a>
                 <a href="<?= site_url($prefix . '/students/edit/' . $v['student_id']) ?>" class="vs-tbl-btn vs-tbl-btn-edit">Edit</a>
+                <button type="button"
+                        class="vs-tbl-btn vs-tbl-btn-delete archiveStudentBtn"
+                        data-student-id="<?= esc($v['student_id'], 'attr') ?>"
+                        data-archive-url="<?= site_url($prefix . '/vouchers/archive') ?>">
+                  Archive
+                </button>
               </div>
             </td>
           </tr>

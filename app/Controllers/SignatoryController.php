@@ -12,7 +12,10 @@ class SignatoryController extends BaseController
 
         return view('signatories/index', [
             'title' => 'Signatories',
-            'signatories' => $signatoryModel->orderBy('signatory_id', 'DESC')->findAll()
+            'signatories' => $signatoryModel
+                ->where('is_active', 1)
+                ->orderBy('signatory_id', 'DESC')
+                ->findAll()
         ]);
     }
 

@@ -2,68 +2,77 @@
 
 <?= $this->section('content') ?>
 
-<div class="page-header">
-    <h3 class="page-title">Signatories</h3>
-
-    <div class="page-actions">
-        <a href="<?= base_url('/signatories/form') ?>" class="btn btn-primary">Add Signatory</a>
+<div class="container-fluid px-4 py-4">
+    <div class="vs-page-header mb-4">
+        <div>
+            <h4 class="vs-page-title">Signatories</h4>
+            <p class="vs-page-sub">Manage active voucher signatories.</p>
+        </div>
+        <div class="d-flex gap-2">
+            <a href="<?= base_url('/signatories/form') ?>" class="vs-btn vs-btn-primary">
+                <?= asset_icon('add', ['stroke-width' => '2.5']) ?>
+                Add Signatory
+            </a>
+        </div>
     </div>
-</div>
 
-<?php if (session()->getFlashdata('success')): ?>
-    <div class="alert alert-success">
-        <?= session()->getFlashdata('success') ?>
-    </div>
-<?php endif; ?>
+    <?php if (session()->getFlashdata('success')): ?>
+        <div class="vs-alert vs-alert-success mb-3">
+            <?= session()->getFlashdata('success') ?>
+        </div>
+    <?php endif; ?>
 
-<div class="table-responsive page-table">
-    <table id="signatoriesTable" class="table table-bordered table-striped mb-0 js-data-table" data-search-placeholder="Search signatories..." style="width:100%">
-        <thead>
-            <tr>
-                <th>Full Name</th>
-                <th>Position Title</th>
-                <th>Status</th>
-                <th class="actions-column actions-column--sm">Actions</th>
-            </tr>
-        </thead>
-
-        <tbody>
-            <?php foreach ($signatories as $signatory): ?>
-                <?php
-                    $fullName = trim(
-                        $signatory['first_name'] . ' ' .
-                        ($signatory['middle_name'] ?? '') . ' ' .
-                        $signatory['last_name'] . ' ' .
-                        ($signatory['suffix'] ?? '')
-                    );
-                ?>
-
+    <div class="vs-card">
+        <div class="vs-card-body">
+            <table id="signatoriesTable" class="vs-datatable js-data-table" data-search-placeholder="Search signatories..." style="width:100%">
+            <thead>
                 <tr>
-                    <td><?= esc($fullName) ?></td>
-                    <td><?= esc($signatory['position_title']) ?></td>
-                    <td><?= $signatory['is_active'] ? 'Active' : 'Inactive' ?></td>
-                    <td class="actions-cell">
-                        <a href="<?= base_url('/signatories/form/' . $signatory['signatory_id']) ?>"
-                           class="btn btn-warning btn-sm">
-                            Edit
-                        </a>
-
-                        <?php if ($signatory['is_active']): ?>
-                            <form action="<?= base_url('/signatories/deactivate/' . $signatory['signatory_id']) ?>"
-                                  method="post"
-                                  class="inline-form">
-                                <?= csrf_field() ?>
-                                <button class="btn btn-danger btn-sm"
-                                        onclick="return confirm('Deactivate this signatory?')">
-                                    Deactivate
-                                </button>
-                            </form>
-                        <?php endif; ?>
-                    </td>
+                    <th>Full Name</th>
+                    <th>Position Title</th>
+                    <th>Status</th>
+                    <th class="actions-column actions-column--sm">Actions</th>
                 </tr>
-            <?php endforeach; ?>
-        </tbody>
-    </table>
+            </thead>
+
+            <tbody>
+                <?php foreach ($signatories as $signatory): ?>
+                    <?php
+                        $fullName = trim(
+                            $signatory['first_name'] . ' ' .
+                            ($signatory['middle_name'] ?? '') . ' ' .
+                            $signatory['last_name'] . ' ' .
+                            ($signatory['suffix'] ?? '')
+                        );
+                    ?>
+
+                    <tr>
+                        <td><?= esc($fullName) ?></td>
+                        <td><?= esc($signatory['position_title']) ?></td>
+                        <td><?= $signatory['is_active'] ? 'Active' : 'Inactive' ?></td>
+                        <td class="actions-cell">
+                            <a href="<?= base_url('/signatories/form/' . $signatory['signatory_id']) ?>"
+                               class="vs-tbl-btn vs-tbl-btn-edit">
+                                Edit
+                            </a>
+
+                            <?php if ($signatory['is_active']): ?>
+                                <form action="<?= base_url('/signatories/deactivate/' . $signatory['signatory_id']) ?>"
+                                      method="post"
+                                      class="inline-form">
+                                    <?= csrf_field() ?>
+                                    <button class="vs-tbl-btn vs-tbl-btn-delete"
+                                            onclick="return confirm('Archive this signatory?')">
+                                        Archive
+                                    </button>
+                                </form>
+                            <?php endif; ?>
+                        </td>
+                    </tr>
+                <?php endforeach; ?>
+            </tbody>
+            </table>
+        </div>
+    </div>
 </div>
 
 <?= $this->endSection() ?>

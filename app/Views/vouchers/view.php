@@ -12,77 +12,87 @@
   <div class="d-flex gap-2">
     <a href="<?= site_url($prefix . '/students') ?>" class="vs-btn vs-btn-outline">Back to students</a>
     <?php if ($role === 'admin'): ?>
-    <a href="<?= site_url('admin/students/edit/' . $voucher['student_id']) ?>" class="vs-btn vs-btn-primary">Edit</a>
+      <a href="<?= site_url('admin/students/edit/' . $voucher['student_id']) ?>" class="vs-btn vs-btn-primary">Edit</a>
     <?php endif ?>
   </div>
 </div>
 
 <div class="vs-card">
   <div class="vs-card-body">
-    <div class="vs-detail-grid">
+    <div class="vs-form-grid vs-form-grid-4">
       <div>
-        <strong>Voucher No.</strong>
-        <p><?= esc($voucher['voucher_no'] ?: '-') ?></p>
+        <label class="vs-label">Voucher No.</label>
+        <div class="vs-readonly-field"><?= esc($voucher['voucher_no'] ?: '-') ?></div>
       </div>
+
       <div>
-        <strong>Voucher Date</strong>
-        <p><?= esc($voucher['voucher_date']) ?></p>
+        <label class="vs-label">Voucher Date</label>
+        <div class="vs-readonly-field"><?= esc($voucher['voucher_date']) ?></div>
       </div>
+
       <div>
-        <strong>Full Name</strong>
-        <p><?= esc($voucher['full_name']) ?></p>
+        <label class="vs-label">First Name</label>
+        <div class="vs-readonly-field"><?= esc($voucher['first_name']) ?></div>
       </div>
+
       <div>
-        <strong>First Name</strong>
-        <p><?= esc($voucher['first_name']) ?></p>
+        <label class="vs-label">Middle Name</label>
+        <div class="vs-readonly-field"><?= esc($voucher['middle_name'] ?: '-') ?></div>
       </div>
+
       <div>
-        <strong>Middle Name</strong>
-        <p><?= esc($voucher['middle_name'] ?: '—') ?></p>
+        <label class="vs-label">Last Name</label>
+        <div class="vs-readonly-field"><?= esc($voucher['last_name']) ?></div>
       </div>
+
       <div>
-        <strong>Last Name</strong>
-        <p><?= esc($voucher['last_name']) ?></p>
+        <label class="vs-label">Suffix</label>
+        <div class="vs-readonly-field"><?= esc($voucher['suffix'] ?: '-') ?></div>
       </div>
+
       <div>
-        <strong>Suffix</strong>
-        <p><?= esc($voucher['suffix'] ?: '—') ?></p>
+        <label class="vs-label">Gender</label>
+        <div class="vs-readonly-field"><?= esc($voucher['gender'] ?: '-') ?></div>
       </div>
+
       <div>
-        <strong>Gender</strong>
-        <p><?= esc($voucher['gender'] ?: '—') ?></p>
+        <label class="vs-label">GWA</label>
+        <div class="vs-readonly-field"><?= $voucher['gwa'] !== null ? esc($voucher['gwa']) : '-' ?></div>
       </div>
+
       <div>
-        <strong>GWA</strong>
-        <p><?= $voucher['gwa'] !== null ? esc($voucher['gwa']) : '—' ?></p>
+        <label class="vs-label">Rank No.</label>
+        <div class="vs-readonly-field"><?= $voucher['rank_no'] !== null ? esc($voucher['rank_no']) : '-' ?></div>
       </div>
+
       <div>
-        <strong>Rank No.</strong>
-        <p><?= $voucher['rank_no'] !== null ? esc($voucher['rank_no']) : '—' ?></p>
+        <label class="vs-label">Contact Number</label>
+        <div class="vs-readonly-field"><?= esc($voucher['contact_number'] ?: '-') ?></div>
       </div>
-      <div>
-        <strong>Contact Number</strong>
-        <p><?= esc($voucher['contact_number'] ?: '—') ?></p>
+
+      <div class="vs-span-2">
+        <label class="vs-label">Junior High School</label>
+        <div class="vs-readonly-field"><?= esc($voucher['junior_high_school'] ?: '-') ?></div>
       </div>
-      <div>
-        <strong>Junior High School</strong>
-        <p><?= esc($voucher['junior_high_school'] ?: '—') ?></p>
+
+      <div class="vs-span-2">
+        <label class="vs-label">Preferred Senior High School</label>
+        <div class="vs-readonly-field"><?= esc($voucher['preferred_senior_high_school']) ?></div>
       </div>
+
       <div>
-        <strong>Preferred Senior High School</strong>
-        <p><?= esc($voucher['preferred_senior_high_school']) ?></p>
+        <label class="vs-label">Remarks</label>
+        <div class="vs-readonly-field"><?= esc($voucher['remarks_status'] ?: '-') ?></div>
       </div>
+
       <div>
-        <strong>Remarks</strong>
-        <p><?= esc($voucher['remarks_status'] ?: '—') ?></p>
+        <label class="vs-label">School Year</label>
+        <div class="vs-readonly-field"><?= esc($voucher['school_year']) ?></div>
       </div>
+
       <div>
-        <strong>School Year</strong>
-        <p><?= esc($voucher['school_year']) ?></p>
-      </div>
-      <div>
-        <strong>Eligibility</strong>
-        <p><?= esc(ucfirst(str_replace('_', ' ', $voucher['eligibility_status']))) ?></p>
+        <label class="vs-label">Eligibility</label>
+        <div class="vs-readonly-field"><?= esc(ucfirst(str_replace('_', ' ', $voucher['eligibility_status']))) ?></div>
       </div>
     </div>
   </div>
