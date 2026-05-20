@@ -29,6 +29,7 @@
                 <tr>
                     <th>Full Name</th>
                     <th>Position Title</th>
+                    <th>Signature</th>
                     <th>Status</th>
                     <th class="actions-column actions-column--sm">Actions</th>
                 </tr>
@@ -48,6 +49,15 @@
                     <tr>
                         <td><?= esc($fullName) ?></td>
                         <td><?= esc($signatory['position_title']) ?></td>
+                        <td>
+                            <?php if (!empty($signatory['signature_image'])): ?>
+                                <img src="<?= base_url('signatories/signature/' . $signatory['signatory_id']) ?>"
+                                     alt="Signature of <?= esc($fullName) ?>"
+                                     style="max-height: 40px; max-width: 140px;">
+                            <?php else: ?>
+                                <span class="text-muted">—</span>
+                            <?php endif; ?>
+                        </td>
                         <td><?= $signatory['is_active'] ? 'Active' : 'Inactive' ?></td>
                         <td class="actions-cell">
                             <a href="<?= base_url('/signatories/form/' . $signatory['signatory_id']) ?>"

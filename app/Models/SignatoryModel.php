@@ -15,6 +15,7 @@ class SignatoryModel extends Model
         'last_name',
         'suffix',
         'position_title',
+        'signature_image',
         'is_active',
     ];
 }

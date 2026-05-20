@@ -100,6 +100,7 @@ $routes->get('signatories',                          'SignatoryController::index
 $routes->get('signatories/form',                     'SignatoryController::form');
 $routes->get('signatories/form/(:num)',              'SignatoryController::form/$1');
 $routes->get('signatories/edit/(:num)',              'SignatoryController::form/$1');
+$routes->get('signatories/signature/(:num)',         'SignatoryController::signature/$1');
 $routes->post('signatories/save',                    'SignatoryController::save');
 $routes->post('signatories/deactivate/(:num)',       'SignatoryController::deactivate/$1');
 $routes->post('signatories/status/(:num)/(:alpha)', 'SignatoryController::setStatus/$1/$2');
