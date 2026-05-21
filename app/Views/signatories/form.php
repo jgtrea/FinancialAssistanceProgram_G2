@@ -60,6 +60,14 @@
                    accept="image/png, image/jpeg, image/jpg, image/webp">
             <small class="text-muted">PNG, JPG, or WEBP. Max 2 MB. Leave empty to keep existing.</small>
 
+            <div class="form-check mt-2">
+                <input class="form-check-input" type="checkbox"
+                       name="auto_remove_bg" value="1" id="autoRemoveBg" checked>
+                <label class="form-check-label" for="autoRemoveBg">
+                    Remove background automatically (best with signatures on plain white paper)
+                </label>
+            </div>
+
             <?php if (!empty($signatory['signature_image'])): ?>
                 <div class="mt-2">
                     <p class="mb-1"><strong>Current signature:</strong></p>
