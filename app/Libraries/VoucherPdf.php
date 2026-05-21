@@ -101,7 +101,42 @@ class VoucherPdf
             }
         }
 
-        return array_slice($rows, 0, 3);
+        return self::assignSignatorySlots($rows);
+    }
+
+    /**
+     * Place signatories in fixed columns by position title:
+     *   left   = Chairman, Committee on Education
+     *   middle = City Mayor
+     *   right  = City Vice Mayor
+     * Any unrecognized titles fall into the remaining slots in DB order.
+     */
+    protected static function assignSignatorySlots(array $rows): array
+    {
+        $slots = [null, null, null]; // [left, middle, right]
+        $leftovers = [];
+
+        foreach ($rows as $row) {
+            $title = strtolower((string) ($row['position_title'] ?? ''));
+
+            if (strpos($title, 'chairman') !== false) {
+                if ($slots[0] === null) { $slots[0] = $row; continue; }
+            } elseif (strpos($title, 'vice') !== false && strpos($title, 'mayor') !== false) {
+                if ($slots[2] === null) { $slots[2] = $row; continue; }
+            } elseif (strpos($title, 'mayor') !== false) {
+                if ($slots[1] === null) { $slots[1] = $row; continue; }
+            }
+
+            $leftovers[] = $row;
+        }
+
+        foreach ($slots as $idx => $slot) {
+            if ($slot === null && !empty($leftovers)) {
+                $slots[$idx] = array_shift($leftovers);
+            }
+        }
+
+        return $slots;
     }
 
     protected static function renderSignatures(Mpdf $mpdf, array $signatories, float $slotTop): void
@@ -114,8 +149,8 @@ class VoucherPdf
         $columnCenters = [35.0, 105.0, 175.0];
 
         foreach ($signatories as $idx => $sig) {
-            if (!isset($columnCenters[$idx])) {
-                break;
+            if (!isset($columnCenters[$idx]) || $sig === null) {
+                continue;
             }
 
             $cx = $columnCenters[$idx];

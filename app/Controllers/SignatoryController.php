@@ -72,8 +72,22 @@ class SignatoryController extends BaseController
                 return $redirect->withInput()->with('error', $error);
             }
 
-            $newSignatureName = $signatureFile->getRandomName();
-            $signatureFile->move($this->signatureDir(), $newSignatureName);
+            $autoRemoveBg = $this->request->getPost('auto_remove_bg') === '1';
+
+            if ($autoRemoveBg) {
+                $newSignatureName = bin2hex(random_bytes(8)) . '.png';
+                $destPath = $this->signatureDir() . $newSignatureName;
+                if (!$this->removeBackground($signatureFile->getTempName(), $destPath)) {
+                    $redirect = $id
+                        ? redirect()->to('/signatories/form/' . $id)
+                        : redirect()->to('/signatories/form');
+                    return $redirect->withInput()->with('error', 'Could not process the signature image. Try a different file.');
+                }
+            } else {
+                $newSignatureName = $signatureFile->getRandomName();
+                $signatureFile->move($this->signatureDir(), $newSignatureName);
+            }
+
             $data['signature_image'] = $newSignatureName;
         } elseif ($removeSignature) {
             $data['signature_image'] = null;
@@ -157,5 +171,109 @@ class SignatoryController extends BaseController
         if (is_file($path)) {
             @unlink($path);
         }
+    }
+
+    private function removeBackground(string $sourcePath, string $destPath): bool
+    {
+        $info = @getimagesize($sourcePath);
+        if ($info === false) {
+            return false;
+        }
+
+        $src = match ($info['mime']) {
+            'image/jpeg' => @imagecreatefromjpeg($sourcePath),
+            'image/png'  => @imagecreatefrompng($sourcePath),
+            'image/webp' => @imagecreatefromwebp($sourcePath),
+            default      => null,
+        };
+        if (!$src) {
+            return false;
+        }
+
+        // Downscale very large inputs to keep processing fast.
+        $maxWidth = 1200;
+        $srcW = imagesx($src);
+        $srcH = imagesy($src);
+        if ($srcW > $maxWidth) {
+            $newW = $maxWidth;
+            $newH = (int) round($srcH * ($maxWidth / $srcW));
+            $scaled = imagecreatetruecolor($newW, $newH);
+            imagealphablending($scaled, false);
+            imagesavealpha($scaled, true);
+            imagecopyresampled($scaled, $src, 0, 0, 0, 0, $newW, $newH, $srcW, $srcH);
+            imagedestroy($src);
+            $src = $scaled;
+        }
+
+        $w = imagesx($src);
+        $h = imagesy($src);
+
+        $out = imagecreatetruecolor($w, $h);
+        imagealphablending($out, false);
+        imagesavealpha($out, true);
+        $transparent = imagecolorallocatealpha($out, 0, 0, 0, 127);
+        imagefilledrectangle($out, 0, 0, $w, $h, $transparent);
+
+        // Sample background color from the four corners and edge midpoints.
+        $sampleCoords = [
+            [0, 0], [$w - 1, 0], [0, $h - 1], [$w - 1, $h - 1],
+            [(int) ($w / 2), 0], [(int) ($w / 2), $h - 1],
+            [0, (int) ($h / 2)], [$w - 1, (int) ($h / 2)],
+        ];
+        $bgR = $bgG = $bgB = 0;
+        foreach ($sampleCoords as [$sx, $sy]) {
+            $rgb  = imagecolorat($src, $sx, $sy);
+            $bgR += ($rgb >> 16) & 0xFF;
+            $bgG += ($rgb >> 8) & 0xFF;
+            $bgB += $rgb & 0xFF;
+        }
+        $count = count($sampleCoords);
+        $bgR = intdiv($bgR, $count);
+        $bgG = intdiv($bgG, $count);
+        $bgB = intdiv($bgB, $count);
+
+        // Distance thresholds: fully transparent below $hard, fully opaque above $hard + $soft,
+        // smoothly faded in between (anti-aliased edge).
+        $hard = 55.0;
+        $soft = 35.0;
+
+        for ($y = 0; $y < $h; $y++) {
+            for ($x = 0; $x < $w; $x++) {
+                $rgb = imagecolorat($src, $x, $y);
+                $r = ($rgb >> 16) & 0xFF;
+                $g = ($rgb >> 8) & 0xFF;
+                $b = $rgb & 0xFF;
+
+                $dr = $r - $bgR;
+                $dg = $g - $bgG;
+                $db = $b - $bgB;
+                $dist = sqrt($dr * $dr + $dg * $dg + $db * $db);
+
+                if ($dist <= $hard) {
+                    continue;
+                }
+
+                if ($dist >= $hard + $soft) {
+                    $alpha = 0;
+                } else {
+                    $alpha = (int) round(127 * (1 - ($dist - $hard) / $soft));
+                }
+
+                $color = imagecolorallocatealpha($out, $r, $g, $b, $alpha);
+                imagesetpixel($out, $x, $y, $color);
+                imagecolordeallocate($out, $color);
+            }
+        }
+
+        imagedestroy($src);
+
+        $dir = dirname($destPath);
+        if (!is_dir($dir)) {
+            @mkdir($dir, 0755, true);
+        }
+
+        $ok = imagepng($out, $destPath);
+        imagedestroy($out);
+        return $ok;
     }
 }
