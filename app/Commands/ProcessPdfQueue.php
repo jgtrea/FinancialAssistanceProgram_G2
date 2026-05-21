@@ -65,9 +65,13 @@ class ProcessPdfQueue extends BaseCommand
 
     protected function drainQueue(): bool
     {
-        $db   = \Config\Database::connect();
+        $db = \Config\Database::connect();
+
+        // Chunks first (so a parent's finalize can trigger as soon as its last
+        // chunk completes in the same drain pass); parents picked up afterward.
         $jobs = $db->table('pdf_jobs')
             ->where('status', 'pending')
+            ->orderBy('parent_job_id IS NULL', 'ASC', false)
             ->orderBy('job_id', 'ASC')
             ->get()
             ->getResultArray();
@@ -90,12 +94,30 @@ class ProcessPdfQueue extends BaseCommand
 
     protected function processJob(int $jobId): bool
     {
-        $ok = PdfJobRunner::claimAndProcess($jobId);
+        $db    = \Config\Database::connect();
+        $job   = $db->table('pdf_jobs')->where('job_id', $jobId)->get()->getRow();
+
+        if (!$job || $job->status !== 'pending') {
+            return true;
+        }
+
+        $ok = PdfJobRunner::processPending($jobId);
+
+        // Re-read for the post-call status. A parent waiting on still-pending
+        // children stays 'pending' but that's expected, not a failure.
+        $after = $db->table('pdf_jobs')->where('job_id', $jobId)->get()->getRow();
+
         if ($ok) {
             CLI::write("Job {$jobId} done.");
-        } else {
-            CLI::error("Job {$jobId} could not be processed (already claimed, missing, or failed).");
+            return true;
         }
-        return $ok;
+
+        if ($after && $after->status === 'pending') {
+            CLI::write("Job {$jobId} waiting (children not all done yet).");
+            return true;
+        }
+
+        CLI::error("Job {$jobId} could not be processed (already claimed, or failed).");
+        return false;
     }
 }

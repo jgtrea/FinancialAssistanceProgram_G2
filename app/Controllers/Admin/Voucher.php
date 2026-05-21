@@ -242,24 +242,55 @@ class Voucher extends Controller
         ]);
     }
 
-    // Insert a pending pdf_jobs row. The polling endpoint (checkPdfJob)
-    // will atomically claim and process it on the next /pdf-status/<id> call.
+    public const CHUNK_SIZE = 501;
+
+    // Insert a parent pdf_jobs row plus N pending chunk rows. Each chunk renders
+    // independently; once all chunks complete, a finalize step assembles them
+    // into either a single PDF (1 chunk) or a ZIP (multiple chunks).
     protected function queuePdfJob(array $ids, int $userId): int
     {
-        $db = \Config\Database::connect();
+        $db  = \Config\Database::connect();
+        $now = date('Y-m-d H:i:s');
+
+        $idList      = array_values($ids);
+        $chunks      = array_chunk($idList, self::CHUNK_SIZE);
+        $totalChunks = count($chunks);
+
         $db->table('pdf_jobs')->insert([
-            'voucher_ids' => json_encode(array_values($ids)),
-            'status'      => 'pending',
-            'created_by'  => $userId,
-            'created_at'  => date('Y-m-d H:i:s'),
+            'voucher_ids'   => json_encode($idList),
+            'status'        => 'pending',
+            'created_by'    => $userId,
+            'created_at'    => $now,
+            'parent_job_id' => null,
+            'chunk_index'   => null,
+            'total_chunks'  => $totalChunks,
         ]);
-        return (int) $db->insertID();
+        $parentJobId = (int) $db->insertID();
+
+        $rows = [];
+        foreach ($chunks as $idx => $chunkIds) {
+            $rows[] = [
+                'voucher_ids'   => json_encode(array_values($chunkIds)),
+                'status'        => 'pending',
+                'created_by'    => $userId,
+                'created_at'    => $now,
+                'parent_job_id' => $parentJobId,
+                'chunk_index'   => $idx + 1,
+                'total_chunks'  => $totalChunks,
+            ];
+        }
+        if (!empty($rows)) {
+            $db->table('pdf_jobs')->insertBatch($rows);
+        }
+
+        return $parentJobId;
     }
 
     // ── Poll job status (AJAX GET) ─────────────────────────────────────────────
-    // This endpoint doubles as the worker: if the job is still pending, the
-    // first poll to land here claims the lease and runs the PDF generation
-    // inline before responding. No daemon required.
+    // Polls the parent job. If chunks are still pending, this request claims
+    // and renders one of them inline so a single watching browser still makes
+    // progress; multiple polls / a queue worker render chunks in parallel.
+    // After all chunks complete, the parent is finalized (PDF or ZIP).
     public function checkPdfJob(int $jobId)
     {
         $db  = \Config\Database::connect();
@@ -271,24 +302,46 @@ class Voucher extends Controller
 
         $userId = $this->getCurrentUserId();
 
-        // Admins can view any job; non-admins only their own.
         if (session()->get('role') !== 'admin' && (int) $job->created_by !== $userId) {
             return $this->response->setJSON(['status' => 'forbidden']);
         }
 
-        // If this job is still pending, try to grab the lease and run it.
-        // Subsequent concurrent polls (or other tabs) will lose the race and
-        // just see status='processing', so the work runs once.
-        if ($job->status === 'pending' && \App\Libraries\PdfJobRunner::tryClaim($jobId)) {
-            // Keep running even if the user navigates away or the request times out.
-            @ignore_user_abort(true);
-            @set_time_limit(0);
+        $totalChunks = (int) ($job->total_chunks ?? 0);
+        $childrenCount = (int) $db->table('pdf_jobs')
+            ->where('parent_job_id', $jobId)
+            ->countAllResults();
+        $isParent = $childrenCount > 0;
 
+        @ignore_user_abort(true);
+        @set_time_limit(0);
+
+        if ($isParent) {
+            $pendingChild = $db->table('pdf_jobs')
+                ->where('parent_job_id', $jobId)
+                ->where('status', 'pending')
+                ->orderBy('chunk_index', 'ASC')
+                ->limit(1)
+                ->get()
+                ->getRow();
+
+            if ($pendingChild && \App\Libraries\PdfJobRunner::tryClaim((int) $pendingChild->job_id)) {
+                \App\Libraries\PdfJobRunner::process((int) $pendingChild->job_id);
+            }
+
+            \App\Libraries\PdfJobRunner::tryFinalize($jobId);
+
+            $job = $db->table('pdf_jobs')->where('job_id', $jobId)->get()->getRow();
+        } elseif ($job->status === 'pending' && \App\Libraries\PdfJobRunner::tryClaim($jobId)) {
             \App\Libraries\PdfJobRunner::process($jobId);
-
-            // Refresh the row to report the new status
             $job = $db->table('pdf_jobs')->where('job_id', $jobId)->get()->getRow();
         }
+
+        $doneCount = $isParent
+            ? (int) $db->table('pdf_jobs')
+                ->where('parent_job_id', $jobId)
+                ->where('status', 'done')
+                ->countAllResults()
+            : ($job->status === 'done' ? 1 : 0);
 
         $prefix      = session()->get('role') === 'admin' ? 'admin' : 'user';
         $downloadUrl = $job->status === 'done'
@@ -299,6 +352,10 @@ class Voucher extends Controller
             'status'       => $job->status,
             'download_url' => $downloadUrl,
             'error'        => $job->error_message,
+            'progress'     => [
+                'done'  => $doneCount,
+                'total' => $totalChunks > 0 ? $totalChunks : ($isParent ? $childrenCount : 1),
+            ],
         ]);
     }
 
@@ -325,8 +382,11 @@ class Voucher extends Controller
 
         log_action($userId, 'DOWNLOAD_PDF', "Downloaded PDF for job #{$jobId}");
 
+        $isZip = strtolower(pathinfo($filePath, PATHINFO_EXTENSION)) === 'zip';
+        $contentType = $isZip ? 'application/zip' : 'application/pdf';
+
         return $this->response
-            ->setHeader('Content-Type', 'application/pdf')
+            ->setHeader('Content-Type', $contentType)
             ->setHeader('Content-Disposition', 'attachment; filename="' . basename($filePath) . '"')
             ->setBody(file_get_contents($filePath));
     }
