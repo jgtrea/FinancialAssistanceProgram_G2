@@ -1,69 +1,140 @@
-# CodeIgniter 4 Application Starter
+# Financial Assistance Program — Voucher Management System
 
-## What is CodeIgniter?
+A web-based system for managing educational financial assistance vouchers for senior high school students. It handles student record management, voucher generation with PDF export, signatory management, archiving, and audit logging — with role-based access for admins and staff users.
 
-CodeIgniter is a PHP full-stack web framework that is light, fast, flexible and secure.
-More information can be found at the [official site](https://codeigniter.com).
+---
 
-This repository holds a composer-installable app starter.
-It has been built from the
-[development repository](https://github.com/codeigniter4/CodeIgniter4).
+## Features
 
-More information about the plans for version 4 can be found in [CodeIgniter 4](https://forum.codeigniter.com/forumdisplay.php?fid=28) on the forums.
+- **Authentication & Role-Based Access** — separate Admin and Staff (User) roles with route-level protection
+- **Student Management** — add, edit, archive, and restore student records
+- **Voucher Generation** — create and track vouchers per student; generate multi-slot PDF vouchers with embedded signatory signatures
+- **Signatory Management** — manage signatories with uploaded signature images used on generated PDFs
+- **Archive** — soft-archive students and signatories with restore capability
+- **Audit Logs** — track user actions system-wide; admins see all logs, staff see their own
+- **User Management** *(Admin only)* — create, archive, and restore staff accounts
+- **Excel Import** — bulk-import student/voucher data via `.xlsx` files
+- **Async PDF Queue** — PDF generation runs as a background job queue to avoid timeouts on large batches
 
-You can read the [user guide](https://codeigniter.com/user_guide/)
-corresponding to the latest version of the framework.
+---
 
-## Installation & updates
+## Tech Stack
 
-`composer create-project codeigniter4/appstarter` then `composer update` whenever
-there is a new release of the framework.
+| Layer | Technology |
+|---|---|
+| Framework | CodeIgniter 4 (PHP 8.2+) |
+| PDF Generation | mPDF 8.x |
+| Spreadsheet Import | PhpSpreadsheet 5.x |
+| Database | MySQL (via CodeIgniter's Query Builder) |
+| Frontend | Bootstrap + vanilla JS |
+| Testing | PHPUnit 10 |
 
-When updating, check the release notes to see if there are any changes you might need to apply
-to your `app` folder. The affected files can be copied or merged from
-`vendor/codeigniter4/framework/app`.
+---
 
-## Setup
+## Folder Structure
 
-Copy `env` to `.env` and tailor for your app, specifically the baseURL
-and any database settings.
+```
+FinancialAssistanceProgram_G2/
+├── app/
+│   ├── Config/             # App configuration (routes, filters, database, etc.)
+│   ├── Controllers/
+│   │   ├── Admin/          # Admin-only controllers (Dashboard, Voucher, Report)
+│   │   ├── User/           # Staff controllers (Dashboard, Voucher)
+│   │   ├── Authentication.php
+│   │   ├── SignatoryController.php
+│   │   ├── StudentController.php
+│   │   ├── ArchiveController.php
+│   │   ├── AuditLogController.php
+│   │   ├── UsersController.php
+│   │   └── VoucherImport.php
+│   ├── Database/
+│   │   └── Migrations/     # Database migration files
+│   ├── Filters/            # Auth and role-check filters
+│   ├── Helpers/            # Audit and voucher helper functions
+│   ├── Libraries/          # VoucherPdf (mPDF wrapper), PdfJobRunner
+│   ├── Models/             # Eloquent-style models for each entity
+│   └── Views/
+│       ├── admin/          # Admin-specific pages
+│       ├── auth/           # Login page
+│       ├── layouts/        # Base layout (main.php)
+│       ├── partials/       # Shared sidebar, topbar, footer
+│       ├── signatories/    # Signatory list and form
+│       ├── vouchers/       # Voucher list, form, generate, view
+│       └── archive/        # Archive index
+├── public/                 # Web root (index.php, assets)
+├── writable/               # Logs, cache, uploads (not committed)
+├── composer.json
+└── .env                    # Local environment config (not committed)
+```
 
-## Important Change with index.php
+---
 
-`index.php` is no longer in the root of the project! It has been moved inside the *public* folder,
-for better security and separation of components.
+## Getting Started
 
-This means that you should configure your web server to "point" to your project's *public* folder, and
-not to the project root. A better practice would be to configure a virtual host to point there. A poor practice would be to point your web server to the project root and expect to enter *public/...*, as the rest of your logic and the
-framework are exposed.
+### Prerequisites
 
-**Please** read the user guide for a better explanation of how CI4 works!
+- PHP 8.2 or higher with extensions: `intl`, `mbstring`, `json`, `mysqlnd`, `gd` (for mPDF)
+- Composer
+- MySQL 5.7+ or MariaDB 10.3+
+- A local web server (Apache/Nginx) or PHP's built-in server
 
-## Repository Management
+### Setup
 
-We use GitHub issues, in our main repository, to track **BUGS** and to track approved **DEVELOPMENT** work packages.
-We use our [forum](http://forum.codeigniter.com) to provide SUPPORT and to discuss
-FEATURE REQUESTS.
+1. **Clone the repository**
 
-This repository is a "distribution" one, built by our release preparation script.
-Problems with it can be raised on our forum, or as issues in the main repository.
+   ```bash
+   git clone https://github.com/jgtrea/FinancialAssistanceProgram_G2.git
+   cd FinancialAssistanceProgram_G2
+   ```
 
-## Server Requirements
+2. **Install dependencies**
 
-PHP version 8.2 or higher is required, with the following extensions installed:
+   ```bash
+   composer install
+   ```
 
-- [intl](http://php.net/manual/en/intl.requirements.php)
-- [mbstring](http://php.net/manual/en/mbstring.installation.php)
+3. **Configure environment**
 
-> [!WARNING]
-> - The end of life date for PHP 7.4 was November 28, 2022.
-> - The end of life date for PHP 8.0 was November 26, 2023.
-> - The end of life date for PHP 8.1 was December 31, 2025.
-> - If you are still using below PHP 8.2, you should upgrade immediately.
-> - The end of life date for PHP 8.2 will be December 31, 2026.
+   ```bash
+   cp env .env
+   ```
 
-Additionally, make sure that the following extensions are enabled in your PHP:
+   Edit `.env` and set at minimum:
 
-- json (enabled by default - don't turn it off)
-- [mysqlnd](http://php.net/manual/en/mysqlnd.install.php) if you plan to use MySQL
-- [libcurl](http://php.net/manual/en/curl.requirements.php) if you plan to use the HTTP\CURLRequest library
+   ```ini
+   CI_ENVIRONMENT = development
+
+   app.baseURL = 'http://localhost:8080/'
+
+   database.default.hostname = localhost
+   database.default.database = your_db_name
+   database.default.username = your_db_user
+   database.default.password = your_db_password
+   database.default.DBDriver = MySQLi
+   ```
+
+4. **Run migrations**
+
+   ```bash
+   php spark migrate
+   ```
+
+5. **Start the development server**
+
+   ```bash
+   php spark serve
+   ```
+
+   Open [http://localhost:8080](http://localhost:8080) in your browser.
+
+### Default Credentials
+
+Seed an admin account manually or via a database seeder. The password hash algorithm used is `PASSWORD_ARGON2ID`.
+
+### PDF Generation
+
+Voucher PDFs are generated asynchronously via a job queue. Run the queue worker in a separate terminal (or set it up as a cron job):
+
+```bash
+php spark pdf:process-queue
+```
