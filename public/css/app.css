@@ -23,9 +23,9 @@
 }
 
 .navbar-logo {
-    width: 42px;
-    height: 42px;
-    max-width: 42px;
+    width: 28px;
+    height: 28px;
+    max-width: 28px;
     object-fit: contain;
     flex-shrink: 0;
 }
@@ -150,14 +150,14 @@
 .login-submit {
     border-radius: 10px;
     font-weight: 700;
-    background: #198754;
-    border-color: #198754;
-    box-shadow: 0 12px 24px rgba(25, 135, 84, .22);
+    background: #1d4ed8;
+    border-color: #1d4ed8;
+    box-shadow: 0 12px 24px rgba(29, 78, 216, .22);
 }
 
 .login-submit:hover {
-    background: #157347;
-    border-color: #157347;
+    background: #1e40af;
+    border-color: #1e40af;
 }
 
 @media (max-width: 991.98px) {

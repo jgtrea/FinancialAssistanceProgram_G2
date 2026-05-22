@@ -11,13 +11,11 @@
 </head>
 
 <body class="login-screen">
-    <nav class="navbar navbar-expand navbar-light bg-white topbar fixed-top shadow-sm">
-        <div class="container">
-            <a class="navbar-brand d-flex align-items-center fw-bold text-uppercase" href="<?= site_url('/') ?>">
-                <img src="<?= base_url('assets/img/logo_binan.png') ?>" class="navbar-logo me-2" alt="Biñan City">
-                Biñan City
-            </a>
-        </div>
+    <nav class="sb-topnav navbar navbar-expand navbar-dark bg-dark fixed-top">
+        <a class="navbar-brand ps-3 d-flex align-items-center fw-bold text-uppercase" href="<?= site_url('/') ?>">
+            <img src="<?= base_url('assets/img/logo_binan.png') ?>" class="navbar-logo me-2" alt="Biñan City">
+            Biñan City
+        </a>
     </nav>
 
     <main class="login-shell">

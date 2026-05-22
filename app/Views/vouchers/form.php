@@ -142,8 +142,8 @@
       </div>
 
       <div class="mt-4 d-flex gap-2">
-        <a href="<?= site_url($prefix . '/students') ?>" class="vs-btn vs-btn-outline">Cancel</a>
         <button type="submit" class="vs-btn vs-btn-primary"><?= esc($title) ?></button>
+        <a href="<?= site_url($prefix . '/students') ?>" class="vs-btn vs-btn-outline">Cancel</a>
       </div>
     </form>
   </div>
