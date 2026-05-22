@@ -12,12 +12,6 @@
       <h4 class="vs-page-title"><?= esc($title) ?></h4>
       <p class="vs-page-sub">Select students and generate printable voucher PDFs.</p>
     </div>
-    <div class="d-flex gap-2">
-      <button class="vs-btn vs-btn-outline" id="btnOpenExport">
-        <?= asset_icon('export') ?>
-        Export
-      </button>
-    </div>
   </div>
 
   <?php if (session()->getFlashdata('error')): ?>
@@ -29,7 +23,7 @@
 
   <div class="vs-action-bar" id="actionBar" style="display:none">
     <span class="vs-action-bar-count"><span id="selectedCount">0</span> selected</span>
-    <button class="vs-btn vs-btn-primary" id="btnGeneratePdf">
+    <button class="vs-btn vs-btn-blue" id="btnGeneratePdf">
       <?= asset_icon('voucher-add') ?>
       Generate Vouchers
     </button>
@@ -84,41 +78,5 @@
   <?= csrf_field() ?>
 </form>
 
-<!-- Export modal -->
-<div class="vs-modal-overlay" id="exportModal" style="display:none">
-  <div class="vs-modal">
-    <div class="vs-modal-header">
-      <h5>Export Vouchers</h5>
-      <button class="vs-modal-close" id="exportModalClose">&times;</button>
-    </div>
-    <div class="vs-modal-body">
-      <p>Choose the file format to export all current student records.</p>
-      <div class="d-flex gap-3 mt-3">
-        <a href="<?= site_url('vouchers/export?format=xlsx') ?>" class="vs-btn vs-btn-outline flex-fill text-center">
-          Excel (.xlsx)
-        </a>
-        <a href="<?= site_url('vouchers/export?format=csv') ?>" class="vs-btn vs-btn-outline flex-fill text-center">
-          CSV (.csv)
-        </a>
-      </div>
-    </div>
-  </div>
-</div>
-
-<script>
-(function () {
-  var exportModal = document.getElementById('exportModal');
-
-  document.getElementById('btnOpenExport').addEventListener('click', function () {
-    exportModal.style.display = 'flex';
-  });
-  document.getElementById('exportModalClose').addEventListener('click', function () {
-    exportModal.style.display = 'none';
-  });
-  exportModal.addEventListener('click', function (e) {
-    if (e.target === exportModal) exportModal.style.display = 'none';
-  });
-}());
-</script>
 
 <?= $this->endSection() ?>

@@ -79,6 +79,8 @@ body {
 .vs-btn:disabled { opacity: .55; cursor: not-allowed; }
 .vs-btn-primary { background: var(--navy); color: #fff; }
 .vs-btn-primary:hover { background: var(--navy-md); color: #fff; }
+.vs-btn-blue    { background: #1d4ed8; color: #fff; }
+.vs-btn-blue:hover { background: #1e40af; color: #fff; }
 .vs-btn-danger  { background: #dc2626; color: #fff; }
 .vs-btn-danger:hover { background: #b91c1c; color: #fff; }
 .vs-btn-outline {
