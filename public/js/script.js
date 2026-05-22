@@ -677,32 +677,8 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   }
 
-  // ── CSV Export ────────────────────────────────────────────────────────────────
-  const btnExport = document.getElementById('btnExport');
-  if (btnExport) {
-    btnExport.addEventListener('click', function () {
-      const rows    = dt.rows({ search: 'applied' }).data();
-      const headers = ['Voucher No', 'Name', 'Preferred School', 'School Year', 'Eligibility', 'Generate Count', 'Date'];
-      const clean   = str => '"' + String(str).replace(/<[^>]*>/g, '').replace(/"/g, '""').trim() + '"';
-      const csvRows = [headers.join(',')];
-
-      rows.each(row => csvRows.push([
-        clean(row[1]), clean(row[2]), clean(row[3]),
-        clean(row[4]), clean(row[5]), clean(row[6]), clean(row[7]),
-      ].join(',')));
-
-      const blob = new Blob([csvRows.join('\n')], { type: 'text/csv' });
-      const url  = URL.createObjectURL(blob);
-      const a    = document.createElement('a');
-      a.href = url; a.download = 'vouchers_' + new Date().toISOString().slice(0, 10) + '.csv';
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      setTimeout(function () { URL.revokeObjectURL(url); }, 100);
-    });
-  }
-
 });
+
 
 
 /* ============================================================

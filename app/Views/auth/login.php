@@ -49,25 +49,17 @@
 
                     <div class="mb-3">
                         <label for="username" class="form-label">Email address</label>
-                        <input id="username" type="email" name="username" class="form-control form-control-lg"
+                        <input id="username" type="email" name="username" class="form-control"
                             placeholder="name@example.com" required>
                     </div>
 
                     <div class="mb-3">
                         <label for="password" class="form-label">Password</label>
-                        <input id="password" type="password" name="password" class="form-control form-control-lg"
+                        <input id="password" type="password" name="password" class="form-control"
                             placeholder="Enter your password" required>
                     </div>
 
-                    <div class="d-flex align-items-center justify-content-between mb-4 gap-3">
-                        <div class="form-check">
-                            <input type="checkbox" class="form-check-input" id="customCheck">
-                            <label class="form-check-label" for="customCheck">Remember me</label>
-                        </div>
-                        <a class="small text-decoration-none" href="#">Forgot password?</a>
-                    </div>
-
-                    <button type="submit" class="btn btn-primary btn-lg w-100 login-submit">
+                    <button type="submit" class="btn btn-primary w-100 login-submit mt-3">
                         Login
                     </button>
                 </form>

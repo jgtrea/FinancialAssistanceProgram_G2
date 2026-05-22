@@ -17,10 +17,14 @@
         <?= asset_icon('add', ['stroke-width' => '2.5']) ?>
         Add Student
       </a>
-      <a href="<?= site_url('import') ?>" class="vs-btn vs-btn-outline">
+      <button type="button" class="vs-btn vs-btn-outline" id="btnOpenImport">
         <?= asset_icon('import') ?>
         Import
-      </a>
+      </button>
+      <button type="button" class="vs-btn vs-btn-outline" id="btnOpenExport">
+        <?= asset_icon('export') ?>
+        Export
+      </button>
     </div>
   </div>
 
@@ -112,5 +116,125 @@
 <form id="archiveForm" action="<?= site_url($prefix . '/vouchers/archive') ?>" style="display:none">
   <?= csrf_field() ?>
 </form>
+
+<!-- Import modal -->
+<div class="vs-modal-overlay" id="importModal" style="display:none">
+  <div class="vs-modal">
+    <div class="vs-modal-header">
+      <h5>Import Students</h5>
+      <button class="vs-modal-close" id="importModalClose">&times;</button>
+    </div>
+    <div class="vs-modal-body">
+      <p class="text-muted small mb-3">
+        Upload an <strong>.xlsx</strong>, <strong>.xls</strong>, or <strong>.csv</strong> file.<br>
+        Columns must be in this exact order:
+        <em>Voucher No., Voucher Date, Full Name, Rank No., GWA, Gender, Junior High School, Preferred Senior High School, Contact Number, Remarks</em>
+      </p>
+      <label class="vs-label" for="importFile">File</label>
+      <input type="file" id="importFile" class="vs-input" accept=".xlsx,.xls,.csv">
+    </div>
+    <div class="vs-modal-footer">
+      <button class="vs-btn vs-btn-outline" id="importModalCancel">Cancel</button>
+      <button class="vs-btn vs-btn-primary" id="importConfirm">
+        <span id="importBtnText">Import</span>
+        <span id="importBtnSpinner" class="vs-spinner" style="display:none"></span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Export modal -->
+<div class="vs-modal-overlay" id="exportModal" style="display:none">
+  <div class="vs-modal">
+    <div class="vs-modal-header">
+      <h5>Export Students</h5>
+      <button class="vs-modal-close" id="exportModalClose">&times;</button>
+    </div>
+    <div class="vs-modal-body">
+      <p>Choose the file format to export all current student records.</p>
+      <div class="d-flex gap-3 mt-3">
+        <a href="<?= site_url('vouchers/export?format=xlsx') ?>" class="vs-btn vs-btn-outline flex-fill text-center">
+          Excel (.xlsx)
+        </a>
+        <a href="<?= site_url('vouchers/export?format=csv') ?>" class="vs-btn vs-btn-outline flex-fill text-center">
+          CSV (.csv)
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+  var csrfName = '<?= csrf_token() ?>';
+  var csrfHash = '<?= csrf_hash() ?>';
+
+  // ── Import ──────────────────────────────────────────────────────────────────
+  var importModal  = document.getElementById('importModal');
+  var importFile   = document.getElementById('importFile');
+  var importBtn    = document.getElementById('importConfirm');
+  var importText   = document.getElementById('importBtnText');
+  var importSpinner = document.getElementById('importBtnSpinner');
+
+  document.getElementById('btnOpenImport').addEventListener('click', function () {
+    importFile.value = '';
+    importModal.style.display = 'flex';
+  });
+  document.getElementById('importModalClose').addEventListener('click', function () {
+    importModal.style.display = 'none';
+  });
+  document.getElementById('importModalCancel').addEventListener('click', function () {
+    importModal.style.display = 'none';
+  });
+
+  importBtn.addEventListener('click', function () {
+    if (!importFile.files.length) {
+      alert('Please select a file first.');
+      return;
+    }
+
+    var fd = new FormData();
+    fd.append(csrfName, csrfHash);
+    fd.append('excel_file', importFile.files[0]);
+
+    importBtn.disabled = true;
+    importText.style.display = 'none';
+    importSpinner.style.display = 'inline-block';
+
+    fetch('<?= site_url('import_data') ?>', { method: 'POST', body: fd })
+      .then(function (r) { return r.json(); })
+      .then(function (data) {
+        importModal.style.display = 'none';
+        alert(data.message);
+        if (data.success) location.reload();
+      })
+      .catch(function () {
+        alert('An error occurred while uploading. Please try again.');
+      })
+      .finally(function () {
+        importBtn.disabled = false;
+        importText.style.display = 'inline';
+        importSpinner.style.display = 'none';
+      });
+  });
+
+  // ── Export ──────────────────────────────────────────────────────────────────
+  var exportModal = document.getElementById('exportModal');
+
+  document.getElementById('btnOpenExport').addEventListener('click', function () {
+    exportModal.style.display = 'flex';
+  });
+  document.getElementById('exportModalClose').addEventListener('click', function () {
+    exportModal.style.display = 'none';
+  });
+
+  exportModal.addEventListener('click', function (e) {
+    if (e.target === exportModal) exportModal.style.display = 'none';
+  });
+  importModal.addEventListener('click', function (e) {
+    if (e.target === importModal) importModal.style.display = 'none';
+  });
+}());
+</script>
 
 <?= $this->endSection() ?>

@@ -59,13 +59,6 @@
             <?= isset($user) ? 'Update User' : 'Save User' ?>
         </button>
         <a href="<?= base_url('admin/user_management') ?>" class="vs-btn vs-btn-outline">Cancel</a>
-
-        <?php if (isset($user)): ?>
-        <button type="button" class="vs-btn vs-btn-danger deleteUserBtn ms-auto"
-                data-delete-url="<?= base_url('admin/user_management/delete/' . $user['user_id']) ?>">
-            Remove
-        </button>
-        <?php endif; ?>
     </div>
 </form>
 

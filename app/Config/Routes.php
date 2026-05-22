@@ -13,9 +13,9 @@ $routes->get('generate-hash', function () {
     echo password_hash('test', PASSWORD_ARGON2ID);
 });
 
-// Import
-$routes->get('import',      'VoucherImport::index');
-$routes->post('import_data', 'VoucherImport::import');
+// Import / Export
+$routes->post('import_data',     'VoucherImport::import');
+$routes->get('vouchers/export',  'VoucherImport::export');
 
 // ─── Admin ────────────────────────────────────────────────────────────────────
 $routes->group('admin', ['filter' => 'role:admin'], function ($routes) {

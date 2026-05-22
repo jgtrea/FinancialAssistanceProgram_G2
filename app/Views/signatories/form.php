@@ -1,96 +1,108 @@
 <?= $this->extend('layouts/main') ?>
-
 <?= $this->section('content') ?>
 
-<h3><?= $signatory ? 'Edit Signatory' : 'Add Signatory' ?></h3>
+<div class="vs-page-header mb-4">
+  <div>
+    <h4 class="vs-page-title"><?= esc($title) ?></h4>
+    <p class="vs-page-sub">Enter signatory details and upload a signature image.</p>
+  </div>
+  <a href="<?= base_url('/signatories') ?>" class="vs-btn vs-btn-outline">Back to signatories</a>
+</div>
 
 <?php if (session()->getFlashdata('error')): ?>
-    <div class="vs-alert vs-alert-danger mb-3">
-        <?= session()->getFlashdata('error') ?>
-    </div>
-<?php endif; ?>
+  <div class="vs-alert vs-alert-error mb-3"><?= esc(session()->getFlashdata('error')) ?></div>
+<?php endif ?>
 
-<form action="<?= base_url('/signatories/save') ?>" method="post" enctype="multipart/form-data">
-    <?= csrf_field() ?>
+<div class="vs-card">
+  <div class="vs-card-body">
+    <form action="<?= base_url('/signatories/save') ?>" method="post" enctype="multipart/form-data">
+      <?= csrf_field() ?>
+      <input type="hidden" name="signatory_id" value="<?= esc($signatory['signatory_id'] ?? '') ?>">
 
-    <input type="hidden" name="signatory_id" value="<?= esc($signatory['signatory_id'] ?? '') ?>">
+      <div class="vs-form-grid vs-form-grid-4">
 
-    <div class="row">
-        <div class="col-md-3 mb-3">
-            <label>First Name</label>
-            <input type="text" name="first_name" class="form-control" required
-                   value="<?= esc($signatory['first_name'] ?? '') ?>">
+        <div>
+          <label class="vs-label" for="first_name">First Name</label>
+          <input id="first_name" name="first_name" type="text"
+                 class="vs-input vs-uppercase" required
+                 value="<?= esc($signatory['first_name'] ?? '') ?>">
         </div>
 
-        <div class="col-md-3 mb-3">
-            <label>Middle Name</label>
-            <input type="text" name="middle_name" class="form-control"
-                   value="<?= esc($signatory['middle_name'] ?? '') ?>">
+        <div>
+          <label class="vs-label" for="middle_name">Middle Name</label>
+          <input id="middle_name" name="middle_name" type="text"
+                 class="vs-input vs-uppercase"
+                 value="<?= esc($signatory['middle_name'] ?? '') ?>">
         </div>
 
-        <div class="col-md-3 mb-3">
-            <label>Last Name</label>
-            <input type="text" name="last_name" class="form-control" required
-                   value="<?= esc($signatory['last_name'] ?? '') ?>">
+        <div>
+          <label class="vs-label" for="last_name">Last Name</label>
+          <input id="last_name" name="last_name" type="text"
+                 class="vs-input vs-uppercase" required
+                 value="<?= esc($signatory['last_name'] ?? '') ?>">
         </div>
 
-        <div class="col-md-3 mb-3">
-            <label>Suffix</label>
-            <input type="text" name="suffix" class="form-control"
-                   value="<?= esc($signatory['suffix'] ?? '') ?>">
+        <div>
+          <label class="vs-label" for="suffix">Suffix</label>
+          <input id="suffix" name="suffix" type="text"
+                 class="vs-input vs-uppercase"
+                 value="<?= esc($signatory['suffix'] ?? '') ?>">
         </div>
 
-        <div class="col-md-8 mb-3">
-            <label>Position Title</label>
-            <input type="text" name="position_title" class="form-control" required
-                   value="<?= esc($signatory['position_title'] ?? '') ?>">
+        <div class="vs-span-3">
+          <label class="vs-label" for="position_title">Position Title</label>
+          <input id="position_title" name="position_title" type="text"
+                 class="vs-input vs-uppercase" required
+                 value="<?= esc($signatory['position_title'] ?? '') ?>">
         </div>
 
-        <div class="col-md-4 mb-3">
-            <label>Status</label>
-            <select name="is_active" class="form-control">
-                <option value="1" <?= (($signatory['is_active'] ?? 1) == 1) ? 'selected' : '' ?>>Active</option>
-                <option value="0" <?= (($signatory['is_active'] ?? 1) == 0) ? 'selected' : '' ?>>Inactive</option>
-            </select>
+        <div>
+          <label class="vs-label" for="is_active">Status</label>
+          <select id="is_active" name="is_active" class="vs-input">
+            <option value="1" <?= (($signatory['is_active'] ?? 1) == 1) ? 'selected' : '' ?>>Active</option>
+            <option value="0" <?= (($signatory['is_active'] ?? 1) == 0) ? 'selected' : '' ?>>Inactive</option>
+          </select>
         </div>
 
-        <div class="col-md-8 mb-3">
-            <label>Signature Image</label>
-            <input type="file" name="signature_image" class="form-control"
-                   accept="image/png, image/jpeg, image/jpg, image/webp">
-            <small class="text-muted">PNG, JPG, or WEBP. Max 2 MB. Leave empty to keep existing.</small>
+        <div class="vs-span-4">
+          <label class="vs-label" for="signature_image">Signature Image</label>
+          <input id="signature_image" name="signature_image" type="file"
+                 class="vs-input" accept="image/png,image/jpeg,image/jpg,image/webp">
+          <small class="text-muted">PNG, JPG, or WEBP — max 2 MB. Leave empty to keep the current image.</small>
 
-            <div class="form-check mt-2">
+          <div class="form-check mt-2">
+            <input class="form-check-input" type="checkbox"
+                   name="auto_remove_bg" value="1" id="autoRemoveBg" checked>
+            <label class="form-check-label" for="autoRemoveBg">
+              Remove background automatically (best for signatures on plain white paper)
+            </label>
+          </div>
+
+          <?php if (!empty($signatory['signature_image'])): ?>
+            <div class="mt-3">
+              <p class="vs-label mb-1">Current Signature</p>
+              <img src="<?= base_url('signatories/signature/' . $signatory['signatory_id']) ?>"
+                   alt="Current signature"
+                   style="max-height:80px;background:#fff;padding:4px;border:1px solid #ddd;border-radius:4px;">
+              <div class="form-check mt-2">
                 <input class="form-check-input" type="checkbox"
-                       name="auto_remove_bg" value="1" id="autoRemoveBg" checked>
-                <label class="form-check-label" for="autoRemoveBg">
-                    Remove background automatically (best with signatures on plain white paper)
-                </label>
+                       name="remove_signature" value="1" id="removeSignature">
+                <label class="form-check-label" for="removeSignature">Remove current signature</label>
+              </div>
             </div>
-
-            <?php if (!empty($signatory['signature_image'])): ?>
-                <div class="mt-2">
-                    <p class="mb-1"><strong>Current signature:</strong></p>
-                    <img src="<?= base_url('signatories/signature/' . $signatory['signatory_id']) ?>"
-                         alt="Current signature"
-                         style="max-height: 80px; background: #fff; padding: 4px; border: 1px solid #ddd;">
-                    <div class="form-check mt-2">
-                        <input class="form-check-input" type="checkbox"
-                               name="remove_signature" value="1" id="removeSignature">
-                        <label class="form-check-label" for="removeSignature">
-                            Remove current signature
-                        </label>
-                    </div>
-                </div>
-            <?php endif; ?>
+          <?php endif ?>
         </div>
-    </div>
 
-    <button class="btn btn-primary">
-        <?= $signatory ? 'Update Signatory' : 'Save Signatory' ?>
-    </button>
+      </div>
 
-    <a href="<?= base_url('/signatories') ?>" class="btn btn-secondary">Back</a>
-</form>
+      <div class="mt-4 d-flex gap-2">
+        <button type="submit" class="vs-btn vs-btn-primary">
+          <?= $signatory ? 'Update Signatory' : 'Save Signatory' ?>
+        </button>
+        <a href="<?= base_url('/signatories') ?>" class="vs-btn vs-btn-outline">Cancel</a>
+      </div>
+    </form>
+  </div>
+</div>
 
 <?= $this->endSection() ?>

@@ -10,10 +10,10 @@
     <p class="vs-page-sub">Review the student voucher data.</p>
   </div>
   <div class="d-flex gap-2">
-    <a href="<?= site_url($prefix . '/students') ?>" class="vs-btn vs-btn-outline">Back to students</a>
     <?php if ($role === 'admin'): ?>
       <a href="<?= site_url('admin/students/edit/' . $voucher['student_id']) ?>" class="vs-btn vs-btn-primary">Edit</a>
     <?php endif ?>
+    <a href="<?= site_url($prefix . '/students') ?>" class="vs-btn vs-btn-outline">Back to students</a>
   </div>
 </div>
 

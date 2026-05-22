@@ -1,9 +1,9 @@
 @import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=DM+Mono:wght@400;500&display=swap');
 
 :root {
-  --navy:       #0d2340;
-  --navy-md:    #1a3a5c;
-  --navy-lt:    #2a517a;
+  --navy:       #212529;
+  --navy-md:    #343a40;
+  --navy-lt:    #495057;
   --accent:     #c8922a;
   --accent-lt:  #f0c96e;
   --surface:    #f5f4f0;

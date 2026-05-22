@@ -1,6 +1,7 @@
 <nav class="sb-topnav navbar navbar-expand navbar-dark bg-dark">
-    <a class="navbar-brand ps-3" href="<?= site_url(session('role') === 'admin' ? 'admin/dashboard' : 'user/dashboard') ?>">
-        FAP
+    <a class="navbar-brand ps-3 d-flex align-items-center fw-bold text-uppercase" href="<?= site_url(session('role') === 'admin' ? 'admin/dashboard' : 'user/dashboard') ?>">
+        <img src="<?= base_url('assets/img/logo_binan.png') ?>" class="navbar-logo me-2" alt="Biñan City">
+        Biñan City
     </a>
     <button class="btn btn-link btn-sm order-1 order-lg-0 me-4 me-lg-0 text-white" id="sidebarToggle" type="button" aria-label="Toggle navigation">
         <span aria-hidden="true">&#9776;</span>

@@ -8,9 +8,6 @@
             <h4 class="vs-page-title">Audit Logs</h4>
             <p class="vs-page-sub">Track your account activity and voucher changes.</p>
         </div>
-        <div class="d-flex gap-2">
-            <a href="<?= base_url($resetUrl ?? 'user/audit-logs') ?>" class="vs-btn vs-btn-outline">Reset</a>
-        </div>
     </div>
 
     <form method="get" action="<?= base_url('/user/audit-logs') ?>" class="vs-card mb-4">
