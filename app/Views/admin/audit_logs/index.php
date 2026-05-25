@@ -33,7 +33,7 @@
                     Filters
                     <span id="auditFilterBadge" class="badge bg-primary" style="display:none;margin-left:.35rem"></span>
                 </button>
-                <div id="auditLengthSlot" class="ms-2"></div>
+                <label class="vs-length-label ms-auto">Show <input type="number" id="auditLengthInput" class="vs-length-input" value="10" min="1" max="500"> entries</label>
             </div>
             <table id="adminAuditLogsTable" class="vs-datatable js-data-table" data-search-placeholder="Search audit logs..." style="width:100%">
                 <thead>
@@ -157,9 +157,18 @@
         var wrap = table.closest('.dataTables_wrapper');
         var dtSearch = wrap ? wrap.querySelector('.dataTables_filter') : null;
         var dtLength = wrap ? wrap.querySelector('.dataTables_length') : null;
-        var lengthSlot = document.getElementById('auditLengthSlot');
         if (dtSearch) dtSearch.style.display = 'none';
-        if (dtLength && lengthSlot) lengthSlot.appendChild(dtLength);
+        if (dtLength) dtLength.style.display = 'none';
+
+        var lenInput = document.getElementById('auditLengthInput');
+        if (lenInput) {
+            function applyAuditLen() {
+                var v = parseInt(lenInput.value, 10);
+                if (!isNaN(v) && v > 0) dt.page.len(v).draw();
+            }
+            lenInput.addEventListener('change', applyAuditLen);
+            lenInput.addEventListener('keydown', function (e) { if (e.key === 'Enter') applyAuditLen(); });
+        }
 
         var customSearch = document.getElementById('auditCustomSearch');
         if (customSearch) {

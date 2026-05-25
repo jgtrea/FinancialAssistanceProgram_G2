@@ -52,6 +52,8 @@
     </div>
   </div>
 
+  <div id="studentsAlertBox"></div>
+
   <div class="vs-card">
     <div class="vs-card-body">
       <div class="d-flex align-items-center gap-2 mb-3 flex-wrap">
@@ -61,7 +63,7 @@
           <span id="filterBadge" class="badge bg-primary" style="display:none;margin-left:.35rem"></span>
         </button>
         
-        <div id="customLengthSlot" class="ms-2"></div>
+        <label class="vs-length-label ms-auto">Show <input type="number" id="vouchersLengthInput" class="vs-length-input" value="10" min="1" max="500"> entries</label>
       </div>
       <table id="studentsTable" class="vs-datatable" data-search-placeholder="Search students..." style="width:100%">
         <thead>
@@ -698,11 +700,19 @@
   var dtSearch = dtWrap ? dtWrap.querySelector('.dataTables_filter') : null;
   if (dtSearch) dtSearch.style.display = 'none';
 
-  // Move DataTables' "Show N entries" control into the custom toolbar row.
+  // Hide DataTables' built-in length control — we use a custom input above the table.
   var dtLength = dtWrap ? dtWrap.querySelector('.dataTables_length') : null;
-  var lengthSlot = document.getElementById('customLengthSlot');
-  if (dtLength && lengthSlot) {
-    lengthSlot.appendChild(dtLength);
+  if (dtLength) dtLength.style.display = 'none';
+
+  // Wire custom length input.
+  var lenInput = document.getElementById('vouchersLengthInput');
+  if (lenInput) {
+    function applyVoucherLen() {
+      var v = parseInt(lenInput.value, 10);
+      if (!isNaN(v) && v > 0) dt.page.len(v).draw();
+    }
+    lenInput.addEventListener('change', applyVoucherLen);
+    lenInput.addEventListener('keydown', function (e) { if (e.key === 'Enter') applyVoucherLen(); });
   }
 
   // Wire the custom search input to the DataTable.

@@ -253,6 +253,9 @@ table.js-data-table tbody tr.vs-row-selected td {
 .dataTables_wrapper .dataTables_filter label,
 .dataTables_wrapper .dataTables_length label { font-size: .82rem; color: var(--muted); }
 .dataTables_wrapper .dataTables_info { font-size: .8rem; color: var(--muted); }
+.vs-length-label { font-size: .82rem; color: var(--muted); white-space: nowrap; }
+.vs-length-input { width: 60px; display: inline-block; padding: .28rem .5rem; font-size: .85rem; font-family: var(--font); border: 1.5px solid var(--border); border-radius: 8px; outline: none; color: var(--navy); background: var(--surface); text-align: center; }
+.vs-length-input:focus { border-color: var(--navy-md); box-shadow: 0 0 0 3px rgba(26,58,92,.08); }
 .dataTables_wrapper .dataTables_paginate {
   display: flex;
   justify-content: flex-end;

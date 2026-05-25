@@ -38,6 +38,14 @@
 
     <div class="vs-card">
         <div class="vs-card-body">
+            <div class="d-flex align-items-center gap-2 mb-3 flex-wrap">
+                <input type="text" id="customSigSearch" class="vs-input" placeholder="Search signatories..." style="max-width:340px">
+                <button type="button" class="vs-btn vs-btn-outline" id="btnOpenSigFilter">
+                    Filters
+                    <span id="sigFilterBadge" class="badge bg-primary" style="display:none;margin-left:.35rem"></span>
+                </button>
+                <label class="vs-length-label ms-auto">Show <input type="number" id="sigLengthInput" class="vs-length-input" value="10" min="1" max="500"> entries</label>
+            </div>
             <table id="signatoriesTable" class="vs-datatable js-data-table" data-search-placeholder="Search signatories..." style="width:100%">
             <thead>
                 <tr>
@@ -104,6 +112,53 @@
         </div>
     </div>
 
+<!-- Signatory Archive Confirmation modal -->
+<div class="vs-modal-overlay" id="sigArchiveModal" style="display:none">
+  <div class="vs-modal">
+    <div class="vs-modal-header">
+      <h5>Archive Signatories</h5>
+      <button class="vs-modal-close" id="sigArchiveModalClose">&times;</button>
+    </div>
+    <div class="vs-modal-body">
+      <p>You are about to archive <strong id="sigArchiveCount">0</strong> signatory(ies). This will move them to the archive.</p>
+      <label class="vs-label" for="sigArchiveReason">Reason (optional)</label>
+      <input type="text" id="sigArchiveReason" class="vs-input" placeholder="e.g. End of term">
+    </div>
+    <div class="vs-modal-footer">
+      <button class="vs-btn vs-btn-outline" id="sigArchiveModalCancel">Cancel</button>
+      <button class="vs-btn vs-btn-danger" id="sigArchiveConfirm">
+        <span id="sigArchiveBtnText">Confirm Archive</span>
+        <span id="sigArchiveBtnSpinner" class="vs-spinner" style="display:none"></span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Signatories Filter modal -->
+<div class="vs-modal-overlay" id="sigFilterModal" style="display:none">
+  <div class="vs-modal" style="max-width:400px">
+    <div class="vs-modal-header">
+      <h5>Filter Signatories</h5>
+      <button class="vs-modal-close" id="sigFilterClose">&times;</button>
+    </div>
+    <div class="vs-modal-body">
+      <div>
+        <label class="vs-label" for="sfStatus">Selected Status</label>
+        <select id="sfStatus" class="vs-input">
+          <option value="">All</option>
+          <option value="selected">Selected</option>
+          <option value="unselected">Unselected</option>
+        </select>
+      </div>
+    </div>
+    <div class="vs-modal-footer">
+      <button type="button" class="vs-btn vs-btn-outline" id="sigFilterClear">Clear</button>
+      <button type="button" class="vs-btn vs-btn-outline" id="sigFilterCancel">Cancel</button>
+      <button type="button" class="vs-btn vs-btn-primary" id="sigFilterApply">Apply</button>
+    </div>
+  </div>
+</div>
+
 <!-- Signatory Add/Edit modal -->
 <div class="vs-modal-overlay" id="signatoryModal" style="display:none">
   <div class="vs-modal" style="max-width:780px">
@@ -130,17 +185,17 @@
 
           <div>
             <label class="vs-label required" for="smFirstName">First Name</label>
-            <input id="smFirstName" name="first_name" type="text" class="vs-input vs-uppercase" required>
+            <input id="smFirstName" name="first_name" type="text" class="vs-input" required>
           </div>
 
           <div>
             <label class="vs-label" for="smMiddleName">Middle Name</label>
-            <input id="smMiddleName" name="middle_name" type="text" class="vs-input vs-uppercase">
+            <input id="smMiddleName" name="middle_name" type="text" class="vs-input">
           </div>
 
           <div>
             <label class="vs-label required" for="smLastName">Last Name</label>
-            <input id="smLastName" name="last_name" type="text" class="vs-input vs-uppercase" required>
+            <input id="smLastName" name="last_name" type="text" class="vs-input" required>
           </div>
 
           <div>
@@ -154,7 +209,7 @@
 
           <div class="vs-span-2">
             <label class="vs-label required" for="smPositionTitle">Position Title</label>
-            <input id="smPositionTitle" name="position_title" type="text" class="vs-input vs-uppercase" required>
+            <input id="smPositionTitle" name="position_title" type="text" class="vs-input" required>
           </div>
 
           <div style="grid-column: 1 / -1">
@@ -449,16 +504,54 @@
     });
 
     // ── Bulk archive ─────────────────────────────────────────────────────────
-    var btnArchive = document.getElementById('btnArchiveSelected');
+    var btnArchive     = document.getElementById('btnArchiveSelected');
+    var sigArchModal   = document.getElementById('sigArchiveModal');
+    var sigArchConfirm = document.getElementById('sigArchiveConfirm');
+    var sigArchCancel  = document.getElementById('sigArchiveModalCancel');
+    var sigArchClose   = document.getElementById('sigArchiveModalClose');
+    var sigArchCount   = document.getElementById('sigArchiveCount');
+    var sigArchReason  = document.getElementById('sigArchiveReason');
+    var sigArchBtnText = document.getElementById('sigArchiveBtnText');
+    var sigArchSpinner = document.getElementById('sigArchiveBtnSpinner');
+
+    function closeSigArchModal() {
+        if (sigArchModal) sigArchModal.style.display = 'none';
+        if (sigArchReason) sigArchReason.value = '';
+    }
+
+    sigArchClose  && sigArchClose.addEventListener('click', closeSigArchModal);
+    sigArchCancel && sigArchCancel.addEventListener('click', closeSigArchModal);
+    sigArchModal  && sigArchModal.addEventListener('click', function (e) {
+        if (e.target === sigArchModal) closeSigArchModal();
+    });
+
     btnArchive && btnArchive.addEventListener('click', function () {
         if (!selectedIds.size) return;
-        if (!confirm('Archive ' + selectedIds.size + ' signatory(ies)?')) return;
 
+        var hasSelected = false;
+        selectedIds.forEach(function (id) {
+            var toggle = document.getElementById('sig-toggle-' + id);
+            if (toggle && toggle.getAttribute('data-selected') === '1') hasSelected = true;
+        });
+        if (hasSelected) {
+            showAlert('Cannot archive a signatory that is currently selected. Please unselect it first.', 'error');
+            return;
+        }
+
+        if (sigArchCount) sigArchCount.textContent = selectedIds.size;
+        if (sigArchModal) sigArchModal.style.display = 'flex';
+    });
+
+    sigArchConfirm && sigArchConfirm.addEventListener('click', function () {
+        var reason = sigArchReason ? sigArchReason.value.trim() : '';
         var csrf = getCsrf();
         var body = csrf.name + '=' + csrf.token;
         selectedIds.forEach(function (id) { body += '&ids[]=' + id; });
+        if (reason) body += '&reason=' + encodeURIComponent(reason);
 
-        btnArchive.disabled = true;
+        sigArchConfirm.disabled = true;
+        if (sigArchBtnText) sigArchBtnText.style.display = 'none';
+        if (sigArchSpinner) sigArchSpinner.style.display = 'inline-block';
 
         fetch('<?= base_url('signatories/archive-multiple') ?>', {
             method:  'POST',
@@ -468,6 +561,7 @@
         .then(function (r) { return r.json(); })
         .then(function (data) {
             if (data.success) {
+                closeSigArchModal();
                 selectedIds.forEach(function (id) {
                     var row = document.getElementById('sig-row-' + id);
                     if (row) row.remove();
@@ -477,13 +571,95 @@
                 showAlert(data.message || 'Archived successfully.', 'success');
             } else {
                 showAlert(data.message || 'Failed to archive.', 'error');
+                closeSigArchModal();
             }
-            btnArchive.disabled = false;
         })
         .catch(function () {
             showAlert('An error occurred.', 'error');
-            btnArchive.disabled = false;
+            closeSigArchModal();
+        })
+        .finally(function () {
+            sigArchConfirm.disabled = false;
+            if (sigArchBtnText) sigArchBtnText.style.display = 'inline';
+            if (sigArchSpinner) sigArchSpinner.style.display = 'none';
         });
+    });
+}());
+
+// ── Custom search + filter for signatories table ──────────────────────
+(function initSigSearch() {
+    var table = document.getElementById('signatoriesTable');
+    if (!table || !window.jQuery || !$.fn.DataTable.isDataTable(table)) {
+        return setTimeout(initSigSearch, 50);
+    }
+    var dt = $(table).DataTable();
+    var dtWrap = table.closest('.dataTables_wrapper');
+
+    var dtSearch = dtWrap ? dtWrap.querySelector('.dataTables_filter') : null;
+    if (dtSearch) dtSearch.style.display = 'none';
+
+    var dtLength = dtWrap ? dtWrap.querySelector('.dataTables_length') : null;
+    if (dtLength) dtLength.style.display = 'none';
+
+    var lenInput = document.getElementById('sigLengthInput');
+    if (lenInput) {
+        function applySigLen() {
+            var v = parseInt(lenInput.value, 10);
+            if (!isNaN(v) && v > 0) dt.page.len(v).draw();
+        }
+        lenInput.addEventListener('change', applySigLen);
+        lenInput.addEventListener('keydown', function (e) { if (e.key === 'Enter') applySigLen(); });
+    }
+
+    var searchInput = document.getElementById('customSigSearch');
+    if (searchInput) {
+        searchInput.addEventListener('input', function () {
+            dt.search(this.value).draw();
+        });
+    }
+
+    var filterModal = document.getElementById('sigFilterModal');
+    var filterBadge = document.getElementById('sigFilterBadge');
+
+    function openFilter()  { if (filterModal) filterModal.style.display = 'flex'; }
+    function closeFilter() { if (filterModal) filterModal.style.display = 'none'; }
+
+    var btnOpen   = document.getElementById('btnOpenSigFilter');
+    var btnClose  = document.getElementById('sigFilterClose');
+    var btnCancel = document.getElementById('sigFilterCancel');
+    var btnClear  = document.getElementById('sigFilterClear');
+    var btnApply  = document.getElementById('sigFilterApply');
+    var sfStatus  = document.getElementById('sfStatus');
+
+    btnOpen   && btnOpen.addEventListener('click', openFilter);
+    btnClose  && btnClose.addEventListener('click', closeFilter);
+    btnCancel && btnCancel.addEventListener('click', closeFilter);
+    filterModal && filterModal.addEventListener('click', function (e) {
+        if (e.target === filterModal) closeFilter();
+    });
+
+    btnClear && btnClear.addEventListener('click', function () {
+        if (sfStatus) sfStatus.value = '';
+        if (filterBadge) { filterBadge.textContent = ''; filterBadge.style.display = 'none'; }
+        dt.column(4).search('').draw();
+        closeFilter();
+    });
+
+    btnApply && btnApply.addEventListener('click', function () {
+        var val = sfStatus ? sfStatus.value : '';
+        var count = val ? 1 : 0;
+        if (filterBadge) {
+            filterBadge.textContent = count || '';
+            filterBadge.style.display = count ? '' : 'none';
+        }
+        if (val === 'selected') {
+            dt.column(4).search('^Selected$', true, false).draw();
+        } else if (val === 'unselected') {
+            dt.column(4).search('^Unselected$', true, false).draw();
+        } else {
+            dt.column(4).search('').draw();
+        }
+        closeFilter();
     });
 }());
 </script>

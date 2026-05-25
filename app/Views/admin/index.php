@@ -42,6 +42,14 @@
 
     <div class="vs-card">
         <div class="vs-card-body">
+            <div class="d-flex align-items-center gap-2 mb-3 flex-wrap">
+                <input type="text" id="customUserSearch" class="vs-input" placeholder="Search users..." style="max-width:340px">
+                <button type="button" class="vs-btn vs-btn-outline" id="btnOpenUserFilter">
+                    Filters
+                    <span id="userFilterBadge" class="badge bg-primary" style="display:none;margin-left:.35rem"></span>
+                </button>
+                <label class="vs-length-label ms-auto">Show <input type="number" id="userLengthInput" class="vs-length-input" value="10" min="1" max="500"> entries</label>
+            </div>
             <table id="userManagementTable" class="vs-datatable js-data-table" data-search-placeholder="Search users..." style="width:100%">
             <thead>
                 <tr>
@@ -75,10 +83,6 @@
                                     data-id="<?= (int) $user['user_id'] ?>">
                                 Edit
                             </button>
-                            <button class="vs-tbl-btn vs-tbl-btn-delete user-archive-btn"
-                                    data-id="<?= (int) $user['user_id'] ?>">
-                                Archive
-                            </button>
                         </td>
                     </tr>
                 <?php endforeach; ?>
@@ -86,6 +90,53 @@
             </table>
         </div>
     </div>
+
+<!-- User Archive Confirmation modal -->
+<div class="vs-modal-overlay" id="userArchiveModal" style="display:none">
+  <div class="vs-modal">
+    <div class="vs-modal-header">
+      <h5>Archive Users</h5>
+      <button class="vs-modal-close" id="userArchiveModalClose">&times;</button>
+    </div>
+    <div class="vs-modal-body">
+      <p>You are about to archive <strong id="userArchiveCount">0</strong> user(s). This will move them to the archive.</p>
+      <label class="vs-label" for="userArchiveReason">Reason (optional)</label>
+      <input type="text" id="userArchiveReason" class="vs-input" placeholder="e.g. Account deactivation">
+    </div>
+    <div class="vs-modal-footer">
+      <button class="vs-btn vs-btn-outline" id="userArchiveModalCancel">Cancel</button>
+      <button class="vs-btn vs-btn-danger" id="userArchiveConfirm">
+        <span id="userArchiveBtnText">Confirm Archive</span>
+        <span id="userArchiveBtnSpinner" class="vs-spinner" style="display:none"></span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Users Filter modal -->
+<div class="vs-modal-overlay" id="userFilterModal" style="display:none">
+  <div class="vs-modal" style="max-width:400px">
+    <div class="vs-modal-header">
+      <h5>Filter Users</h5>
+      <button class="vs-modal-close" id="userFilterClose">&times;</button>
+    </div>
+    <div class="vs-modal-body">
+      <div>
+        <label class="vs-label" for="ufRole">Role</label>
+        <select id="ufRole" class="vs-input">
+          <option value="">All</option>
+          <option value="admin">Admin</option>
+          <option value="user">User</option>
+        </select>
+      </div>
+    </div>
+    <div class="vs-modal-footer">
+      <button type="button" class="vs-btn vs-btn-outline" id="userFilterClear">Clear</button>
+      <button type="button" class="vs-btn vs-btn-outline" id="userFilterCancel">Cancel</button>
+      <button type="button" class="vs-btn vs-btn-primary" id="userFilterApply">Apply</button>
+    </div>
+  </div>
+</div>
 
 <!-- User Add/Edit modal -->
 <div class="vs-modal-overlay" id="userModal" style="display:none">
@@ -332,16 +383,43 @@
         });
     });
 
-    var btnArchive = document.getElementById('btnArchiveUsers');
+    var btnArchive      = document.getElementById('btnArchiveUsers');
+    var userArchModal   = document.getElementById('userArchiveModal');
+    var userArchConfirm = document.getElementById('userArchiveConfirm');
+    var userArchCancel  = document.getElementById('userArchiveModalCancel');
+    var userArchClose   = document.getElementById('userArchiveModalClose');
+    var userArchCount   = document.getElementById('userArchiveCount');
+    var userArchReason  = document.getElementById('userArchiveReason');
+    var userArchBtnText = document.getElementById('userArchiveBtnText');
+    var userArchSpinner = document.getElementById('userArchiveBtnSpinner');
+
+    function closeUserArchModal() {
+        if (userArchModal) userArchModal.style.display = 'none';
+        if (userArchReason) userArchReason.value = '';
+    }
+
+    userArchClose  && userArchClose.addEventListener('click', closeUserArchModal);
+    userArchCancel && userArchCancel.addEventListener('click', closeUserArchModal);
+    userArchModal  && userArchModal.addEventListener('click', function (e) {
+        if (e.target === userArchModal) closeUserArchModal();
+    });
+
     btnArchive && btnArchive.addEventListener('click', function () {
         if (!selectedIds.size) return;
-        if (!confirm('Archive ' + selectedIds.size + ' user(s)?')) return;
+        if (userArchCount) userArchCount.textContent = selectedIds.size;
+        if (userArchModal) userArchModal.style.display = 'flex';
+    });
 
+    userArchConfirm && userArchConfirm.addEventListener('click', function () {
+        var reason = userArchReason ? userArchReason.value.trim() : '';
         var csrf = getCsrf();
         var body = csrf.name + '=' + csrf.token;
         selectedIds.forEach(function (id) { body += '&ids[]=' + id; });
+        if (reason) body += '&reason=' + encodeURIComponent(reason);
 
-        btnArchive.disabled = true;
+        userArchConfirm.disabled = true;
+        if (userArchBtnText) userArchBtnText.style.display = 'none';
+        if (userArchSpinner) userArchSpinner.style.display = 'inline-block';
 
         fetch('<?= base_url('admin/user_management/archive-multiple') ?>', {
             method:  'POST',
@@ -351,6 +429,7 @@
         .then(function (r) { return r.json(); })
         .then(function (data) {
             if (data.status === 'success') {
+                closeUserArchModal();
                 selectedIds.forEach(function (id) {
                     var row = document.getElementById('user-row-' + id);
                     if (row) row.remove();
@@ -360,47 +439,96 @@
                 showAlert(data.message || 'Archived successfully.', 'success');
             } else {
                 showAlert(data.message || 'Failed to archive.', 'error');
+                closeUserArchModal();
             }
-            btnArchive.disabled = false;
         })
         .catch(function () {
             showAlert('An error occurred.', 'error');
-            btnArchive.disabled = false;
+            closeUserArchModal();
+        })
+        .finally(function () {
+            userArchConfirm.disabled = false;
+            if (userArchBtnText) userArchBtnText.style.display = 'inline';
+            if (userArchSpinner) userArchSpinner.style.display = 'none';
         });
     });
 
-    // ── Per-row Archive button ────────────────────────────────────────────────
-    document.querySelectorAll('.user-archive-btn').forEach(function (btn) {
-        btn.addEventListener('click', function () {
-            var id = btn.getAttribute('data-id');
-            if (!confirm('Archive this user?')) return;
+}());
 
-            var csrf = getCsrf();
-            btn.disabled = true;
+// ── Custom search + filter for users table ────────────────────────────
+(function initUserSearch() {
+    var table = document.getElementById('userManagementTable');
+    if (!table || !window.jQuery || !$.fn.DataTable.isDataTable(table)) {
+        return setTimeout(initUserSearch, 50);
+    }
+    var dt = $(table).DataTable();
+    var dtWrap = table.closest('.dataTables_wrapper');
 
-            fetch('<?= base_url('admin/user_management/archive') ?>/' + id, {
-                method:  'POST',
-                headers: { 'X-Requested-With': 'XMLHttpRequest', 'Content-Type': 'application/x-www-form-urlencoded' },
-                body:    csrf.name + '=' + csrf.token,
-            })
-            .then(function (r) { return r.json(); })
-            .then(function (data) {
-                if (data.status === 'success') {
-                    var row = document.getElementById('user-row-' + id);
-                    if (row) row.remove();
-                    selectedIds.delete(id);
-                    updateBar();
-                    showAlert(data.message || 'User archived.', 'success');
-                } else {
-                    showAlert(data.message || 'Failed.', 'error');
-                    btn.disabled = false;
-                }
-            })
-            .catch(function () {
-                showAlert('An error occurred.', 'error');
-                btn.disabled = false;
-            });
+    var dtSearch = dtWrap ? dtWrap.querySelector('.dataTables_filter') : null;
+    if (dtSearch) dtSearch.style.display = 'none';
+
+    var dtLength = dtWrap ? dtWrap.querySelector('.dataTables_length') : null;
+    if (dtLength) dtLength.style.display = 'none';
+
+    var lenInput = document.getElementById('userLengthInput');
+    if (lenInput) {
+        function applyUserLen() {
+            var v = parseInt(lenInput.value, 10);
+            if (!isNaN(v) && v > 0) dt.page.len(v).draw();
+        }
+        lenInput.addEventListener('change', applyUserLen);
+        lenInput.addEventListener('keydown', function (e) { if (e.key === 'Enter') applyUserLen(); });
+    }
+
+    var searchInput = document.getElementById('customUserSearch');
+    if (searchInput) {
+        searchInput.addEventListener('input', function () {
+            dt.search(this.value).draw();
         });
+    }
+
+    var filterModal = document.getElementById('userFilterModal');
+    var filterBadge = document.getElementById('userFilterBadge');
+
+    function openFilter()  { if (filterModal) filterModal.style.display = 'flex'; }
+    function closeFilter() { if (filterModal) filterModal.style.display = 'none'; }
+
+    var btnOpen   = document.getElementById('btnOpenUserFilter');
+    var btnClose  = document.getElementById('userFilterClose');
+    var btnCancel = document.getElementById('userFilterCancel');
+    var btnClear  = document.getElementById('userFilterClear');
+    var btnApply  = document.getElementById('userFilterApply');
+    var ufRole    = document.getElementById('ufRole');
+
+    btnOpen   && btnOpen.addEventListener('click', openFilter);
+    btnClose  && btnClose.addEventListener('click', closeFilter);
+    btnCancel && btnCancel.addEventListener('click', closeFilter);
+    filterModal && filterModal.addEventListener('click', function (e) {
+        if (e.target === filterModal) closeFilter();
+    });
+
+    btnClear && btnClear.addEventListener('click', function () {
+        if (ufRole) ufRole.value = '';
+        if (filterBadge) { filterBadge.textContent = ''; filterBadge.style.display = 'none'; }
+        dt.column(3).search('').draw();
+        closeFilter();
+    });
+
+    btnApply && btnApply.addEventListener('click', function () {
+        var val = ufRole ? ufRole.value : '';
+        var count = val ? 1 : 0;
+        if (filterBadge) {
+            filterBadge.textContent = count || '';
+            filterBadge.style.display = count ? '' : 'none';
+        }
+        if (val === 'admin') {
+            dt.column(3).search('^Admin$', true, false).draw();
+        } else if (val === 'user') {
+            dt.column(3).search('^User$', true, false).draw();
+        } else {
+            dt.column(3).search('').draw();
+        }
+        closeFilter();
     });
 }());
 </script>

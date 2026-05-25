@@ -120,7 +120,7 @@ function initGenericDataTables() {
 
     $(table).DataTable({
       dom: controlsDom,
-      pageLength: 25,
+      pageLength: 10,
       lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, 'All']],
       responsive: true,
       autoWidth: false,
@@ -433,7 +433,7 @@ document.addEventListener('DOMContentLoaded', function () {
       "<'row align-items-center mb-3'<'col-sm-12 col-md-6'f><'col-sm-12 col-md-6 text-md-end'l>>" +
       "<'row'<'col-sm-12'tr>>" +
       "<'row align-items-center mt-3'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7'p>>",
-    pageLength: 25,
+    pageLength: 10,
     lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, 'All']],
     responsive: true,
     autoWidth: false,
@@ -682,7 +682,17 @@ document.addEventListener('DOMContentLoaded', function () {
         closeArchiveModal();
 
         if (data.success) {
-          showAlert(data.message, 'success');
+          const alertBox = document.getElementById('studentsAlertBox');
+          if (alertBox) {
+            const el = document.createElement('div');
+            el.className = 'vs-alert vs-alert-success mb-3';
+            el.textContent = data.message;
+            alertBox.innerHTML = '';
+            alertBox.appendChild(el);
+            setTimeout(() => el.remove(), 5000);
+          } else {
+            showAlert(data.message, 'success');
+          }
           // Remove archived rows from DataTable (only those currently in DOM)
           selectedIds.forEach(id => {
             const cb  = document.querySelector(`.vs-row-check[value="${id}"]`);
@@ -721,13 +731,23 @@ document.addEventListener('DOMContentLoaded', function () {
   if (!logsTable) return;
 
   $('#logsTable').DataTable({
-    pageLength: 25,
+    dom:
+      "<'row align-items-center mb-3'<'col-sm-12 col-md-6'f><'col-sm-12 col-md-6 text-md-end'l>>" +
+      "<'row'<'col-sm-12'tr>>" +
+      "<'row align-items-center mt-3'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7'p>>",
+    pageLength: 10,
+    lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, 'All']],
     order: [[6, 'desc']],
     columnDefs: [
       { orderable: false, targets: [4] },
       { width: '160px',  targets: [6] },
     ],
-    language: { search: '', searchPlaceholder: 'Search logs...' },
+    language: {
+      search: '',
+      searchPlaceholder: 'Search logs...',
+      lengthMenu: 'Show _MENU_ entries',
+      info: 'Showing _START_ to _END_ of _TOTAL_',
+    },
   });
 
 });
