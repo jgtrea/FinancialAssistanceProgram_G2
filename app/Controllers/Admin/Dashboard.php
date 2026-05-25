@@ -24,9 +24,9 @@ class Dashboard extends Controller
             ->select("
                 voucher_no,
                 CONCAT_WS(' ', NULLIF(first_name,''), NULLIF(middle_name,''), NULLIF(last_name,''), NULLIF(suffix,'')) AS full_name,
-                preferred_senior_high_school,
+                junior_high_school,
                 voucher_status,
-                created_at
+                generated_at
             ")
             ->where('is_archived', 0)
             ->orderBy('created_at', 'DESC')

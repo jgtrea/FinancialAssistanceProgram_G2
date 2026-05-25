@@ -68,7 +68,7 @@
             <th>Preferred School</th>
             <th>School Year</th>
             <th>Generate Count</th>
-            <th>Date</th>
+            <th>Last Generated</th>
             <th>Actions</th>
           </tr>
         </thead>
@@ -89,7 +89,7 @@
             <td>
               <span class="js-generate-count"><?= esc((string) ($v['generate_count'] ?? 0)) ?></span>
             </td>
-            <td><?= date('M d, Y', strtotime($v['created_at'])) ?></td>
+            <td><?= !empty($v['generated_at']) ? date('M d, Y', strtotime($v['generated_at'])) : '-' ?></td>
             <td>
               <div class="d-flex gap-1">
                 <a href="<?= site_url($prefix . '/students/view/' . $v['student_id']) ?>" class="vs-tbl-btn vs-tbl-btn-view">View</a>

@@ -102,7 +102,7 @@ class VoucherModel extends Model
                 preferred_senior_high_school, school_year,
                 eligibility_status, voucher_status,
                 gwa, rank_no, gender, junior_high_school,
-                contact_number, remarks_status, created_at
+                contact_number, remarks_status, created_at, generated_at
             ")
             ->where('is_archived', 0)
             ->orderBy('created_at', 'DESC')

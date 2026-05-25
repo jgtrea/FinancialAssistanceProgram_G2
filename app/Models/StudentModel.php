@@ -27,6 +27,7 @@ class StudentModel extends Model
         'eligibility_status',
         'voucher_status',
         'is_archived',
+        'generated_at',
     ];
 
     protected $beforeInsert = ['normalizeUppercase'];

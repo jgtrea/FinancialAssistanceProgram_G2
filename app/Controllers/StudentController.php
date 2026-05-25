@@ -181,8 +181,9 @@ class StudentController extends BaseController
         }
 
         $studentModel->update($id, [
-            'voucher_no' => $voucherNo,
-            'voucher_status' => 'generated'
+            'voucher_no'     => $voucherNo,
+            'voucher_status' => 'generated',
+            'generated_at'   => date('Y-m-d H:i:s'),
         ]);
 
         $student = $studentModel->find($id);

@@ -88,9 +88,9 @@
                                 <tr>
                                     <th>Voucher No</th>
                                     <th>Student Name</th>
-                                    <th>School</th>
+                                    <th>Junior High School</th>
                                     <th>Status</th>
-                                    <th>Created</th>
+                                    <th>Last Generated</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -98,9 +98,9 @@
                                     <tr>
                                         <td><?= esc($voucher['voucher_no']) ?></td>
                                         <td><?= esc($voucher['full_name']) ?></td>
-                                        <td><?= esc($voucher['preferred_senior_high_school']) ?></td>
+                                        <td><?= esc($voucher['junior_high_school'] ?: '-') ?></td>
                                         <td><span class="badge bg-<?= $voucher['voucher_status'] === 'generated' ? 'success' : 'warning' ?>"><?= esc(ucwords(str_replace('_', ' ', $voucher['voucher_status']))) ?></span></td>
-                                        <td><?= date('M d, Y', strtotime($voucher['created_at'])) ?></td>
+                                        <td><?= !empty($voucher['generated_at']) ? date('M d, Y', strtotime($voucher['generated_at'])) : '-' ?></td>
                                     </tr>
                                 <?php endforeach; ?>
                             </tbody>

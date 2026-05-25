@@ -67,7 +67,10 @@ class PdfJobRunner
 
             $db->table('students')
                 ->whereIn('student_id', $ids)
-                ->update(['voucher_status' => 'generated']);
+                ->update([
+                    'voucher_status' => 'generated',
+                    'generated_at'   => date('Y-m-d H:i:s'),
+                ]);
 
             $db->table('pdf_jobs')->where('job_id', $jobId)->update([
                 'status'       => 'done',
