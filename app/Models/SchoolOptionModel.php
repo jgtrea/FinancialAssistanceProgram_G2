@@ -7,32 +7,34 @@ use CodeIgniter\Model;
 
 class SchoolOptionModel extends Model
 {
+    protected $table = 'school';
+
     public function getJuniorHighSchools(): array
     {
-        return $this->getSchoolOptions('junior_high_schools');
+        return $this->getSchoolOptions('JHS');
     }
 
     public function getSeniorHighSchools(): array
     {
-        return $this->getSchoolOptions('senior_high_schools');
+        return $this->getSchoolOptions('SHS');
     }
 
     public function juniorHighSchoolExists(?string $school): bool
     {
-        return $this->schoolExists('junior_high_schools', $school, true);
+        return $this->schoolExists('JHS', $school, true);
     }
 
     public function seniorHighSchoolExists(?string $school): bool
     {
-        return $this->schoolExists('senior_high_schools', $school, false);
+        return $this->schoolExists('SHS', $school, false);
     }
 
-    private function getSchoolOptions(string $table): array
+    private function getSchoolOptions(string $level): array
     {
         try {
-            return $this->db->table($table)
+            return $this->db->table('school')
                 ->select('school_name')
-                ->where('is_active', 1)
+                ->where('school_level', $level)
                 ->orderBy('school_name', 'ASC')
                 ->get()
                 ->getResultArray();
@@ -41,7 +43,7 @@ class SchoolOptionModel extends Model
         }
     }
 
-    private function schoolExists(string $table, ?string $school, bool $allowEmpty): bool
+    private function schoolExists(string $level, ?string $school, bool $allowEmpty): bool
     {
         $school = trim((string) $school);
 
@@ -50,9 +52,9 @@ class SchoolOptionModel extends Model
         }
 
         try {
-            return $this->db->table($table)
+            return $this->db->table('school')
+                ->where('school_level', $level)
                 ->where('school_name', $this->upper($school))
-                ->where('is_active', 1)
                 ->countAllResults() > 0;
         } catch (DatabaseException $e) {
             return true;
