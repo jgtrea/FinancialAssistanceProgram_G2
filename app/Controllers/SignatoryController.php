@@ -43,6 +43,7 @@ class SignatoryController extends BaseController
     public function save()
     {
         $signatoryModel = new SignatoryModel();
+        $isAjax = $this->request->isAJAX();
 
         $id = $this->request->getPost('signatory_id');
         $existing = $id ? $signatoryModel->find($id) : null;
@@ -67,10 +68,7 @@ class SignatoryController extends BaseController
         if ($signatureFile && $signatureFile->isValid() && !$signatureFile->hasMoved()) {
             $error = $this->validateSignatureFile($signatureFile);
             if ($error !== null) {
-                $redirect = $id
-                    ? redirect()->to('/signatories/form/' . $id)
-                    : redirect()->to('/signatories/form');
-                return $redirect->withInput()->with('error', $error);
+                return $this->signatorySaveError($error, $id, $isAjax);
             }
 
             $autoRemoveBg = $this->request->getPost('auto_remove_bg') === '1';
@@ -79,10 +77,11 @@ class SignatoryController extends BaseController
                 $newSignatureName = bin2hex(random_bytes(8)) . '.png';
                 $destPath = $this->signatureDir() . $newSignatureName;
                 if (!$this->removeBackground($signatureFile->getTempName(), $destPath)) {
-                    $redirect = $id
-                        ? redirect()->to('/signatories/form/' . $id)
-                        : redirect()->to('/signatories/form');
-                    return $redirect->withInput()->with('error', 'Could not process the signature image. Try a different file.');
+                    return $this->signatorySaveError(
+                        'Could not process the signature image. Try a different file.',
+                        $id,
+                        $isAjax
+                    );
                 }
             } else {
                 $newSignatureName = $signatureFile->getRandomName();
@@ -102,12 +101,52 @@ class SignatoryController extends BaseController
             }
 
             log_action($userId, 'UPDATE_SIGNATORY', "Updated signatory {$name}");
+
+            if ($isAjax) {
+                return $this->response->setJSON(['success' => true, 'message' => 'Signatory updated successfully.']);
+            }
             return redirect()->to('/signatories')->with('success', 'Signatory updated successfully.');
         }
 
         $signatoryModel->insert($data);
         log_action($userId, 'CREATE_SIGNATORY', "Created signatory {$name}");
+
+        if ($isAjax) {
+            return $this->response->setJSON(['success' => true, 'message' => 'Signatory added successfully.']);
+        }
         return redirect()->to('/signatories')->with('success', 'Signatory added successfully.');
+    }
+
+    private function signatorySaveError(string $message, $id, bool $isAjax)
+    {
+        if ($isAjax) {
+            return $this->response->setJSON(['success' => false, 'message' => $message]);
+        }
+        $redirect = $id
+            ? redirect()->to('/signatories/form/' . $id)
+            : redirect()->to('/signatories/form');
+        return $redirect->withInput()->with('error', $message);
+    }
+
+    public function getJson($id)
+    {
+        $signatory = (new SignatoryModel())->find($id);
+
+        if (!$signatory) {
+            return $this->response->setStatusCode(404)->setJSON([
+                'success' => false,
+                'message' => 'Signatory not found.',
+            ]);
+        }
+
+        $signatory['signature_url'] = !empty($signatory['signature_image'])
+            ? base_url('signatories/signature/' . (int) $id)
+            : null;
+
+        return $this->response->setJSON([
+            'success'   => true,
+            'signatory' => $signatory,
+        ]);
     }
 
     public function deactivate($id)

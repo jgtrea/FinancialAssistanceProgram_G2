@@ -8,10 +8,10 @@
             <p class="vs-page-sub">Manage staff accounts and system access.</p>
         </div>
         <div class="d-flex gap-2">
-            <a href="<?= base_url('admin/user_management/form') ?>" class="vs-btn vs-btn-primary">
+            <button type="button" class="vs-btn vs-btn-primary" id="btnAddUser">
                 <?= asset_icon('add', ['stroke-width' => '2.5']) ?>
                 Add User
-            </a>
+            </button>
         </div>
     </div>
 
@@ -70,9 +70,11 @@
                         </td>
                         <td><?= !empty($user['last_login']) ? esc(date('M d, Y h:i A', strtotime($user['last_login']))) : 'Never' ?></td>
                         <td class="actions-cell">
-                            <a href="<?= base_url('admin/user_management/form/' . $user['user_id']) ?>" class="vs-tbl-btn vs-tbl-btn-edit">
+                            <button type="button"
+                                    class="vs-tbl-btn vs-tbl-btn-edit js-user-edit"
+                                    data-id="<?= (int) $user['user_id'] ?>">
                                 Edit
-                            </a>
+                            </button>
                             <button class="vs-tbl-btn vs-tbl-btn-delete user-archive-btn"
                                     data-id="<?= (int) $user['user_id'] ?>">
                                 Archive
@@ -84,6 +86,58 @@
             </table>
         </div>
     </div>
+
+<!-- User Add/Edit modal -->
+<div class="vs-modal-overlay" id="userModal" style="display:none">
+  <div class="vs-modal" style="max-width:680px">
+    <div class="vs-modal-header">
+      <h5 id="userModalTitle">Add User</h5>
+      <button class="vs-modal-close" id="userModalClose">&times;</button>
+    </div>
+    <form id="userModalForm" novalidate>
+      <?= csrf_field() ?>
+      <input type="hidden" name="user_id" id="umUserId" value="">
+
+      <div class="vs-modal-body">
+        <div id="userModalAlert"></div>
+
+        <div class="vs-form-grid vs-form-grid-4">
+          <div class="vs-span-2">
+            <label class="vs-label required" for="umUsername">Username</label>
+            <input type="text" id="umUsername" name="full_name" class="vs-input vs-uppercase" required>
+          </div>
+
+          <div class="vs-span-2">
+            <label class="vs-label required" for="umEmail">Email</label>
+            <input type="email" id="umEmail" name="username" class="vs-input" required>
+          </div>
+
+          <div class="vs-span-2">
+            <label class="vs-label" id="umPasswordLabel" for="umPassword">Password</label>
+            <input type="password" id="umPassword" name="password" class="vs-input">
+          </div>
+
+          <div class="vs-span-2">
+            <label class="vs-label required" for="umRole">Role</label>
+            <select id="umRole" name="role" class="vs-input" required>
+              <option value="admin">Admin</option>
+              <option value="staff">Staff</option>
+              <option value="viewer">Viewer</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="vs-modal-footer">
+        <button type="button" class="vs-btn vs-btn-outline" id="userModalCancel">Close</button>
+        <button type="submit" class="vs-btn vs-btn-primary" id="userModalSubmit">
+          <span id="umSubmitText">Save User</span>
+          <span id="umSubmitSpinner" class="vs-spinner" style="display:none"></span>
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
 
 <script>
 (function () {
@@ -100,6 +154,136 @@
         box.innerHTML = '<div class="vs-alert vs-alert-' + (type || 'success') + ' mb-3">' + msg + '</div>';
         setTimeout(function () { box.innerHTML = ''; }, 4000);
     }
+
+    // ── User Add / Edit modal ──────────────────────────────────────────────
+    var userModal       = document.getElementById('userModal');
+    var userModalForm   = document.getElementById('userModalForm');
+    var userModalTitle  = document.getElementById('userModalTitle');
+    var userModalClose  = document.getElementById('userModalClose');
+    var userModalCancel = document.getElementById('userModalCancel');
+    var userModalAlert  = document.getElementById('userModalAlert');
+    var userSubmitBtn   = document.getElementById('userModalSubmit');
+    var umSubmitText    = document.getElementById('umSubmitText');
+    var umSubmitSpinner = document.getElementById('umSubmitSpinner');
+    var btnAddUser      = document.getElementById('btnAddUser');
+    var userSaveUrl     = '<?= base_url('admin/user_management/save') ?>';
+    var userFetchUrl    = '<?= base_url('admin/user_management/json') ?>';
+    var umPasswordLabel = document.getElementById('umPasswordLabel');
+    var umPassword      = document.getElementById('umPassword');
+
+    function umShowAlert(msg, type) {
+        userModalAlert.innerHTML = '<div class="vs-alert vs-alert-' + (type || 'error') + ' mb-3">' + msg + '</div>';
+    }
+    function umClearAlert() { userModalAlert.innerHTML = ''; }
+
+    function umResetForm() {
+        userModalForm.reset();
+        document.getElementById('umUserId').value = '';
+    }
+
+    function umPopulate(user) {
+        document.getElementById('umUserId').value = user.user_id || '';
+        document.getElementById('umUsername').value = user.username || '';
+        document.getElementById('umEmail').value = user.email || '';
+        document.getElementById('umRole').value = user.role || 'staff';
+        umPassword.value = '';
+    }
+
+    function umSetPasswordMode(isEdit) {
+        if (isEdit) {
+            umPasswordLabel.classList.remove('required');
+            umPasswordLabel.innerHTML = 'Password <span class="vs-label-hint">(leave blank to keep current)</span>';
+            umPassword.required = false;
+        } else {
+            umPasswordLabel.classList.add('required');
+            umPasswordLabel.textContent = 'Password';
+            umPassword.required = true;
+        }
+    }
+
+    function umOpen(mode, userId) {
+        umClearAlert();
+        umResetForm();
+
+        if (mode === 'add') {
+            userModalTitle.textContent = 'Add User';
+            umSubmitText.textContent = 'Save User';
+            umSetPasswordMode(false);
+            userModal.style.display = 'flex';
+            return;
+        }
+
+        userModalTitle.textContent = 'Edit User';
+        umSubmitText.textContent = 'Update User';
+        umSetPasswordMode(true);
+        userModal.style.display = 'flex';
+
+        fetch(userFetchUrl + '/' + userId, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+            .then(function (r) { return r.json(); })
+            .then(function (data) {
+                if (data.status !== 'success') {
+                    umShowAlert(data.message || 'Failed to load user.', 'error');
+                    return;
+                }
+                umPopulate(data.user);
+            })
+            .catch(function () {
+                umShowAlert('Failed to load user.', 'error');
+            });
+    }
+
+    function umClose() { userModal.style.display = 'none'; }
+
+    btnAddUser       && btnAddUser.addEventListener('click', function () { umOpen('add'); });
+    userModalClose   && userModalClose.addEventListener('click', umClose);
+    userModalCancel  && userModalCancel.addEventListener('click', umClose);
+    userModal        && userModal.addEventListener('click', function (e) {
+        if (e.target === userModal) umClose();
+    });
+
+    document.querySelectorAll('.js-user-edit').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+            umOpen('edit', btn.getAttribute('data-id'));
+        });
+    });
+
+    userModalForm && userModalForm.addEventListener('submit', function (e) {
+        e.preventDefault();
+        umClearAlert();
+
+        var fd = new FormData(userModalForm);
+        var csrf = getCsrf();
+        if (csrf.name && !fd.get(csrf.name)) {
+            fd.append(csrf.name, csrf.token);
+        }
+
+        userSubmitBtn.disabled = true;
+        umSubmitText.style.display = 'none';
+        umSubmitSpinner.style.display = 'inline-block';
+
+        fetch(userSaveUrl, {
+            method: 'POST',
+            headers: { 'X-Requested-With': 'XMLHttpRequest' },
+            body: fd,
+        })
+            .then(function (r) { return r.json(); })
+            .then(function (data) {
+                if (data.status === 'success') {
+                    umClose();
+                    location.reload();
+                    return;
+                }
+                umShowAlert(data.message || 'Save failed.', 'error');
+            })
+            .catch(function () {
+                umShowAlert('An error occurred while saving.', 'error');
+            })
+            .finally(function () {
+                userSubmitBtn.disabled = false;
+                umSubmitText.style.display = 'inline';
+                umSubmitSpinner.style.display = 'none';
+            });
+    });
 
     var selectedIds = new Set();
     var actionBar   = document.getElementById('userActionBar');

@@ -27,6 +27,7 @@ $routes->group('admin', ['filter' => 'role:admin'], function ($routes) {
     $routes->get('user_management',               'UsersController::index');
     $routes->get('user_management/form',          'UsersController::form');
     $routes->get('user_management/form/(:num)',   'UsersController::form/$1');
+    $routes->get('user_management/json/(:num)',   'UsersController::getJson/$1');
     $routes->post('user_management/save',         'UsersController::save');
     $routes->post('user_management/archive/(:num)',   'UsersController::archive/$1');
     $routes->post('user_management/archive-multiple', 'UsersController::archiveMultiple');
@@ -102,6 +103,7 @@ $routes->get('signatories',                           'SignatoryController::inde
 $routes->get('signatories/form',                      'SignatoryController::form');
 $routes->get('signatories/form/(:num)',               'SignatoryController::form/$1');
 $routes->get('signatories/edit/(:num)',               'SignatoryController::form/$1');
+$routes->get('signatories/json/(:num)',               'SignatoryController::getJson/$1');
 $routes->get('signatories/signature/(:num)',          'SignatoryController::signature/$1');
 $routes->post('signatories/save',                     'SignatoryController::save');
 $routes->post('signatories/deactivate/(:num)',        'SignatoryController::deactivate/$1');

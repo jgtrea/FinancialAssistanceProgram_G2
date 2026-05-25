@@ -8,10 +8,10 @@
             <p class="vs-page-sub">Manage active voucher signatories.</p>
         </div>
         <div class="d-flex gap-2">
-            <a href="<?= base_url('/signatories/form') ?>" class="vs-btn vs-btn-primary">
+            <button type="button" class="vs-btn vs-btn-primary" id="btnAddSignatory">
                 <?= asset_icon('add', ['stroke-width' => '2.5']) ?>
                 Add Signatory
-            </a>
+            </button>
         </div>
     </div>
 
@@ -81,10 +81,11 @@
                             </span>
                         </td>
                         <td class="actions-cell">
-                            <a href="<?= base_url('/signatories/form/' . $sid) ?>"
-                               class="vs-tbl-btn vs-tbl-btn-edit">
+                            <button type="button"
+                                    class="vs-tbl-btn vs-tbl-btn-edit js-sig-edit"
+                                    data-id="<?= $sid ?>">
                                 Edit
-                            </a>
+                            </button>
                             <button class="vs-tbl-btn <?= $isSelected ? 'vs-tbl-btn-delete' : 'vs-tbl-btn-view' ?> sig-toggle-btn"
                                     data-id="<?= $sid ?>"
                                     data-selected="<?= $isSelected ? '1' : '0' ?>"
@@ -98,6 +99,87 @@
             </table>
         </div>
     </div>
+
+<!-- Signatory Add/Edit modal -->
+<div class="vs-modal-overlay" id="signatoryModal" style="display:none">
+  <div class="vs-modal" style="max-width:780px">
+    <div class="vs-modal-header">
+      <h5 id="signatoryModalTitle">Add Signatory</h5>
+      <button class="vs-modal-close" id="signatoryModalClose">&times;</button>
+    </div>
+    <form id="signatoryModalForm" novalidate enctype="multipart/form-data">
+      <?= csrf_field() ?>
+      <input type="hidden" name="signatory_id" id="smSignatoryId" value="">
+
+      <div class="vs-modal-body">
+        <div id="signatoryModalAlert"></div>
+
+        <div class="vs-form-grid vs-form-grid-4">
+          <div>
+            <label class="vs-label" for="smPrefix">Prefix</label>
+            <input id="smPrefix" name="prefix" type="text" class="vs-input vs-uppercase">
+          </div>
+
+          <div>
+            <label class="vs-label required" for="smFirstName">First Name</label>
+            <input id="smFirstName" name="first_name" type="text" class="vs-input vs-uppercase" required>
+          </div>
+
+          <div>
+            <label class="vs-label" for="smMiddleName">Middle Name</label>
+            <input id="smMiddleName" name="middle_name" type="text" class="vs-input vs-uppercase">
+          </div>
+
+          <div>
+            <label class="vs-label required" for="smLastName">Last Name</label>
+            <input id="smLastName" name="last_name" type="text" class="vs-input vs-uppercase" required>
+          </div>
+
+          <div>
+            <label class="vs-label" for="smSuffix">Suffix</label>
+            <input id="smSuffix" name="suffix" type="text" class="vs-input vs-uppercase">
+          </div>
+
+          <div class="vs-span-2">
+            <label class="vs-label required" for="smPositionTitle">Position Title</label>
+            <input id="smPositionTitle" name="position_title" type="text" class="vs-input vs-uppercase" required>
+          </div>
+
+          <div style="grid-column: 1 / -1">
+            <label class="vs-label" for="smSignatureImage">Signature Image</label>
+            <input id="smSignatureImage" name="signature_image" type="file" class="vs-input" accept="image/png,image/jpeg,image/jpg,image/webp">
+            <small class="text-muted">PNG, JPG, or WEBP — max 2 MB. Leave empty to keep the current image.</small>
+
+            <div class="form-check mt-2">
+              <input class="form-check-input" type="checkbox" name="auto_remove_bg" value="1" id="smAutoRemoveBg" checked>
+              <label class="form-check-label" for="smAutoRemoveBg">
+                Remove background automatically (best for signatures on plain white paper)
+              </label>
+            </div>
+
+            <div id="smCurrentSignatureWrap" class="mt-3" style="display:none">
+              <p class="vs-label mb-1">Current Signature</p>
+              <img id="smCurrentSignaturePreview" src="" alt="Current signature"
+                   style="max-height:80px;background:#fff;padding:4px;border:1px solid #ddd;border-radius:4px;">
+              <div class="form-check mt-2">
+                <input class="form-check-input" type="checkbox" name="remove_signature" value="1" id="smRemoveSignature">
+                <label class="form-check-label" for="smRemoveSignature">Remove current signature</label>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="vs-modal-footer">
+        <button type="button" class="vs-btn vs-btn-outline" id="signatoryModalCancel">Close</button>
+        <button type="submit" class="vs-btn vs-btn-primary" id="signatoryModalSubmit">
+          <span id="smSubmitText">Save</span>
+          <span id="smSubmitSpinner" class="vs-spinner" style="display:none"></span>
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
 
 <script>
 (function () {
@@ -117,6 +199,144 @@
         box.innerHTML = '<div class="vs-alert vs-alert-' + (type || 'success') + ' mb-3">' + msg + '</div>';
         setTimeout(function () { box.innerHTML = ''; }, 4000);
     }
+
+    // ── Signatory Add / Edit modal ──────────────────────────────────────────
+    var sigModal        = document.getElementById('signatoryModal');
+    var sigModalForm    = document.getElementById('signatoryModalForm');
+    var sigModalTitle   = document.getElementById('signatoryModalTitle');
+    var sigModalClose   = document.getElementById('signatoryModalClose');
+    var sigModalCancel  = document.getElementById('signatoryModalCancel');
+    var sigModalAlert   = document.getElementById('signatoryModalAlert');
+    var sigSubmitBtn    = document.getElementById('signatoryModalSubmit');
+    var smSubmitText    = document.getElementById('smSubmitText');
+    var smSubmitSpinner = document.getElementById('smSubmitSpinner');
+    var btnAddSig       = document.getElementById('btnAddSignatory');
+    var sigSaveUrl      = '<?= base_url('signatories/save') ?>';
+    var sigFetchUrl     = '<?= base_url('signatories/json') ?>';
+
+    var smFieldIds = ['smPrefix', 'smFirstName', 'smMiddleName', 'smLastName', 'smSuffix', 'smPositionTitle'];
+    var smFieldToName = {
+        smPrefix:        'prefix',
+        smFirstName:     'first_name',
+        smMiddleName:    'middle_name',
+        smLastName:      'last_name',
+        smSuffix:        'suffix',
+        smPositionTitle: 'position_title',
+    };
+
+    function smShowAlert(msg, type) {
+        sigModalAlert.innerHTML = '<div class="vs-alert vs-alert-' + (type || 'error') + ' mb-3">' + msg + '</div>';
+    }
+    function smClearAlert() { sigModalAlert.innerHTML = ''; }
+
+    function smResetForm() {
+        sigModalForm.reset();
+        document.getElementById('smSignatoryId').value = '';
+        document.getElementById('smCurrentSignatureWrap').style.display = 'none';
+        document.getElementById('smRemoveSignature').checked = false;
+        document.getElementById('smAutoRemoveBg').checked = true;
+    }
+
+    function smPopulate(sig) {
+        document.getElementById('smSignatoryId').value = sig.signatory_id || '';
+        smFieldIds.forEach(function (id) {
+            var el = document.getElementById(id);
+            if (!el) return;
+            var val = sig[smFieldToName[id]];
+            el.value = (val === null || val === undefined) ? '' : val;
+        });
+
+        var wrap = document.getElementById('smCurrentSignatureWrap');
+        var img  = document.getElementById('smCurrentSignaturePreview');
+        if (sig.signature_url) {
+            img.src = sig.signature_url + '?t=' + Date.now();
+            wrap.style.display = '';
+        } else {
+            wrap.style.display = 'none';
+        }
+    }
+
+    function smOpen(mode, sigId) {
+        smClearAlert();
+        smResetForm();
+
+        if (mode === 'add') {
+            sigModalTitle.textContent = 'Add Signatory';
+            smSubmitText.textContent = 'Save';
+            sigModal.style.display = 'flex';
+            return;
+        }
+
+        sigModalTitle.textContent = 'Edit Signatory';
+        smSubmitText.textContent = 'Update';
+        sigModal.style.display = 'flex';
+
+        fetch(sigFetchUrl + '/' + sigId, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+            .then(function (r) { return r.json(); })
+            .then(function (data) {
+                if (!data.success) {
+                    smShowAlert(data.message || 'Failed to load signatory.', 'error');
+                    return;
+                }
+                smPopulate(data.signatory);
+            })
+            .catch(function () {
+                smShowAlert('Failed to load signatory.', 'error');
+            });
+    }
+
+    function smClose() { sigModal.style.display = 'none'; }
+
+    btnAddSig       && btnAddSig.addEventListener('click', function () { smOpen('add'); });
+    sigModalClose   && sigModalClose.addEventListener('click', smClose);
+    sigModalCancel  && sigModalCancel.addEventListener('click', smClose);
+    sigModal        && sigModal.addEventListener('click', function (e) {
+        if (e.target === sigModal) smClose();
+    });
+
+    document.querySelectorAll('.js-sig-edit').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+            smOpen('edit', btn.getAttribute('data-id'));
+        });
+    });
+
+    sigModalForm && sigModalForm.addEventListener('submit', function (e) {
+        e.preventDefault();
+        smClearAlert();
+
+        var fd = new FormData(sigModalForm);
+        var csrf = getCsrf();
+        if (csrf.name && !fd.get(csrf.name)) {
+            fd.append(csrf.name, csrf.token);
+        }
+
+        sigSubmitBtn.disabled = true;
+        smSubmitText.style.display = 'none';
+        smSubmitSpinner.style.display = 'inline-block';
+
+        fetch(sigSaveUrl, {
+            method: 'POST',
+            headers: { 'X-Requested-With': 'XMLHttpRequest' },
+            body: fd,
+        })
+            .then(function (r) { return r.json(); })
+            .then(function (data) {
+                if (data.success) {
+                    smClose();
+                    location.reload();
+                    return;
+                }
+                smShowAlert(data.message || 'Save failed.', 'error');
+            })
+            .catch(function () {
+                smShowAlert('An error occurred while saving.', 'error');
+            })
+            .finally(function () {
+                sigSubmitBtn.disabled = false;
+                smSubmitText.style.display = 'inline';
+                smSubmitSpinner.style.display = 'none';
+            });
+    });
 
     // ── Checkbox + Action Bar ─────────────────────────────────────────────────
     var selectedIds = new Set();

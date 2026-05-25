@@ -20,6 +20,25 @@ class UsersController extends BaseController
         return view('admin/form', $data);
     }
 
+    public function getJson($id)
+    {
+        $user = (new UserLogin())->find($id);
+
+        if (!$user) {
+            return $this->response->setStatusCode(404)->setJSON([
+                'status'  => 'error',
+                'message' => 'User not found.',
+            ]);
+        }
+
+        unset($user['password']);
+
+        return $this->response->setJSON([
+            'status' => 'success',
+            'user'   => $user,
+        ]);
+    }
+
     public function save()
     {
         $model = new UserLogin();
