@@ -86,6 +86,7 @@ class VoucherPdf
     {
         $rows = (new SignatoryModel())
             ->where('is_active', 1)
+            ->where('is_selected', 1)
             ->orderBy('signatory_id', 'ASC')
             ->findAll();
 
@@ -199,7 +200,7 @@ class VoucherPdf
         $middleInitial = $middle !== '' ? strtoupper(substr($middle, 0, 1)) . '.' : '';
 
         $parts = array_filter([
-            'HON.',
+            $sig['prefix'] ?? '',
             $sig['first_name'] ?? '',
             $middleInitial,
             $sig['last_name'] ?? '',
