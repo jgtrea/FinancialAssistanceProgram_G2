@@ -9,12 +9,7 @@
     <h4 class="vs-page-title">Voucher Details</h4>
     <p class="vs-page-sub">Review the student voucher data.</p>
   </div>
-  <div class="d-flex gap-2">
-    <?php if ($role === 'admin'): ?>
-      <a href="<?= site_url('admin/students/edit/' . $voucher['student_id']) ?>" class="vs-btn vs-btn-primary">Edit</a>
-    <?php endif ?>
-    <a href="<?= site_url($prefix . '/students') ?>" class="vs-btn vs-btn-outline">Back to students</a>
-  </div>
+  <a href="<?= site_url($prefix . '/students') ?>" class="vs-btn vs-btn-outline">Back to Vouchers</a>
 </div>
 
 <div class="vs-card">
@@ -70,12 +65,12 @@
         <div class="vs-readonly-field"><?= esc($voucher['contact_number'] ?: '-') ?></div>
       </div>
 
-      <div class="vs-span-2">
+      <div>
         <label class="vs-label">Junior High School</label>
         <div class="vs-readonly-field"><?= esc($voucher['junior_high_school'] ?: '-') ?></div>
       </div>
 
-      <div class="vs-span-2">
+      <div>
         <label class="vs-label">Preferred Senior High School</label>
         <div class="vs-readonly-field"><?= esc($voucher['preferred_senior_high_school']) ?></div>
       </div>
@@ -94,6 +89,11 @@
         <label class="vs-label">Eligibility</label>
         <div class="vs-readonly-field"><?= esc(ucfirst(str_replace('_', ' ', $voucher['eligibility_status']))) ?></div>
       </div>
+    </div>
+
+    <div class="mt-4 d-flex gap-2">
+      <a href="<?= site_url($prefix . '/students/edit/' . $voucher['student_id']) ?>" class="vs-btn vs-btn-primary">Edit</a>
+      <a href="<?= site_url($prefix . '/students') ?>" class="vs-btn vs-btn-outline">Cancel</a>
     </div>
   </div>
 </div>

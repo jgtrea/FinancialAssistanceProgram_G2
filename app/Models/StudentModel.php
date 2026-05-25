@@ -12,6 +12,7 @@ class StudentModel extends Model
     protected $allowedFields = [
         'voucher_no',
         'voucher_date',
+        'prefix',
         'first_name',
         'middle_name',
         'last_name',

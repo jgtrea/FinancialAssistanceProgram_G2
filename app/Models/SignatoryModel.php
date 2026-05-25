@@ -10,6 +10,7 @@ class SignatoryModel extends Model
     protected $primaryKey = 'signatory_id';
 
     protected $allowedFields = [
+        'prefix',
         'first_name',
         'middle_name',
         'last_name',
@@ -17,5 +18,6 @@ class SignatoryModel extends Model
         'position_title',
         'signature_image',
         'is_active',
+        'is_selected',
     ];
 }

@@ -5,9 +5,7 @@
 <?php $role = $role ?? 'admin' ?>
 <?php $prefix = $role === 'admin' ? 'admin' : 'user' ?>
 
-<div class="container-fluid px-4 py-4">
-
-  <div class="vs-page-header mb-4">
+<div class="vs-page-header mb-4">
     <div>
       <h4 class="vs-page-title"><?= esc($title) ?></h4>
       <p class="vs-page-sub">Manage student financial assistance records.</p>
@@ -15,7 +13,7 @@
     <div class="d-flex gap-2">
       <a href="<?= site_url($prefix . '/students/create') ?>" class="vs-btn vs-btn-primary">
         <?= asset_icon('add', ['stroke-width' => '2.5']) ?>
-        Add Student
+        Add Voucher
       </a>
       <button type="button" class="vs-btn vs-btn-outline" id="btnOpenImport">
         <?= asset_icon('import') ?>
@@ -37,10 +35,16 @@
 
   <div class="vs-action-bar" id="actionBar" style="display:none">
     <span class="vs-action-bar-count"><span id="selectedCount">0</span> selected</span>
-    <button class="vs-btn vs-btn-danger" id="btnArchive">
-      <?= asset_icon('archive') ?>
-      Archive Selected
-    </button>
+    <div class="d-flex gap-2 ms-auto">
+      <button class="vs-btn vs-btn-blue" id="btnGeneratePdf">
+        <?= asset_icon('voucher-add') ?>
+        Generate Voucher
+      </button>
+      <button class="vs-btn vs-btn-danger" id="btnArchive">
+        <?= asset_icon('archive') ?>
+        Archive Selected
+      </button>
+    </div>
   </div>
 
   <div class="vs-card">
@@ -63,7 +67,7 @@
           <?php foreach ($vouchers as $v): ?>
           <tr id="row-<?= esc($v['student_id'], 'attr') ?>">
             <td><input type="checkbox" class="vs-check vs-row-check" value="<?= esc($v['student_id'], 'attr') ?>"></td>
-            <td><?= esc($v['voucher_no'] ?: '-') ?></td>
+            <td class="js-voucher-no"><?= esc($v['voucher_no'] ?: '-') ?></td>
             <td><?= esc($v['full_name']) ?></td>
             <td><?= esc($v['preferred_senior_high_school']) ?></td>
             <td><?= esc($v['school_year']) ?></td>
@@ -73,7 +77,7 @@
               </span>
             </td>
             <td>
-              <?= esc((string) ($v['generate_count'] ?? 0)) ?>
+              <span class="js-generate-count"><?= esc((string) ($v['generate_count'] ?? 0)) ?></span>
             </td>
             <td><?= date('M d, Y', strtotime($v['created_at'])) ?></td>
             <td>
@@ -88,8 +92,6 @@
       </table>
     </div>
   </div>
-
-</div>
 
 <!-- Archive modal -->
 <div class="vs-modal-overlay" id="archiveModal" style="display:none">
@@ -112,6 +114,10 @@
     </div>
   </div>
 </div>
+
+<form id="pdfForm" method="POST" action="<?= site_url($prefix . '/vouchers/generate-pdf') ?>" style="display:none">
+  <?= csrf_field() ?>
+</form>
 
 <form id="archiveForm" action="<?= site_url($prefix . '/vouchers/archive') ?>" style="display:none">
   <?= csrf_field() ?>

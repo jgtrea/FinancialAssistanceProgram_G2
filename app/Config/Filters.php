@@ -2,42 +2,55 @@
 
 namespace Config;
 
-use CodeIgniter\Config\BaseConfig;
+use CodeIgniter\Config\Filters as BaseFilters;
+use CodeIgniter\Filters\Cors;
+use CodeIgniter\Filters\CSRF;
+use CodeIgniter\Filters\DebugToolbar;
+use CodeIgniter\Filters\ForceHTTPS;
+use CodeIgniter\Filters\Honeypot;
+use CodeIgniter\Filters\InvalidChars;
+use CodeIgniter\Filters\PageCache;
+use CodeIgniter\Filters\PerformanceMetrics;
+use CodeIgniter\Filters\SecureHeaders;
 use App\Filters\AuthFilter;
 use App\Filters\RoleFilter;
 
-class Filters extends BaseConfig
+class Filters extends BaseFilters
 {
-    /**
-     * Register your filters here with a short alias.
-     */
     public array $aliases = [
-        'csrf'      => \CodeIgniter\Filters\CSRF::class,
-        'toolbar'   => \CodeIgniter\Filters\DebugToolbar::class,
-        'honeypot'  => \CodeIgniter\Filters\Honeypot::class,
-        'auth'      => AuthFilter::class,   // <-- added
-        'role'      => RoleFilter::class,   // <-- added
+        'csrf'          => CSRF::class,
+        'toolbar'       => DebugToolbar::class,
+        'honeypot'      => Honeypot::class,
+        'invalidchars'  => InvalidChars::class,
+        'secureheaders' => SecureHeaders::class,
+        'cors'          => Cors::class,
+        'forcehttps'    => ForceHTTPS::class,
+        'pagecache'     => PageCache::class,
+        'performance'   => PerformanceMetrics::class,
+        'auth'          => AuthFilter::class,
+        'role'          => RoleFilter::class,
     ];
 
-    /**
-     * Filters that run on every request.
-     * 'before' runs before the controller, 'after' runs after.
-     */
-    public array $globals = [
+    public array $required = [
         'before' => [
-            // 'honeypot',
-            'csrf' => ['except' => ['api/*']],
+            'forcehttps',
+            'pagecache',
         ],
         'after' => [
+            'pagecache',
+            'performance',
             'toolbar',
         ],
     ];
 
+    public array $globals = [
+        'before' => [
+            'csrf' => ['except' => ['api/*']],
+        ],
+        'after' => [],
+    ];
+
     public array $methods = [];
 
-    /**
-     * Route-specific filters are handled in Routes.php using filter groups.
-     * See Routes.php for usage of 'auth' and 'role:admin'.
-     */
     public array $filters = [];
 }

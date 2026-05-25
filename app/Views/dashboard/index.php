@@ -2,8 +2,7 @@
 
 <?= $this->section('content') ?>
 
-<div class="container-fluid px-4 py-4">
-    <div class="vs-page-header mb-4">
+<div class="vs-page-header mb-4">
         <div>
             <h4 class="vs-page-title">Dashboard</h4>
             <p class="vs-page-sub">Review voucher activity and recent student records.</p>
@@ -110,6 +109,5 @@
             </div>
         </div>
     </div>
-</div>
 
 <?= $this->endSection() ?>

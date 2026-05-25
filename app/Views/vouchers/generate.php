@@ -5,9 +5,7 @@
 <?php $role = $role ?? 'admin' ?>
 <?php $prefix = $role === 'admin' ? 'admin' : 'user' ?>
 
-<div class="container-fluid px-4 py-4">
-
-  <div class="vs-page-header mb-4">
+<div class="vs-page-header mb-4">
     <div>
       <h4 class="vs-page-title"><?= esc($title) ?></h4>
       <p class="vs-page-sub">Select students and generate printable voucher PDFs.</p>
@@ -71,8 +69,6 @@
       </table>
     </div>
   </div>
-
-</div>
 
 <form id="pdfForm" method="POST" action="<?= site_url($prefix . '/vouchers/generate-pdf') ?>" style="display:none">
   <?= csrf_field() ?>

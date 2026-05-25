@@ -20,13 +20,13 @@
       <div class="vs-card-body">
         <div class="vs-form-grid vs-form-grid-4">
         <div class="vs-span-2">
-            <label class="vs-label">Full Name</label>
-            <input type="text" name="full_name" class="vs-input vs-uppercase" required value="<?= esc($user['full_name'] ?? '') ?>">
+            <label class="vs-label">Username</label>
+            <input type="text" name="full_name" class="vs-input vs-uppercase" required value="<?= esc($user['username'] ?? '') ?>">
         </div>
 
         <div>
-            <label class="vs-label">Username</label>
-            <input type="email" name="username" class="vs-input" required value="<?= esc($user['username'] ?? '') ?>">
+            <label class="vs-label">Email</label>
+            <input type="email" name="username" class="vs-input" required value="<?= esc($user['email'] ?? '') ?>">
         </div>
 
         <div>
@@ -43,13 +43,6 @@
             </select>
         </div>
 
-        <div>
-            <label class="vs-label">Account Status</label>
-            <select name="is_active" class="vs-input">
-                <option value="1" <?= (($user['is_active'] ?? '1') == '1') ? 'selected' : '' ?>>Active</option>
-                <option value="0" <?= (($user['is_active'] ?? '') == '0') ? 'selected' : '' ?>>Inactive</option>
-            </select>
-        </div>
         </div>
       </div>
     </div>

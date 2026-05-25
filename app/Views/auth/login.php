@@ -46,9 +46,9 @@
                     <?= csrf_field() ?>
 
                     <div class="mb-3">
-                        <label for="username" class="form-label">Email address</label>
-                        <input id="username" type="email" name="username" class="form-control"
-                            placeholder="name@example.com" required>
+                        <label for="username" class="form-label">Username or Email</label>
+                        <input id="username" type="text" name="username" class="form-control"
+                            placeholder="username or email address" required autocomplete="username">
                     </div>
 
                     <div class="mb-3">

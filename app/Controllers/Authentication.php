@@ -20,25 +20,27 @@ class Authentication extends BaseController
     {
         $model = new UserLogin();
 
-        $username = strtolower(trim((string) $this->request->getPost('username')));
+        $input    = strtolower(trim((string) $this->request->getPost('username')));
         $password = $this->request->getPost('password');
 
-        $user = $model->where('username', $username)->first();
+        // Allow login with either email or username
+        $user = $model->where('email', $input)->first()
+             ?? $model->where('username', $input)->first();
 
         if (!$user || $user['is_active'] == 0) {
-            log_action(null, 'LOGIN_FAILED', "Failed login attempt for username \"{$username}\"");
+            log_action(null, 'LOGIN_FAILED', "Failed login attempt for \"{$input}\"");
             return redirect()->to('/')->with('error', 'Invalid account or access denied.');
         }
 
         if (!password_verify($password, $user['password'])) {
-            log_action($user['user_id'], 'LOGIN_FAILED', "Bad password for user \"{$username}\"");
+            log_action($user['user_id'], 'LOGIN_FAILED', "Bad password for \"{$input}\"");
             return redirect()->to('/')->with('error', 'Invalid username or password.');
         }
 
         session()->set([
             'user_id'    => $user['user_id'],
             'username'   => $user['username'],
-            'full_name'  => $user['full_name'],
+            'full_name'  => $user['username'],
             'role'       => $user['role'],
             'isLoggedIn' => true
         ]);
@@ -47,7 +49,7 @@ class Authentication extends BaseController
             'last_login' => date('Y-m-d H:i:s'),
         ]);
 
-        log_action($user['user_id'], 'LOGIN', "User {$username} logged in");
+        log_action($user['user_id'], 'LOGIN', "User {$input} logged in");
 
         if ($user['role'] === 'admin') {
             return redirect()->to('admin/dashboard')->with('success', 'Logged as Admin.');

@@ -22,6 +22,12 @@
       <div class="vs-form-grid vs-form-grid-4">
 
         <div>
+          <label class="vs-label" for="prefix">Prefix</label>
+          <input id="prefix" name="prefix" type="text" class="vs-input vs-uppercase"
+                 value="<?= esc($signatory['prefix'] ?? '') ?>">
+        </div>
+
+        <div>
           <label class="vs-label" for="first_name">First Name</label>
           <input id="first_name" name="first_name" type="text"
                  class="vs-input vs-uppercase" required
@@ -49,19 +55,11 @@
                  value="<?= esc($signatory['suffix'] ?? '') ?>">
         </div>
 
-        <div class="vs-span-3">
+        <div class="vs-span-2">
           <label class="vs-label" for="position_title">Position Title</label>
           <input id="position_title" name="position_title" type="text"
                  class="vs-input vs-uppercase" required
                  value="<?= esc($signatory['position_title'] ?? '') ?>">
-        </div>
-
-        <div>
-          <label class="vs-label" for="is_active">Status</label>
-          <select id="is_active" name="is_active" class="vs-input">
-            <option value="1" <?= (($signatory['is_active'] ?? 1) == 1) ? 'selected' : '' ?>>Active</option>
-            <option value="0" <?= (($signatory['is_active'] ?? 1) == 0) ? 'selected' : '' ?>>Inactive</option>
-          </select>
         </div>
 
         <div class="vs-span-4">
@@ -97,7 +95,7 @@
 
       <div class="mt-4 d-flex gap-2">
         <button type="submit" class="vs-btn vs-btn-primary">
-          <?= $signatory ? 'Update Signatory' : 'Save Signatory' ?>
+          <?= $signatory ? 'Update' : 'Save' ?>
         </button>
         <a href="<?= base_url('/signatories') ?>" class="vs-btn vs-btn-outline">Cancel</a>
       </div>

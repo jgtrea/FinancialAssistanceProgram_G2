@@ -14,7 +14,7 @@
     <h4 class="vs-page-title"><?= esc($title) ?></h4>
     <p class="vs-page-sub">Enter student and voucher details.</p>
   </div>
-  <a href="<?= site_url($prefix . '/students') ?>" class="vs-btn vs-btn-outline">Back to students</a>
+  <a href="<?= site_url($prefix . '/students') ?>" class="vs-btn vs-btn-outline">Back to Vouchers</a>
 </div>
 
 <?php if (isset($validation) && $validation->getErrors()): ?>
@@ -33,12 +33,23 @@
       <?= csrf_field() ?>
 
       <div class="vs-form-grid vs-form-grid-4">
-      
+
         <div>
           <label class="vs-label" for="voucher_date">Voucher Date</label>
           <input id="voucher_date" name="voucher_date" type="date"
                  class="vs-input <?= ($validation && $validation->hasError('voucher_date')) ? 'vs-input-error' : '' ?>"
                  value="<?= old('voucher_date', $voucher['voucher_date'] ?? '') ?>" required>
+        </div>
+
+        <div>
+          <label class="vs-label" for="prefix">Prefix</label>
+          <select id="prefix" name="prefix" class="vs-input">
+            <?php $px = old('prefix', $voucher['prefix'] ?? '') ?>
+            <option value="" <?= $px === '' ? 'selected' : '' ?>>None</option>
+            <?php foreach (['Mr.' => 'Mr.', 'Ms.' => 'Ms.', 'Mrs.' => 'Mrs.', 'Dr.' => 'Dr.', 'Engr.' => 'Engr.'] as $val => $lbl): ?>
+              <option value="<?= esc($val) ?>" <?= $px === $val ? 'selected' : '' ?>><?= esc($lbl) ?></option>
+            <?php endforeach ?>
+          </select>
         </div>
 
         <div>
@@ -142,7 +153,7 @@
       </div>
 
       <div class="mt-4 d-flex gap-2">
-        <button type="submit" class="vs-btn vs-btn-primary"><?= esc($title) ?></button>
+        <button type="submit" class="vs-btn vs-btn-primary"><?= !empty($voucher['student_id'] ?? null) ? 'Update' : esc($title) ?></button>
         <a href="<?= site_url($prefix . '/students') ?>" class="vs-btn vs-btn-outline">Cancel</a>
       </div>
     </form>

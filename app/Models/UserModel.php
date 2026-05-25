@@ -10,8 +10,8 @@ class UserModel extends Model
     protected $primaryKey    = 'user_id';
     protected $returnType    = 'array';
     protected $allowedFields = [
-        'username', 'password', 'role',
-        'full_name', 'is_active', 'last_login',
+        'email', 'username', 'password', 'role',
+        'is_active', 'last_login',
     ];
 
     protected $useTimestamps = true;
@@ -22,8 +22,8 @@ class UserModel extends Model
     protected $beforeUpdate = ['normalizeUppercase', 'hashPassword'];
     protected $afterFind    = ['normalizeUppercaseResult'];
 
-    protected array $uppercaseFields = ['full_name'];
-    protected array $lowercaseFields = ['username'];
+    protected array $uppercaseFields = [];
+    protected array $lowercaseFields = ['email'];
 
     protected function normalizeUppercase(array $data): array
     {

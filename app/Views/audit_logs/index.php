@@ -2,8 +2,7 @@
 
 <?= $this->section('content') ?>
 
-<div class="container-fluid px-4 py-4">
-    <div class="vs-page-header mb-4">
+<div class="vs-page-header mb-4">
         <div>
             <h4 class="vs-page-title">Audit Logs</h4>
             <p class="vs-page-sub">Track your account activity and voucher changes.</p>
@@ -89,6 +88,5 @@
             </table>
         </div>
     </div>
-</div>
 
 <?= $this->endSection() ?>

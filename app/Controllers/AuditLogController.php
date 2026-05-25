@@ -18,7 +18,7 @@ class AuditLogController extends BaseController
         $isAdminRoute = str_contains('/' . $path, '/admin/audit-logs');
 
         $auditModel
-            ->select('audit_log.*, users.full_name, users.username')
+            ->select('audit_log.*, users.username, users.email')
             ->join('users', 'users.user_id = audit_log.user_id', 'left');
 
         if (!$isAdminRoute) {
@@ -44,8 +44,8 @@ class AuditLogController extends BaseController
                 ->orLike('audit_log.action', $keyword)
                 ->orLike('audit_log.ip_address', $keyword)
                 ->orLike('audit_log.user_agent', $keyword)
-                ->orLike('users.full_name', $keyword)
                 ->orLike('users.username', $keyword)
+                ->orLike('users.email', $keyword)
                 ->groupEnd();
         }
 

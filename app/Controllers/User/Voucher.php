@@ -12,7 +12,7 @@ class Voucher extends AdminVoucher
         $students = $this->voucherModel->getVouchersForListing();
 
         return view('vouchers/index', [
-            'title'    => 'Students',
+            'title'    => 'Vouchers',
             'vouchers' => $students,
             'role'     => 'user',
         ]);
@@ -62,6 +62,7 @@ class Voucher extends AdminVoucher
         $studentId = (int) $this->voucherModel->insert([
             'voucher_no'                   => null,
             'voucher_date'                 => $this->request->getPost('voucher_date'),
+            'prefix'                       => $this->request->getPost('prefix') ?: null,
             'first_name'                   => $this->request->getPost('first_name'),
             'middle_name'                  => $this->request->getPost('middle_name') ?: '',
             'last_name'                    => $this->request->getPost('last_name'),
@@ -96,7 +97,7 @@ class Voucher extends AdminVoucher
         }
 
         return view('vouchers/form', [
-            'title'      => 'Edit Student',
+            'title'      => 'Update Voucher',
             'action'     => site_url('user/vouchers/update/' . $id),
             'voucher'    => $student,
             'validation' => \Config\Services::validation(),
@@ -123,6 +124,7 @@ class Voucher extends AdminVoucher
 
         $this->voucherModel->update($id, [
             'voucher_date'                 => $this->request->getPost('voucher_date'),
+            'prefix'                       => $this->request->getPost('prefix') ?: null,
             'first_name'                   => $this->request->getPost('first_name'),
             'middle_name'                  => $this->request->getPost('middle_name') ?: '',
             'last_name'                    => $this->request->getPost('last_name'),
@@ -189,6 +191,7 @@ class Voucher extends AdminVoucher
         foreach ($students as $s) {
             $this->archiveModel->insert([
                 'student_id'                   => $s['student_id'],
+                'prefix'                       => $s['prefix'] ?? null,
                 'voucher_no'                   => $s['voucher_no'],
                 'voucher_date'                 => $s['voucher_date'],
                 'first_name'                   => $s['first_name'],

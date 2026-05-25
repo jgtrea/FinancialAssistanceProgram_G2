@@ -2,32 +2,31 @@
 
 <?= $this->section('content') ?>
 
-<div class="container-fluid px-4 py-4">
-    <div class="vs-page-header mb-4">
+<div class="vs-page-header mb-4">
         <div>
             <h4 class="vs-page-title">Archive</h4>
             <p class="vs-page-sub">Review and restore archived records.</p>
         </div>
     </div>
 
-    <?php $role = session('role') ?: 'user'; ?>
+    <?php $role = session('role') ?: 'guest'; ?>
 
     <!-- Context Tabs -->
     <ul class="nav nav-tabs mb-4" id="archiveTabs">
         <?php if ($role === 'admin'): ?>
             <li class="nav-item">
-                <a class="nav-link <?= ($type ?? 'user') === 'user' ? 'active' : '' ?>"
+                <a class="nav-link <?= ($type ?? '') === 'user' ? 'active' : '' ?>"
                    href="<?= site_url('archive?type=user') ?>">Users</a>
             </li>
         <?php endif; ?>
 
         <li class="nav-item">
-            <a class="nav-link <?= ($type ?? 'user') === 'voucher' ? 'active' : '' ?>"
-               href="<?= site_url('archive?type=voucher') ?>">Students</a>
+            <a class="nav-link <?= ($type ?? '') === 'voucher' ? 'active' : '' ?>"
+               href="<?= site_url('archive?type=voucher') ?>">Vouchers</a>
         </li>
 
         <li class="nav-item">
-            <a class="nav-link <?= ($type ?? 'user') === 'signatory' ? 'active' : '' ?>"
+            <a class="nav-link <?= ($type ?? '') === 'signatory' ? 'active' : '' ?>"
                href="<?= site_url('archive?type=signatory') ?>">Signatories</a>
         </li>
     </ul>
@@ -48,10 +47,10 @@
                     <tbody>
                         <?php foreach ($users as $user): ?>
                             <tr>
-                                <td><?= esc($user['name'] ?? $user['full_name'] ?? '') ?></td>
-                                <td><?= esc($user['email'] ?? $user['username'] ?? '') ?></td>
+                                <td><?= esc($user['username'] ?? '') ?></td>
+                                <td><?= esc($user['email'] ?? '') ?></td>
                                 <td><?= esc($user['role']) ?></td>
-                                <td><?= !empty($user['archived_at']) ? esc(date('M d, Y h:i A', strtotime($user['archived_at']))) : '-' ?></td>
+                                <td><?= !empty($user['updated_at']) ? esc(date('M d, Y h:i A', strtotime($user['updated_at']))) : '-' ?></td>
                             </tr>
                         <?php endforeach; ?>
                     </tbody>
@@ -96,8 +95,8 @@
         <!-- Vouchers / Students Archive Table -->
         <div class="vs-card">
             <div class="vs-card-body">
-                <h4 class="vs-page-title mb-3">Archived Vouchers / Students</h4>
-                <table id="archivedVouchersTable" class="vs-datatable js-data-table" data-search-placeholder="Search archived students..." style="width:100%">
+                <h4 class="vs-page-title mb-3">Archived Vouchers</h4>
+                <table id="archivedVouchersTable" class="vs-datatable js-data-table" data-search-placeholder="Search archived vouchers..." style="width:100%">
                     <thead>
                         <tr>
                             <th>Voucher No</th>
@@ -122,6 +121,5 @@
             </div>
         </div>
     <?php endif; ?>
-</div>
 
 <?= $this->endSection() ?>

@@ -50,22 +50,23 @@ class StudentController extends BaseController
         $studentId = $this->request->getPost('student_id');
 
         $data = [
-            'voucher_no' => $this->request->getPost('voucher_no') ?: null,
-            'voucher_date' => $this->request->getPost('voucher_date'),
-            'first_name' => $this->request->getPost('first_name'),
-            'middle_name' => $this->request->getPost('middle_name'),
-            'last_name' => $this->request->getPost('last_name'),
-            'suffix' => $this->request->getPost('suffix'),
-            'rank_no' => $this->request->getPost('rank_no'),
-            'gwa' => $this->request->getPost('gwa'),
-            'gender' => $this->request->getPost('gender'),
-            'junior_high_school' => $this->request->getPost('junior_high_school'),
+            'voucher_no'                   => $this->request->getPost('voucher_no') ?: null,
+            'voucher_date'                 => $this->request->getPost('voucher_date'),
+            'prefix'                       => $this->request->getPost('prefix') ?: null,
+            'first_name'                   => $this->request->getPost('first_name'),
+            'middle_name'                  => $this->request->getPost('middle_name'),
+            'last_name'                    => $this->request->getPost('last_name'),
+            'suffix'                       => $this->request->getPost('suffix'),
+            'rank_no'                      => $this->request->getPost('rank_no'),
+            'gwa'                          => $this->request->getPost('gwa'),
+            'gender'                       => $this->request->getPost('gender'),
+            'junior_high_school'           => $this->request->getPost('junior_high_school'),
             'preferred_senior_high_school' => $this->request->getPost('preferred_senior_high_school'),
-            'contact_number' => $this->request->getPost('contact_number'),
-            'remarks_status' => $this->request->getPost('remarks_status'),
-            'school_year' => $this->request->getPost('school_year'),
-            'eligibility_status' => $this->request->getPost('eligibility_status'),
-            'voucher_status' => $this->request->getPost('voucher_status') ?? 'not_generated',
+            'contact_number'               => $this->request->getPost('contact_number'),
+            'remarks_status'               => $this->request->getPost('remarks_status'),
+            'school_year'                  => $this->request->getPost('school_year'),
+            'eligibility_status'           => $this->request->getPost('eligibility_status'),
+            'voucher_status'               => $this->request->getPost('voucher_status') ?? 'not_generated',
         ];
 
         if ($studentId) {
@@ -109,6 +110,7 @@ class StudentController extends BaseController
 
         $archiveModel->insert([
             'student_id' => $student['student_id'],
+            'prefix'     => $student['prefix'] ?? null,
             'voucher_no' => $student['voucher_no'],
             'voucher_date' => $student['voucher_date'],
             'first_name' => $student['first_name'],

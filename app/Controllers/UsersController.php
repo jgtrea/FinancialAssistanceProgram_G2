@@ -27,11 +27,14 @@ class UsersController extends BaseController
         $password = $this->request->getPost('password');
 
         $data = [
-            'full_name' => $this->request->getPost('full_name'),
-            'username'  => $this->request->getPost('username'),
+            'username'  => $this->request->getPost('full_name'),
+            'email'     => strtolower(trim((string) $this->request->getPost('username'))),
             'role'      => $this->request->getPost('role'),
-            'is_active' => $this->request->getPost('is_active'),
         ];
+
+        if (!$id) {
+            $data['is_active'] = 1;
+        }
 
         if (!empty($password)) {
             $data['password'] = password_hash($password, PASSWORD_ARGON2ID);
@@ -58,6 +61,27 @@ class UsersController extends BaseController
         $model->update($id, ['is_active' => 0]);
         log_action(session()->get('user_id'), 'ARCHIVE_USER', "Deactivated user #{$id}");
         return $this->response->setJSON(['status' => 'success', 'message' => 'User archived successfully.']);
+    }
+
+    public function archiveMultiple()
+    {
+        $ids = $this->request->getPost('ids');
+        if (!is_array($ids) || empty($ids)) {
+            return $this->response->setJSON(['status' => 'error', 'message' => 'No users selected.']);
+        }
+
+        $model  = new UserLogin();
+        $userId = session()->get('user_id');
+
+        foreach ($ids as $id) {
+            $id = (int) $id;
+            if ($id > 0 && $id !== (int) $userId) {
+                $model->update($id, ['is_active' => 0]);
+                log_action($userId, 'ARCHIVE_USER', "Deactivated user #{$id}");
+            }
+        }
+
+        return $this->response->setJSON(['status' => 'success', 'message' => count($ids) . ' user(s) archived.']);
     }
 
     // Loads view

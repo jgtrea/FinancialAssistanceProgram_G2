@@ -28,7 +28,8 @@ $routes->group('admin', ['filter' => 'role:admin'], function ($routes) {
     $routes->get('user_management/form',          'UsersController::form');
     $routes->get('user_management/form/(:num)',   'UsersController::form/$1');
     $routes->post('user_management/save',         'UsersController::save');
-    $routes->post('user_management/archive/(:num)', 'UsersController::archive/$1');
+    $routes->post('user_management/archive/(:num)',   'UsersController::archive/$1');
+    $routes->post('user_management/archive-multiple', 'UsersController::archiveMultiple');
     $routes->get('archived_users',                'UsersController::archived');
     $routes->post('user_management/restore/(:num)', 'UsersController::restore/$1');
     $routes->get('audit-logs',                    'AuditLogController::index');
@@ -52,7 +53,7 @@ $routes->group('admin', ['filter' => 'role:admin'], function ($routes) {
     $routes->post('vouchers/archive',             'Admin\Voucher::archive');
 
     // Archive & Logs
-    $routes->get('archive', 'Admin\Archive::index');
+    $routes->get('archive', 'ArchiveController::index');
     $routes->get('logs',    'Admin\Report::logs');
 });
 
@@ -89,18 +90,19 @@ $routes->get('students',                'StudentController::index');
 $routes->get('students/form',           'StudentController::form');
 $routes->get('students/form/(:num)',    'StudentController::form/$1');
 $routes->post('students/save',          'StudentController::save');
-$routes->post('students/delete/(:num)', 'StudentController::delete/$1');
+$routes->post('students/archive/(:num)', 'StudentController::archive/$1');
 
 // ─── Archive (madridbranch) ───────────────────────────────────────────────────
 $routes->get('archive', 'ArchiveController::index');
 $routes->get('archive/restore/signatory/(:num)', 'ArchiveController::restoreSignatory/$1');
 
 // ─── Signatories (madridbranch) ───────────────────────────────────────────────
-$routes->get('signatories',                          'SignatoryController::index');
-$routes->get('signatories/form',                     'SignatoryController::form');
-$routes->get('signatories/form/(:num)',              'SignatoryController::form/$1');
-$routes->get('signatories/edit/(:num)',              'SignatoryController::form/$1');
-$routes->get('signatories/signature/(:num)',         'SignatoryController::signature/$1');
-$routes->post('signatories/save',                    'SignatoryController::save');
-$routes->post('signatories/deactivate/(:num)',       'SignatoryController::deactivate/$1');
-$routes->post('signatories/status/(:num)/(:alpha)', 'SignatoryController::setStatus/$1/$2');
+$routes->get('signatories',                           'SignatoryController::index');
+$routes->get('signatories/form',                      'SignatoryController::form');
+$routes->get('signatories/form/(:num)',               'SignatoryController::form/$1');
+$routes->get('signatories/edit/(:num)',               'SignatoryController::form/$1');
+$routes->get('signatories/signature/(:num)',          'SignatoryController::signature/$1');
+$routes->post('signatories/save',                     'SignatoryController::save');
+$routes->post('signatories/deactivate/(:num)',        'SignatoryController::deactivate/$1');
+$routes->post('signatories/status/(:num)/(:alpha)',  'SignatoryController::setStatus/$1/$2');
+$routes->post('signatories/archive-multiple',         'SignatoryController::archiveMultiple');

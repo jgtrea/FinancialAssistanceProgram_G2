@@ -48,12 +48,13 @@ class SignatoryController extends BaseController
         $existing = $id ? $signatoryModel->find($id) : null;
 
         $data = [
-            'first_name' => $this->request->getPost('first_name'),
-            'middle_name' => $this->request->getPost('middle_name'),
-            'last_name' => $this->request->getPost('last_name'),
-            'suffix' => $this->request->getPost('suffix'),
+            'prefix'         => $this->request->getPost('prefix') ?: null,
+            'first_name'     => $this->request->getPost('first_name'),
+            'middle_name'    => $this->request->getPost('middle_name'),
+            'last_name'      => $this->request->getPost('last_name'),
+            'suffix'         => $this->request->getPost('suffix'),
             'position_title' => $this->request->getPost('position_title'),
-            'is_active' => $this->request->getPost('is_active') ?? 1,
+            'is_active'      => $this->request->getPost('is_active') ?? 1,
         ];
 
         $userId = session()->get('user_id');
@@ -112,9 +113,57 @@ class SignatoryController extends BaseController
     public function deactivate($id)
     {
         $signatoryModel = new SignatoryModel();
-        $signatoryModel->update($id, ['is_active' => 0]);
+        $signatoryModel->update($id, ['is_active' => 0, 'is_selected' => 0]);
         log_action(session()->get('user_id'), 'DEACTIVATE_SIGNATORY', "Deactivated signatory #{$id}");
-        return redirect()->to('/signatories')->with('success', 'Signatory deactivated successfully.');
+        return redirect()->to('/signatories')->with('success', 'Signatory archived.');
+    }
+
+    public function setStatus($id, $action)
+    {
+        $signatoryModel = new SignatoryModel();
+        $signatory = $signatoryModel->find($id);
+
+        if (!$signatory) {
+            return $this->response->setJSON(['success' => false, 'message' => 'Signatory not found.']);
+        }
+
+        if ($action === 'select') {
+            $selectedCount = $signatoryModel->where('is_selected', 1)->countAllResults();
+            if ($selectedCount >= 3) {
+                return $this->response->setJSON([
+                    'success' => false,
+                    'message' => 'Maximum of 3 signatories can be selected. Deselect one first.',
+                ]);
+            }
+            $signatoryModel->update($id, ['is_selected' => 1]);
+            log_action(session()->get('user_id'), 'SELECT_SIGNATORY', "Selected signatory #{$id}");
+            return $this->response->setJSON(['success' => true, 'selected' => true, 'message' => 'Signatory selected.']);
+        }
+
+        $signatoryModel->update($id, ['is_selected' => 0]);
+        log_action(session()->get('user_id'), 'DESELECT_SIGNATORY', "Deselected signatory #{$id}");
+        return $this->response->setJSON(['success' => true, 'selected' => false, 'message' => 'Signatory deselected.']);
+    }
+
+    public function archiveMultiple()
+    {
+        $ids = $this->request->getPost('ids');
+        if (!is_array($ids) || empty($ids)) {
+            return $this->response->setJSON(['success' => false, 'message' => 'No signatories selected.']);
+        }
+
+        $signatoryModel = new SignatoryModel();
+        $userId = session()->get('user_id');
+
+        foreach ($ids as $id) {
+            $id = (int) $id;
+            if ($id > 0) {
+                $signatoryModel->update($id, ['is_active' => 0, 'is_selected' => 0]);
+                log_action($userId, 'DEACTIVATE_SIGNATORY', "Archived signatory #{$id}");
+            }
+        }
+
+        return $this->response->setJSON(['success' => true, 'message' => count($ids) . ' signatory(ies) archived.']);
     }
 
     public function signature($id)

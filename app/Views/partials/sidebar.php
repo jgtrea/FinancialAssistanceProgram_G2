@@ -25,11 +25,7 @@ $icon = static fn (string $name): string => asset_icon($name, ['class' => 'vs-si
                     <div class="sb-nav-link-icon"><?= $icon('dashboard') ?></div>
                     Dashboard
                 </a>
-                <a class="nav-link <?= $isActive('admin/students') ?>" href="<?= site_url('admin/students') ?>">
-                    <div class="sb-nav-link-icon"><?= $icon('students') ?></div>
-                    Students
-                </a>
-                <a class="nav-link <?= $isActive('admin/vouchers') ?>" href="<?= site_url('admin/vouchers') ?>">
+                <a class="nav-link <?= $isActive(['admin/students', 'admin/vouchers']) ?>" href="<?= site_url('admin/students') ?>">
                     <div class="sb-nav-link-icon"><?= $icon('voucher') ?></div>
                     Vouchers
                 </a>
@@ -56,11 +52,7 @@ $icon = static fn (string $name): string => asset_icon($name, ['class' => 'vs-si
                     <div class="sb-nav-link-icon"><?= $icon('dashboard') ?></div>
                     Dashboard
                 </a>
-                <a class="nav-link <?= $isActive('user/students') ?>" href="<?= site_url('user/students') ?>">
-                    <div class="sb-nav-link-icon"><?= $icon('students') ?></div>
-                    Students
-                </a>
-                <a class="nav-link <?= $isActive('user/vouchers') ?>" href="<?= site_url('user/vouchers') ?>">
+                <a class="nav-link <?= $isActive(['user/students', 'user/vouchers']) ?>" href="<?= site_url('user/students') ?>">
                     <div class="sb-nav-link-icon"><?= $icon('voucher') ?></div>
                     Vouchers
                 </a>
