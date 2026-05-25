@@ -41,10 +41,10 @@
     </button>
     <div id="customLengthSlot" class="ms-2"></div>
     <div class="d-flex gap-2 ms-auto">
-      <a href="<?= site_url($prefix . '/students/create') ?>" class="vs-btn vs-btn-primary">
+      <button type="button" class="vs-btn vs-btn-primary" id="btnAddVoucher" data-mode="add">
         <?= asset_icon('add', ['stroke-width' => '2.5']) ?>
         Add Voucher
-      </a>
+      </button>
       <button type="button" class="vs-btn vs-btn-outline" id="btnOpenImport">
         <?= asset_icon('import') ?>
         Import
@@ -92,8 +92,8 @@
             <td><?= !empty($v['generated_at']) ? date('M d, Y', strtotime($v['generated_at'])) : '-' ?></td>
             <td>
               <div class="d-flex gap-1">
-                <a href="<?= site_url($prefix . '/students/view/' . $v['student_id']) ?>" class="vs-tbl-btn vs-tbl-btn-view">View</a>
-                <a href="<?= site_url($prefix . '/students/edit/' . $v['student_id']) ?>" class="vs-tbl-btn vs-tbl-btn-edit">Edit</a>
+                <button type="button" class="vs-tbl-btn vs-tbl-btn-view js-voucher-action" data-mode="view" data-id="<?= esc($v['student_id'], 'attr') ?>">View</button>
+                <button type="button" class="vs-tbl-btn vs-tbl-btn-edit js-voucher-action" data-mode="edit" data-id="<?= esc($v['student_id'], 'attr') ?>">Edit</button>
               </div>
             </td>
           </tr>
@@ -156,6 +156,123 @@
         <span id="importBtnSpinner" class="vs-spinner" style="display:none"></span>
       </button>
     </div>
+  </div>
+</div>
+
+<!-- Voucher Add/View/Edit modal -->
+<div class="vs-modal-overlay" id="voucherModal" style="display:none">
+  <div class="vs-modal" style="max-width:780px">
+    <div class="vs-modal-header">
+      <h5 id="voucherModalTitle">Add Voucher</h5>
+      <button class="vs-modal-close" id="voucherModalClose">&times;</button>
+    </div>
+    <form id="voucherModalForm" novalidate>
+      <?= csrf_field() ?>
+      <input type="hidden" name="student_id" id="vmStudentId" value="">
+
+      <div class="vs-modal-body">
+        <div id="voucherModalAlert"></div>
+
+        <div class="vs-form-grid vs-form-grid-4">
+          <div>
+            <label class="vs-label required" for="vmVoucherDate">Voucher Date</label>
+            <input id="vmVoucherDate" name="voucher_date" type="date" class="vs-input" required>
+          </div>
+
+          <div>
+            <label class="vs-label required" for="vmFirstName">First Name</label>
+            <input id="vmFirstName" name="first_name" type="text" class="vs-input vs-uppercase" required>
+          </div>
+
+          <div>
+            <label class="vs-label" for="vmMiddleName">Middle Name</label>
+            <input id="vmMiddleName" name="middle_name" type="text" class="vs-input vs-uppercase">
+          </div>
+
+          <div>
+            <label class="vs-label required" for="vmLastName">Last Name</label>
+            <input id="vmLastName" name="last_name" type="text" class="vs-input vs-uppercase" required>
+          </div>
+
+          <div>
+            <label class="vs-label" for="vmSuffix">Suffix</label>
+            <select id="vmSuffix" name="suffix" class="vs-input">
+              <option value="">None</option>
+              <option value="JR.">Jr.</option>
+              <option value="SR.">Sr.</option>
+              <option value="II">II</option>
+              <option value="III">III</option>
+              <option value="IV">IV</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="vs-label" for="vmGender">Gender</label>
+            <select id="vmGender" name="gender" class="vs-input">
+              <option value="">-- Select --</option>
+              <option value="MALE">Male</option>
+              <option value="FEMALE">Female</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="vs-label" for="vmGwa">GWA</label>
+            <input id="vmGwa" name="gwa" type="number" step="0.01" class="vs-input">
+          </div>
+
+          <div>
+            <label class="vs-label" for="vmRankNo">Rank No.</label>
+            <input id="vmRankNo" name="rank_no" type="number" class="vs-input">
+          </div>
+
+          <div>
+            <label class="vs-label" for="vmContactNumber">Contact Number</label>
+            <input id="vmContactNumber" name="contact_number" type="text" class="vs-input vs-uppercase">
+          </div>
+
+          <div class="vs-span-2">
+            <label class="vs-label" for="vmJuniorHs">Junior High School</label>
+            <input id="vmJuniorHs" name="junior_high_school" type="text" class="vs-input vs-uppercase">
+          </div>
+
+          <div class="vs-span-2">
+            <label class="vs-label required" for="vmPreferredHs">Preferred Senior High School</label>
+            <input id="vmPreferredHs" name="preferred_senior_high_school" type="text" class="vs-input vs-uppercase" required>
+          </div>
+
+          <div>
+            <label class="vs-label" for="vmRemarks">Remarks</label>
+            <select id="vmRemarks" name="remarks_status" class="vs-input">
+              <option value="">-- Select --</option>
+              <option value="PASSED">Passed</option>
+              <option value="FOR REVIEW">For Review</option>
+              <option value="FAILED">Failed</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="vs-label required" for="vmSchoolYear">School Year</label>
+            <input id="vmSchoolYear" name="school_year" type="text" class="vs-input" placeholder="e.g. 2025-2026" required>
+          </div>
+
+          <div>
+            <label class="vs-label" for="vmEligibility">Eligibility</label>
+            <select id="vmEligibility" name="eligibility_status" class="vs-input">
+              <option value="eligible">Eligible</option>
+              <option value="not_eligible">Not Eligible</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="vs-modal-footer">
+        <button type="button" class="vs-btn vs-btn-outline" id="voucherModalCancel">Close</button>
+        <button type="submit" class="vs-btn vs-btn-primary" id="voucherModalSubmit">
+          <span id="vmSubmitText">Save Voucher</span>
+          <span id="vmSubmitSpinner" class="vs-spinner" style="display:none"></span>
+        </button>
+      </div>
+    </form>
   </div>
 </div>
 
@@ -321,6 +438,163 @@
   });
   importModal.addEventListener('click', function (e) {
     if (e.target === importModal) importModal.style.display = 'none';
+  });
+
+  // ── Voucher Add / View / Edit modal ────────────────────────────────────────
+  var voucherModal       = document.getElementById('voucherModal');
+  var voucherModalForm   = document.getElementById('voucherModalForm');
+  var voucherModalTitle  = document.getElementById('voucherModalTitle');
+  var voucherModalClose  = document.getElementById('voucherModalClose');
+  var voucherModalCancel = document.getElementById('voucherModalCancel');
+  var voucherModalAlert  = document.getElementById('voucherModalAlert');
+  var voucherSubmitBtn   = document.getElementById('voucherModalSubmit');
+  var vmSubmitText       = document.getElementById('vmSubmitText');
+  var vmSubmitSpinner    = document.getElementById('vmSubmitSpinner');
+  var btnAddVoucher      = document.getElementById('btnAddVoucher');
+  var saveStudentUrl     = '<?= site_url('students/save') ?>';
+  var fetchStudentUrl    = '<?= site_url('students/json') ?>';
+
+  // Field map: form input id → form name. Used for clear/populate cycles.
+  var vmFieldIds = [
+    'vmVoucherDate', 'vmFirstName', 'vmMiddleName', 'vmLastName',
+    'vmSuffix', 'vmGender', 'vmGwa', 'vmRankNo', 'vmContactNumber',
+    'vmJuniorHs', 'vmPreferredHs', 'vmRemarks', 'vmSchoolYear', 'vmEligibility',
+  ];
+  var vmFieldToName = {
+    vmVoucherDate: 'voucher_date',     vmFirstName:   'first_name',
+    vmMiddleName:  'middle_name',      vmLastName:    'last_name',
+    vmSuffix:      'suffix',           vmGender:      'gender',
+    vmGwa:         'gwa',              vmRankNo:      'rank_no',
+    vmContactNumber: 'contact_number', vmJuniorHs:    'junior_high_school',
+    vmPreferredHs: 'preferred_senior_high_school',
+    vmRemarks:     'remarks_status',   vmSchoolYear:  'school_year',
+    vmEligibility: 'eligibility_status',
+  };
+
+  function vmShowAlert(msg, type) {
+    voucherModalAlert.innerHTML = '<div class="vs-alert vs-alert-' + (type || 'error') + ' mb-3">' + msg + '</div>';
+  }
+  function vmClearAlert() { voucherModalAlert.innerHTML = ''; }
+
+  function vmClearFields() {
+    document.getElementById('vmStudentId').value = '';
+    vmFieldIds.forEach(function (id) {
+      var el = document.getElementById(id);
+      if (!el) return;
+      if (el.tagName === 'SELECT') el.selectedIndex = 0;
+      else el.value = '';
+    });
+    document.getElementById('vmEligibility').value = 'eligible';
+  }
+
+  function vmPopulateFields(student) {
+    document.getElementById('vmStudentId').value = student.student_id || '';
+    vmFieldIds.forEach(function (id) {
+      var el = document.getElementById(id);
+      if (!el) return;
+      var name = vmFieldToName[id];
+      var val  = student[name];
+      el.value = (val === null || val === undefined) ? '' : val;
+    });
+  }
+
+  function vmSetReadOnly(readOnly) {
+    vmFieldIds.forEach(function (id) {
+      var el = document.getElementById(id);
+      if (!el) return;
+      if (el.tagName === 'SELECT') {
+        el.disabled = readOnly;
+      } else {
+        el.readOnly = readOnly;
+      }
+    });
+    voucherSubmitBtn.style.display = readOnly ? 'none' : 'inline-flex';
+  }
+
+  function vmOpen(mode, studentId) {
+    vmClearAlert();
+    vmClearFields();
+
+    if (mode === 'add') {
+      voucherModalTitle.textContent = 'Add Voucher';
+      vmSubmitText.textContent = 'Save Voucher';
+      vmSetReadOnly(false);
+      // Default voucher_date to today for convenience
+      document.getElementById('vmVoucherDate').value = new Date().toISOString().slice(0, 10);
+      voucherModal.style.display = 'flex';
+      return;
+    }
+
+    voucherModalTitle.textContent = mode === 'edit' ? 'Edit Voucher' : 'View Voucher';
+    vmSubmitText.textContent = 'Update Voucher';
+    vmSetReadOnly(mode === 'view');
+    voucherModal.style.display = 'flex';
+
+    // Fetch the student data
+    fetch(fetchStudentUrl + '/' + studentId, ajaxOptions({ method: 'GET' }))
+      .then(function (r) { return r.json(); })
+      .then(function (data) {
+        if (data.status !== 'success') {
+          vmShowAlert(data.message || 'Failed to load student.', 'error');
+          return;
+        }
+        vmPopulateFields(data.student);
+        // After populate, re-apply readOnly state to anything new
+        vmSetReadOnly(mode === 'view');
+      })
+      .catch(function () {
+        vmShowAlert('Failed to load student.', 'error');
+      });
+  }
+
+  function vmClose() { voucherModal.style.display = 'none'; }
+
+  btnAddVoucher && btnAddVoucher.addEventListener('click', function () { vmOpen('add'); });
+  voucherModalClose  && voucherModalClose.addEventListener('click', vmClose);
+  voucherModalCancel && voucherModalCancel.addEventListener('click', vmClose);
+  voucherModal && voucherModal.addEventListener('click', function (e) {
+    if (e.target === voucherModal) vmClose();
+  });
+
+  document.querySelectorAll('.js-voucher-action').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      vmOpen(btn.getAttribute('data-mode'), btn.getAttribute('data-id'));
+    });
+  });
+
+  voucherModalForm && voucherModalForm.addEventListener('submit', function (e) {
+    e.preventDefault();
+    vmClearAlert();
+
+    var fd = new FormData(voucherModalForm);
+    var csrf = getCsrfToken && getCsrfToken();
+    if (csrf && csrf.name && !fd.get(csrf.name)) {
+      fd.append(csrf.name, csrf.token);
+    }
+
+    voucherSubmitBtn.disabled = true;
+    vmSubmitText.style.display = 'none';
+    vmSubmitSpinner.style.display = 'inline-block';
+
+    fetch(saveStudentUrl, ajaxOptions({ method: 'POST', body: fd }))
+      .then(function (r) { return r.json(); })
+      .then(function (data) {
+        if (data.status === 'success') {
+          vmClose();
+          // Refresh the listing so the row reflects the changes
+          location.reload();
+          return;
+        }
+        vmShowAlert(data.message || 'Save failed.', 'error');
+      })
+      .catch(function () {
+        vmShowAlert('An error occurred while saving.', 'error');
+      })
+      .finally(function () {
+        voucherSubmitBtn.disabled = false;
+        vmSubmitText.style.display = 'inline';
+        vmSubmitSpinner.style.display = 'none';
+      });
   });
 
   // ── Advanced Filters ───────────────────────────────────────────────────────

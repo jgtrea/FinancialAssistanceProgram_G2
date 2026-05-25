@@ -89,6 +89,7 @@ $routes->group('user', ['filter' => 'auth'], function ($routes) {
 $routes->get('students',                'StudentController::index');
 $routes->get('students/form',           'StudentController::form');
 $routes->get('students/form/(:num)',    'StudentController::form/$1');
+$routes->get('students/json/(:num)',    'StudentController::getJson/$1');
 $routes->post('students/save',          'StudentController::save');
 $routes->post('students/archive/(:num)', 'StudentController::archive/$1');
 

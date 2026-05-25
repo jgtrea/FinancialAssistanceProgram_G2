@@ -37,6 +37,23 @@ class StudentController extends BaseController
         ]);
     }
 
+    public function getJson($id)
+    {
+        $student = (new StudentModel())->find($id);
+
+        if (!$student) {
+            return $this->response->setStatusCode(404)->setJSON([
+                'status'  => 'error',
+                'message' => 'Student not found.',
+            ]);
+        }
+
+        return $this->response->setJSON([
+            'status'  => 'success',
+            'student' => $student,
+        ]);
+    }
+
     public function save()
     {
         if (!$this->request->isAJAX()) {
