@@ -10,20 +10,6 @@
       <h4 class="vs-page-title"><?= esc($title) ?></h4>
       <p class="vs-page-sub">Manage student financial assistance records.</p>
     </div>
-    <div class="d-flex gap-2">
-      <a href="<?= site_url($prefix . '/students/create') ?>" class="vs-btn vs-btn-primary">
-        <?= asset_icon('add', ['stroke-width' => '2.5']) ?>
-        Add Voucher
-      </a>
-      <button type="button" class="vs-btn vs-btn-outline" id="btnOpenImport">
-        <?= asset_icon('import') ?>
-        Import
-      </button>
-      <button type="button" class="vs-btn vs-btn-outline" id="btnOpenExport">
-        <?= asset_icon('export') ?>
-        Export
-      </button>
-    </div>
   </div>
 
   <?php if (session()->getFlashdata('error')): ?>
@@ -47,6 +33,29 @@
     </div>
   </div>
 
+  <div class="d-flex align-items-center gap-2 mb-3 flex-wrap">
+    <input type="text" id="customStudentsSearch" class="vs-input" placeholder="Search students..." style="max-width:340px">
+    <button type="button" class="vs-btn vs-btn-outline" id="btnOpenFilter">
+      Filters
+      <span id="filterBadge" class="badge bg-primary" style="display:none;margin-left:.35rem"></span>
+    </button>
+    <div id="customLengthSlot" class="ms-2"></div>
+    <div class="d-flex gap-2 ms-auto">
+      <a href="<?= site_url($prefix . '/students/create') ?>" class="vs-btn vs-btn-primary">
+        <?= asset_icon('add', ['stroke-width' => '2.5']) ?>
+        Add Voucher
+      </a>
+      <button type="button" class="vs-btn vs-btn-outline" id="btnOpenImport">
+        <?= asset_icon('import') ?>
+        Import
+      </button>
+      <button type="button" class="vs-btn vs-btn-outline" id="btnOpenExport">
+        <?= asset_icon('export') ?>
+        Export
+      </button>
+    </div>
+  </div>
+
   <div class="vs-card">
     <div class="vs-card-body">
       <table id="studentsTable" class="vs-datatable" data-search-placeholder="Search students..." style="width:100%">
@@ -55,9 +64,9 @@
             <th class="vs-th-check"><input type="checkbox" class="vs-check vs-check-all" aria-label="Select all students"></th>
             <th>Voucher No.</th>
             <th>Name</th>
+            <th>Junior High School</th>
             <th>Preferred School</th>
             <th>School Year</th>
-            <th>Eligibility</th>
             <th>Generate Count</th>
             <th>Date</th>
             <th>Actions</th>
@@ -65,17 +74,18 @@
         </thead>
         <tbody>
           <?php foreach ($vouchers as $v): ?>
-          <tr id="row-<?= esc($v['student_id'], 'attr') ?>">
+          <tr id="row-<?= esc($v['student_id'], 'attr') ?>"
+              data-gender="<?= esc((string) ($v['gender'] ?? ''), 'attr') ?>"
+              data-remarks="<?= esc((string) ($v['remarks_status'] ?? ''), 'attr') ?>"
+              data-voucher-date="<?= esc((string) ($v['voucher_date'] ?? ''), 'attr') ?>"
+              data-voucher-status="<?= esc((string) ($v['voucher_status'] ?? ''), 'attr') ?>"
+              data-gwa="<?= esc((string) ($v['gwa'] ?? ''), 'attr') ?>">
             <td><input type="checkbox" class="vs-check vs-row-check" value="<?= esc($v['student_id'], 'attr') ?>"></td>
             <td class="js-voucher-no"><?= esc($v['voucher_no'] ?: '-') ?></td>
             <td><?= esc($v['full_name']) ?></td>
+            <td><?= esc($v['junior_high_school'] ?: '-') ?></td>
             <td><?= esc($v['preferred_senior_high_school']) ?></td>
             <td><?= esc($v['school_year']) ?></td>
-            <td>
-              <span class="vs-status-badge vs-status-<?= esc($v['eligibility_status'], 'attr') ?>">
-                <?= esc(ucfirst(str_replace('_', ' ', $v['eligibility_status']))) ?>
-              </span>
-            </td>
             <td>
               <span class="js-generate-count"><?= esc((string) ($v['generate_count'] ?? 0)) ?></span>
             </td>
@@ -145,6 +155,78 @@
         <span id="importBtnText">Import</span>
         <span id="importBtnSpinner" class="vs-spinner" style="display:none"></span>
       </button>
+    </div>
+  </div>
+</div>
+
+<!-- Advanced Filters modal -->
+<div class="vs-modal-overlay" id="filterModal" style="display:none">
+  <div class="vs-modal" style="max-width:680px">
+    <div class="vs-modal-header">
+      <h5>Advanced Filters</h5>
+      <button class="vs-modal-close" id="filterModalClose">&times;</button>
+    </div>
+    <div class="vs-modal-body">
+      <div class="vs-form-grid vs-form-grid-4">
+        <div class="vs-span-2">
+          <label class="vs-label" for="filterSchoolYear">School Year</label>
+          <select id="filterSchoolYear" class="vs-input"><option value="">All</option></select>
+        </div>
+        <div class="vs-span-2">
+          <label class="vs-label" for="filterGender">Gender</label>
+          <select id="filterGender" class="vs-input">
+            <option value="">All</option>
+            <option value="MALE">Male</option>
+            <option value="FEMALE">Female</option>
+          </select>
+        </div>
+        <div class="vs-span-2">
+          <label class="vs-label" for="filterRemarks">Remarks</label>
+          <select id="filterRemarks" class="vs-input">
+            <option value="">All</option>
+            <option value="PASSED">Passed</option>
+            <option value="FOR REVIEW">For Review</option>
+            <option value="FAILED">Failed</option>
+          </select>
+        </div>
+        <div class="vs-span-2">
+          <label class="vs-label" for="filterVoucherStatus">Voucher Status</label>
+          <select id="filterVoucherStatus" class="vs-input">
+            <option value="">All</option>
+            <option value="generated">Generated</option>
+            <option value="not_generated">Pending</option>
+          </select>
+        </div>
+        <div class="vs-span-2">
+          <label class="vs-label" for="filterDateFrom">Voucher Date From</label>
+          <input type="date" id="filterDateFrom" class="vs-input">
+        </div>
+        <div class="vs-span-2">
+          <label class="vs-label" for="filterDateTo">Voucher Date To</label>
+          <input type="date" id="filterDateTo" class="vs-input">
+        </div>
+        <div class="vs-span-2">
+          <label class="vs-label" for="filterJuniorHs">Junior High School</label>
+          <input type="text" id="filterJuniorHs" class="vs-input" placeholder="Contains...">
+        </div>
+        <div class="vs-span-2">
+          <label class="vs-label" for="filterPreferredHs">Preferred Senior HS</label>
+          <input type="text" id="filterPreferredHs" class="vs-input" placeholder="Contains...">
+        </div>
+        <div class="vs-span-2">
+          <label class="vs-label" for="filterGwaMin">GWA Min</label>
+          <input type="number" step="0.01" id="filterGwaMin" class="vs-input" placeholder="e.g. 80">
+        </div>
+        <div class="vs-span-2">
+          <label class="vs-label" for="filterGwaMax">GWA Max</label>
+          <input type="number" step="0.01" id="filterGwaMax" class="vs-input" placeholder="e.g. 100">
+        </div>
+      </div>
+    </div>
+    <div class="vs-modal-footer">
+      <button class="vs-btn vs-btn-outline" id="filterClear">Clear All</button>
+      <button class="vs-btn vs-btn-outline" id="filterModalCancel">Cancel</button>
+      <button class="vs-btn vs-btn-primary" id="filterApply">Apply Filters</button>
     </div>
   </div>
 </div>
@@ -240,6 +322,198 @@
   importModal.addEventListener('click', function (e) {
     if (e.target === importModal) importModal.style.display = 'none';
   });
+
+  // ── Advanced Filters ───────────────────────────────────────────────────────
+  // script.js initializes the DataTable on DOMContentLoaded. Our IIFE runs
+  // earlier (at script-eval time), so defer until both DOM + DataTable exist.
+  function initFilters() {
+    var studentsTable = document.getElementById('studentsTable');
+    if (!studentsTable || !window.jQuery || !$.fn.DataTable.isDataTable(studentsTable)) {
+      // DataTable not ready yet — retry on next animation frame
+      return setTimeout(initFilters, 50);
+    }
+    setupFilters(studentsTable);
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initFilters);
+  } else {
+    initFilters();
+  }
+
+  function setupFilters(studentsTable) {
+  var dt = $(studentsTable).DataTable();
+
+  var fields = {
+    schoolYear:     document.getElementById('filterSchoolYear'),
+    gender:         document.getElementById('filterGender'),
+    remarks:        document.getElementById('filterRemarks'),
+    voucherStatus:  document.getElementById('filterVoucherStatus'),
+    dateFrom:       document.getElementById('filterDateFrom'),
+    dateTo:         document.getElementById('filterDateTo'),
+    juniorHs:       document.getElementById('filterJuniorHs'),
+    preferredHs:    document.getElementById('filterPreferredHs'),
+    gwaMin:         document.getElementById('filterGwaMin'),
+    gwaMax:         document.getElementById('filterGwaMax'),
+  };
+
+  var active = {}; // snapshot applied on "Apply"
+
+  // Populate school year dropdown from existing rows (column index 5: School Year).
+  var sySet = new Set();
+  dt.column(5).data().each(function (val) {
+    var t = (val || '').toString().trim();
+    if (t) sySet.add(t);
+  });
+  Array.from(sySet).sort().forEach(function (y) {
+    var opt = document.createElement('option');
+    opt.value = y;
+    opt.textContent = y;
+    fields.schoolYear.appendChild(opt);
+  });
+
+  // Hide DataTables' built-in search bar — we use a custom input above the table.
+  var dtWrap = studentsTable.closest('.dataTables_wrapper');
+  var dtSearch = dtWrap ? dtWrap.querySelector('.dataTables_filter') : null;
+  if (dtSearch) dtSearch.style.display = 'none';
+
+  // Move DataTables' "Show N entries" control into the custom toolbar row.
+  var dtLength = dtWrap ? dtWrap.querySelector('.dataTables_length') : null;
+  var lengthSlot = document.getElementById('customLengthSlot');
+  if (dtLength && lengthSlot) {
+    lengthSlot.appendChild(dtLength);
+  }
+
+  // Wire the custom search input to the DataTable.
+  var customSearch = document.getElementById('customStudentsSearch');
+  if (customSearch) {
+    customSearch.addEventListener('input', function () {
+      dt.search(this.value).draw();
+    });
+  }
+
+  var filterBtn         = document.getElementById('btnOpenFilter');
+  var filterModal       = document.getElementById('filterModal');
+  var filterModalClose  = document.getElementById('filterModalClose');
+  var filterModalCancel = document.getElementById('filterModalCancel');
+  var filterApply       = document.getElementById('filterApply');
+  var filterClear       = document.getElementById('filterClear');
+  var filterBadge       = function () { return document.getElementById('filterBadge'); };
+
+  function openFilter()  { if (filterModal) filterModal.style.display = 'flex'; }
+  function closeFilter() { if (filterModal) filterModal.style.display = 'none'; }
+
+  filterBtn         && filterBtn.addEventListener('click', openFilter);
+  filterModalClose  && filterModalClose.addEventListener('click', closeFilter);
+  filterModalCancel && filterModalCancel.addEventListener('click', closeFilter);
+  filterModal       && filterModal.addEventListener('click', function (e) {
+    if (e.target === filterModal) closeFilter();
+  });
+
+  function activeFilterCount() {
+    return Object.keys(active).filter(function (k) {
+      var v = active[k];
+      return v !== undefined && v !== null && String(v).trim() !== '';
+    }).length;
+  }
+
+  function updateBadge() {
+    var b = filterBadge();
+    if (!b) return;
+    var n = activeFilterCount();
+    b.textContent = n;
+    b.style.display = n > 0 ? 'inline-block' : 'none';
+  }
+
+  // Single global search hook — checks if this row belongs to #studentsTable,
+  // then evaluates the snapshot of active filter values against row data-attrs.
+  $.fn.dataTable.ext.search.push(function (settings, rowData, rowIdx, rowObj, counter) {
+    if (settings.nTable.id !== 'studentsTable') return true;
+    if (activeFilterCount() === 0) return true;
+
+    var row = settings.aoData[rowIdx].nTr;
+    if (!row) return true;
+
+    // School Year — exact match against the column cell text (column 5)
+    if (active.schoolYear) {
+      var cellSY = (rowData[5] || '').toString().trim();
+      if (cellSY !== active.schoolYear) return false;
+    }
+
+    if (active.gender) {
+      var g = (row.getAttribute('data-gender') || '').toUpperCase();
+      if (g !== active.gender.toUpperCase()) return false;
+    }
+
+    if (active.remarks) {
+      var r = (row.getAttribute('data-remarks') || '').toUpperCase();
+      if (r !== active.remarks.toUpperCase()) return false;
+    }
+
+    if (active.voucherStatus) {
+      var vs = (row.getAttribute('data-voucher-status') || '');
+      if (vs !== active.voucherStatus) return false;
+    }
+
+    if (active.dateFrom || active.dateTo) {
+      var d = (row.getAttribute('data-voucher-date') || '');
+      if (!d) return false;
+      if (active.dateFrom && d < active.dateFrom) return false;
+      if (active.dateTo   && d > active.dateTo)   return false;
+    }
+
+    if (active.juniorHs) {
+      var jhs = (rowData[3] || '').toString().toLowerCase();
+      if (jhs.indexOf(active.juniorHs.toLowerCase()) === -1) return false;
+    }
+
+    if (active.preferredHs) {
+      var phs = (rowData[4] || '').toString().toLowerCase();
+      if (phs.indexOf(active.preferredHs.toLowerCase()) === -1) return false;
+    }
+
+    if (active.gwaMin !== undefined && active.gwaMin !== '') {
+      var gMinRaw = row.getAttribute('data-gwa');
+      var gMin    = parseFloat(gMinRaw);
+      if (isNaN(gMin) || gMin < parseFloat(active.gwaMin)) return false;
+    }
+
+    if (active.gwaMax !== undefined && active.gwaMax !== '') {
+      var gMaxRaw = row.getAttribute('data-gwa');
+      var gMax    = parseFloat(gMaxRaw);
+      if (isNaN(gMax) || gMax > parseFloat(active.gwaMax)) return false;
+    }
+
+    return true;
+  });
+
+  filterApply && filterApply.addEventListener('click', function () {
+    active = {
+      schoolYear:    fields.schoolYear.value,
+      gender:        fields.gender.value,
+      remarks:       fields.remarks.value,
+      voucherStatus: fields.voucherStatus.value,
+      dateFrom:      fields.dateFrom.value,
+      dateTo:        fields.dateTo.value,
+      juniorHs:      fields.juniorHs.value.trim(),
+      preferredHs:   fields.preferredHs.value.trim(),
+      gwaMin:        fields.gwaMin.value,
+      gwaMax:        fields.gwaMax.value,
+    };
+    updateBadge();
+    dt.draw();
+    closeFilter();
+  });
+
+  filterClear && filterClear.addEventListener('click', function () {
+    Object.keys(fields).forEach(function (k) {
+      if (fields[k]) fields[k].value = '';
+    });
+    active = {};
+    updateBadge();
+    dt.draw();
+  });
+  }
 }());
 </script>
 
