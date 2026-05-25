@@ -81,7 +81,7 @@
                             <h4 class="vs-page-title">Recent Vouchers</h4>
                         </div>
                         <?php $voucherPrefix = session()->get('role') === 'admin' ? 'admin' : 'user'; ?>
-                        <a href="<?= site_url($voucherPrefix . '/vouchers') ?>" class="vs-btn vs-btn-outline">See All</a>
+                        <a href="<?= site_url($voucherPrefix . '/students') ?>" class="vs-btn vs-btn-outline">See All</a>
                     </div>
                         <table id="recentVouchersTable" class="vs-datatable" width="100%" cellspacing="0">
                             <thead>
