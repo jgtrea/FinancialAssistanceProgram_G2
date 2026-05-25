@@ -52,7 +52,6 @@ class StudentController extends BaseController
         $data = [
             'voucher_no'                   => $this->request->getPost('voucher_no') ?: null,
             'voucher_date'                 => $this->request->getPost('voucher_date'),
-            'prefix'                       => $this->request->getPost('prefix') ?: null,
             'first_name'                   => $this->request->getPost('first_name'),
             'middle_name'                  => $this->request->getPost('middle_name'),
             'last_name'                    => $this->request->getPost('last_name'),
@@ -110,7 +109,6 @@ class StudentController extends BaseController
 
         $archiveModel->insert([
             'student_id' => $student['student_id'],
-            'prefix'     => $student['prefix'] ?? null,
             'voucher_no' => $student['voucher_no'],
             'voucher_date' => $student['voucher_date'],
             'first_name' => $student['first_name'],

@@ -35,25 +35,14 @@
       <div class="vs-form-grid vs-form-grid-4">
 
         <div>
-          <label class="vs-label" for="voucher_date">Voucher Date</label>
+          <label class="vs-label required" for="voucher_date">Voucher Date</label>
           <input id="voucher_date" name="voucher_date" type="date"
                  class="vs-input <?= ($validation && $validation->hasError('voucher_date')) ? 'vs-input-error' : '' ?>"
                  value="<?= old('voucher_date', $voucher['voucher_date'] ?? '') ?>" required>
         </div>
 
         <div>
-          <label class="vs-label" for="prefix">Prefix</label>
-          <select id="prefix" name="prefix" class="vs-input">
-            <?php $px = old('prefix', $voucher['prefix'] ?? '') ?>
-            <option value="" <?= $px === '' ? 'selected' : '' ?>>None</option>
-            <?php foreach (['Mr.' => 'Mr.', 'Ms.' => 'Ms.', 'Mrs.' => 'Mrs.', 'Dr.' => 'Dr.', 'Engr.' => 'Engr.'] as $val => $lbl): ?>
-              <option value="<?= esc($val) ?>" <?= $px === $val ? 'selected' : '' ?>><?= esc($lbl) ?></option>
-            <?php endforeach ?>
-          </select>
-        </div>
-
-        <div>
-          <label class="vs-label" for="first_name">First Name</label>
+          <label class="vs-label required" for="first_name">First Name</label>
           <input id="first_name" name="first_name" type="text"
                  class="vs-input vs-uppercase <?= ($validation && $validation->hasError('first_name')) ? 'vs-input-error' : '' ?>"
                  value="<?= old('first_name', $voucher['first_name'] ?? '') ?>" required>
@@ -66,7 +55,7 @@
         </div>
 
         <div>
-          <label class="vs-label" for="last_name">Last Name</label>
+          <label class="vs-label required" for="last_name">Last Name</label>
           <input id="last_name" name="last_name" type="text"
                  class="vs-input vs-uppercase <?= ($validation && $validation->hasError('last_name')) ? 'vs-input-error' : '' ?>"
                  value="<?= old('last_name', $voucher['last_name'] ?? '') ?>" required>
@@ -117,7 +106,7 @@
         </div>
 
         <div class="vs-span-2">
-          <label class="vs-label" for="preferred_senior_high_school">Preferred Senior High School</label>
+          <label class="vs-label required" for="preferred_senior_high_school">Preferred Senior High School</label>
           <input id="preferred_senior_high_school" name="preferred_senior_high_school" type="text"
                  class="vs-input vs-uppercase <?= ($validation && $validation->hasError('preferred_senior_high_school')) ? 'vs-input-error' : '' ?>"
                  value="<?= old('preferred_senior_high_school', $voucher['preferred_senior_high_school'] ?? '') ?>" required>
@@ -134,7 +123,7 @@
         </div>
 
         <div>
-          <label class="vs-label" for="school_year">School Year</label>
+          <label class="vs-label required" for="school_year">School Year</label>
           <input id="school_year" name="school_year" type="text"
                  class="vs-input <?= ($validation && $validation->hasError('school_year')) ? 'vs-input-error' : '' ?>"
                  value="<?= old('school_year', $voucher['school_year'] ?? '') ?>"

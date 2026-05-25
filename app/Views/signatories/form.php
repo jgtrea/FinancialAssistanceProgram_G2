@@ -28,7 +28,7 @@
         </div>
 
         <div>
-          <label class="vs-label" for="first_name">First Name</label>
+          <label class="vs-label required" for="first_name">First Name</label>
           <input id="first_name" name="first_name" type="text"
                  class="vs-input vs-uppercase" required
                  value="<?= esc($signatory['first_name'] ?? '') ?>">
@@ -42,7 +42,7 @@
         </div>
 
         <div>
-          <label class="vs-label" for="last_name">Last Name</label>
+          <label class="vs-label required" for="last_name">Last Name</label>
           <input id="last_name" name="last_name" type="text"
                  class="vs-input vs-uppercase" required
                  value="<?= esc($signatory['last_name'] ?? '') ?>">
@@ -56,7 +56,7 @@
         </div>
 
         <div class="vs-span-2">
-          <label class="vs-label" for="position_title">Position Title</label>
+          <label class="vs-label required" for="position_title">Position Title</label>
           <input id="position_title" name="position_title" type="text"
                  class="vs-input vs-uppercase" required
                  value="<?= esc($signatory['position_title'] ?? '') ?>">

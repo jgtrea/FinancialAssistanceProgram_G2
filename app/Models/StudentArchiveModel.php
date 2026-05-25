@@ -13,7 +13,6 @@ class StudentArchiveModel extends Model
         'student_id',
         'voucher_no',
         'voucher_date',
-        'prefix',
         'first_name',
         'middle_name',
         'last_name',

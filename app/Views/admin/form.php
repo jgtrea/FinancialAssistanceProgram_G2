@@ -20,22 +20,22 @@
       <div class="vs-card-body">
         <div class="vs-form-grid vs-form-grid-4">
         <div class="vs-span-2">
-            <label class="vs-label">Username</label>
+            <label class="vs-label required">Username</label>
             <input type="text" name="full_name" class="vs-input vs-uppercase" required value="<?= esc($user['username'] ?? '') ?>">
         </div>
 
         <div>
-            <label class="vs-label">Email</label>
+            <label class="vs-label required">Email</label>
             <input type="email" name="username" class="vs-input" required value="<?= esc($user['email'] ?? '') ?>">
         </div>
 
         <div>
-            <label class="vs-label">Password <?= isset($user) ? '<span class="vs-label-hint">(leave blank to keep current)</span>' : '' ?></label>
+            <label class="vs-label<?= isset($user) ? '' : ' required' ?>">Password <?= isset($user) ? '<span class="vs-label-hint">(leave blank to keep current)</span>' : '' ?></label>
             <input type="password" name="password" class="vs-input" <?= isset($user) ? '' : 'required' ?>>
         </div>
 
         <div>
-            <label class="vs-label">Role</label>
+            <label class="vs-label required">Role</label>
             <select name="role" class="vs-input" required>
                 <option value="admin" <?= (($user['role'] ?? '') === 'admin') ? 'selected' : '' ?>>Admin</option>
                 <option value="staff" <?= (($user['role'] ?? '') === 'staff') ? 'selected' : '' ?>>Staff</option>

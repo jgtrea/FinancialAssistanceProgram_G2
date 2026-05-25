@@ -98,6 +98,12 @@ body {
   text-transform: uppercase; margin-bottom: .4rem;
 }
 .vs-label-hint { font-size: .72rem; font-weight: 400; text-transform: none; color: var(--muted); margin-left: .3rem; }
+.vs-label.required::after {
+  content: " *";
+  color: #dc3545;
+  font-weight: 700;
+  margin-left: .15rem;
+}
 .vs-input {
   width: 100%; font-family: var(--font); font-size: .9rem;
   border: 1.5px solid var(--border); border-radius: 8px;

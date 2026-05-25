@@ -11,7 +11,7 @@ class ArchiveModel extends Model
     protected $returnType    = 'array';
     protected $allowedFields = [
         'student_id', 'voucher_no', 'voucher_date',
-        'prefix', 'first_name', 'middle_name', 'last_name', 'suffix',
+        'first_name', 'middle_name', 'last_name', 'suffix',
         'rank_no', 'gwa', 'gender',
         'junior_high_school', 'preferred_senior_high_school',
         'contact_number', 'remarks_status', 'school_year',
