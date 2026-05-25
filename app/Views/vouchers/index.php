@@ -38,7 +38,7 @@
         <?= asset_icon('voucher-add') ?>
         Generate Voucher
       </button>
-      <button type="button" class="vs-btn vs-btn-outline" id="btnOpenExport">
+      <button type="button" class="vs-btn vs-btn-success" id="btnOpenExport">
         <?= asset_icon('export') ?>
         Export
       </button>
