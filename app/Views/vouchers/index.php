@@ -12,6 +12,16 @@
       <h4 class="vs-page-title"><?= esc($title) ?></h4>
       <p class="vs-page-sub">Manage student financial assistance records.</p>
     </div>
+    <div class="d-flex gap-2">
+      <button type="button" class="vs-btn vs-btn-primary" id="btnAddVoucher" data-mode="add">
+        <?= asset_icon('add', ['stroke-width' => '2.5']) ?>
+        Add Voucher
+      </button>
+      <button type="button" class="vs-btn vs-btn-outline" id="btnOpenImport">
+        <?= asset_icon('import') ?>
+        Import
+      </button>
+    </div>
   </div>
 
   <?php if (session()->getFlashdata('error')): ?>
@@ -28,26 +38,13 @@
         <?= asset_icon('voucher-add') ?>
         Generate Voucher
       </button>
-      <button class="vs-btn vs-btn-danger" id="btnArchive">
-        <?= asset_icon('archive') ?>
-        Archive Selected
-      </button>
       <button type="button" class="vs-btn vs-btn-outline" id="btnOpenExport">
         <?= asset_icon('export') ?>
         Export
       </button>
-    </div>
-  </div>
-
-  <div class="d-flex align-items-center gap-2 mb-3 flex-wrap">
-    <div class="d-flex gap-2 ms-auto">
-      <button type="button" class="vs-btn vs-btn-primary" id="btnAddVoucher" data-mode="add">
-        <?= asset_icon('add', ['stroke-width' => '2.5']) ?>
-        Add Voucher
-      </button>
-      <button type="button" class="vs-btn vs-btn-outline" id="btnOpenImport">
-        <?= asset_icon('import') ?>
-        Import
+      <button class="vs-btn vs-btn-danger" id="btnArchive">
+        <?= asset_icon('archive') ?>
+        Archive Selected
       </button>
     </div>
   </div>
@@ -204,7 +201,7 @@
           <div>
             <label class="vs-label" for="vmSuffix">Suffix</label>
             <select id="vmSuffix" name="suffix" class="vs-input">
-              <option value="">None</option>
+              <option value="">-- Select --</option>
               <option value="JR.">Jr.</option>
               <option value="SR.">Sr.</option>
               <option value="II">II</option>
@@ -277,6 +274,7 @@
           <div>
             <label class="vs-label" for="vmEligibility">Eligibility</label>
             <select id="vmEligibility" name="eligibility_status" class="vs-input">
+              <option value="">-- Select --</option>
               <option value="eligible">Eligible</option>
               <option value="not_eligible">Not Eligible</option>
             </select>

@@ -32,7 +32,7 @@
           <select id="prefix" name="prefix" class="vs-input">
             <?php foreach ($prefixOptions as $option): ?>
               <option value="<?= esc($option) ?>" <?= $selectedPrefix === $option ? 'selected' : '' ?>>
-                <?= $option === '' ? 'None' : esc($option) ?>
+                <?= $option === '' ? '-- Select --' : esc($option) ?>
               </option>
             <?php endforeach ?>
           </select>
@@ -64,7 +64,7 @@
           <select id="suffix" name="suffix" class="vs-input">
             <?php foreach ($suffixOptions as $option): ?>
               <option value="<?= esc($option) ?>" <?= $selectedSuffix === $option ? 'selected' : '' ?>>
-                <?= $option === '' ? 'None' : esc($option) ?>
+                <?= $option === '' ? '-- Select --' : esc($option) ?>
               </option>
             <?php endforeach ?>
           </select>

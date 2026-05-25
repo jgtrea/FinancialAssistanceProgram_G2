@@ -53,7 +53,7 @@
             <table id="userManagementTable" class="vs-datatable js-data-table" data-search-placeholder="Search users..." style="width:100%">
             <thead>
                 <tr>
-                    <th class="vs-th-check"><input type="checkbox" id="userCheckAll" aria-label="Select all"></th>
+                    <th class="vs-th-check"><input type="checkbox" class="vs-check" id="userCheckAll" aria-label="Select all"></th>
                     <th>Username</th>
                     <th>Email</th>
                     <th>Role</th>
@@ -63,8 +63,8 @@
             </thead>
             <tbody>
                 <?php foreach ($users as $user): ?>
-                    <tr id="user-row-<?= (int) $user['user_id'] ?>">
-                        <td><input type="checkbox" class="user-row-check" value="<?= (int) $user['user_id'] ?>"></td>
+                    <tr id="user-row-<?= (int) $user['user_id'] ?>" data-last-login="<?= !empty($user['last_login']) ? esc(date('Y-m-d', strtotime($user['last_login']))) : '' ?>">
+                        <td><input type="checkbox" class="vs-check user-row-check" value="<?= (int) $user['user_id'] ?>"></td>
                         <td><?= esc($user['username']) ?></td>
                         <td><?= esc($user['email']) ?></td>
                         <td>
@@ -72,9 +72,7 @@
                                 $roleColors = ['admin' => '#1a5c2e', 'user' => '#2e9e52'];
                                 $roleColor  = $roleColors[$user['role']] ?? '#6c757d';
                             ?>
-                            <span class="badge" style="background-color:<?= $roleColor ?>">
-                                <?= esc(ucfirst($user['role'])) ?>
-                            </span>
+                            <span class="badge" style="background-color:<?= $roleColor ?>"><?= esc(ucfirst($user['role'])) ?></span>
                         </td>
                         <td><?= !empty($user['last_login']) ? esc(date('M d, Y h:i A', strtotime($user['last_login']))) : 'Never' ?></td>
                         <td class="actions-cell">
@@ -121,17 +119,27 @@
       <button class="vs-modal-close" id="userFilterClose">&times;</button>
     </div>
     <div class="vs-modal-body">
-      <div>
-        <label class="vs-label" for="ufRole">Role</label>
-        <select id="ufRole" class="vs-input">
-          <option value="">All</option>
-          <option value="admin">Admin</option>
-          <option value="user">User</option>
-        </select>
+      <div class="vs-form-grid vs-form-grid-2">
+        <div class="vs-span-2">
+          <label class="vs-label" for="ufRole">Role</label>
+          <select id="ufRole" class="vs-input">
+            <option value="">All</option>
+            <option value="admin">Admin</option>
+            <option value="user">User</option>
+          </select>
+        </div>
+        <div>
+          <label class="vs-label" for="ufLoginFrom">Last Login From</label>
+          <input type="date" id="ufLoginFrom" class="vs-input">
+        </div>
+        <div>
+          <label class="vs-label" for="ufLoginTo">Last Login To</label>
+          <input type="date" id="ufLoginTo" class="vs-input">
+        </div>
       </div>
     </div>
     <div class="vs-modal-footer">
-      <button type="button" class="vs-btn vs-btn-outline" id="userFilterClear">Clear</button>
+      <button type="button" class="vs-btn vs-btn-outline" id="userFilterClear">Clear All</button>
       <button type="button" class="vs-btn vs-btn-outline" id="userFilterCancel">Cancel</button>
       <button type="button" class="vs-btn vs-btn-primary" id="userFilterApply">Apply</button>
     </div>
@@ -371,6 +379,7 @@
             cb.checked = checkAll.checked;
             if (checkAll.checked) selectedIds.add(cb.value);
             else selectedIds.delete(cb.value);
+            cb.closest('tr').classList.toggle('vs-row-selected', checkAll.checked);
         });
         updateBar();
     });
@@ -379,6 +388,7 @@
         cb.addEventListener('change', function () {
             if (cb.checked) selectedIds.add(cb.value);
             else selectedIds.delete(cb.value);
+            cb.closest('tr').classList.toggle('vs-row-selected', cb.checked);
             updateBar();
         });
     });
@@ -496,9 +506,22 @@
     var btnOpen   = document.getElementById('btnOpenUserFilter');
     var btnClose  = document.getElementById('userFilterClose');
     var btnCancel = document.getElementById('userFilterCancel');
-    var btnClear  = document.getElementById('userFilterClear');
-    var btnApply  = document.getElementById('userFilterApply');
-    var ufRole    = document.getElementById('ufRole');
+    var btnClear    = document.getElementById('userFilterClear');
+    var btnApply    = document.getElementById('userFilterApply');
+    var ufRole      = document.getElementById('ufRole');
+    var ufLoginFrom = document.getElementById('ufLoginFrom');
+    var ufLoginTo   = document.getElementById('ufLoginTo');
+    var activeUserFilters = {};
+
+    $.fn.dataTable.ext.search.push(function (settings, rowData, rowIdx) {
+        if (settings.nTable.id !== 'userManagementTable') return true;
+        var row = settings.aoData[rowIdx].nTr;
+        if (!row) return true;
+        var d = row.getAttribute('data-last-login') || '';
+        if (activeUserFilters.loginFrom && d < activeUserFilters.loginFrom) return false;
+        if (activeUserFilters.loginTo   && d > activeUserFilters.loginTo)   return false;
+        return true;
+    });
 
     btnOpen   && btnOpen.addEventListener('click', openFilter);
     btnClose  && btnClose.addEventListener('click', closeFilter);
@@ -508,26 +531,29 @@
     });
 
     btnClear && btnClear.addEventListener('click', function () {
-        if (ufRole) ufRole.value = '';
+        if (ufRole)      ufRole.value      = '';
+        if (ufLoginFrom) ufLoginFrom.value = '';
+        if (ufLoginTo)   ufLoginTo.value   = '';
+        activeUserFilters = {};
         if (filterBadge) { filterBadge.textContent = ''; filterBadge.style.display = 'none'; }
-        dt.column(3).search('').draw();
-        closeFilter();
+        dt.column(3).search('', false, false).draw();
     });
 
     btnApply && btnApply.addEventListener('click', function () {
         var val = ufRole ? ufRole.value : '';
-        var count = val ? 1 : 0;
+        activeUserFilters = {
+            role:      val,
+            loginFrom: ufLoginFrom ? ufLoginFrom.value : '',
+            loginTo:   ufLoginTo   ? ufLoginTo.value   : '',
+        };
+        var count = [val, activeUserFilters.loginFrom, activeUserFilters.loginTo].filter(Boolean).length;
         if (filterBadge) {
             filterBadge.textContent = count || '';
             filterBadge.style.display = count ? '' : 'none';
         }
-        if (val === 'admin') {
-            dt.column(3).search('^Admin$', true, false).draw();
-        } else if (val === 'user') {
-            dt.column(3).search('^User$', true, false).draw();
-        } else {
-            dt.column(3).search('').draw();
-        }
+        var roleSearch = val === 'admin' ? '^Admin$' : val === 'user' ? '^User$' : '';
+        var useRegex   = roleSearch !== '';
+        dt.column(3).search(roleSearch, useRegex, false).draw();
         closeFilter();
     });
 }());

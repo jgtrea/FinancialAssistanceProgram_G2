@@ -356,6 +356,8 @@ table.js-data-table tbody tr.vs-row-selected td {
 /* ── Action bar ── */
 .vs-action-bar { display: flex; align-items: center; justify-content: space-between; background: var(--navy); color: #fff; border-radius: 10px; padding: .75rem 1.25rem; margin-bottom: 1rem; gap: 1rem; flex-wrap: wrap; }
 .vs-action-bar-count { font-size: .875rem; font-weight: 500; color: rgba(255,255,255,.8); }
+.vs-action-bar .vs-btn-outline { background: transparent; color: #fff; border-color: rgba(255,255,255,.45); }
+.vs-action-bar .vs-btn-outline:hover { background: rgba(255,255,255,.12); color: #fff; border-color: rgba(255,255,255,.7); }
 
 /* ── Toggle status button ── */
 .vs-toggle-status { font-size: .72rem; font-weight: 600; border-radius: 20px; padding: .2rem .65rem; border: none; cursor: pointer; transition: background .15s; }

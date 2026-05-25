@@ -81,6 +81,7 @@
                         <tr>
                             <th>Full Name</th>
                             <th>Position Title</th>
+                            <th>Archived At</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -93,9 +94,10 @@
                                     ($signatory['suffix'] ?? '')
                                 );
                             ?>
-                            <tr>
+                            <tr data-archived-date="<?= !empty($signatory['updated_at']) ? esc(date('Y-m-d', strtotime($signatory['updated_at']))) : '' ?>">
                                 <td><?= esc($fullName) ?></td>
                                 <td><?= esc($signatory['position_title']) ?></td>
+                                <td><?= !empty($signatory['updated_at']) ? esc(date('M d, Y h:i A', strtotime($signatory['updated_at']))) : '-' ?></td>
                             </tr>
                         <?php endforeach; ?>
                     </tbody>
@@ -118,20 +120,16 @@
                 <table id="archivedVouchersTable" class="vs-datatable js-data-table" data-search-placeholder="Search archived vouchers..." style="width:100%">
                     <thead>
                         <tr>
-                            <th>Voucher No</th>
                             <th>Student Name</th>
                             <th>School</th>
-                            <th>Status</th>
                             <th>Archived At</th>
                         </tr>
                     </thead>
                     <tbody>
                         <?php foreach ($vouchers as $voucher): ?>
                             <tr data-archived-date="<?= !empty($voucher['archived_at']) ? esc(date('Y-m-d', strtotime($voucher['archived_at']))) : '' ?>">
-                                <td><?= esc($voucher['voucher_no'] ?: '-') ?></td>
                                 <td><?= esc($voucher['full_name']) ?></td>
                                 <td><?= esc($voucher['preferred_senior_high_school']) ?></td>
-                                <td><?= esc(ucfirst($voucher['voucher_status'])) ?></td>
                                 <td><?= !empty($voucher['archived_at']) ? esc(date('M d, Y h:i A', strtotime($voucher['archived_at']))) : '-' ?></td>
                             </tr>
                         <?php endforeach; ?>
@@ -144,13 +142,21 @@
 <!-- Archive filter modals — rendered only when the matching tab is active -->
 <?php if (($type ?? 'user') === 'user'): ?>
 <div class="vs-modal-overlay" id="archiveFilterModal" style="display:none">
-  <div class="vs-modal" style="max-width:480px">
+  <div class="vs-modal" style="max-width:400px">
     <div class="vs-modal-header">
       <h5>Filter Archived Users</h5>
       <button class="vs-modal-close" id="archiveFilterClose">&times;</button>
     </div>
     <div class="vs-modal-body">
       <div class="vs-form-grid vs-form-grid-2">
+        <div class="vs-span-2">
+          <label class="vs-label" for="afRole">Role</label>
+          <select id="afRole" class="vs-input">
+            <option value="">All</option>
+            <option value="Admin">Admin</option>
+            <option value="User">User</option>
+          </select>
+        </div>
         <div>
           <label class="vs-label" for="afDateFrom">Archived From</label>
           <input type="date" id="afDateFrom" class="vs-input">
@@ -162,7 +168,7 @@
       </div>
     </div>
     <div class="vs-modal-footer">
-      <button type="button" class="vs-btn vs-btn-outline" id="archiveFilterClear">Clear</button>
+      <button type="button" class="vs-btn vs-btn-outline" id="archiveFilterClear">Clear All</button>
       <button type="button" class="vs-btn vs-btn-outline" id="archiveFilterCancel">Cancel</button>
       <button type="button" class="vs-btn vs-btn-primary" id="archiveFilterApply">Apply</button>
     </div>
@@ -176,15 +182,25 @@
       <button class="vs-modal-close" id="archiveFilterClose">&times;</button>
     </div>
     <div class="vs-modal-body">
-      <div>
-        <label class="vs-label" for="afPosition">Position Title</label>
-        <select id="afPosition" class="vs-input">
-          <option value="">All</option>
-        </select>
+      <div class="vs-form-grid vs-form-grid-2">
+        <div class="vs-span-2">
+          <label class="vs-label" for="afPosition">Position Title</label>
+          <select id="afPosition" class="vs-input">
+            <option value="">All</option>
+          </select>
+        </div>
+        <div>
+          <label class="vs-label" for="afDateFrom">Archived From</label>
+          <input type="date" id="afDateFrom" class="vs-input">
+        </div>
+        <div>
+          <label class="vs-label" for="afDateTo">Archived To</label>
+          <input type="date" id="afDateTo" class="vs-input">
+        </div>
       </div>
     </div>
     <div class="vs-modal-footer">
-      <button type="button" class="vs-btn vs-btn-outline" id="archiveFilterClear">Clear</button>
+      <button type="button" class="vs-btn vs-btn-outline" id="archiveFilterClear">Clear All</button>
       <button type="button" class="vs-btn vs-btn-outline" id="archiveFilterCancel">Cancel</button>
       <button type="button" class="vs-btn vs-btn-primary" id="archiveFilterApply">Apply</button>
     </div>
@@ -216,7 +232,7 @@
       </div>
     </div>
     <div class="vs-modal-footer">
-      <button type="button" class="vs-btn vs-btn-outline" id="archiveFilterClear">Clear</button>
+      <button type="button" class="vs-btn vs-btn-outline" id="archiveFilterClear">Clear All</button>
       <button type="button" class="vs-btn vs-btn-outline" id="archiveFilterCancel">Cancel</button>
       <button type="button" class="vs-btn vs-btn-primary" id="archiveFilterApply">Apply</button>
     </div>
@@ -297,7 +313,9 @@
         }
 
         <?php if (($type ?? 'user') === 'user'): ?>
-        // ── Users: Archived At date range ─────────────────────────────────────
+        // ── Users: Role + Archived At date range ─────────────────────────────
+        var roleSel = document.getElementById('afRole');
+
         $.fn.dataTable.ext.search.push(function (settings, rowData, rowIdx) {
             if (settings.nTable.id !== 'archivedUsersTable') return true;
             var row = settings.aoData[rowIdx].nTr;
@@ -309,28 +327,30 @@
         });
 
         btnApply && btnApply.addEventListener('click', function () {
+            var role = roleSel ? roleSel.value : '';
             activeFilters = {
+                role:     role,
                 dateFrom: (document.getElementById('afDateFrom') || {}).value || '',
                 dateTo:   (document.getElementById('afDateTo')   || {}).value || '',
             };
             updateBadge();
-            dt.draw();
+            dt.column(2).search(role ? ('^' + role + '$') : '', true, false).draw();
             closeFilter();
         });
 
         btnClear && btnClear.addEventListener('click', function () {
+            if (roleSel) roleSel.value = '';
             var dfEl = document.getElementById('afDateFrom');
             var dtEl = document.getElementById('afDateTo');
             if (dfEl) dfEl.value = '';
             if (dtEl) dtEl.value = '';
             activeFilters = {};
             updateBadge();
-            dt.draw();
-            closeFilter();
+            dt.column(2).search('').draw();
         });
 
         <?php elseif (($type ?? 'user') === 'signatory'): ?>
-        // ── Signatories: Position Title ────────────────────────────────────────
+        // ── Signatories: Position Title + Archived At date range ─────────────
         var posSel = document.getElementById('afPosition');
         if (posSel) {
             var posSet = new Set();
@@ -345,9 +365,23 @@
             });
         }
 
+        $.fn.dataTable.ext.search.push(function (settings, rowData, rowIdx) {
+            if (settings.nTable.id !== 'archivedSignatoriesTable') return true;
+            var row = settings.aoData[rowIdx].nTr;
+            if (!row) return true;
+            var date = row.getAttribute('data-archived-date') || '';
+            if (activeFilters.dateFrom && date < activeFilters.dateFrom) return false;
+            if (activeFilters.dateTo   && date > activeFilters.dateTo)   return false;
+            return true;
+        });
+
         btnApply && btnApply.addEventListener('click', function () {
             var pos = posSel ? posSel.value : '';
-            activeFilters = { position: pos };
+            activeFilters = {
+                position: pos,
+                dateFrom: (document.getElementById('afDateFrom') || {}).value || '',
+                dateTo:   (document.getElementById('afDateTo')   || {}).value || '',
+            };
             updateBadge();
             dt.column(1).search(pos).draw();
             closeFilter();
@@ -355,10 +389,13 @@
 
         btnClear && btnClear.addEventListener('click', function () {
             if (posSel) posSel.value = '';
+            var dfEl = document.getElementById('afDateFrom');
+            var dtEl = document.getElementById('afDateTo');
+            if (dfEl) dfEl.value = '';
+            if (dtEl) dtEl.value = '';
             activeFilters = {};
             updateBadge();
             dt.column(1).search('').draw();
-            closeFilter();
         });
 
         <?php else: ?>
@@ -376,7 +413,7 @@
         var schoolSel = document.getElementById('afSchool');
         if (schoolSel) {
             var schoolSet = new Set();
-            dt.column(2).data().each(function (val) {
+            dt.column(1).data().each(function (val) {
                 var s = (val || '').toString().trim();
                 if (s && s !== '-') schoolSet.add(s);
             });
@@ -394,7 +431,7 @@
                 dateFrom: (document.getElementById('afDateFrom') || {}).value || '',
                 dateTo:   (document.getElementById('afDateTo')   || {}).value || '',
             };
-            dt.column(2).search(school).draw();
+            dt.column(1).search(school).draw();
             updateBadge();
             closeFilter();
         });
@@ -406,9 +443,8 @@
             if (dfEl) dfEl.value = '';
             if (dtEl) dtEl.value = '';
             activeFilters = {};
-            dt.column(2).search('').draw();
+            dt.column(1).search('').draw();
             updateBadge();
-            closeFilter();
         });
         <?php endif; ?>
     }

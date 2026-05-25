@@ -66,7 +66,7 @@
         <div>
           <label class="vs-label" for="suffix">Suffix</label>
           <select id="suffix" name="suffix" class="vs-input">
-            <option value="" <?= $suffix === '' ? 'selected' : '' ?>>None</option>
+            <option value="" <?= $suffix === '' ? 'selected' : '' ?>>-- Select --</option>
             <?php foreach (['JR.' => 'Jr.', 'SR.' => 'Sr.', 'II' => 'II', 'III' => 'III', 'IV' => 'IV'] as $value => $label): ?>
               <option value="<?= esc($value) ?>" <?= strtoupper($suffix) === $value ? 'selected' : '' ?>><?= esc($label) ?></option>
             <?php endforeach ?>
@@ -150,7 +150,8 @@
         <div>
           <label class="vs-label" for="eligibility_status">Eligibility</label>
           <select id="eligibility_status" name="eligibility_status" class="vs-input">
-            <?php $eligibility = old('eligibility_status', $voucher['eligibility_status'] ?? 'eligible') ?>
+            <?php $eligibility = old('eligibility_status', $voucher['eligibility_status'] ?? '') ?>
+            <option value="">-- Select --</option>
             <option value="eligible"     <?= $eligibility === 'eligible'     ? 'selected' : '' ?>>Eligible</option>
             <option value="not_eligible" <?= $eligibility === 'not_eligible' ? 'selected' : '' ?>>Not Eligible</option>
           </select>

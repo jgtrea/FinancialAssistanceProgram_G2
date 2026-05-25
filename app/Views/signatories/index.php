@@ -49,11 +49,11 @@
             <table id="signatoriesTable" class="vs-datatable js-data-table" data-search-placeholder="Search signatories..." style="width:100%">
             <thead>
                 <tr>
-                    <th class="vs-th-check"><input type="checkbox" id="sigCheckAll" aria-label="Select all"></th>
+                    <th class="vs-th-check"><input type="checkbox" class="vs-check" id="sigCheckAll" aria-label="Select all"></th>
                     <th>Full Name</th>
                     <th>Position Title</th>
-                    <th>Signature</th>
-                    <th>Selected</th>
+                    <th data-orderable="false">Signature</th>
+                    <th data-orderable="false">Selected</th>
                     <th class="actions-column actions-column--sm">Actions</th>
                 </tr>
             </thead>
@@ -74,7 +74,7 @@
                     ?>
 
                     <tr id="sig-row-<?= $sid ?>">
-                        <td><input type="checkbox" class="sig-row-check" value="<?= $sid ?>"></td>
+                        <td><input type="checkbox" class="vs-check sig-row-check" value="<?= $sid ?>"></td>
                         <td><?= esc($fullName) ?></td>
                         <td><?= esc($signatory['position_title']) ?></td>
                         <td>
@@ -86,12 +86,7 @@
                                 <span class="text-muted">—</span>
                             <?php endif; ?>
                         </td>
-                        <td>
-                            <span class="badge <?= $isSelected ? 'bg-success' : 'bg-secondary' ?>"
-                                  id="sig-badge-<?= $sid ?>">
-                                <?= $isSelected ? 'Selected' : 'Unselected' ?>
-                            </span>
-                        </td>
+                        <td><span class="badge <?= $isSelected ? 'bg-success' : 'bg-secondary' ?>" id="sig-badge-<?= $sid ?>"><?= $isSelected ? 'Selected' : 'Unselected' ?></span></td>
                         <td class="actions-cell">
                             <button type="button"
                                     class="vs-tbl-btn vs-tbl-btn-edit js-sig-edit"
@@ -142,17 +137,25 @@
       <button class="vs-modal-close" id="sigFilterClose">&times;</button>
     </div>
     <div class="vs-modal-body">
-      <div>
-        <label class="vs-label" for="sfStatus">Selected Status</label>
-        <select id="sfStatus" class="vs-input">
-          <option value="">All</option>
-          <option value="selected">Selected</option>
-          <option value="unselected">Unselected</option>
-        </select>
+      <div class="d-flex flex-column gap-3">
+        <div>
+          <label class="vs-label" for="sfStatus">Selected Status</label>
+          <select id="sfStatus" class="vs-input">
+            <option value="">All</option>
+            <option value="selected">Selected</option>
+            <option value="unselected">Unselected</option>
+          </select>
+        </div>
+        <div>
+          <label class="vs-label" for="sfPosition">Position Title</label>
+          <select id="sfPosition" class="vs-input">
+            <option value="">All</option>
+          </select>
+        </div>
       </div>
     </div>
     <div class="vs-modal-footer">
-      <button type="button" class="vs-btn vs-btn-outline" id="sigFilterClear">Clear</button>
+      <button type="button" class="vs-btn vs-btn-outline" id="sigFilterClear">Clear All</button>
       <button type="button" class="vs-btn vs-btn-outline" id="sigFilterCancel">Cancel</button>
       <button type="button" class="vs-btn vs-btn-primary" id="sigFilterApply">Apply</button>
     </div>
@@ -178,7 +181,7 @@
             <label class="vs-label" for="smPrefix">Prefix</label>
             <select id="smPrefix" name="prefix" class="vs-input">
               <?php foreach ($prefixOptions as $option): ?>
-                <option value="<?= esc($option) ?>"><?= $option === '' ? 'None' : esc($option) ?></option>
+                <option value="<?= esc($option) ?>"><?= $option === '' ? '-- Select --' : esc($option) ?></option>
               <?php endforeach ?>
             </select>
           </div>
@@ -202,7 +205,7 @@
             <label class="vs-label" for="smSuffix">Suffix</label>
             <select id="smSuffix" name="suffix" class="vs-input">
               <?php foreach ($suffixOptions as $option): ?>
-                <option value="<?= esc($option) ?>"><?= $option === '' ? 'None' : esc($option) ?></option>
+                <option value="<?= esc($option) ?>"><?= $option === '' ? '-- Select --' : esc($option) ?></option>
               <?php endforeach ?>
             </select>
           </div>
@@ -443,6 +446,7 @@
             cb.checked = checkAll.checked;
             if (checkAll.checked) selectedIds.add(cb.value);
             else selectedIds.delete(cb.value);
+            cb.closest('tr').classList.toggle('vs-row-selected', checkAll.checked);
         });
         updateActionBar();
     });
@@ -451,6 +455,7 @@
         cb.addEventListener('change', function () {
             if (cb.checked) selectedIds.add(cb.value);
             else selectedIds.delete(cb.value);
+            cb.closest('tr').classList.toggle('vs-row-selected', cb.checked);
             updateActionBar();
         });
     });
@@ -630,6 +635,21 @@
     var btnClear  = document.getElementById('sigFilterClear');
     var btnApply  = document.getElementById('sigFilterApply');
     var sfStatus  = document.getElementById('sfStatus');
+    var sfPosition = document.getElementById('sfPosition');
+
+    // Populate Position Title dropdown from table data
+    if (sfPosition) {
+        var posSet = new Set();
+        dt.column(2).data().each(function (val) {
+            var p = (val || '').toString().trim();
+            if (p) posSet.add(p);
+        });
+        Array.from(posSet).sort().forEach(function (p) {
+            var opt = document.createElement('option');
+            opt.value = p; opt.textContent = p;
+            sfPosition.appendChild(opt);
+        });
+    }
 
     btnOpen   && btnOpen.addEventListener('click', openFilter);
     btnClose  && btnClose.addEventListener('click', closeFilter);
@@ -639,26 +659,27 @@
     });
 
     btnClear && btnClear.addEventListener('click', function () {
-        if (sfStatus) sfStatus.value = '';
+        if (sfStatus)   sfStatus.value   = '';
+        if (sfPosition) sfPosition.value = '';
         if (filterBadge) { filterBadge.textContent = ''; filterBadge.style.display = 'none'; }
-        dt.column(4).search('').draw();
-        closeFilter();
+        dt.column(2).search('').column(4).search('').draw();
     });
 
     btnApply && btnApply.addEventListener('click', function () {
-        var val = sfStatus ? sfStatus.value : '';
-        var count = val ? 1 : 0;
+        var statusVal   = sfStatus   ? sfStatus.value   : '';
+        var positionVal = sfPosition ? sfPosition.value : '';
+        var count = [statusVal, positionVal].filter(Boolean).length;
         if (filterBadge) {
             filterBadge.textContent = count || '';
             filterBadge.style.display = count ? '' : 'none';
         }
-        if (val === 'selected') {
-            dt.column(4).search('^Selected$', true, false).draw();
-        } else if (val === 'unselected') {
-            dt.column(4).search('^Unselected$', true, false).draw();
-        } else {
-            dt.column(4).search('').draw();
-        }
+        var statusSearch = statusVal === 'selected'   ? '^Selected$'
+                         : statusVal === 'unselected' ? '^Unselected$'
+                         : '';
+        var useRegex = statusSearch !== '';
+        dt.column(4).search(statusSearch, useRegex, false)
+          .column(2).search(positionVal)
+          .draw();
         closeFilter();
     });
 }());

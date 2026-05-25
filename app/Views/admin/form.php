@@ -37,6 +37,7 @@
         <div>
             <label class="vs-label required">Role</label>
             <select name="role" class="vs-input" required>
+                <option value="">-- Select --</option>
                 <option value="admin" <?= (($user['role'] ?? '') === 'admin') ? 'selected' : '' ?>>Admin</option>
                 <option value="user" <?= (($user['role'] ?? '') === 'user') ? 'selected' : '' ?>>User</option>
             </select>
