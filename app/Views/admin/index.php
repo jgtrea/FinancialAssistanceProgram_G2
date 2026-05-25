@@ -61,7 +61,7 @@
                         <td><?= esc($user['email']) ?></td>
                         <td>
                             <?php
-                                $roleColors = ['admin' => '#1a5c2e', 'staff' => '#2e9e52', 'viewer' => '#6c757d'];
+                                $roleColors = ['admin' => '#1a5c2e', 'user' => '#2e9e52'];
                                 $roleColor  = $roleColors[$user['role']] ?? '#6c757d';
                             ?>
                             <span class="badge" style="background-color:<?= $roleColor ?>">
@@ -104,25 +104,24 @@
         <div class="vs-form-grid vs-form-grid-4">
           <div class="vs-span-2">
             <label class="vs-label required" for="umUsername">Username</label>
-            <input type="text" id="umUsername" name="full_name" class="vs-input vs-uppercase" required>
+            <input type="text" id="umUsername" name="full_name" class="vs-input" required autocomplete="username" autocapitalize="none" spellcheck="false">
           </div>
 
           <div class="vs-span-2">
             <label class="vs-label required" for="umEmail">Email</label>
-            <input type="email" id="umEmail" name="username" class="vs-input" required>
+            <input type="email" id="umEmail" name="username" class="vs-input" required autocomplete="email" autocapitalize="none" spellcheck="false">
           </div>
 
           <div class="vs-span-2">
             <label class="vs-label" id="umPasswordLabel" for="umPassword">Password</label>
-            <input type="password" id="umPassword" name="password" class="vs-input">
+            <input type="password" id="umPassword" name="password" class="vs-input" autocomplete="new-password" autocapitalize="none" spellcheck="false">
           </div>
 
           <div class="vs-span-2">
             <label class="vs-label required" for="umRole">Role</label>
             <select id="umRole" name="role" class="vs-input" required>
               <option value="admin">Admin</option>
-              <option value="staff">Staff</option>
-              <option value="viewer">Viewer</option>
+              <option value="user">User</option>
             </select>
           </div>
         </div>
@@ -171,8 +170,23 @@
     var umPasswordLabel = document.getElementById('umPasswordLabel');
     var umPassword      = document.getElementById('umPassword');
 
-    function umShowAlert(msg, type) {
-        userModalAlert.innerHTML = '<div class="vs-alert vs-alert-' + (type || 'error') + ' mb-3">' + msg + '</div>';
+    function escapeHtml(value) {
+        return String(value || '').replace(/[&<>"']/g, function (ch) {
+            return {'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;'}[ch];
+        });
+    }
+
+    function umShowAlert(msg, type, errors) {
+        var html = '<div class="vs-alert vs-alert-' + (type || 'error') + ' mb-3">' + escapeHtml(msg);
+        if (errors && Object.keys(errors).length) {
+            html += '<ul class="mb-0 mt-2">';
+            Object.keys(errors).forEach(function (field) {
+                html += '<li><strong>' + escapeHtml(field) + ':</strong> ' + escapeHtml(errors[field]) + '</li>';
+            });
+            html += '</ul>';
+        }
+        html += '</div>';
+        userModalAlert.innerHTML = html;
     }
     function umClearAlert() { userModalAlert.innerHTML = ''; }
 
@@ -185,7 +199,7 @@
         document.getElementById('umUserId').value = user.user_id || '';
         document.getElementById('umUsername').value = user.username || '';
         document.getElementById('umEmail').value = user.email || '';
-        document.getElementById('umRole').value = user.role || 'staff';
+        document.getElementById('umRole').value = user.role || 'user';
         umPassword.value = '';
     }
 
@@ -273,7 +287,7 @@
                     location.reload();
                     return;
                 }
-                umShowAlert(data.message || 'Save failed.', 'error');
+                umShowAlert(data.message || 'Save failed.', 'error', data.errors);
             })
             .catch(function () {
                 umShowAlert('An error occurred while saving.', 'error');

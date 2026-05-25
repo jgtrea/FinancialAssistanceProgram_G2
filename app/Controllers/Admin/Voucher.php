@@ -4,6 +4,7 @@ namespace App\Controllers\Admin;
 
 use App\Libraries\VoucherPdf;
 use App\Models\ArchiveModel;
+use App\Models\SchoolOptionModel;
 use App\Models\VoucherModel;
 use CodeIgniter\Controller;
 
@@ -11,11 +12,113 @@ class Voucher extends Controller
 {
     protected VoucherModel $voucherModel;
     protected ArchiveModel $archiveModel;
+    protected SchoolOptionModel $schoolOptionModel;
 
     public function __construct()
     {
         $this->voucherModel = new VoucherModel();
         $this->archiveModel = new ArchiveModel();
+        $this->schoolOptionModel = new SchoolOptionModel();
+    }
+
+    protected function getSchoolDropdownData(): array
+    {
+        return [
+            'juniorHighSchools' => $this->schoolOptionModel->getJuniorHighSchools(),
+            'seniorHighSchools' => $this->schoolOptionModel->getSeniorHighSchools(),
+        ];
+    }
+
+    protected function validateSchoolOptions(): bool
+    {
+        $validation = \Config\Services::validation();
+        $isValid    = true;
+
+        if (!$this->schoolOptionModel->juniorHighSchoolExists($this->request->getPost('junior_high_school'))) {
+            $validation->setError('junior_high_school', 'Please select a valid junior high school.');
+            $isValid = false;
+        }
+
+        if (!$this->schoolOptionModel->seniorHighSchoolExists($this->request->getPost('preferred_senior_high_school'))) {
+            $validation->setError('preferred_senior_high_school', 'Please select a valid senior high school.');
+            $isValid = false;
+        }
+
+        return $isValid;
+    }
+
+    protected function getStudentValidationRules(bool $includeVoucherStatus = false): array
+    {
+        $rules = [
+            'voucher_date'                 => 'required|valid_date[Y-m-d]',
+            'first_name'                   => 'required|max_length[100]',
+            'middle_name'                  => 'permit_empty|max_length[100]',
+            'last_name'                    => 'required|max_length[100]',
+            'suffix'                       => 'permit_empty|in_list[JR.,SR.,II,III,IV]',
+            'rank_no'                      => 'permit_empty|is_natural_no_zero|less_than_equal_to[999999]',
+            'gwa'                          => 'permit_empty|decimal|greater_than_equal_to[0]|less_than_equal_to[100]',
+            'gender'                       => 'permit_empty|in_list[MALE,FEMALE]',
+            'junior_high_school'           => 'permit_empty|max_length[200]',
+            'preferred_senior_high_school' => 'required|max_length[200]',
+            'contact_number'               => 'permit_empty|max_length[30]|regex_match[/^[0-9+().\\-\\s]+$/]',
+            'remarks_status'               => 'permit_empty|in_list[PASSED,FOR REVIEW,FAILED]',
+            'school_year'                  => 'required|max_length[20]|regex_match[/^\\d{4}(-\\d{4})?$/]',
+            'eligibility_status'           => 'permit_empty|in_list[eligible,not_eligible]',
+        ];
+
+        if ($includeVoucherStatus) {
+            $rules['voucher_status'] = 'permit_empty|in_list[not_generated,generated]';
+        }
+
+        return $rules;
+    }
+
+    protected function validateStudentInput(bool $includeVoucherStatus = false): bool
+    {
+        return $this->validate($this->getStudentValidationRules($includeVoucherStatus)) && $this->validateSchoolOptions();
+    }
+
+    protected function getStudentPayload(bool $includeVoucherStatus = false): array
+    {
+        $payload = [
+            'voucher_date'                 => $this->request->getPost('voucher_date'),
+            'first_name'                   => $this->cleanText($this->request->getPost('first_name')),
+            'middle_name'                  => $this->cleanText($this->request->getPost('middle_name')),
+            'last_name'                    => $this->cleanText($this->request->getPost('last_name')),
+            'suffix'                       => strtoupper($this->cleanText($this->request->getPost('suffix'))),
+            'rank_no'                      => $this->nullableInt($this->request->getPost('rank_no')),
+            'gwa'                          => $this->nullableFloat($this->request->getPost('gwa')),
+            'gender'                       => strtoupper($this->cleanText($this->request->getPost('gender'))),
+            'junior_high_school'           => $this->cleanText($this->request->getPost('junior_high_school')),
+            'preferred_senior_high_school' => $this->cleanText($this->request->getPost('preferred_senior_high_school')),
+            'contact_number'               => $this->cleanText($this->request->getPost('contact_number')),
+            'remarks_status'               => strtoupper($this->cleanText($this->request->getPost('remarks_status'))),
+            'school_year'                  => $this->cleanText($this->request->getPost('school_year')),
+            'eligibility_status'           => $this->request->getPost('eligibility_status') ?: 'eligible',
+        ];
+
+        if ($includeVoucherStatus) {
+            $payload['voucher_status'] = $this->request->getPost('voucher_status') ?: 'not_generated';
+        }
+
+        return $payload;
+    }
+
+    protected function cleanText($value): string
+    {
+        return trim((string) $value);
+    }
+
+    protected function nullableInt($value): ?int
+    {
+        $value = trim((string) $value);
+        return $value === '' ? null : (int) $value;
+    }
+
+    protected function nullableFloat($value): ?float
+    {
+        $value = trim((string) $value);
+        return $value === '' ? null : (float) $value;
     }
 
     protected function getFallbackUserId(): int
@@ -60,7 +163,7 @@ class Voucher extends Controller
             'title'    => 'Vouchers',
             'vouchers' => $students,
             'role'     => session()->get('role') ?: 'admin',
-        ]);
+        ] + $this->getSchoolDropdownData());
     }
 
     public function generate()
@@ -84,7 +187,7 @@ class Voucher extends Controller
             'action'     => site_url('admin/vouchers/store'),
             'voucher'    => [],
             'validation' => \Config\Services::validation(),
-        ]);
+        ] + $this->getSchoolDropdownData());
     }
 
     // ── Persist a new student/voucher ──────────────────────────────────────────
@@ -92,41 +195,19 @@ class Voucher extends Controller
     {
         helper(['form']);
 
-        $rules = [
-            'voucher_date'                 => 'required|valid_date',
-            'first_name'                   => 'required|max_length[100]',
-            'last_name'                    => 'required|max_length[100]',
-            'suffix'                       => 'permit_empty|in_list[JR.,SR.,II,III,IV]',
-            'preferred_senior_high_school' => 'required|max_length[200]',
-            'remarks_status'               => 'permit_empty|in_list[PASSED,FOR REVIEW,FAILED]',
-            'school_year'                  => 'required|max_length[20]',
-        ];
-
-        if (!$this->validate($rules)) {
+        if (!$this->validateStudentInput()) {
             return $this->create();
         }
 
-        $studentId = (int) $this->voucherModel->insert([
+        $data = $this->getStudentPayload() + [
             'voucher_no'                   => null,
-            'voucher_date'                 => $this->request->getPost('voucher_date'),
-            'first_name'                   => $this->request->getPost('first_name'),
-            'middle_name'                  => $this->request->getPost('middle_name') ?: '',
-            'last_name'                    => $this->request->getPost('last_name'),
-            'suffix'                       => $this->request->getPost('suffix') ?: '',
-            'rank_no'                      => $this->request->getPost('rank_no') ?: null,
-            'gwa'                          => $this->request->getPost('gwa') ?: null,
-            'gender'                       => $this->request->getPost('gender') ?: '',
-            'junior_high_school'           => $this->request->getPost('junior_high_school') ?: '',
-            'preferred_senior_high_school' => $this->request->getPost('preferred_senior_high_school'),
-            'contact_number'               => $this->request->getPost('contact_number') ?: '',
-            'remarks_status'               => $this->request->getPost('remarks_status') ?: '',
-            'school_year'                  => $this->request->getPost('school_year'),
-            'eligibility_status'           => $this->request->getPost('eligibility_status') ?: 'eligible',
             'voucher_status'               => 'not_generated',
             'is_archived'                  => 0,
-        ]);
+        ];
 
-        $name = trim($this->request->getPost('first_name') . ' ' . $this->request->getPost('last_name'));
+        $studentId = (int) $this->voucherModel->insert($data);
+
+        $name = trim($data['first_name'] . ' ' . $data['last_name']);
         log_action($this->getCurrentUserId(), 'CREATE_STUDENT',
             "Created student {$name}", $studentId);
 
@@ -164,7 +245,7 @@ class Voucher extends Controller
             'action'     => site_url('admin/vouchers/update/' . $id),
             'voucher'    => $student,
             'validation' => \Config\Services::validation(),
-        ]);
+        ] + $this->getSchoolDropdownData());
     }
 
     // ── Persist student/voucher edits ─────────────────────────────────────────
@@ -172,38 +253,14 @@ class Voucher extends Controller
     {
         helper(['form']);
 
-        $rules = [
-            'voucher_date'                 => 'required|valid_date',
-            'first_name'                   => 'required|max_length[100]',
-            'last_name'                    => 'required|max_length[100]',
-            'suffix'                       => 'permit_empty|in_list[JR.,SR.,II,III,IV]',
-            'preferred_senior_high_school' => 'required|max_length[200]',
-            'remarks_status'               => 'permit_empty|in_list[PASSED,FOR REVIEW,FAILED]',
-            'school_year'                  => 'required|max_length[20]',
-        ];
-
-        if (!$this->validate($rules)) {
+        if (!$this->validateStudentInput()) {
             return $this->edit($id);
         }
 
-        $this->voucherModel->update($id, [
-            'voucher_date'                 => $this->request->getPost('voucher_date'),
-            'first_name'                   => $this->request->getPost('first_name'),
-            'middle_name'                  => $this->request->getPost('middle_name') ?: '',
-            'last_name'                    => $this->request->getPost('last_name'),
-            'suffix'                       => $this->request->getPost('suffix') ?: '',
-            'rank_no'                      => $this->request->getPost('rank_no') ?: null,
-            'gwa'                          => $this->request->getPost('gwa') ?: null,
-            'gender'                       => $this->request->getPost('gender') ?: '',
-            'junior_high_school'           => $this->request->getPost('junior_high_school') ?: '',
-            'preferred_senior_high_school' => $this->request->getPost('preferred_senior_high_school'),
-            'contact_number'               => $this->request->getPost('contact_number') ?: '',
-            'remarks_status'               => $this->request->getPost('remarks_status') ?: '',
-            'school_year'                  => $this->request->getPost('school_year'),
-            'eligibility_status'           => $this->request->getPost('eligibility_status') ?: 'eligible',
-        ]);
+        $data = $this->getStudentPayload();
+        $this->voucherModel->update($id, $data);
 
-        $name = trim($this->request->getPost('first_name') . ' ' . $this->request->getPost('last_name'));
+        $name = trim($data['first_name'] . ' ' . $data['last_name']);
         log_action($this->getCurrentUserId(), 'UPDATE_STUDENT',
             "Updated student {$name}", $id);
 

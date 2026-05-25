@@ -3,6 +3,7 @@
 namespace App\Controllers;
 
 use App\Models\VoucherModel;
+use App\Models\SchoolOptionModel;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
@@ -64,30 +65,80 @@ class VoucherImport extends BaseController
         }
 
         $voucherModel = new VoucherModel();
+        $schoolOptions = new SchoolOptionModel();
         $count        = 0;
 
-        // Collect all non-empty voucher numbers from the file first
+        // Collect non-empty voucher numbers and names first so duplicates fail before inserts start.
         $fileVoucherNos = [];
+        $seenVoucherNos = [];
+        $fileNames = [];
+        $seenNames = [];
         for ($i = 1; $i < count($sheetData); $i++) {
             $vno = trim((string) ($sheetData[$i][0] ?? ''));
+            $fullName = trim((string) ($sheetData[$i][2] ?? ''));
             if ($vno !== '') {
+                $key = strtoupper($vno);
+                if (isset($seenVoucherNos[$key])) {
+                    return $this->importRowError(
+                        $i,
+                        'Duplicate voucher number "' . $vno . '" for "' . ($fullName ?: 'unknown student')
+                        . '" also appears on row ' . $seenVoucherNos[$key] . '.'
+                    );
+                }
+                $seenVoucherNos[$key] = $i + 1;
                 $fileVoucherNos[] = $vno;
+            }
+
+            if ($fullName !== '') {
+                $nameKey = $this->normalizeName($fullName);
+                if (isset($seenNames[$nameKey])) {
+                    return $this->importRowError(
+                        $i,
+                        'Duplicate student name "' . $fullName . '" with voucher number "' . ($vno ?: 'blank')
+                        . '" also appears on row ' . $seenNames[$nameKey] . '.'
+                    );
+                }
+                $seenNames[$nameKey] = $i + 1;
+                $fileNames[$nameKey] = [
+                    'name'       => $fullName,
+                    'voucher_no' => $vno,
+                    'row'        => $i + 1,
+                ];
             }
         }
 
-        // Reject the entire import if any voucher number already exists
+        // Reject the entire import if any voucher number already exists.
         if (!empty($fileVoucherNos)) {
             $existing = $voucherModel
+                ->select('voucher_no, first_name, middle_name, last_name, suffix')
                 ->whereIn('voucher_no', $fileVoucherNos)
-                ->findColumn('voucher_no');
+                ->findAll();
 
             if (!empty($existing)) {
-                $list = implode(', ', array_slice($existing, 0, 5));
+                $examples = array_map(function ($row) {
+                    return '"' . ($row['voucher_no'] ?? '') . '" for "' . $this->formatStudentFullName($row) . '"';
+                }, array_slice($existing, 0, 5));
+                $list = implode(', ', $examples);
                 $more = count($existing) > 5 ? ' and ' . (count($existing) - 5) . ' more' : '';
                 return $this->response->setJSON([
                     'success' => false,
                     'message' => 'Import rejected: ' . count($existing) . ' duplicate voucher number(s) found ('
                                . $list . $more . '). Remove duplicates from the file and try again.',
+                ]);
+            }
+        }
+
+        if (!empty($fileNames)) {
+            $existingStudent = $this->findExistingStudentByNames(array_keys($fileNames), $voucherModel);
+            if ($existingStudent !== null) {
+                $nameKey = $existingStudent['normalized_name'];
+                $incoming = $fileNames[$nameKey] ?? ['name' => $existingStudent['full_name'], 'voucher_no' => ''];
+                return $this->response->setJSON([
+                    'success' => false,
+                    'message' => 'Import rejected: student "' . $incoming['name'] . '" with voucher number "'
+                               . ($incoming['voucher_no'] ?: 'blank') . '" already exists as "'
+                               . $existingStudent['full_name'] . '" with voucher number "'
+                               . ($existingStudent['voucher_no'] ?: 'blank') . '".',
                 ]);
             }
         }
@@ -104,8 +155,8 @@ class VoucherImport extends BaseController
             }
 
             // Validate date format
-            if (!strtotime($voucherDate)) {
-                continue;
+            if (!$this->isValidDate($voucherDate)) {
+                return $this->importRowError($i, 'Voucher date must be a valid date.');
             }
 
             $rankNo  = trim((string) ($row[3] ?? ''));
@@ -116,20 +167,52 @@ class VoucherImport extends BaseController
             $contact   = trim((string) ($row[8] ?? ''));
             $remarks   = strtoupper(trim((string) ($row[9] ?? '')));
 
+            if ($voucherNo === '' || strlen($voucherNo) > 50) {
+                return $this->importRowError($i, 'Voucher number is required and must be 50 characters or fewer.');
+            }
+
             // Validate gender
             if ($gender !== '' && !in_array($gender, ['MALE', 'FEMALE'])) {
-                $gender = '';
+                return $this->importRowError($i, 'Gender must be MALE, FEMALE, or blank.');
             }
 
             // Validate remarks
-            if (!in_array($remarks, ['PASSED', 'FOR REVIEW', 'FAILED'])) {
-                $remarks = '';
+            if ($remarks !== '' && !in_array($remarks, ['PASSED', 'FOR REVIEW', 'FAILED'], true)) {
+                return $this->importRowError($i, 'Remarks must be PASSED, FOR REVIEW, FAILED, or blank.');
+            }
+
+            if ($rankNo !== '' && (!ctype_digit($rankNo) || (int) $rankNo < 1 || (int) $rankNo > 999999)) {
+                return $this->importRowError($i, 'Rank number must be a positive whole number.');
+            }
+
+            if ($gwa !== '' && (!is_numeric($gwa) || (float) $gwa < 0 || (float) $gwa > 100)) {
+                return $this->importRowError($i, 'GWA must be a number from 0 to 100.');
+            }
+
+            if ($contact !== '' && (strlen($contact) > 30 || !preg_match('/^[0-9+().\-\s]+$/', $contact))) {
+                return $this->importRowError($i, 'Contact number has invalid characters or is too long.');
+            }
+
+            if (!$schoolOptions->juniorHighSchoolExists($jhsSchool) || !$schoolOptions->seniorHighSchoolExists($shsSchool)) {
+                return $this->importRowError($i, 'School names must exist in the school dropdown tables.');
             }
 
             $nameParts  = explode(' ', $fullName);
             $firstName  = array_shift($nameParts) ?? '';
             $lastName   = !empty($nameParts) ? array_pop($nameParts) : '';
             $middleName = implode(' ', $nameParts);
+
+            if ($firstName === '' || $lastName === '') {
+                return $this->importRowError($i, 'Full Name must include at least first and last name.');
+            }
+
+            if (strlen($firstName) > 100 || strlen($middleName) > 100 || strlen($lastName) > 100) {
+                return $this->importRowError($i, 'Student name parts must be 100 characters or fewer.');
+            }
+
+            if (strlen($jhsSchool) > 200 || strlen($shsSchool) > 200) {
+                return $this->importRowError($i, 'School names must be 200 characters or fewer.');
+            }
 
             $voucherModel->insert([
                 'voucher_no'                   => $voucherNo,
@@ -175,7 +258,10 @@ class VoucherImport extends BaseController
         }
 
         $voucherModel = new VoucherModel();
-        $rows         = $voucherModel->getVouchersForListing();
+        $ids = $this->parseSelectedIds((string) $this->request->getGet('ids'));
+        $rows = !empty($ids)
+            ? $voucherModel->getVouchersByIds($ids)
+            : $voucherModel->getVouchersForListing();
 
         $spreadsheet = new Spreadsheet();
         $sheet       = $spreadsheet->getActiveSheet();
@@ -259,5 +345,72 @@ class VoucherImport extends BaseController
         }
 
         return null;
+    }
+
+    private function importRowError(int $rowIndex, string $message)
+    {
+        return $this->response->setJSON([
+            'success' => false,
+            'message' => 'Import rejected on row ' . ($rowIndex + 1) . ': ' . $message,
+        ]);
+    }
+
+    private function parseSelectedIds(string $raw): array
+    {
+        if (trim($raw) === '') {
+            return [];
+        }
+
+        $ids = array_filter(array_map('intval', explode(',', $raw)), static fn($id) => $id > 0);
+        return array_values(array_unique($ids));
+    }
+
+    private function normalizeName(string $value): string
+    {
+        $value = preg_replace('/\s+/', ' ', trim($value)) ?? '';
+        return function_exists('mb_strtoupper') ? mb_strtoupper($value, 'UTF-8') : strtoupper($value);
+    }
+
+    private function formatStudentFullName(array $row): string
+    {
+        $parts = [
+            $row['first_name'] ?? '',
+            $row['middle_name'] ?? '',
+            $row['last_name'] ?? '',
+            $row['suffix'] ?? '',
+        ];
+
+        return trim(preg_replace('/\s+/', ' ', implode(' ', array_filter($parts, static fn($part) => trim((string) $part) !== ''))));
+    }
+
+    private function findExistingStudentByNames(array $normalizedNames, VoucherModel $voucherModel): ?array
+    {
+        $nameLookup = array_fill_keys($normalizedNames, true);
+        $rows = $voucherModel
+            ->select('voucher_no, first_name, middle_name, last_name, suffix')
+            ->findAll();
+
+        foreach ($rows as $row) {
+            $fullName = $this->formatStudentFullName($row);
+            $normalized = $this->normalizeName($fullName);
+            if (isset($nameLookup[$normalized])) {
+                return [
+                    'voucher_no'      => $row['voucher_no'] ?? '',
+                    'full_name'       => $fullName,
+                    'normalized_name' => $normalized,
+                ];
+            }
+        }
+
+        return null;
+    }
+
+    private function isValidDate(string $value): bool
+    {
+        if (trim($value) === '') {
+            return false;
+        }
+
+        return strtotime($value) !== false;
     }
 }

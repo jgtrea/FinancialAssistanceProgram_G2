@@ -25,6 +25,10 @@
       <?= asset_icon('voucher-add') ?>
       Generate Vouchers
     </button>
+    <button type="button" class="vs-btn vs-btn-outline" id="btnOpenExport">
+      <?= asset_icon('export') ?>
+      Export
+    </button>
   </div>
 
   <div class="vs-card">
@@ -74,5 +78,25 @@
   <?= csrf_field() ?>
 </form>
 
+<!-- Export modal -->
+<div class="vs-modal-overlay" id="exportModal" style="display:none">
+  <div class="vs-modal">
+    <div class="vs-modal-header">
+      <h5>Export Selected Students</h5>
+      <button class="vs-modal-close" id="exportModalClose">&times;</button>
+    </div>
+    <div class="vs-modal-body">
+      <p>Choose the file format to export the selected student records.</p>
+      <div class="d-flex gap-3 mt-3">
+        <a href="<?= site_url('vouchers/export?format=xlsx') ?>" data-export-format="xlsx" class="vs-btn vs-btn-outline flex-fill text-center">
+          Excel (.xlsx)
+        </a>
+        <a href="<?= site_url('vouchers/export?format=csv') ?>" data-export-format="csv" class="vs-btn vs-btn-outline flex-fill text-center">
+          CSV (.csv)
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
 
 <?= $this->endSection() ?>

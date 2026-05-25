@@ -1,6 +1,10 @@
 <?= $this->extend('layouts/main') ?>
 
 <?= $this->section('content') ?>
+<?php
+    $prefixOptions = $prefixOptions ?? ['', 'DR.', 'ENGR.', 'HON.', 'MR.', 'MRS.', 'MS.', 'PROF.'];
+    $suffixOptions = $suffixOptions ?? ['', 'JR.', 'SR.', 'II', 'III', 'IV', 'V', 'CPA', 'LPT', 'MD', 'PHD'];
+?>
 
 <div class="vs-page-header mb-4">
         <div>
@@ -117,7 +121,11 @@
         <div class="vs-form-grid vs-form-grid-4">
           <div>
             <label class="vs-label" for="smPrefix">Prefix</label>
-            <input id="smPrefix" name="prefix" type="text" class="vs-input vs-uppercase">
+            <select id="smPrefix" name="prefix" class="vs-input">
+              <?php foreach ($prefixOptions as $option): ?>
+                <option value="<?= esc($option) ?>"><?= $option === '' ? 'None' : esc($option) ?></option>
+              <?php endforeach ?>
+            </select>
           </div>
 
           <div>
@@ -137,7 +145,11 @@
 
           <div>
             <label class="vs-label" for="smSuffix">Suffix</label>
-            <input id="smSuffix" name="suffix" type="text" class="vs-input vs-uppercase">
+            <select id="smSuffix" name="suffix" class="vs-input">
+              <?php foreach ($suffixOptions as $option): ?>
+                <option value="<?= esc($option) ?>"><?= $option === '' ? 'None' : esc($option) ?></option>
+              <?php endforeach ?>
+            </select>
           </div>
 
           <div class="vs-span-2">
@@ -224,8 +236,23 @@
         smPositionTitle: 'position_title',
     };
 
-    function smShowAlert(msg, type) {
-        sigModalAlert.innerHTML = '<div class="vs-alert vs-alert-' + (type || 'error') + ' mb-3">' + msg + '</div>';
+    function escapeHtml(value) {
+        return String(value || '').replace(/[&<>"']/g, function (ch) {
+            return {'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;'}[ch];
+        });
+    }
+
+    function smShowAlert(msg, type, errors) {
+        var html = '<div class="vs-alert vs-alert-' + (type || 'error') + ' mb-3">' + escapeHtml(msg);
+        if (errors && Object.keys(errors).length) {
+            html += '<ul class="mb-0 mt-2">';
+            Object.keys(errors).forEach(function (field) {
+                html += '<li><strong>' + escapeHtml(field) + ':</strong> ' + escapeHtml(errors[field]) + '</li>';
+            });
+            html += '</ul>';
+        }
+        html += '</div>';
+        sigModalAlert.innerHTML = html;
     }
     function smClearAlert() { sigModalAlert.innerHTML = ''; }
 
@@ -326,7 +353,7 @@
                     location.reload();
                     return;
                 }
-                smShowAlert(data.message || 'Save failed.', 'error');
+                smShowAlert(data.message || 'Save failed.', 'error', data.errors);
             })
             .catch(function () {
                 smShowAlert('An error occurred while saving.', 'error');

@@ -4,6 +4,7 @@ namespace App\Controllers;
 
 use App\Models\StudentModel;
 use App\Models\StudentArchiveModel;
+use App\Models\SchoolOptionModel;
 use App\Models\SignatoryModel;
 
 class StudentController extends BaseController
@@ -33,7 +34,9 @@ class StudentController extends BaseController
 
         return view('students/form', [
             'title' => $student ? 'Edit Student' : 'Add Student',
-            'student' => $student
+            'student' => $student,
+            'juniorHighSchools' => (new SchoolOptionModel())->getJuniorHighSchools(),
+            'seniorHighSchools' => (new SchoolOptionModel())->getSeniorHighSchools(),
         ]);
     }
 
@@ -64,26 +67,43 @@ class StudentController extends BaseController
         }
 
         $studentModel = new StudentModel();
+        $schoolOptions = new SchoolOptionModel();
         $studentId = $this->request->getPost('student_id');
 
-        $data = [
-            'voucher_no'                   => $this->request->getPost('voucher_no') ?: null,
-            'voucher_date'                 => $this->request->getPost('voucher_date'),
-            'first_name'                   => $this->request->getPost('first_name'),
-            'middle_name'                  => $this->request->getPost('middle_name'),
-            'last_name'                    => $this->request->getPost('last_name'),
-            'suffix'                       => $this->request->getPost('suffix'),
-            'rank_no'                      => $this->request->getPost('rank_no'),
-            'gwa'                          => $this->request->getPost('gwa'),
-            'gender'                       => $this->request->getPost('gender'),
-            'junior_high_school'           => $this->request->getPost('junior_high_school'),
-            'preferred_senior_high_school' => $this->request->getPost('preferred_senior_high_school'),
-            'contact_number'               => $this->request->getPost('contact_number'),
-            'remarks_status'               => $this->request->getPost('remarks_status'),
-            'school_year'                  => $this->request->getPost('school_year'),
-            'eligibility_status'           => $this->request->getPost('eligibility_status'),
-            'voucher_status'               => $this->request->getPost('voucher_status') ?? 'not_generated',
-        ];
+        $validation = \Config\Services::validation();
+        $validation->setRules($this->studentValidationRules());
+
+        if (!$validation->withRequest($this->request)->run()) {
+            $errors = $validation->getErrors();
+            return $this->response->setJSON([
+                'status' => 'error',
+                'message' => $this->validationErrorMessage($errors, 'Please check the student details.'),
+                'errors' => $errors,
+            ]);
+        }
+
+        if (!$schoolOptions->juniorHighSchoolExists($this->request->getPost('junior_high_school'))) {
+            return $this->response->setJSON([
+                'status' => 'error',
+                'message' => 'Please select a valid junior high school.',
+            ]);
+        }
+
+        if (!$schoolOptions->seniorHighSchoolExists($this->request->getPost('preferred_senior_high_school'))) {
+            return $this->response->setJSON([
+                'status' => 'error',
+                'message' => 'Please select a valid senior high school.',
+            ]);
+        }
+
+        if ($studentId && !$studentModel->find($studentId)) {
+            return $this->response->setJSON([
+                'status' => 'error',
+                'message' => 'Student not found.',
+            ]);
+        }
+
+        $data = $this->studentPayload();
 
         if ($studentId) {
             $studentModel->update($studentId, $data);
@@ -227,5 +247,66 @@ class StudentController extends BaseController
         );
 
         return $name !== '' ? $name : 'Unnamed student';
+    }
+
+    private function studentValidationRules(): array
+    {
+        return [
+            'voucher_no'                   => 'permit_empty|max_length[50]',
+            'voucher_date'                 => 'required|valid_date[Y-m-d]',
+            'first_name'                   => 'required|max_length[100]',
+            'middle_name'                  => 'permit_empty|max_length[100]',
+            'last_name'                    => 'required|max_length[100]',
+            'suffix'                       => 'permit_empty|in_list[JR.,SR.,II,III,IV]',
+            'rank_no'                      => 'permit_empty|is_natural_no_zero|less_than_equal_to[999999]',
+            'gwa'                          => 'permit_empty|decimal|greater_than_equal_to[0]|less_than_equal_to[100]',
+            'gender'                       => 'permit_empty|in_list[MALE,FEMALE]',
+            'junior_high_school'           => 'permit_empty|max_length[200]',
+            'preferred_senior_high_school' => 'required|max_length[200]',
+            'contact_number'               => 'permit_empty|max_length[30]|regex_match[/^[0-9+().\\-\\s]+$/]',
+            'remarks_status'               => 'permit_empty|in_list[PASSED,FOR REVIEW,FAILED]',
+            'school_year'                  => 'required|max_length[20]|regex_match[/^\\d{4}(-\\d{4})?$/]',
+            'eligibility_status'           => 'required|in_list[eligible,not_eligible]',
+            'voucher_status'               => 'permit_empty|in_list[not_generated,generated]',
+        ];
+    }
+
+    private function studentPayload(): array
+    {
+        $rankNo = trim((string) $this->request->getPost('rank_no'));
+        $gwa = trim((string) $this->request->getPost('gwa'));
+
+        return [
+            'voucher_no'                   => $this->cleanText($this->request->getPost('voucher_no')) ?: null,
+            'voucher_date'                 => $this->request->getPost('voucher_date'),
+            'first_name'                   => $this->cleanText($this->request->getPost('first_name')),
+            'middle_name'                  => $this->cleanText($this->request->getPost('middle_name')),
+            'last_name'                    => $this->cleanText($this->request->getPost('last_name')),
+            'suffix'                       => strtoupper($this->cleanText($this->request->getPost('suffix'))),
+            'rank_no'                      => $rankNo === '' ? null : (int) $rankNo,
+            'gwa'                          => $gwa === '' ? null : (float) $gwa,
+            'gender'                       => strtoupper($this->cleanText($this->request->getPost('gender'))),
+            'junior_high_school'           => $this->cleanText($this->request->getPost('junior_high_school')),
+            'preferred_senior_high_school' => $this->cleanText($this->request->getPost('preferred_senior_high_school')),
+            'contact_number'               => $this->cleanText($this->request->getPost('contact_number')),
+            'remarks_status'               => strtoupper($this->cleanText($this->request->getPost('remarks_status'))),
+            'school_year'                  => $this->cleanText($this->request->getPost('school_year')),
+            'eligibility_status'           => $this->request->getPost('eligibility_status') ?: 'eligible',
+            'voucher_status'               => $this->request->getPost('voucher_status') ?: 'not_generated',
+        ];
+    }
+
+    private function cleanText($value): string
+    {
+        return trim((string) $value);
+    }
+
+    private function validationErrorMessage(array $errors, string $fallback): string
+    {
+        if (empty($errors)) {
+            return $fallback;
+        }
+
+        return 'Validation failed. Please review the field details below.';
     }
 }

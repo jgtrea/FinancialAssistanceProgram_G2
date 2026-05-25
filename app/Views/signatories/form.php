@@ -1,5 +1,11 @@
 <?= $this->extend('layouts/main') ?>
 <?= $this->section('content') ?>
+<?php
+  $prefixOptions = $prefixOptions ?? ['', 'DR.', 'ENGR.', 'HON.', 'MR.', 'MRS.', 'MS.', 'PROF.'];
+  $suffixOptions = $suffixOptions ?? ['', 'JR.', 'SR.', 'II', 'III', 'IV', 'V', 'CPA', 'LPT', 'MD', 'PHD'];
+  $selectedPrefix = strtoupper((string) ($signatory['prefix'] ?? ''));
+  $selectedSuffix = strtoupper((string) ($signatory['suffix'] ?? ''));
+?>
 
 <div class="vs-page-header mb-4">
   <div>
@@ -23,8 +29,13 @@
 
         <div>
           <label class="vs-label" for="prefix">Prefix</label>
-          <input id="prefix" name="prefix" type="text" class="vs-input vs-uppercase"
-                 value="<?= esc($signatory['prefix'] ?? '') ?>">
+          <select id="prefix" name="prefix" class="vs-input">
+            <?php foreach ($prefixOptions as $option): ?>
+              <option value="<?= esc($option) ?>" <?= $selectedPrefix === $option ? 'selected' : '' ?>>
+                <?= $option === '' ? 'None' : esc($option) ?>
+              </option>
+            <?php endforeach ?>
+          </select>
         </div>
 
         <div>
@@ -50,9 +61,13 @@
 
         <div>
           <label class="vs-label" for="suffix">Suffix</label>
-          <input id="suffix" name="suffix" type="text"
-                 class="vs-input vs-uppercase"
-                 value="<?= esc($signatory['suffix'] ?? '') ?>">
+          <select id="suffix" name="suffix" class="vs-input">
+            <?php foreach ($suffixOptions as $option): ?>
+              <option value="<?= esc($option) ?>" <?= $selectedSuffix === $option ? 'selected' : '' ?>>
+                <?= $option === '' ? 'None' : esc($option) ?>
+              </option>
+            <?php endforeach ?>
+          </select>
         </div>
 
         <div class="vs-span-2">

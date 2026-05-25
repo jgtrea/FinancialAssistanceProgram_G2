@@ -453,9 +453,24 @@ document.addEventListener('DOMContentLoaded', function () {
 
   const actionBar  = document.getElementById('actionBar');
   const countLabel = document.getElementById('selectedCount');
+  const btnOpenExport = document.getElementById('btnOpenExport');
+  const exportModal = document.getElementById('exportModal');
+  const exportModalClose = document.getElementById('exportModalClose');
 
   function getCheckAllBoxes() {
     return document.querySelectorAll('.vs-check-all');
+  }
+
+  function updateExportLinks() {
+    const ids = Array.from(selectedIds).join(',');
+    document.querySelectorAll('[data-export-format]').forEach(function (link) {
+      const format = link.dataset.exportFormat || 'xlsx';
+      if (!link.dataset.exportBase) {
+        link.dataset.exportBase = link.href.split('?')[0];
+      }
+      link.href = link.dataset.exportBase + '?format=' + encodeURIComponent(format)
+        + '&ids=' + encodeURIComponent(ids);
+    });
   }
 
   function updateActionBar() {
@@ -463,6 +478,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const totalFiltered = dt.rows({ search: 'applied' }).count();
     if (countLabel) countLabel.textContent = count;
     if (actionBar) actionBar.style.display = count > 0 ? 'flex' : 'none';
+    updateExportLinks();
     getCheckAllBoxes().forEach(checkAll => {
       checkAll.checked = totalFiltered > 0 && count >= totalFiltered;
       checkAll.indeterminate = count > 0 && count < totalFiltered;
@@ -511,6 +527,20 @@ document.addEventListener('DOMContentLoaded', function () {
   });
 
   // ── Generate PDF ──────────────────────────────────────────────────────────────
+  if (btnOpenExport && exportModal) {
+    btnOpenExport.addEventListener('click', function () {
+      if (!selectedIds.size) return;
+      updateExportLinks();
+      exportModal.style.display = 'flex';
+    });
+  }
+  exportModalClose && exportModalClose.addEventListener('click', function () {
+    exportModal.style.display = 'none';
+  });
+  exportModal && exportModal.addEventListener('click', function (e) {
+    if (e.target === exportModal) exportModal.style.display = 'none';
+  });
+
   const btnGeneratePdf = document.getElementById('btnGeneratePdf');
   const pdfForm        = document.getElementById('pdfForm');
   const pdfModal       = document.getElementById('pdfProgressModal');
