@@ -29,10 +29,9 @@ $routes->group('admin', ['filter' => 'role:admin'], function ($routes) {
     $routes->get('user_management/form/(:num)',   'UsersController::form/$1');
     $routes->get('user_management/json/(:num)',   'UsersController::getJson/$1');
     $routes->post('user_management/save',         'UsersController::save');
-    $routes->post('user_management/archive/(:num)',   'UsersController::archive/$1');
-    $routes->post('user_management/archive-multiple', 'UsersController::archiveMultiple');
-    $routes->get('archived_users',                'UsersController::archived');
-    $routes->post('user_management/restore/(:num)', 'UsersController::restore/$1');
+    $routes->post('user_management/toggle/(:num)',      'UsersController::toggleStatus/$1');
+    $routes->post('user_management/activate-multiple',  'UsersController::activateMultiple');
+    $routes->post('user_management/deactivate-multiple','UsersController::deactivateMultiple');
     $routes->get('audit-logs',                    'AuditLogController::index');
 
     // Students

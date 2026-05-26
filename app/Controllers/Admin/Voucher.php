@@ -31,20 +31,18 @@ class Voucher extends Controller
 
     protected function validateSchoolOptions(): bool
     {
-        $validation = \Config\Services::validation();
-        $isValid    = true;
+        $jhs = trim((string) $this->request->getPost('junior_high_school'));
+        $shs = trim((string) $this->request->getPost('preferred_senior_high_school'));
 
-        if (!$this->schoolOptionModel->juniorHighSchoolExists($this->request->getPost('junior_high_school'))) {
-            $validation->setError('junior_high_school', 'Please select a valid junior high school.');
-            $isValid = false;
+        if ($jhs !== '') {
+            $this->schoolOptionModel->addSchool('JHS', $jhs);
         }
 
-        if (!$this->schoolOptionModel->seniorHighSchoolExists($this->request->getPost('preferred_senior_high_school'))) {
-            $validation->setError('preferred_senior_high_school', 'Please select a valid senior high school.');
-            $isValid = false;
+        if ($shs !== '') {
+            $this->schoolOptionModel->addSchool('SHS', $shs);
         }
 
-        return $isValid;
+        return true;
     }
 
     protected function getStudentValidationRules(bool $includeVoucherStatus = false): array

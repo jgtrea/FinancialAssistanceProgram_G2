@@ -44,7 +44,7 @@
       </button>
       <button class="vs-btn vs-btn-danger" id="btnArchive">
         <?= asset_icon('archive') ?>
-        Archive Selected
+        Archive
       </button>
     </div>
   </div>
@@ -93,7 +93,7 @@
             <td>
               <span class="js-generate-count"><?= esc((string) ($v['generate_count'] ?? 0)) ?></span>
             </td>
-            <td><?= !empty($v['generated_at']) ? date('M d, Y', strtotime($v['generated_at'])) : '-' ?></td>
+            <td class="js-last-generated"><?= !empty($v['generated_at']) ? date('M d, Y', strtotime($v['generated_at'])) : '-' ?></td>
             <td>
               <div class="d-flex gap-1">
                 <button type="button" class="vs-tbl-btn vs-tbl-btn-view js-voucher-action" data-mode="view" data-id="<?= esc($v['student_id'], 'attr') ?>">View</button>

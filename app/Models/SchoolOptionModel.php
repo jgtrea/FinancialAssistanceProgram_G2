@@ -61,6 +61,24 @@ class SchoolOptionModel extends Model
         }
     }
 
+    public function addSchool(string $level, string $name): void
+    {
+        $name = $this->upper(trim($name));
+        if ($name === '') return;
+
+        $exists = $this->db->table('school')
+            ->where('school_level', $level)
+            ->where('school_name', $name)
+            ->countAllResults() > 0;
+
+        if (!$exists) {
+            $this->db->table('school')->insert([
+                'school_level' => $level,
+                'school_name'  => $name,
+            ]);
+        }
+    }
+
     private function upper(string $value): string
     {
         return function_exists('mb_strtoupper') ? mb_strtoupper($value, 'UTF-8') : strtoupper($value);

@@ -103,30 +103,44 @@
 
         <div class="vs-span-2">
           <label class="vs-label" for="junior_high_school">Junior High School</label>
-          <select id="junior_high_school" name="junior_high_school"
-                  class="vs-input <?= ($validation && $validation->hasError('junior_high_school')) ? 'vs-input-error' : '' ?>">
-            <option value="">-- Select --</option>
-            <?php foreach (($juniorHighSchools ?? []) as $school): ?>
-              <?php $schoolName = $school['school_name'] ?? '' ?>
-              <option value="<?= esc($schoolName) ?>" <?= strtoupper($selectedJuniorHighSchool) === strtoupper($schoolName) ? 'selected' : '' ?>>
-                <?= esc($schoolName) ?>
-              </option>
-            <?php endforeach ?>
-          </select>
+          <div class="vs-school-picker" id="jhs-picker">
+            <div class="vs-school-picker-wrap">
+              <input type="text" id="junior_high_school" name="junior_high_school"
+                     class="vs-input vs-uppercase <?= ($validation && $validation->hasError('junior_high_school')) ? 'vs-input-error' : '' ?>"
+                     value="<?= esc($selectedJuniorHighSchool) ?>"
+                     placeholder="Type school name..." autocomplete="off">
+              <div class="vs-school-picker-actions">
+                <button type="button" class="vs-school-picker-toggle" title="Show schools"><?= asset_icon('dropdown') ?></button>
+              </div>
+            </div>
+            <ul class="vs-school-picker-list">
+              <?php foreach (($juniorHighSchools ?? []) as $school): ?>
+                <li data-value="<?= esc($school['school_name'] ?? '') ?>"><?= esc($school['school_name'] ?? '') ?></li>
+              <?php endforeach ?>
+              <li class="vs-school-picker-no-results" style="display:none">No results found</li>
+            </ul>
+          </div>
         </div>
 
         <div class="vs-span-2">
           <label class="vs-label required" for="preferred_senior_high_school">Preferred Senior High School</label>
-          <select id="preferred_senior_high_school" name="preferred_senior_high_school"
-                  class="vs-input <?= ($validation && $validation->hasError('preferred_senior_high_school')) ? 'vs-input-error' : '' ?>" required>
-            <option value="">-- Select --</option>
-            <?php foreach (($seniorHighSchools ?? []) as $school): ?>
-              <?php $schoolName = $school['school_name'] ?? '' ?>
-              <option value="<?= esc($schoolName) ?>" <?= strtoupper($selectedSeniorHighSchool) === strtoupper($schoolName) ? 'selected' : '' ?>>
-                <?= esc($schoolName) ?>
-              </option>
-            <?php endforeach ?>
-          </select>
+          <div class="vs-school-picker" id="shs-picker">
+            <div class="vs-school-picker-wrap">
+              <input type="text" id="preferred_senior_high_school" name="preferred_senior_high_school"
+                     class="vs-input vs-uppercase <?= ($validation && $validation->hasError('preferred_senior_high_school')) ? 'vs-input-error' : '' ?>"
+                     value="<?= esc($selectedSeniorHighSchool) ?>"
+                     placeholder="Type school name..." autocomplete="off" required>
+              <div class="vs-school-picker-actions">
+                <button type="button" class="vs-school-picker-toggle" title="Show schools"><?= asset_icon('dropdown') ?></button>
+              </div>
+            </div>
+            <ul class="vs-school-picker-list">
+              <?php foreach (($seniorHighSchools ?? []) as $school): ?>
+                <li data-value="<?= esc($school['school_name'] ?? '') ?>"><?= esc($school['school_name'] ?? '') ?></li>
+              <?php endforeach ?>
+              <li class="vs-school-picker-no-results" style="display:none">No results found</li>
+            </ul>
+          </div>
         </div>
 
         <div>
@@ -167,4 +181,53 @@
   </div>
 </div>
 
+<script>
+(function () {
+    function initPicker(id) {
+        var picker  = document.getElementById(id);
+        if (!picker) return;
+        var input   = picker.querySelector('input');
+        var toggle  = picker.querySelector('.vs-school-picker-toggle');
+        var list    = picker.querySelector('.vs-school-picker-list');
+        var items   = list ? Array.from(list.querySelectorAll('li[data-value]')) : [];
+        var noRes   = list ? list.querySelector('.vs-school-picker-no-results') : null;
+
+        function open()  { if (list) list.classList.add('open'); }
+        function close() { if (list) list.classList.remove('open'); }
+
+        function filter(q) {
+            q = (q || '').trim().toUpperCase();
+            var any = false;
+            items.forEach(function (li) {
+                var show = !q || li.getAttribute('data-value').toUpperCase().indexOf(q) !== -1;
+                li.classList.toggle('vs-sp-hidden', !show);
+                if (show) any = true;
+            });
+            if (noRes) noRes.style.display = any ? 'none' : '';
+        }
+
+        input.addEventListener('input', function () { filter(input.value); open(); });
+
+        toggle.addEventListener('click', function () {
+            if (list.classList.contains('open')) { close(); }
+            else { filter(input.value); open(); input.focus(); }
+        });
+
+        items.forEach(function (li) {
+            li.addEventListener('mousedown', function (e) {
+                e.preventDefault();
+                input.value = li.getAttribute('data-value');
+                close();
+            });
+        });
+
+        document.addEventListener('click', function (e) {
+            if (!picker.contains(e.target)) close();
+        });
+    }
+
+    initPicker('jhs-picker');
+    initPicker('shs-picker');
+}());
+</script>
 <?= $this->endSection() ?>
