@@ -439,6 +439,29 @@ body {
   color: #7a5200;
 }
 
+/* ── Eligibility icon (table cell, scans fast at a glance) ── */
+.vs-eligibility-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: 50%;
+}
+.vs-eligibility-icon svg {
+  width: 1rem;
+  height: 1rem;
+  stroke-width: 3;
+}
+.vs-eligibility-icon-eligible {
+  background: #d9f7ee;
+  color: #075c49;
+}
+.vs-eligibility-icon-not_eligible {
+  background: #fde2e1;
+  color: #a02622;
+}
+
 /* ── Role badges ── */
 .vs-role-badge {
   display: inline-block;

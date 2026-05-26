@@ -261,7 +261,7 @@ class VoucherImport extends BaseController
         $ids = $this->parseSelectedIds((string) $this->request->getGet('ids'));
         $rows = !empty($ids)
             ? $voucherModel->getVouchersByIds($ids)
-            : $voucherModel->getVouchersForListing();
+            : $voucherModel->getVouchersForListing('', 0);
 
         $spreadsheet = new Spreadsheet();
         $sheet       = $spreadsheet->getActiveSheet();

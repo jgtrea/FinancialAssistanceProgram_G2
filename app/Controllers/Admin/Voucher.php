@@ -152,30 +152,56 @@ class Voucher extends Controller
         return array_values(array_unique($ids));
     }
 
+    // Read advanced-filter values off the current GET request. Keys match the
+    // server-side WHERE column mapping in VoucherModel::applyListingFilters
+    // and the GET param names used by the listing view.
+    protected function getListingFilters(): array
+    {
+        $req = $this->request;
+        $filters = [];
+        foreach (VoucherModel::LISTING_FILTER_KEYS as $key) {
+            $filters[$key] = trim((string) $req->getGet($key));
+        }
+        return $filters;
+    }
+
     // ── List all students / vouchers ───────────────────────────────────────────
     public function index()
     {
-        $keyword = trim((string) $this->request->getGet('q'));
-        $students = $this->voucherModel->getVouchersForListing($keyword);
+        $keyword  = trim((string) $this->request->getGet('q'));
+        $filters  = $this->getListingFilters();
+        $students = $this->voucherModel->getVouchersForListing(
+            $keyword,
+            VoucherModel::LISTING_DEFAULT_LIMIT,
+            $filters
+        );
 
         return view('vouchers/index', [
-            'title'    => 'Vouchers',
-            'vouchers' => $students,
-            'role'     => session()->get('role') ?: 'admin',
-            'keyword'  => $keyword,
+            'title'         => 'Vouchers',
+            'vouchers'      => $students,
+            'role'          => session()->get('role') ?: 'admin',
+            'keyword'       => $keyword,
+            'filters'       => $filters,
+            'filterOptions' => $this->voucherModel->getListingFilterOptions(),
         ] + $this->getSchoolDropdownData());
     }
 
     public function generate()
     {
-        $keyword = trim((string) $this->request->getGet('q'));
-        $students = $this->voucherModel->getVouchersForListing($keyword);
+        $keyword  = trim((string) $this->request->getGet('q'));
+        $filters  = $this->getListingFilters();
+        $students = $this->voucherModel->getVouchersForListing(
+            $keyword,
+            VoucherModel::LISTING_DEFAULT_LIMIT,
+            $filters
+        );
 
         return view('vouchers/generate', [
             'title'    => 'Voucher Generation',
             'vouchers' => $students,
             'role'     => session()->get('role') ?: 'admin',
             'keyword'  => $keyword,
+            'filters'  => $filters,
         ]);
     }
 

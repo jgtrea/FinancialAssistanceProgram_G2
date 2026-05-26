@@ -6,6 +6,11 @@
 <?php $prefix = $role === 'admin' ? 'admin' : 'user' ?>
 <?php $juniorHighSchools = $juniorHighSchools ?? [] ?>
 <?php $seniorHighSchools = $seniorHighSchools ?? [] ?>
+<?php $filterOptions = $filterOptions ?? ['junior_high_schools' => [], 'senior_high_schools' => [], 'school_years' => []] ?>
+<?php $filters = $filters ?? [] ?>
+<?php $filterKeys = ['school_year','gender','remarks','voucher_status','date_from','date_to','junior_hs','preferred_hs','gwa_min','gwa_max'] ?>
+<?php $f = static fn (string $k) => (string) ($filters[$k] ?? '') ?>
+<?php $activeFilterCount = count(array_filter($filterKeys, fn ($k) => $f($k) !== '')) ?>
 
 <div class="vs-page-header mb-4">
     <div>
@@ -51,12 +56,15 @@
 
   <div id="studentsAlertBox"></div>
 
-  <form method="get" class="vs-advanced-search vs-advanced-search-outside mb-3">
+  <form method="get" id="vouchersFilterForm" class="vs-advanced-search vs-advanced-search-outside mb-3">
     <input type="text" name="q" class="vs-input vs-advanced-search-input" placeholder="Advanced search all students..." value="<?= esc((string) ($keyword ?? ''), 'attr') ?>">
     <button type="button" class="vs-btn vs-btn-outline" id="btnOpenFilter">
       Filters
-      <span id="filterBadge" class="badge bg-primary" style="display:none;margin-left:.35rem"></span>
+      <span id="filterBadge" class="badge bg-primary" style="display:<?= $activeFilterCount > 0 ? 'inline-block' : 'none' ?>;margin-left:.35rem"><?= $activeFilterCount > 0 ? esc($activeFilterCount) : '' ?></span>
     </button>
+    <?php foreach ($filterKeys as $k): ?>
+      <input type="hidden" name="<?= esc($k, 'attr') ?>" value="<?= esc($f($k), 'attr') ?>">
+    <?php endforeach ?>
   </form>
 
   <div class="vs-card">
@@ -74,6 +82,7 @@
             <th>Junior High School</th>
             <th>Preferred School</th>
             <th>School Year</th>
+            <th>Eligibility</th>
             <th>Generate Count</th>
             <th>Last Generated</th>
             <th>Actions</th>
@@ -81,18 +90,31 @@
         </thead>
         <tbody>
           <?php foreach ($vouchers as $v): ?>
+          <?php $notEligible = ($v['eligibility_status'] ?? '') === 'not_eligible' ?>
           <tr id="row-<?= esc($v['student_id'], 'attr') ?>"
               data-gender="<?= esc((string) ($v['gender'] ?? ''), 'attr') ?>"
               data-remarks="<?= esc((string) ($v['remarks_status'] ?? ''), 'attr') ?>"
               data-voucher-date="<?= esc((string) ($v['voucher_date'] ?? ''), 'attr') ?>"
               data-voucher-status="<?= esc((string) ($v['voucher_status'] ?? ''), 'attr') ?>"
+              data-eligibility="<?= esc((string) ($v['eligibility_status'] ?? ''), 'attr') ?>"
               data-gwa="<?= esc((string) ($v['gwa'] ?? ''), 'attr') ?>">
-            <td><input type="checkbox" class="vs-check vs-row-check" value="<?= esc($v['student_id'], 'attr') ?>"></td>
+            <td><input type="checkbox" class="vs-check vs-row-check" value="<?= esc($v['student_id'], 'attr') ?>"<?= $notEligible ? ' disabled title="Not eligible — cannot be selected"' : '' ?>></td>
             <td class="js-voucher-no"><?= esc($v['voucher_no'] ?: '-') ?></td>
             <td><?= esc($v['full_name']) ?></td>
             <td><?= esc($v['junior_high_school'] ?: '-') ?></td>
             <td><?= esc($v['preferred_senior_high_school']) ?></td>
             <td><?= esc($v['school_year']) ?></td>
+            <td>
+              <?php $elig = (string) ($v['eligibility_status'] ?? '') ?>
+              <?php $eligLabel = $elig === 'eligible' ? 'Eligible' : ($elig === 'not_eligible' ? 'Not eligible' : '—') ?>
+              <?php if ($elig === 'eligible' || $elig === 'not_eligible'): ?>
+                <span class="vs-eligibility-icon vs-eligibility-icon-<?= esc($elig, 'attr') ?>" title="<?= esc($eligLabel, 'attr') ?>" aria-label="<?= esc($eligLabel, 'attr') ?>">
+                  <?= asset_icon($elig === 'eligible' ? 'check' : 'cross') ?>
+                </span>
+              <?php else: ?>
+                <span aria-label="Unknown">—</span>
+              <?php endif ?>
+            </td>
             <td>
               <span class="js-generate-count"><?= esc((string) ($v['generate_count'] ?? 0)) ?></span>
             </td>
@@ -307,48 +329,52 @@
       <div class="vs-form-grid vs-form-grid-4">
         <div class="vs-span-2">
           <label class="vs-label" for="filterSchoolYear">School Year</label>
-          <select id="filterSchoolYear" class="vs-input"><option value="">All</option></select>
+          <select id="filterSchoolYear" class="vs-input">
+            <option value="">All</option>
+            <?php foreach (($filterOptions['school_years'] ?? []) as $sy): ?>
+              <option value="<?= esc($sy) ?>" <?= $f('school_year') === $sy ? 'selected' : '' ?>><?= esc($sy) ?></option>
+            <?php endforeach ?>
+          </select>
         </div>
         <div class="vs-span-2">
           <label class="vs-label" for="filterGender">Gender</label>
           <select id="filterGender" class="vs-input">
             <option value="">All</option>
-            <option value="MALE">Male</option>
-            <option value="FEMALE">Female</option>
+            <option value="MALE" <?= $f('gender') === 'MALE' ? 'selected' : '' ?>>Male</option>
+            <option value="FEMALE" <?= $f('gender') === 'FEMALE' ? 'selected' : '' ?>>Female</option>
           </select>
         </div>
         <div class="vs-span-2">
           <label class="vs-label" for="filterRemarks">Remarks</label>
           <select id="filterRemarks" class="vs-input">
             <option value="">All</option>
-            <option value="PASSED">Passed</option>
-            <option value="FOR REVIEW">For Review</option>
-            <option value="FAILED">Failed</option>
+            <option value="PASSED" <?= $f('remarks') === 'PASSED' ? 'selected' : '' ?>>Passed</option>
+            <option value="FOR REVIEW" <?= $f('remarks') === 'FOR REVIEW' ? 'selected' : '' ?>>For Review</option>
+            <option value="FAILED" <?= $f('remarks') === 'FAILED' ? 'selected' : '' ?>>Failed</option>
           </select>
         </div>
         <div class="vs-span-2">
           <label class="vs-label" for="filterVoucherStatus">Voucher Status</label>
           <select id="filterVoucherStatus" class="vs-input">
             <option value="">All</option>
-            <option value="generated">Generated</option>
-            <option value="not_generated">Pending</option>
+            <option value="generated" <?= $f('voucher_status') === 'generated' ? 'selected' : '' ?>>Generated</option>
+            <option value="not_generated" <?= $f('voucher_status') === 'not_generated' ? 'selected' : '' ?>>Pending</option>
           </select>
         </div>
         <div class="vs-span-2">
           <label class="vs-label" for="filterDateFrom">Voucher Date From</label>
-          <input type="date" id="filterDateFrom" class="vs-input">
+          <input type="date" id="filterDateFrom" class="vs-input" value="<?= esc($f('date_from'), 'attr') ?>">
         </div>
         <div class="vs-span-2">
           <label class="vs-label" for="filterDateTo">Voucher Date To</label>
-          <input type="date" id="filterDateTo" class="vs-input">
+          <input type="date" id="filterDateTo" class="vs-input" value="<?= esc($f('date_to'), 'attr') ?>">
         </div>
         <div class="vs-span-2">
           <label class="vs-label" for="filterJuniorHs">Junior High School</label>
           <select id="filterJuniorHs" class="vs-input">
             <option value="">All</option>
-            <?php foreach ($juniorHighSchools as $school): ?>
-              <?php $schoolName = $school['school_name'] ?? '' ?>
-              <option value="<?= esc($schoolName) ?>"><?= esc($schoolName) ?></option>
+            <?php foreach (($filterOptions['junior_high_schools'] ?? []) as $schoolName): ?>
+              <option value="<?= esc($schoolName) ?>" <?= $f('junior_hs') === $schoolName ? 'selected' : '' ?>><?= esc($schoolName) ?></option>
             <?php endforeach ?>
           </select>
         </div>
@@ -356,19 +382,18 @@
           <label class="vs-label" for="filterPreferredHs">Preferred Senior HS</label>
           <select id="filterPreferredHs" class="vs-input">
             <option value="">All</option>
-            <?php foreach ($seniorHighSchools as $school): ?>
-              <?php $schoolName = $school['school_name'] ?? '' ?>
-              <option value="<?= esc($schoolName) ?>"><?= esc($schoolName) ?></option>
+            <?php foreach (($filterOptions['senior_high_schools'] ?? []) as $schoolName): ?>
+              <option value="<?= esc($schoolName) ?>" <?= $f('preferred_hs') === $schoolName ? 'selected' : '' ?>><?= esc($schoolName) ?></option>
             <?php endforeach ?>
           </select>
         </div>
         <div class="vs-span-2">
           <label class="vs-label" for="filterGwaMin">GWA Min</label>
-          <input type="number" step="0.01" id="filterGwaMin" class="vs-input" placeholder="e.g. 80">
+          <input type="number" step="0.01" id="filterGwaMin" class="vs-input" placeholder="e.g. 80" value="<?= esc($f('gwa_min'), 'attr') ?>">
         </div>
         <div class="vs-span-2">
           <label class="vs-label" for="filterGwaMax">GWA Max</label>
-          <input type="number" step="0.01" id="filterGwaMax" class="vs-input" placeholder="e.g. 100">
+          <input type="number" step="0.01" id="filterGwaMax" class="vs-input" placeholder="e.g. 100" value="<?= esc($f('gwa_max'), 'attr') ?>">
         </div>
       </div>
     </div>
@@ -681,27 +706,25 @@
     gwaMax:         document.getElementById('filterGwaMax'),
   };
 
-  var active = {}; // snapshot applied on "Apply"
+  var filterForm = document.getElementById('vouchersFilterForm');
 
-  // Populate dropdowns from distinct values present in the table columns.
-  // Column indices: 3 = Junior HS, 4 = Preferred SHS, 5 = School Year.
-  function fillDropdown(colIdx, selectEl) {
-    if (!selectEl) return;
-    var set = new Set();
-    dt.column(colIdx).data().each(function (val) {
-      var t = (val || '').toString().trim();
-      if (t && t !== '-') set.add(t);
-    });
-    Array.from(set).sort().forEach(function (v) {
-      var opt = document.createElement('option');
-      opt.value = v;
-      opt.textContent = v;
-      selectEl.appendChild(opt);
-    });
-  }
-  fillDropdown(3, fields.juniorHs);
-  fillDropdown(4, fields.preferredHs);
-  fillDropdown(5, fields.schoolYear);
+  // Map of modal field id → form hidden-input name. Used to copy values from
+  // modal → form on Apply, and to clear both on Clear All.
+  var filterFieldToParam = {
+    schoolYear:    'school_year',
+    gender:        'gender',
+    remarks:       'remarks',
+    voucherStatus: 'voucher_status',
+    dateFrom:      'date_from',
+    dateTo:        'date_to',
+    juniorHs:      'junior_hs',
+    preferredHs:   'preferred_hs',
+    gwaMin:        'gwa_min',
+    gwaMax:        'gwa_max',
+  };
+
+  // School Year / JHS / SHS dropdowns are fully populated server-side from
+  // DISTINCT values in the students table (see VoucherModel::getListingFilterOptions).
 
   // Hide DataTables' built-in search bar — we use a custom input above the table.
   var dtWrap = studentsTable.closest('.dataTables_wrapper');
@@ -723,10 +746,13 @@
     lenInput.addEventListener('keydown', function (e) { if (e.key === 'Enter') applyVoucherLen(); });
   }
 
-  // Wire the custom search input to the visible page only.
+  // Wire the custom search input across ALL loaded rows (server caps the load
+  // at ~1000 most-recent records — see VoucherModel::LISTING_DEFAULT_LIMIT).
+  // The "advanced search" form above the table reloads the page against the
+  // full DB.
   var customSearch = document.getElementById('customStudentsSearch');
-  if (window.VS && window.VS.bindCurrentPageSearch) {
-    window.VS.bindCurrentPageSearch(dt, customSearch);
+  if (window.VS && window.VS.bindFullTableSearch) {
+    window.VS.bindFullTableSearch(dt, customSearch);
   }
 
   var filterBtn         = document.getElementById('btnOpenFilter');
@@ -735,7 +761,6 @@
   var filterModalCancel = document.getElementById('filterModalCancel');
   var filterApply       = document.getElementById('filterApply');
   var filterClear       = document.getElementById('filterClear');
-  var filterBadge       = function () { return document.getElementById('filterBadge'); };
 
   function openFilter()  { if (filterModal) filterModal.style.display = 'flex'; }
   function closeFilter() { if (filterModal) filterModal.style.display = 'none'; }
@@ -747,108 +772,33 @@
     if (e.target === filterModal) closeFilter();
   });
 
-  function activeFilterCount() {
-    return Object.keys(active).filter(function (k) {
-      var v = active[k];
-      return v !== undefined && v !== null && String(v).trim() !== '';
-    }).length;
+  // Filters are applied server-side: we copy modal values into the hidden
+  // inputs in #vouchersFilterForm and submit. The form GETs the same page with
+  // `q` + filter params, which the controller passes through to the model.
+  function syncFormFromModal() {
+    if (!filterForm) return;
+    Object.keys(filterFieldToParam).forEach(function (k) {
+      var input = filterForm.elements[filterFieldToParam[k]];
+      if (input && fields[k]) input.value = fields[k].value;
+    });
   }
-
-  function updateBadge() {
-    var b = filterBadge();
-    if (!b) return;
-    var n = activeFilterCount();
-    b.textContent = n;
-    b.style.display = n > 0 ? 'inline-block' : 'none';
-  }
-
-  // Single global search hook — checks if this row belongs to #studentsTable,
-  // then evaluates the snapshot of active filter values against row data-attrs.
-  $.fn.dataTable.ext.search.push(function (settings, rowData, rowIdx, rowObj, counter) {
-    if (settings.nTable.id !== 'studentsTable') return true;
-    if (activeFilterCount() === 0) return true;
-
-    var row = settings.aoData[rowIdx].nTr;
-    if (!row) return true;
-
-    // School Year — exact match against the column cell text (column 5)
-    if (active.schoolYear) {
-      var cellSY = (rowData[5] || '').toString().trim();
-      if (cellSY !== active.schoolYear) return false;
-    }
-
-    if (active.gender) {
-      var g = (row.getAttribute('data-gender') || '').toUpperCase();
-      if (g !== active.gender.toUpperCase()) return false;
-    }
-
-    if (active.remarks) {
-      var r = (row.getAttribute('data-remarks') || '').toUpperCase();
-      if (r !== active.remarks.toUpperCase()) return false;
-    }
-
-    if (active.voucherStatus) {
-      var vs = (row.getAttribute('data-voucher-status') || '');
-      if (vs !== active.voucherStatus) return false;
-    }
-
-    if (active.dateFrom || active.dateTo) {
-      var d = (row.getAttribute('data-voucher-date') || '');
-      if (!d) return false;
-      if (active.dateFrom && d < active.dateFrom) return false;
-      if (active.dateTo   && d > active.dateTo)   return false;
-    }
-
-    if (active.juniorHs) {
-      var jhs = (rowData[3] || '').toString().trim();
-      if (jhs !== active.juniorHs) return false;
-    }
-
-    if (active.preferredHs) {
-      var phs = (rowData[4] || '').toString().trim();
-      if (phs !== active.preferredHs) return false;
-    }
-
-    if (active.gwaMin !== undefined && active.gwaMin !== '') {
-      var gMinRaw = row.getAttribute('data-gwa');
-      var gMin    = parseFloat(gMinRaw);
-      if (isNaN(gMin) || gMin < parseFloat(active.gwaMin)) return false;
-    }
-
-    if (active.gwaMax !== undefined && active.gwaMax !== '') {
-      var gMaxRaw = row.getAttribute('data-gwa');
-      var gMax    = parseFloat(gMaxRaw);
-      if (isNaN(gMax) || gMax > parseFloat(active.gwaMax)) return false;
-    }
-
-    return true;
-  });
 
   filterApply && filterApply.addEventListener('click', function () {
-    active = {
-      schoolYear:    fields.schoolYear.value,
-      gender:        fields.gender.value,
-      remarks:       fields.remarks.value,
-      voucherStatus: fields.voucherStatus.value,
-      dateFrom:      fields.dateFrom.value,
-      dateTo:        fields.dateTo.value,
-      juniorHs:      fields.juniorHs.value,
-      preferredHs:   fields.preferredHs.value,
-      gwaMin:        fields.gwaMin.value,
-      gwaMax:        fields.gwaMax.value,
-    };
-    updateBadge();
-    dt.draw();
-    closeFilter();
+    syncFormFromModal();
+    if (filterForm) filterForm.submit();
   });
 
   filterClear && filterClear.addEventListener('click', function () {
     Object.keys(fields).forEach(function (k) {
       if (fields[k]) fields[k].value = '';
     });
-    active = {};
-    updateBadge();
-    dt.draw();
+    if (filterForm) {
+      Object.keys(filterFieldToParam).forEach(function (k) {
+        var input = filterForm.elements[filterFieldToParam[k]];
+        if (input) input.value = '';
+      });
+      filterForm.submit();
+    }
   });
   }
 }());

@@ -56,16 +56,24 @@
         </thead>
         <tbody>
           <?php foreach ($vouchers as $v): ?>
-          <tr id="row-<?= esc($v['student_id'], 'attr') ?>">
-            <td><input type="checkbox" class="vs-check vs-row-check" value="<?= esc($v['student_id'], 'attr') ?>"></td>
+          <?php $notEligible = ($v['eligibility_status'] ?? '') === 'not_eligible' ?>
+          <tr id="row-<?= esc($v['student_id'], 'attr') ?>"
+              data-eligibility="<?= esc((string) ($v['eligibility_status'] ?? ''), 'attr') ?>">
+            <td><input type="checkbox" class="vs-check vs-row-check" value="<?= esc($v['student_id'], 'attr') ?>"<?= $notEligible ? ' disabled title="Not eligible — cannot be selected"' : '' ?>></td>
             <td class="js-voucher-no"><?= esc($v['voucher_no'] ?: '-') ?></td>
             <td><?= esc($v['full_name']) ?></td>
             <td><?= esc($v['preferred_senior_high_school']) ?></td>
             <td><?= esc($v['school_year']) ?></td>
             <td>
-              <span class="vs-status-badge vs-status-<?= esc($v['eligibility_status'], 'attr') ?>">
-                <?= esc(ucfirst(str_replace('_', ' ', $v['eligibility_status']))) ?>
-              </span>
+              <?php $elig = (string) ($v['eligibility_status'] ?? '') ?>
+              <?php $eligLabel = $elig === 'eligible' ? 'Eligible' : ($elig === 'not_eligible' ? 'Not eligible' : '—') ?>
+              <?php if ($elig === 'eligible' || $elig === 'not_eligible'): ?>
+                <span class="vs-eligibility-icon vs-eligibility-icon-<?= esc($elig, 'attr') ?>" title="<?= esc($eligLabel, 'attr') ?>" aria-label="<?= esc($eligLabel, 'attr') ?>">
+                  <?= asset_icon($elig === 'eligible' ? 'check' : 'cross') ?>
+                </span>
+              <?php else: ?>
+                <span aria-label="Unknown">—</span>
+              <?php endif ?>
             </td>
             <td>
               <span class="js-generate-count"><?= esc((string) ($v['generate_count'] ?? 0)) ?></span>

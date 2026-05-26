@@ -22,27 +22,40 @@ class Voucher extends AdminVoucher
 {
     public function index()
     {
-        $keyword = trim((string) $this->request->getGet('q'));
-        $students = $this->voucherModel->getVouchersForListing($keyword);
+        $keyword  = trim((string) $this->request->getGet('q'));
+        $filters  = $this->getListingFilters();
+        $students = $this->voucherModel->getVouchersForListing(
+            $keyword,
+            \App\Models\VoucherModel::LISTING_DEFAULT_LIMIT,
+            $filters
+        );
 
         return view('vouchers/index', [
-            'title'    => 'Vouchers',
-            'vouchers' => $students,
-            'role'     => 'user',
-            'keyword'  => $keyword,
+            'title'         => 'Vouchers',
+            'vouchers'      => $students,
+            'role'          => 'user',
+            'keyword'       => $keyword,
+            'filters'       => $filters,
+            'filterOptions' => $this->voucherModel->getListingFilterOptions(),
         ] + $this->getSchoolDropdownData());
     }
 
     public function generate()
     {
-        $keyword = trim((string) $this->request->getGet('q'));
-        $students = $this->voucherModel->getVouchersForListing($keyword);
+        $keyword  = trim((string) $this->request->getGet('q'));
+        $filters  = $this->getListingFilters();
+        $students = $this->voucherModel->getVouchersForListing(
+            $keyword,
+            \App\Models\VoucherModel::LISTING_DEFAULT_LIMIT,
+            $filters
+        );
 
         return view('vouchers/generate', [
             'title'    => 'Voucher Generation',
             'vouchers' => $students,
             'role'     => 'user',
             'keyword'  => $keyword,
+            'filters'  => $filters,
         ]);
     }
 

@@ -162,6 +162,20 @@ window.VS.bindCurrentPageSearch = function bindCurrentPageSearch(dt, input) {
   applySearch();
 };
 
+// Filters across the full set of rows loaded into the DataTable (not just the
+// visible page). Use this when the server has pre-loaded a capped slice (e.g.
+// the most recent 1000 vouchers) and the in-table input should let the user
+// hunt through that whole slice.
+window.VS.bindFullTableSearch = function bindFullTableSearch(dt, input) {
+  if (!dt || !input) return;
+  if (input.dataset.fullTableSearchBound === '1') return;
+  input.dataset.fullTableSearchBound = '1';
+
+  input.addEventListener('input', function () {
+    dt.search(input.value).draw();
+  });
+};
+
 
 /* ============================================================
    PDF JOB TRACKING — survives page navigation via localStorage
@@ -451,7 +465,9 @@ document.addEventListener('DOMContentLoaded', function () {
                      || document.getElementById('studentsTable');
   if (!vouchersTable) return;
 
-  // Columns: 0=checkbox 1=VoucherNo 2=Name 3=School 4=SchoolYear 5=Eligibility 6=GenerateCount 7=Date 8=Actions
+  // Columns vary slightly between the two pages (index.php has more columns).
+  // Checkbox is always first, Actions always last — that's what the targets
+  // below rely on.
   const dt = $(vouchersTable).DataTable({
     destroy: true,
     dom:
@@ -463,7 +479,7 @@ document.addEventListener('DOMContentLoaded', function () {
     responsive: true,
     autoWidth: false,
     order: [],
-    columnDefs: [{ orderable: false, targets: [0, 8] }],
+    columnDefs: [{ orderable: false, targets: [0, -1] }],
     language: {
       search: '',
       searchPlaceholder: vouchersTable.dataset.searchPlaceholder || 'Search vouchers...',
@@ -473,13 +489,16 @@ document.addEventListener('DOMContentLoaded', function () {
     },
   });
 
+  // The in-table search filters across ALL rows the server loaded (capped at
+  // ~1000). The "advanced search" form above the table hits the full DB and
+  // reloads the page with a new slice.
   const currentPageSearch = document.getElementById('customStudentsSearch')
                          || document.getElementById('customVouchersSearch');
-  if (currentPageSearch && window.VS && window.VS.bindCurrentPageSearch) {
+  if (currentPageSearch && window.VS && window.VS.bindFullTableSearch) {
     const dtWrap = vouchersTable.closest('.dataTables_wrapper');
     const dtSearch = dtWrap ? dtWrap.querySelector('.dataTables_filter') : null;
     if (dtSearch) dtSearch.style.display = 'none';
-    window.VS.bindCurrentPageSearch(dt, currentPageSearch);
+    window.VS.bindFullTableSearch(dt, currentPageSearch);
   }
 
   // ── Cross-page selection (Set of string IDs) ──────────────────────────────────
@@ -533,12 +552,20 @@ document.addEventListener('DOMContentLoaded', function () {
 
   dt.on('page.dt search.dt order.dt', syncPageCheckboxes);
 
-  // Select / deselect ALL filtered rows across every page
+  // Select / deselect ALL filtered rows across every page. Rows marked as
+  // not-eligible carry a disabled checkbox + data-eligibility="not_eligible"
+  // and are excluded from bulk select.
   document.addEventListener('change', function (e) {
     if (!e.target.classList.contains('vs-check-all')) return;
 
-    const filteredIds = dt.rows({ search: 'applied' }).ids().toArray()
-      .map(function (rid) { return rid.replace('row-', ''); });
+    const filteredIds = [];
+    dt.rows({ search: 'applied' }).every(function () {
+      const node = this.node();
+      if (!node) return;
+      if (node.getAttribute('data-eligibility') === 'not_eligible') return;
+      const cb = node.querySelector('.vs-row-check');
+      if (cb && !cb.disabled) filteredIds.push(cb.value);
+    });
     const shouldCheck = selectedIds.size === 0;
     if (shouldCheck) {
       filteredIds.forEach(function (id) { selectedIds.add(id); });

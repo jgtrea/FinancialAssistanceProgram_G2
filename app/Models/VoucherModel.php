@@ -92,8 +92,24 @@ class VoucherModel extends Model
         return function_exists('mb_strtoupper') ? mb_strtoupper($value, 'UTF-8') : strtoupper($value);
     }
 
-    public function getVouchersForListing(string $keyword = ''): array
-    {
+    public const LISTING_DEFAULT_LIMIT = 1000;
+
+    // Supported filter keys (also the GET param names used by the listing view).
+    public const LISTING_FILTER_KEYS = [
+        'school_year', 'gender', 'remarks', 'voucher_status',
+        'date_from', 'date_to', 'junior_hs', 'preferred_hs',
+        'gwa_min', 'gwa_max',
+    ];
+
+    // When no keyword and no filter are given, return only the most recently
+    // created N rows so the in-page DataTable stays fast. Advanced-search
+    // (keyword) and advanced filters both hit the full table and ignore the
+    // limit, replacing what's loaded.
+    public function getVouchersForListing(
+        string $keyword = '',
+        int $limit = self::LISTING_DEFAULT_LIMIT,
+        array $filters = []
+    ): array {
         $builder = $this->db->table('students')
             ->select("
                 student_id, voucher_no, voucher_date,
@@ -125,9 +141,17 @@ class VoucherModel extends Model
                 ->groupEnd();
         }
 
-        $rows = $builder
+        $hasFilter = $this->applyListingFilters($builder, $filters);
+
+        $builder
             ->orderBy('created_at', 'DESC')
-            ->orderBy('student_id', 'DESC')
+            ->orderBy('student_id', 'DESC');
+
+        if ($keyword === '' && !$hasFilter && $limit > 0) {
+            $builder->limit($limit);
+        }
+
+        $rows = $builder
             ->get()
             ->getResultArray();
 
@@ -140,6 +164,89 @@ class VoucherModel extends Model
         unset($row);
 
         return $rows;
+    }
+
+    // Returns the distinct, non-empty values that exist in the students table
+    // for each column used as a filter dropdown. Sourced from the full table
+    // (not the capped listing slice) so the dropdowns always reflect every
+    // value a user could actually filter against.
+    public function getListingFilterOptions(): array
+    {
+        $distinct = function (string $column): array {
+            $rows = $this->db->table('students')
+                ->distinct()
+                ->select($column)
+                ->where('is_archived', 0)
+                ->where($column . ' IS NOT NULL')
+                ->where($column . ' !=', '')
+                ->orderBy($column, 'ASC')
+                ->get()
+                ->getResultArray();
+            return array_values(array_filter(array_map(
+                static fn ($r) => trim((string) ($r[$column] ?? '')),
+                $rows
+            ), static fn ($v) => $v !== ''));
+        };
+
+        return [
+            'junior_high_schools' => $distinct('junior_high_school'),
+            'senior_high_schools' => $distinct('preferred_senior_high_school'),
+            'school_years'        => $distinct('school_year'),
+        ];
+    }
+
+    // Applies any advanced-filter clauses to the listing builder. Returns true
+    // if at least one filter was applied (so the caller can skip the row cap).
+    protected function applyListingFilters($builder, array $filters): bool
+    {
+        $value = static function (array $f, string $key): string {
+            return isset($f[$key]) ? trim((string) $f[$key]) : '';
+        };
+
+        $applied = false;
+
+        if (($v = $value($filters, 'school_year')) !== '') {
+            $builder->where('school_year', $v);
+            $applied = true;
+        }
+        if (($v = $value($filters, 'gender')) !== '') {
+            $builder->where('gender', $v);
+            $applied = true;
+        }
+        if (($v = $value($filters, 'remarks')) !== '') {
+            $builder->where('remarks_status', $v);
+            $applied = true;
+        }
+        if (($v = $value($filters, 'voucher_status')) !== '') {
+            $builder->where('voucher_status', $v);
+            $applied = true;
+        }
+        if (($v = $value($filters, 'date_from')) !== '') {
+            $builder->where('voucher_date >=', $v);
+            $applied = true;
+        }
+        if (($v = $value($filters, 'date_to')) !== '') {
+            $builder->where('voucher_date <=', $v);
+            $applied = true;
+        }
+        if (($v = $value($filters, 'junior_hs')) !== '') {
+            $builder->where('junior_high_school', $v);
+            $applied = true;
+        }
+        if (($v = $value($filters, 'preferred_hs')) !== '') {
+            $builder->where('preferred_senior_high_school', $v);
+            $applied = true;
+        }
+        if (($v = $value($filters, 'gwa_min')) !== '') {
+            $builder->where('gwa >=', (float) $v);
+            $applied = true;
+        }
+        if (($v = $value($filters, 'gwa_max')) !== '') {
+            $builder->where('gwa <=', (float) $v);
+            $applied = true;
+        }
+
+        return $applied;
     }
 
     public function getStudentById(int $studentId): ?array
