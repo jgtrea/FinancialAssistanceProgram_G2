@@ -6,6 +6,14 @@ use App\Libraries\PdfJobRunner;
 use CodeIgniter\CLI\BaseCommand;
 use CodeIgniter\CLI\CLI;
 
+/**
+ * `php spark run:pdf <job_id>` — process a single job by ID.
+ *
+ * Chunk-aware: if the ID points at a parent, the runner dispatches to
+ * tryFinalize(); if it points at a chunk or a standalone legacy job, the
+ * runner claims + renders it. Useful for retrying a specific stuck job
+ * without restarting the whole queue worker.
+ */
 class GeneratePdfJob extends BaseCommand
 {
     protected $group       = 'App';
@@ -20,6 +28,8 @@ class GeneratePdfJob extends BaseCommand
             return EXIT_ERROR;
         }
 
+        // processPending() picks the right path for the row type — see
+        // PdfJobRunner::processPending().
         if (PdfJobRunner::processPending($jobId)) {
             CLI::write("Job {$jobId} done.");
             return EXIT_SUCCESS;

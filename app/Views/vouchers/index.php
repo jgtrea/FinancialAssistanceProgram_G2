@@ -324,11 +324,11 @@
         </div>
         <div class="vs-span-2">
           <label class="vs-label" for="filterJuniorHs">Junior High School</label>
-          <input type="text" id="filterJuniorHs" class="vs-input" placeholder="Contains...">
+          <select id="filterJuniorHs" class="vs-input"><option value="">All</option></select>
         </div>
         <div class="vs-span-2">
           <label class="vs-label" for="filterPreferredHs">Preferred Senior HS</label>
-          <input type="text" id="filterPreferredHs" class="vs-input" placeholder="Contains...">
+          <select id="filterPreferredHs" class="vs-input"><option value="">All</option></select>
         </div>
         <div class="vs-span-2">
           <label class="vs-label" for="filterGwaMin">GWA Min</label>
@@ -633,18 +633,25 @@
 
   var active = {}; // snapshot applied on "Apply"
 
-  // Populate school year dropdown from existing rows (column index 5: School Year).
-  var sySet = new Set();
-  dt.column(5).data().each(function (val) {
-    var t = (val || '').toString().trim();
-    if (t) sySet.add(t);
-  });
-  Array.from(sySet).sort().forEach(function (y) {
-    var opt = document.createElement('option');
-    opt.value = y;
-    opt.textContent = y;
-    fields.schoolYear.appendChild(opt);
-  });
+  // Populate dropdowns from distinct values present in the table columns.
+  // Column indices: 3 = Junior HS, 4 = Preferred SHS, 5 = School Year.
+  function fillDropdown(colIdx, selectEl) {
+    if (!selectEl) return;
+    var set = new Set();
+    dt.column(colIdx).data().each(function (val) {
+      var t = (val || '').toString().trim();
+      if (t && t !== '-') set.add(t);
+    });
+    Array.from(set).sort().forEach(function (v) {
+      var opt = document.createElement('option');
+      opt.value = v;
+      opt.textContent = v;
+      selectEl.appendChild(opt);
+    });
+  }
+  fillDropdown(3, fields.juniorHs);
+  fillDropdown(4, fields.preferredHs);
+  fillDropdown(5, fields.schoolYear);
 
   // Hide DataTables' built-in search bar — we use a custom input above the table.
   var dtWrap = studentsTable.closest('.dataTables_wrapper');
@@ -737,13 +744,13 @@
     }
 
     if (active.juniorHs) {
-      var jhs = (rowData[3] || '').toString().toLowerCase();
-      if (jhs.indexOf(active.juniorHs.toLowerCase()) === -1) return false;
+      var jhs = (rowData[3] || '').toString().trim();
+      if (jhs !== active.juniorHs) return false;
     }
 
     if (active.preferredHs) {
-      var phs = (rowData[4] || '').toString().toLowerCase();
-      if (phs.indexOf(active.preferredHs.toLowerCase()) === -1) return false;
+      var phs = (rowData[4] || '').toString().trim();
+      if (phs !== active.preferredHs) return false;
     }
 
     if (active.gwaMin !== undefined && active.gwaMin !== '') {
@@ -769,8 +776,8 @@
       voucherStatus: fields.voucherStatus.value,
       dateFrom:      fields.dateFrom.value,
       dateTo:        fields.dateTo.value,
-      juniorHs:      fields.juniorHs.value.trim(),
-      preferredHs:   fields.preferredHs.value.trim(),
+      juniorHs:      fields.juniorHs.value,
+      preferredHs:   fields.preferredHs.value,
       gwaMin:        fields.gwaMin.value,
       gwaMax:        fields.gwaMax.value,
     };

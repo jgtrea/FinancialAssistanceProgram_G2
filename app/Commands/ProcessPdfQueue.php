@@ -6,6 +6,20 @@ use App\Libraries\PdfJobRunner;
 use CodeIgniter\CLI\BaseCommand;
 use CodeIgniter\CLI\CLI;
 
+/**
+ * `php spark run:pdf-queue` — background worker that drains pending pdf_jobs.
+ *
+ * One-shot mode (default): scan once, process every pending job (chunks first
+ * so parents can finalize in the same pass), exit.
+ *
+ * Loop mode (`--loop` / `--loop=N`): stay running and re-scan every N seconds
+ * (default 5). A heartbeat line is printed every ~60s so the operator can see
+ * the worker is alive even when the queue is empty.
+ *
+ * Without this worker, generation still works — checkPdfJob() will render
+ * chunks inline on each poll. The worker just parallelises that and removes
+ * the dependency on an actively-watching browser.
+ */
 class ProcessPdfQueue extends BaseCommand
 {
     protected $group       = 'App';
@@ -63,12 +77,20 @@ class ProcessPdfQueue extends BaseCommand
         }
     }
 
+    /**
+     * Process every currently-pending job in priority order. Chunks first so
+     * a parent's tryFinalize() can succeed within this same pass.
+     * Returns true iff every job processed successfully (parents waiting on
+     * still-pending children count as success, not failure).
+     */
     protected function drainQueue(): bool
     {
         $db = \Config\Database::connect();
 
         // Chunks first (so a parent's finalize can trigger as soon as its last
         // chunk completes in the same drain pass); parents picked up afterward.
+        // The `false` 3rd arg disables identifier escaping so `parent_job_id IS NULL`
+        // is passed through as raw SQL.
         $jobs = $db->table('pdf_jobs')
             ->where('status', 'pending')
             ->orderBy('parent_job_id IS NULL', 'ASC', false)
@@ -92,6 +114,11 @@ class ProcessPdfQueue extends BaseCommand
         return $failCount === 0;
     }
 
+    /**
+     * Process one job by delegating to the runner. The "still pending after
+     * the call" case is treated as success — it just means a parent is
+     * waiting for sibling chunks the worker hasn't reached yet.
+     */
     protected function processJob(int $jobId): bool
     {
         $db    = \Config\Database::connect();

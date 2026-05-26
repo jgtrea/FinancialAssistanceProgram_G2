@@ -5,6 +5,19 @@ namespace App\Controllers\User;
 use App\Libraries\VoucherPdf;
 use App\Controllers\Admin\Voucher as AdminVoucher;
 
+/**
+ * User-side voucher controller. Extends Admin\Voucher and reuses its queue +
+ * polling + finalize plumbing (queuePdfJob, parseVoucherIds,
+ * prepareStudentsForGeneration, checkPdfJob, downloadPdf, ...). The overrides
+ * here only differ in:
+ *   - URL prefix (`user/` instead of `admin/`)
+ *   - Hard-coded role 'user' in view payloads
+ *   - Skipping the audit-log entry on create/update (user-side flows log
+ *     simpler messages)
+ *
+ * The actual PDF generation pipeline is identical — see the parent class
+ * docblock for the full flow.
+ */
 class Voucher extends AdminVoucher
 {
     public function index()
@@ -145,6 +158,11 @@ class Voucher extends AdminVoucher
         return redirect()->to(site_url('user/students'))->with('message', 'Student updated successfully.');
     }
 
+    /**
+     * User-side enqueue. Same flow as Admin\Voucher::generatePdf() — see that
+     * parent docblock — but always routes the status URL through the `user/`
+     * prefix regardless of session role.
+     */
     public function generatePdf()
     {
         $ids    = $this->parseVoucherIds($this->request->getPost('voucher_ids'));
@@ -154,6 +172,8 @@ class Voucher extends AdminVoucher
             return $this->response->setJSON(['success' => false, 'message' => 'No students selected.']);
         }
 
+        // Assign voucher numbers up front (fast DB op); the slow PDF render
+        // is queued for background processing.
         $students = $this->prepareStudentsForGeneration($ids);
 
         if (empty($students)) {
@@ -168,10 +188,17 @@ class Voucher extends AdminVoucher
             'queued'     => true,
             'job_id'     => $jobId,
             'status_url' => site_url("user/vouchers/pdf-status/{$jobId}"),
+            // student_id → voucher_no map so the UI can render new numbers
+            // without an extra round-trip.
             'vouchers'   => array_column($students, 'voucher_no', 'student_id'),
         ]);
     }
 
+    /**
+     * User-side bulk archive. Same snapshot-then-soft-delete pattern as
+     * Admin\Voucher::archive(), minus the per-row audit log entry. Default
+     * reason is "Archived by user" instead of "Archived by admin".
+     */
     public function archive()
     {
         $ids    = $this->parseVoucherIds($this->request->getPost('voucher_ids'));
@@ -187,6 +214,8 @@ class Voucher extends AdminVoucher
         $archived = 0;
 
         foreach ($students as $s) {
+            // Snapshot into archived_students so the archive survives later
+            // edits/deletes of the live row.
             $this->archiveModel->insert([
                 'student_id'                   => $s['student_id'],
                 'voucher_no'                   => $s['voucher_no'],
@@ -210,6 +239,7 @@ class Voucher extends AdminVoucher
                 'archived_at'                  => $now,
             ]);
 
+            // Soft-delete: flag the live row rather than removing it.
             $this->voucherModel->update($s['student_id'], ['is_archived' => 1]);
             $archived++;
         }

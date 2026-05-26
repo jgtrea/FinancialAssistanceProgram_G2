@@ -4,6 +4,22 @@ namespace App\Libraries;
 
 use App\Models\VoucherModel;
 
+/**
+ * PdfJobRunner — background orchestrator for voucher PDF generation.
+ *
+ * The `pdf_jobs` table is hierarchical:
+ *   - PARENT rows have `parent_job_id = NULL` and `total_chunks > 0`.
+ *   - CHILD (chunk) rows point at their parent and carry their own slice of
+ *     student IDs in `voucher_ids` (JSON).
+ *
+ * Lifecycle:
+ *   pending → processing → done | failed
+ *
+ * Workers (the polling endpoint or the `spark run:pdf-queue` command) call
+ * `processPending()` which dispatches to either claim+process (for a chunk)
+ * or tryFinalize (for a parent). Atomic `UPDATE … WHERE status='pending'`
+ * guards prevent two workers from rendering the same row.
+ */
 class PdfJobRunner
 {
     /**
@@ -14,6 +30,7 @@ class PdfJobRunner
     {
         $db = \Config\Database::connect();
 
+        // Refuse to claim parents — they're assembled by tryFinalize(), not rendered.
         $hasChildren = (int) $db->table('pdf_jobs')
             ->where('parent_job_id', $jobId)
             ->countAllResults();
@@ -22,11 +39,14 @@ class PdfJobRunner
             return false;
         }
 
+        // The `status='pending'` predicate is the race guard: if two callers
+        // race, only one UPDATE actually changes a row.
         $db->table('pdf_jobs')
             ->where('job_id', $jobId)
             ->where('status', 'pending')
             ->update(['status' => 'processing']);
 
+        // True iff this caller won the race.
         return $db->affectedRows() > 0;
     }
 
@@ -43,11 +63,14 @@ class PdfJobRunner
             return false;
         }
 
+        // Idempotency: only `processing` rows do work here. Already-done jobs
+        // report success so retries are safe.
         if ($job->status !== 'processing') {
             return $job->status === 'done';
         }
 
         try {
+            // Chunk's JSON id slice → full student rows.
             $ids      = json_decode($job->voucher_ids, true) ?: [];
             $students = (new VoucherModel())->getVouchersByIds($ids);
 
@@ -55,6 +78,7 @@ class PdfJobRunner
                 throw new \RuntimeException('No valid students found for this job.');
             }
 
+            // The slow step — mPDF rendering. Returns binary PDF as a string.
             $pdfBytes = VoucherPdf::generate($students);
 
             $dir = WRITEPATH . 'pdfs' . DIRECTORY_SEPARATOR;
@@ -65,6 +89,8 @@ class PdfJobRunner
             $filename = 'vouchers_job' . $jobId . '_' . date('Ymd_His') . '.pdf';
             file_put_contents($dir . $filename, $pdfBytes);
 
+            // Flip the UI badge from "Pending" → "Generated" for every student
+            // in this chunk, stamping the moment of generation.
             $db->table('students')
                 ->whereIn('student_id', $ids)
                 ->update([
@@ -78,6 +104,8 @@ class PdfJobRunner
                 'completed_at' => date('Y-m-d H:i:s'),
             ]);
 
+            // Chunk → try to wrap up the parent (succeeds only if this was the
+            // last outstanding chunk). Standalone job → audit log directly.
             if (!empty($job->parent_job_id)) {
                 self::tryFinalize((int) $job->parent_job_id);
             } else {
@@ -92,6 +120,8 @@ class PdfJobRunner
         } catch (\Throwable $e) {
             log_message('error', "[PdfJobRunner] Job {$jobId}: " . $e->getMessage());
 
+            // Defensive re-check: if another worker already finished this row
+            // between our throw and now, respect their success.
             $current = $db->table('pdf_jobs')->where('job_id', $jobId)->get()->getRow();
             if ($current && $current->status === 'done') {
                 return true;
@@ -103,6 +133,7 @@ class PdfJobRunner
                 'completed_at'  => date('Y-m-d H:i:s'),
             ]);
 
+            // Cascade the failure up so the parent doesn't sit pending forever.
             if (!empty($job->parent_job_id)) {
                 self::markParentFailed((int) $job->parent_job_id, $e->getMessage());
             }
@@ -137,6 +168,7 @@ class PdfJobRunner
             return $job->status === 'done';
         }
 
+        // Presence of child rows is what distinguishes a parent from a chunk.
         $hasChildren = (int) $db->table('pdf_jobs')
             ->where('parent_job_id', $jobId)
             ->countAllResults();
@@ -156,6 +188,8 @@ class PdfJobRunner
     {
         $db = \Config\Database::connect();
 
+        // Any child not yet done → bail. We'll be called again when the next
+        // chunk finishes (or by the queue worker's next drain pass).
         $unfinished = (int) $db->table('pdf_jobs')
             ->where('parent_job_id', $parentJobId)
             ->where('status !=', 'done')
@@ -165,17 +199,21 @@ class PdfJobRunner
             return false;
         }
 
+        // Same atomic-claim trick as tryClaim(), but on the parent row.
         $db->table('pdf_jobs')
             ->where('job_id', $parentJobId)
             ->where('status', 'pending')
             ->update(['status' => 'processing']);
 
         if ($db->affectedRows() === 0) {
+            // Lost the race: another worker is finalizing. If they already
+            // finished, report success; otherwise let them complete.
             $current = $db->table('pdf_jobs')->where('job_id', $parentJobId)->get()->getRow();
             return $current && $current->status === 'done';
         }
 
         try {
+            // Assembly order MUST match chunk_index so user-visible pages stay sequential.
             $chunks = $db->table('pdf_jobs')
                 ->where('parent_job_id', $parentJobId)
                 ->orderBy('chunk_index', 'ASC')
@@ -194,16 +232,20 @@ class PdfJobRunner
             $stamp = date('Ymd_His');
 
             if (count($chunks) === 1) {
+                // Single chunk → just copy (not move) so the chunk row still
+                // points at a valid file for audit/debug.
                 $finalName  = 'vouchers_job' . $parentJobId . '_' . $stamp . '.pdf';
                 $sourcePath = $dir . $chunks[0]['file_path'];
                 if (!is_file($sourcePath) || !copy($sourcePath, $dir . $finalName)) {
                     throw new \RuntimeException('Failed to copy chunk PDF for parent ' . $parentJobId);
                 }
             } else {
+                // Multiple chunks → bundle as ZIP.
                 $finalName = 'vouchers_job' . $parentJobId . '_' . $stamp . '.zip';
                 $zipPath   = $dir . $finalName;
                 $zip       = new \ZipArchive();
 
+                // CREATE | OVERWRITE: create new, replace any stale file with the same name.
                 if ($zip->open($zipPath, \ZipArchive::CREATE | \ZipArchive::OVERWRITE) !== true) {
                     throw new \RuntimeException('Failed to open ZIP for writing.');
                 }
@@ -211,13 +253,16 @@ class PdfJobRunner
                 foreach ($chunks as $chunk) {
                     $sourcePath = $dir . $chunk['file_path'];
                     if (!is_file($sourcePath)) {
+                        // Clean up the partial archive before throwing — no half-written files left behind.
                         $zip->close();
                         @unlink($zipPath);
                         throw new \RuntimeException('Missing chunk file: ' . $chunk['file_path']);
                     }
+                    // Zero-padded entry name → archive contents sort correctly when extracted.
                     $entry = 'vouchers_chunk_' . str_pad((string) $chunk['chunk_index'], 3, '0', STR_PAD_LEFT) . '.pdf';
                     $zip->addFile($sourcePath, $entry);
                 }
+                // close() is what actually flushes the archive to disk.
                 $zip->close();
             }
 
@@ -260,11 +305,13 @@ class PdfJobRunner
     {
         $db      = \Config\Database::connect();
         $parent  = $db->table('pdf_jobs')->where('job_id', $parentJobId)->get()->getRow();
+        // Don't clobber a parent that's already settled (done or failed).
         if (!$parent || $parent->status === 'done' || $parent->status === 'failed') {
             return;
         }
         $db->table('pdf_jobs')->where('job_id', $parentJobId)->update([
             'status'        => 'failed',
+            // Prefix makes it obvious whether the failure was a chunk or finalize step.
             'error_message' => 'Chunk failed: ' . $reason,
             'completed_at'  => date('Y-m-d H:i:s'),
         ]);
