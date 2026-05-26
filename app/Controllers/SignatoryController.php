@@ -16,13 +16,27 @@ class SignatoryController extends BaseController
     public function index()
     {
         $signatoryModel = new SignatoryModel();
+        $keyword = trim((string) $this->request->getGet('q'));
+
+        $signatoryModel->where('is_active', 1);
+        if ($keyword !== '') {
+            $signatoryModel
+                ->groupStart()
+                ->like('prefix', $keyword)
+                ->orLike('first_name', $keyword)
+                ->orLike('middle_name', $keyword)
+                ->orLike('last_name', $keyword)
+                ->orLike('suffix', $keyword)
+                ->orLike('position_title', $keyword)
+                ->groupEnd();
+        }
 
         return view('signatories/index', [
             'title' => 'Signatories',
             'signatories' => $signatoryModel
-                ->where('is_active', 1)
                 ->orderBy('signatory_id', 'DESC')
                 ->findAll(),
+            'keyword' => $keyword,
             'prefixOptions' => self::PREFIX_OPTIONS,
             'suffixOptions' => self::SUFFIX_OPTIONS,
         ]);

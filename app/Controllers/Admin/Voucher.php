@@ -155,23 +155,27 @@ class Voucher extends Controller
     // ── List all students / vouchers ───────────────────────────────────────────
     public function index()
     {
-        $students = $this->voucherModel->getVouchersForListing();
+        $keyword = trim((string) $this->request->getGet('q'));
+        $students = $this->voucherModel->getVouchersForListing($keyword);
 
         return view('vouchers/index', [
             'title'    => 'Vouchers',
             'vouchers' => $students,
             'role'     => session()->get('role') ?: 'admin',
+            'keyword'  => $keyword,
         ] + $this->getSchoolDropdownData());
     }
 
     public function generate()
     {
-        $students = $this->voucherModel->getVouchersForListing();
+        $keyword = trim((string) $this->request->getGet('q'));
+        $students = $this->voucherModel->getVouchersForListing($keyword);
 
         return view('vouchers/generate', [
             'title'    => 'Voucher Generation',
             'vouchers' => $students,
             'role'     => session()->get('role') ?: 'admin',
+            'keyword'  => $keyword,
         ]);
     }
 

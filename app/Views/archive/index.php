@@ -24,15 +24,59 @@
         </li>
     </ul>
 
-    <?php if (($type ?? 'voucher') === 'signatory'): ?>
+    <?php if (($type ?? 'user') === 'user'): ?>
+        <form method="get" class="vs-advanced-search vs-advanced-search-outside mb-3">
+            <input type="hidden" name="type" value="user">
+            <input type="text" name="q" class="vs-input vs-advanced-search-input" placeholder="Advanced search all archived users..." value="<?= esc((string) ($keyword ?? ''), 'attr') ?>">
+            <button type="button" class="vs-btn vs-btn-outline" id="btnOpenArchiveFilter">
+                Filters
+                <span id="archiveFilterBadge" class="badge bg-primary" style="display:none;margin-left:.35rem"></span>
+            </button>
+        </form>
+
         <div class="vs-card">
             <div class="vs-card-body">
                 <div class="d-flex align-items-center gap-2 mb-3 flex-wrap">
-                    <input type="text" id="customArchiveSearch" class="vs-input" placeholder="Search archived signatories..." style="max-width:340px">
-                    <button type="button" class="vs-btn vs-btn-outline" id="btnOpenArchiveFilter">
-                        Filters
-                        <span id="archiveFilterBadge" class="badge bg-primary" style="display:none;margin-left:.35rem"></span>
-                    </button>
+                    <input type="text" id="customArchiveSearch" class="vs-input vs-page-search" placeholder="Search this page..." style="max-width:260px">
+                    <label class="vs-length-label ms-auto">Show <input type="number" id="archiveLengthInput" class="vs-length-input" value="10" min="1" max="500"> entries</label>
+                </div>
+                <table id="archivedUsersTable" class="vs-datatable js-data-table" data-search-placeholder="Search archived users..." style="width:100%">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>Role</th>
+                            <th>Archived At</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php foreach ($users as $user): ?>
+                            <tr data-archived-date="<?= !empty($user['updated_at']) ? esc(date('Y-m-d', strtotime($user['updated_at']))) : '' ?>">
+                                <td><?= esc($user['username'] ?? '') ?></td>
+                                <td><?= esc($user['email'] ?? '') ?></td>
+                                <td><?= esc(ucfirst($user['role'])) ?></td>
+                                <td><?= !empty($user['updated_at']) ? esc(date('M d, Y h:i A', strtotime($user['updated_at']))) : '-' ?></td>
+                            </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    <?php elseif (($type ?? 'user') === 'signatory'): ?>
+        <form method="get" class="vs-advanced-search vs-advanced-search-outside mb-3">
+            <input type="hidden" name="type" value="signatory">
+            <input type="text" name="q" class="vs-input vs-advanced-search-input" placeholder="Advanced search all archived signatories..." value="<?= esc((string) ($keyword ?? ''), 'attr') ?>">
+            <button type="button" class="vs-btn vs-btn-outline" id="btnOpenArchiveFilter">
+                Filters
+                <span id="archiveFilterBadge" class="badge bg-primary" style="display:none;margin-left:.35rem"></span>
+            </button>
+        </form>
+
+        <div class="vs-card">
+            <div class="vs-card-body">
+                <div class="d-flex align-items-center gap-2 mb-3 flex-wrap">
+                    <input type="text" id="customArchiveSearch" class="vs-input vs-page-search" placeholder="Search this page..." style="max-width:260px">
                     <label class="vs-length-label ms-auto">Show <input type="number" id="archiveLengthInput" class="vs-length-input" value="10" min="1" max="500"> entries</label>
                 </div>
                 <table id="archivedSignatoriesTable" class="vs-datatable js-data-table" data-search-placeholder="Search archived signatories..." style="width:100%">
@@ -65,15 +109,20 @@
         </div>
 
     <?php else: ?>
-        <!-- Vouchers Archive Table -->
+        <!-- Vouchers / Students Archive Table -->
+        <form method="get" class="vs-advanced-search vs-advanced-search-outside mb-3">
+            <input type="hidden" name="type" value="voucher">
+            <input type="text" name="q" class="vs-input vs-advanced-search-input" placeholder="Advanced search all archived vouchers..." value="<?= esc((string) ($keyword ?? ''), 'attr') ?>">
+            <button type="button" class="vs-btn vs-btn-outline" id="btnOpenArchiveFilter">
+                Filters
+                <span id="archiveFilterBadge" class="badge bg-primary" style="display:none;margin-left:.35rem"></span>
+            </button>
+        </form>
+
         <div class="vs-card">
             <div class="vs-card-body">
                 <div class="d-flex align-items-center gap-2 mb-3 flex-wrap">
-                    <input type="text" id="customArchiveSearch" class="vs-input" placeholder="Search archived vouchers..." style="max-width:340px">
-                    <button type="button" class="vs-btn vs-btn-outline" id="btnOpenArchiveFilter">
-                        Filters
-                        <span id="archiveFilterBadge" class="badge bg-primary" style="display:none;margin-left:.35rem"></span>
-                    </button>
+                    <input type="text" id="customArchiveSearch" class="vs-input vs-page-search" placeholder="Search this page..." style="max-width:260px">
                     <label class="vs-length-label ms-auto">Show <input type="number" id="archiveLengthInput" class="vs-length-input" value="10" min="1" max="500"> entries</label>
                 </div>
                 <table id="archivedVouchersTable" class="vs-datatable js-data-table" data-search-placeholder="Search archived vouchers..." style="width:100%">
@@ -197,10 +246,8 @@
     }
 
     var searchInput = document.getElementById('customArchiveSearch');
-    if (searchInput) {
-        searchInput.addEventListener('input', function () {
-            dt.search(this.value).draw();
-        });
+    if (window.VS && window.VS.bindCurrentPageSearch) {
+        window.VS.bindCurrentPageSearch(dt, searchInput);
     }
 
     var filterModal = document.getElementById('archiveFilterModal');

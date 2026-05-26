@@ -92,9 +92,9 @@ class VoucherModel extends Model
         return function_exists('mb_strtoupper') ? mb_strtoupper($value, 'UTF-8') : strtoupper($value);
     }
 
-    public function getVouchersForListing(): array
+    public function getVouchersForListing(string $keyword = ''): array
     {
-        $rows = $this->db->table('students')
+        $builder = $this->db->table('students')
             ->select("
                 student_id, voucher_no, voucher_date,
                 first_name, middle_name, last_name, suffix,
@@ -104,9 +104,32 @@ class VoucherModel extends Model
                 gwa, rank_no, gender, junior_high_school,
                 contact_number, remarks_status, created_at, generated_at
             ")
-            ->where('is_archived', 0)
+            ->where('is_archived', 0);
+
+        $keyword = trim($keyword);
+        if ($keyword !== '') {
+            $builder
+                ->groupStart()
+                ->like('voucher_no', $keyword)
+                ->orLike('first_name', $keyword)
+                ->orLike('middle_name', $keyword)
+                ->orLike('last_name', $keyword)
+                ->orLike('suffix', $keyword)
+                ->orLike('junior_high_school', $keyword)
+                ->orLike('preferred_senior_high_school', $keyword)
+                ->orLike('school_year', $keyword)
+                ->orLike('gender', $keyword)
+                ->orLike('remarks_status', $keyword)
+                ->orLike('voucher_status', $keyword)
+                ->orLike('contact_number', $keyword)
+                ->groupEnd();
+        }
+
+        $rows = $builder
             ->orderBy('created_at', 'DESC')
-            ->get()->getResultArray();
+            ->orderBy('student_id', 'DESC')
+            ->get()
+            ->getResultArray();
 
         $rows = array_map(fn ($row) => $this->uppercaseRow($row), $rows);
         $counts = $this->getGenerateCounts(array_column($rows, 'student_id'));
