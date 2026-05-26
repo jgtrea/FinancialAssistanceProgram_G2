@@ -95,7 +95,6 @@ $routes->post('students/archive/(:num)', 'StudentController::archive/$1');
 
 // ─── Archive (madridbranch) ───────────────────────────────────────────────────
 $routes->get('archive', 'ArchiveController::index');
-$routes->get('archive/restore/signatory/(:num)', 'ArchiveController::restoreSignatory/$1');
 
 // ─── Signatories (madridbranch) ───────────────────────────────────────────────
 $routes->get('signatories',                           'SignatoryController::index');
@@ -106,5 +105,6 @@ $routes->get('signatories/json/(:num)',               'SignatoryController::getJ
 $routes->get('signatories/signature/(:num)',          'SignatoryController::signature/$1');
 $routes->post('signatories/save',                     'SignatoryController::save');
 $routes->post('signatories/deactivate/(:num)',        'SignatoryController::deactivate/$1');
+$routes->post('signatories/restore/(:num)',           'SignatoryController::restore/$1');
 $routes->post('signatories/status/(:num)/(:alpha)',  'SignatoryController::setStatus/$1/$2');
 $routes->post('signatories/archive-multiple',         'SignatoryController::archiveMultiple');

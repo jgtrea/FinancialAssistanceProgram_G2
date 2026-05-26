@@ -18,7 +18,8 @@ class SignatoryController extends BaseController
         $signatoryModel = new SignatoryModel();
         $keyword = trim((string) $this->request->getGet('q'));
 
-        $signatoryModel->where('is_active', 1);
+        // Archived signatories stay visible on this page — they're rendered
+        // with a disabled checkbox and a Restore button instead of Select.
         if ($keyword !== '') {
             $signatoryModel
                 ->groupStart()
@@ -221,6 +222,20 @@ class SignatoryController extends BaseController
         return redirect()->to('/signatories')->with('success', 'Signatory archived.');
     }
 
+    public function restore($id)
+    {
+        $signatoryModel = new SignatoryModel();
+        $signatory = $signatoryModel->find($id);
+
+        if (!$signatory) {
+            return $this->response->setJSON(['success' => false, 'message' => 'Signatory not found.']);
+        }
+
+        $signatoryModel->update($id, ['is_active' => 1]);
+        log_action(session()->get('user_id'), 'RESTORE_SIGNATORY', "Restored signatory #{$id}");
+        return $this->response->setJSON(['success' => true, 'message' => 'Signatory restored.']);
+    }
+
     public function setStatus($id, $action)
     {
         $signatoryModel = new SignatoryModel();
@@ -231,6 +246,13 @@ class SignatoryController extends BaseController
         }
 
         if ($action === 'select') {
+            if (empty($signatory['is_active'])) {
+                return $this->response->setJSON([
+                    'success' => false,
+                    'message' => 'Archived signatories cannot be selected. Restore them first.',
+                ]);
+            }
+
             $position = trim((string) ($signatory['position_title'] ?? ''));
             if ($position !== '') {
                 $positionHolder = $signatoryModel

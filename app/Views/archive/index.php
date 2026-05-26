@@ -9,178 +9,41 @@
         </div>
     </div>
 
-    <?php $role = session('role') ?: 'guest'; ?>
+    <form method="get" class="vs-advanced-search vs-advanced-search-outside mb-3">
+        <input type="text" name="q" class="vs-input vs-advanced-search-input" placeholder="Advanced search all archived vouchers..." value="<?= esc((string) ($keyword ?? ''), 'attr') ?>">
+        <button type="button" class="vs-btn vs-btn-outline" id="btnOpenArchiveFilter">
+            Filters
+            <span id="archiveFilterBadge" class="badge bg-primary" style="display:none;margin-left:.35rem"></span>
+        </button>
+    </form>
 
-    <!-- Context Tabs -->
-    <ul class="nav nav-tabs mb-4" id="archiveTabs">
-        <li class="nav-item">
-            <a class="nav-link <?= ($type ?? '') === 'voucher' ? 'active' : '' ?>"
-               href="<?= site_url('archive?type=voucher') ?>">Vouchers</a>
-        </li>
-
-        <li class="nav-item">
-            <a class="nav-link <?= ($type ?? '') === 'signatory' ? 'active' : '' ?>"
-               href="<?= site_url('archive?type=signatory') ?>">Signatories</a>
-        </li>
-    </ul>
-
-    <?php if (($type ?? 'user') === 'user'): ?>
-        <form method="get" class="vs-advanced-search vs-advanced-search-outside mb-3">
-            <input type="hidden" name="type" value="user">
-            <input type="text" name="q" class="vs-input vs-advanced-search-input" placeholder="Advanced search all archived users..." value="<?= esc((string) ($keyword ?? ''), 'attr') ?>">
-            <button type="button" class="vs-btn vs-btn-outline" id="btnOpenArchiveFilter">
-                Filters
-                <span id="archiveFilterBadge" class="badge bg-primary" style="display:none;margin-left:.35rem"></span>
-            </button>
-        </form>
-
-        <div class="vs-card">
-            <div class="vs-card-body">
-                <div class="d-flex align-items-center gap-2 mb-3 flex-wrap">
-                    <input type="text" id="customArchiveSearch" class="vs-input vs-page-search" placeholder="Search this page..." style="max-width:260px">
-                    <label class="vs-length-label ms-auto">Show <input type="number" id="archiveLengthInput" class="vs-length-input" value="10" min="1" max="500"> entries</label>
-                </div>
-                <table id="archivedUsersTable" class="vs-datatable js-data-table" data-search-placeholder="Search archived users..." style="width:100%">
-                    <thead>
-                        <tr>
-                            <th>Name</th>
-                            <th>Email</th>
-                            <th>Role</th>
-                            <th>Archived At</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php foreach ($users as $user): ?>
-                            <tr data-archived-date="<?= !empty($user['updated_at']) ? esc(date('Y-m-d', strtotime($user['updated_at']))) : '' ?>">
-                                <td><?= esc($user['username'] ?? '') ?></td>
-                                <td><?= esc($user['email'] ?? '') ?></td>
-                                <td><?= esc(ucfirst($user['role'])) ?></td>
-                                <td><?= !empty($user['updated_at']) ? esc(date('M d, Y h:i A', strtotime($user['updated_at']))) : '-' ?></td>
-                            </tr>
-                        <?php endforeach; ?>
-                    </tbody>
-                </table>
+    <div class="vs-card">
+        <div class="vs-card-body">
+            <div class="d-flex align-items-center gap-2 mb-3 flex-wrap">
+                <input type="text" id="customArchiveSearch" class="vs-input vs-page-search" placeholder="Search this page..." style="max-width:260px">
+                <label class="vs-length-label ms-auto">Show <input type="number" id="archiveLengthInput" class="vs-length-input" value="10" min="1" max="500"> entries</label>
             </div>
-        </div>
-
-    <?php elseif (($type ?? 'user') === 'signatory'): ?>
-        <form method="get" class="vs-advanced-search vs-advanced-search-outside mb-3">
-            <input type="hidden" name="type" value="signatory">
-            <input type="text" name="q" class="vs-input vs-advanced-search-input" placeholder="Advanced search all archived signatories..." value="<?= esc((string) ($keyword ?? ''), 'attr') ?>">
-            <button type="button" class="vs-btn vs-btn-outline" id="btnOpenArchiveFilter">
-                Filters
-                <span id="archiveFilterBadge" class="badge bg-primary" style="display:none;margin-left:.35rem"></span>
-            </button>
-        </form>
-
-        <div class="vs-card">
-            <div class="vs-card-body">
-                <div class="d-flex align-items-center gap-2 mb-3 flex-wrap">
-                    <input type="text" id="customArchiveSearch" class="vs-input vs-page-search" placeholder="Search this page..." style="max-width:260px">
-                    <label class="vs-length-label ms-auto">Show <input type="number" id="archiveLengthInput" class="vs-length-input" value="10" min="1" max="500"> entries</label>
-                </div>
-                <table id="archivedSignatoriesTable" class="vs-datatable js-data-table" data-search-placeholder="Search archived signatories..." style="width:100%">
-                    <thead>
-                        <tr>
-                            <th>Full Name</th>
-                            <th>Position Title</th>
-                            <th>Archived At</th>
+            <table id="archivedVouchersTable" class="vs-datatable js-data-table" data-search-placeholder="Search archived vouchers..." style="width:100%">
+                <thead>
+                    <tr>
+                        <th>Student Name</th>
+                        <th>School</th>
+                        <th>Archived At</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php foreach ($vouchers as $voucher): ?>
+                        <tr data-archived-date="<?= !empty($voucher['archived_at']) ? esc(date('Y-m-d', strtotime($voucher['archived_at']))) : '' ?>">
+                            <td><?= esc($voucher['full_name']) ?></td>
+                            <td><?= esc($voucher['preferred_senior_high_school']) ?></td>
+                            <td><?= !empty($voucher['archived_at']) ? esc(date('M d, Y h:i A', strtotime($voucher['archived_at']))) : '-' ?></td>
                         </tr>
-                    </thead>
-                    <tbody>
-                        <?php foreach ($signatories as $signatory): ?>
-                            <?php
-                                $fullName = trim(
-                                    ($signatory['first_name'] ?? '') . ' ' .
-                                    ($signatory['middle_name'] ?? '') . ' ' .
-                                    ($signatory['last_name'] ?? '') . ' ' .
-                                    ($signatory['suffix'] ?? '')
-                                );
-                            ?>
-                            <tr data-archived-date="<?= !empty($signatory['updated_at']) ? esc(date('Y-m-d', strtotime($signatory['updated_at']))) : '' ?>">
-                                <td><?= esc($fullName) ?></td>
-                                <td><?= esc($signatory['position_title']) ?></td>
-                                <td><?= !empty($signatory['updated_at']) ? esc(date('M d, Y h:i A', strtotime($signatory['updated_at']))) : '-' ?></td>
-                            </tr>
-                        <?php endforeach; ?>
-                    </tbody>
-                </table>
-            </div>
+                    <?php endforeach; ?>
+                </tbody>
+            </table>
         </div>
-
-    <?php else: ?>
-        <!-- Vouchers / Students Archive Table -->
-        <form method="get" class="vs-advanced-search vs-advanced-search-outside mb-3">
-            <input type="hidden" name="type" value="voucher">
-            <input type="text" name="q" class="vs-input vs-advanced-search-input" placeholder="Advanced search all archived vouchers..." value="<?= esc((string) ($keyword ?? ''), 'attr') ?>">
-            <button type="button" class="vs-btn vs-btn-outline" id="btnOpenArchiveFilter">
-                Filters
-                <span id="archiveFilterBadge" class="badge bg-primary" style="display:none;margin-left:.35rem"></span>
-            </button>
-        </form>
-
-        <div class="vs-card">
-            <div class="vs-card-body">
-                <div class="d-flex align-items-center gap-2 mb-3 flex-wrap">
-                    <input type="text" id="customArchiveSearch" class="vs-input vs-page-search" placeholder="Search this page..." style="max-width:260px">
-                    <label class="vs-length-label ms-auto">Show <input type="number" id="archiveLengthInput" class="vs-length-input" value="10" min="1" max="500"> entries</label>
-                </div>
-                <table id="archivedVouchersTable" class="vs-datatable js-data-table" data-search-placeholder="Search archived vouchers..." style="width:100%">
-                    <thead>
-                        <tr>
-                            <th>Student Name</th>
-                            <th>School</th>
-                            <th>Archived At</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php foreach ($vouchers as $voucher): ?>
-                            <tr data-archived-date="<?= !empty($voucher['archived_at']) ? esc(date('Y-m-d', strtotime($voucher['archived_at']))) : '' ?>">
-                                <td><?= esc($voucher['full_name']) ?></td>
-                                <td><?= esc($voucher['preferred_senior_high_school']) ?></td>
-                                <td><?= !empty($voucher['archived_at']) ? esc(date('M d, Y h:i A', strtotime($voucher['archived_at']))) : '-' ?></td>
-                            </tr>
-                        <?php endforeach; ?>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    <?php endif; ?>
-
-<!-- Archive filter modals — rendered only when the matching tab is active -->
-<?php if (($type ?? 'voucher') === 'signatory'): ?>
-<div class="vs-modal-overlay" id="archiveFilterModal" style="display:none">
-  <div class="vs-modal" style="max-width:400px">
-    <div class="vs-modal-header">
-      <h5>Filter Archived Signatories</h5>
-      <button class="vs-modal-close" id="archiveFilterClose">&times;</button>
     </div>
-    <div class="vs-modal-body">
-      <div class="vs-form-grid vs-form-grid-2">
-        <div class="vs-span-2">
-          <label class="vs-label" for="afPosition">Position Title</label>
-          <select id="afPosition" class="vs-input">
-            <option value="">All</option>
-          </select>
-        </div>
-        <div>
-          <label class="vs-label" for="afDateFrom">Archived From</label>
-          <input type="date" id="afDateFrom" class="vs-input">
-        </div>
-        <div>
-          <label class="vs-label" for="afDateTo">Archived To</label>
-          <input type="date" id="afDateTo" class="vs-input">
-        </div>
-      </div>
-    </div>
-    <div class="vs-modal-footer">
-      <button type="button" class="vs-btn vs-btn-outline" id="archiveFilterClear">Clear All</button>
-      <button type="button" class="vs-btn vs-btn-outline" id="archiveFilterCancel">Cancel</button>
-      <button type="button" class="vs-btn vs-btn-primary" id="archiveFilterApply">Apply</button>
-    </div>
-  </div>
-</div>
-<?php else: ?>
+
 <div class="vs-modal-overlay" id="archiveFilterModal" style="display:none">
   <div class="vs-modal" style="max-width:480px">
     <div class="vs-modal-header">
@@ -212,15 +75,10 @@
     </div>
   </div>
 </div>
-<?php endif; ?>
 
 <script>
 (function initArchiveSearch() {
-    var tableId = <?php
-        $t = $type ?? 'voucher';
-        if ($t === 'signatory') echo "'archivedSignatoriesTable'";
-        else                    echo "'archivedVouchersTable'";
-    ?>;
+    var tableId = 'archivedVouchersTable';
 
     var table = document.getElementById(tableId);
     if (!table || !window.jQuery || !$.fn.DataTable.isDataTable(table)) {
@@ -283,56 +141,6 @@
             if (filterBadge) { filterBadge.textContent = n || ''; filterBadge.style.display = n ? '' : 'none'; }
         }
 
-        <?php if (($type ?? 'voucher') === 'signatory'): ?>
-        // ── Signatories: Position Title + Archived At date range ─────────────
-        var posSel = document.getElementById('afPosition');
-        if (posSel) {
-            var posSet = new Set();
-            dt.column(1).data().each(function (val) {
-                var p = (val || '').toString().trim();
-                if (p) posSet.add(p);
-            });
-            Array.from(posSet).sort().forEach(function (p) {
-                var opt = document.createElement('option');
-                opt.value = p; opt.textContent = p;
-                posSel.appendChild(opt);
-            });
-        }
-
-        $.fn.dataTable.ext.search.push(function (settings, rowData, rowIdx) {
-            if (settings.nTable.id !== 'archivedSignatoriesTable') return true;
-            var row = settings.aoData[rowIdx].nTr;
-            if (!row) return true;
-            var date = row.getAttribute('data-archived-date') || '';
-            if (activeFilters.dateFrom && date < activeFilters.dateFrom) return false;
-            if (activeFilters.dateTo   && date > activeFilters.dateTo)   return false;
-            return true;
-        });
-
-        btnApply && btnApply.addEventListener('click', function () {
-            var pos = posSel ? posSel.value : '';
-            activeFilters = {
-                position: pos,
-                dateFrom: (document.getElementById('afDateFrom') || {}).value || '',
-                dateTo:   (document.getElementById('afDateTo')   || {}).value || '',
-            };
-            updateBadge();
-            dt.column(1).search(pos).draw();
-            closeFilter();
-        });
-
-        btnClear && btnClear.addEventListener('click', function () {
-            if (posSel) posSel.value = '';
-            var dfEl = document.getElementById('afDateFrom');
-            var dtEl = document.getElementById('afDateTo');
-            if (dfEl) dfEl.value = '';
-            if (dtEl) dtEl.value = '';
-            activeFilters = {};
-            updateBadge();
-            dt.column(1).search('').draw();
-        });
-
-        <?php else: // vouchers ?>
         // ── Vouchers: School + Archived At date range ─────────────────────────
         $.fn.dataTable.ext.search.push(function (settings, rowData, rowIdx) {
             if (settings.nTable.id !== 'archivedVouchersTable') return true;
@@ -380,7 +188,6 @@
             dt.column(1).search('').draw();
             updateBadge();
         });
-        <?php endif; ?>
     }
 }());
 </script>

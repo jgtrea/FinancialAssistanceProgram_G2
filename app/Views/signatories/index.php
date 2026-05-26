@@ -74,11 +74,12 @@
                         ]);
                         $fullName = trim(implode(' ', $parts));
                         $isSelected = !empty($signatory['is_selected']);
+                        $isArchived = empty($signatory['is_active']);
                         $sid = (int) $signatory['signatory_id'];
                     ?>
 
-                    <tr id="sig-row-<?= $sid ?>">
-                        <td><input type="checkbox" class="vs-check sig-row-check" value="<?= $sid ?>"></td>
+                    <tr id="sig-row-<?= $sid ?>" data-archived="<?= $isArchived ? '1' : '0' ?>"<?= $isArchived ? ' class="vs-row-archived"' : '' ?>>
+                        <td><input type="checkbox" class="vs-check sig-row-check" value="<?= $sid ?>"<?= $isArchived ? ' disabled title="Archived signatories cannot be bulk-archived"' : '' ?>></td>
                         <td><?= esc($fullName) ?></td>
                         <td><?= esc($signatory['position_title']) ?></td>
                         <td>
@@ -90,19 +91,33 @@
                                 <span class="text-muted">—</span>
                             <?php endif; ?>
                         </td>
-                        <td><span class="badge <?= $isSelected ? 'bg-success' : 'bg-secondary' ?>" id="sig-badge-<?= $sid ?>"><?= $isSelected ? 'Selected' : 'Unselected' ?></span></td>
+                        <td>
+                            <?php if ($isArchived): ?>
+                                <span class="badge bg-dark" id="sig-badge-<?= $sid ?>">Archived</span>
+                            <?php else: ?>
+                                <span class="badge <?= $isSelected ? 'bg-success' : 'bg-secondary' ?>" id="sig-badge-<?= $sid ?>"><?= $isSelected ? 'Selected' : 'Unselected' ?></span>
+                            <?php endif; ?>
+                        </td>
                         <td class="actions-cell">
                             <button type="button"
                                     class="vs-tbl-btn vs-tbl-btn-edit js-sig-edit"
                                     data-id="<?= $sid ?>">
                                 Edit
                             </button>
-                            <button class="vs-tbl-btn <?= $isSelected ? 'vs-tbl-btn-delete' : 'vs-tbl-btn-view' ?> sig-toggle-btn"
-                                    data-id="<?= $sid ?>"
-                                    data-selected="<?= $isSelected ? '1' : '0' ?>"
-                                    id="sig-toggle-<?= $sid ?>">
-                                <?= $isSelected ? 'Unselect' : 'Select' ?>
-                            </button>
+                            <?php if ($isArchived): ?>
+                                <button class="vs-tbl-btn vs-tbl-btn-view sig-restore-btn"
+                                        data-id="<?= $sid ?>"
+                                        id="sig-restore-<?= $sid ?>">
+                                    Restore
+                                </button>
+                            <?php else: ?>
+                                <button class="vs-tbl-btn <?= $isSelected ? 'vs-tbl-btn-delete' : 'vs-tbl-btn-view' ?> sig-toggle-btn"
+                                        data-id="<?= $sid ?>"
+                                        data-selected="<?= $isSelected ? '1' : '0' ?>"
+                                        id="sig-toggle-<?= $sid ?>">
+                                    <?= $isSelected ? 'Unselect' : 'Select' ?>
+                                </button>
+                            <?php endif; ?>
                         </td>
                     </tr>
                 <?php endforeach; ?>
@@ -432,22 +447,30 @@
     var actionBar   = document.getElementById('sigActionBar');
     var countLabel  = document.getElementById('sigSelectedCount');
 
+    // Only enabled (i.e. non-archived) checkboxes participate in bulk archive.
+    function getSelectableCheckboxes() {
+        return Array.prototype.filter.call(
+            document.querySelectorAll('.sig-row-check'),
+            function (cb) { return !cb.disabled; }
+        );
+    }
+
     function updateActionBar() {
         if (countLabel) countLabel.textContent = selectedIds.size;
         if (actionBar)  actionBar.style.display = selectedIds.size > 0 ? 'flex' : 'none';
 
         var checkAll = document.getElementById('sigCheckAll');
         if (checkAll) {
-            var all = document.querySelectorAll('.sig-row-check');
-            checkAll.checked = all.length > 0 && selectedIds.size >= all.length;
-            checkAll.indeterminate = selectedIds.size > 0 && selectedIds.size < all.length;
+            var selectable = getSelectableCheckboxes();
+            checkAll.checked = selectable.length > 0 && selectedIds.size >= selectable.length;
+            checkAll.indeterminate = selectedIds.size > 0 && selectedIds.size < selectable.length;
         }
     }
 
     var checkAll = document.getElementById('sigCheckAll');
     checkAll && checkAll.addEventListener('change', function () {
         var shouldCheck = selectedIds.size === 0;
-        document.querySelectorAll('.sig-row-check').forEach(function (cb) {
+        getSelectableCheckboxes().forEach(function (cb) {
             cb.checked = shouldCheck;
             if (shouldCheck) selectedIds.add(cb.value);
             else selectedIds.delete(cb.value);
@@ -505,6 +528,38 @@
                 if (metaEl && data.csrf_token) metaEl.setAttribute('content', data.csrf_token);
 
                 btn.disabled = false;
+            })
+            .catch(function () {
+                showAlert('An error occurred.', 'error');
+                btn.disabled = false;
+            });
+        });
+    });
+
+    // ── Restore (unarchive) ───────────────────────────────────────────────────
+    // Reloads the page on success so the row re-renders as an active signatory
+    // with the normal Select/Unselect button — simpler than rebuilding the cell
+    // in-place, and matches the post-action flow elsewhere on this page.
+    document.querySelectorAll('.sig-restore-btn').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+            var id   = btn.getAttribute('data-id');
+            var csrf = getCsrf();
+
+            btn.disabled = true;
+
+            fetch('<?= base_url('signatories/restore') ?>/' + id, {
+                method:  'POST',
+                headers: { 'X-Requested-With': 'XMLHttpRequest', 'Content-Type': 'application/x-www-form-urlencoded' },
+                body:    csrf.name + '=' + csrf.token,
+            })
+            .then(function (r) { return r.json(); })
+            .then(function (data) {
+                if (!data.success) {
+                    showAlert(data.message || 'Failed.', 'error');
+                    btn.disabled = false;
+                    return;
+                }
+                window.location.reload();
             })
             .catch(function () {
                 showAlert('An error occurred.', 'error');
