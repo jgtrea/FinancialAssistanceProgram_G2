@@ -1,16 +1,16 @@
 :root {
-    --primary: #4e73df;
-    --success: #1cc88a;
-    --info: #36b9cc;
-    --danger: #e74a3b;
-    --dark-green: #145a32;
-    --binan-green: #198754;
+    --primary: #075da8;
+    --success: #16956f;
+    --info: #0aa6c8;
+    --danger: #c93131;
+    --dark-green: #073b78;
+    --binan-green: #0aa6c8;
 
-    --gray-100: #f8f9fc;
-    --gray-200: #eaecf4;
-    --gray-300: #dddfeb;
-    --gray-600: #858796;
-    --gray-800: #5a5c69;
+    --gray-100: #eef8fb;
+    --gray-200: #d9edf5;
+    --gray-300: #c8e4ee;
+    --gray-600: #5f7185;
+    --gray-800: #073b78;
 }
 
 .btn-base {
@@ -29,10 +29,10 @@
 }
 
 .btn-blue { background-color: var(--primary); color: #fff; }
-.btn-blue:hover { background-color: #2e59d9; color: #fff; }
+.btn-blue:hover { background-color: #073b78; color: #fff; }
 
 .btn-red { background-color: var(--danger); color: #fff; }
-.btn-red:hover { background-color: #be2617; color: #fff; }
+.btn-red:hover { background-color: #9f2323; color: #fff; }
 
 .btn-white { background-color: #fff; color: var(--gray-800); border-color: var(--gray-300); }
 .btn-white:hover { background-color: var(--gray-100); }
@@ -75,7 +75,7 @@
 .border-l-yellow { border-left: 0.25rem solid #f6c23e !important; }
 
 .bg-gradient-green {
-    background: linear-gradient(135deg, var(--binan-green) 0%, var(--dark-green) 100%);
+    background: linear-gradient(135deg, var(--primary) 0%, var(--binan-green) 100%);
     color: white;
 }
 
@@ -184,14 +184,14 @@ body.app-shell {
 .login-page {
     min-height: 100vh;
     margin: 0;
-    background-image: linear-gradient(rgba(0, 0, 0, 0.35), rgba(0, 0, 0, 0.45)), var(--login-bg);
+    background-image: linear-gradient(rgba(7, 59, 120, 0.42), rgba(7, 120, 154, 0.52)), var(--login-bg);
     background-position: center;
     background-repeat: no-repeat;
     background-size: cover;
 }
 
 .login-navbar {
-    background: rgba(0, 0, 0, 0.55);
+    background: rgba(7, 59, 120, 0.82);
     padding: 0.9rem 1.5rem;
 }
 
@@ -254,7 +254,7 @@ body.app-shell {
 .login-card {
     background: #fff;
     border-radius: 0.5rem;
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 10px 40px rgba(7, 59, 120, 0.22);
     padding: 3rem 2.5rem;
 }
 

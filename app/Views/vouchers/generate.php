@@ -31,9 +31,16 @@
     </button>
   </div>
 
+  <form method="get" class="vs-advanced-search vs-advanced-search-outside mb-3">
+    <input type="text" name="q" class="vs-input vs-advanced-search-input" placeholder="Advanced search all vouchers..." value="<?= esc((string) ($keyword ?? ''), 'attr') ?>">
+  </form>
+
   <div class="vs-card">
     <div class="vs-card-body">
-      <table id="vouchersTable" class="vs-datatable" style="width:100%">
+      <div class="d-flex align-items-center gap-2 mb-3 flex-wrap">
+        <input type="text" id="customVouchersSearch" class="vs-input vs-page-search" placeholder="Search this page..." style="max-width:260px">
+      </div>
+      <table id="vouchersTable" class="vs-datatable" data-search-placeholder="Search vouchers..." style="width:100%">
         <thead>
           <tr>
             <th class="vs-th-check"><input type="checkbox" class="vs-check vs-check-all" aria-label="Select all vouchers"></th>

@@ -12,6 +12,7 @@ class ArchiveController extends BaseController
     {
         $role = session('role') ?: 'user';
         $type = $this->request->getGet('type') ?? ($role === 'admin' ? 'user' : 'voucher');
+        $keyword = trim((string) $this->request->getGet('q'));
 
         // Prevent non-admin users from accessing user archive
         if ($type === 'user' && $role !== 'admin') {
@@ -21,20 +22,39 @@ class ArchiveController extends BaseController
         $data = [
             'title' => 'Archive',
             'type'  => $type,
+            'keyword' => $keyword,
         ];
 
         if ($type === 'user') {
-            $data['users'] = (new UserModel())
-                ->where('is_active', 0)
+            $query = (new UserModel())->where('is_active', 0);
+            if ($keyword !== '') {
+                $query
+                    ->groupStart()
+                    ->like('username', $keyword)
+                    ->orLike('email', $keyword)
+                    ->orLike('role', $keyword)
+                    ->groupEnd();
+            }
+            $data['users'] = $query
                 ->orderBy('user_id', 'DESC')
                 ->findAll();
         } elseif ($type === 'signatory') {
-            $data['signatories'] = (new SignatoryModel())
-                ->where('is_active', 0)
+            $query = (new SignatoryModel())->where('is_active', 0);
+            if ($keyword !== '') {
+                $query
+                    ->groupStart()
+                    ->like('first_name', $keyword)
+                    ->orLike('middle_name', $keyword)
+                    ->orLike('last_name', $keyword)
+                    ->orLike('suffix', $keyword)
+                    ->orLike('position_title', $keyword)
+                    ->groupEnd();
+            }
+            $data['signatories'] = $query
                 ->orderBy('signatory_id', 'DESC')
                 ->findAll();
         } else {
-            $data['vouchers'] = (new ArchiveModel())->getArchivesForListing();
+            $data['vouchers'] = (new ArchiveModel())->getArchivesForListing($keyword);
         }
 
         return view('archive/index', $data);

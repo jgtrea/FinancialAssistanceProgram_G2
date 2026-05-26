@@ -137,6 +137,31 @@ function initGenericDataTables() {
   });
 }
 
+window.VS = window.VS || {};
+window.VS.bindCurrentPageSearch = function bindCurrentPageSearch(dt, input) {
+  if (!dt || !input) return;
+  if (input.dataset.currentPageSearchBound === '1') return;
+  input.dataset.currentPageSearchBound = '1';
+
+  function normalize(value) {
+    return (value || '').toString().toLowerCase().trim();
+  }
+
+  function applySearch() {
+    const query = normalize(input.value);
+    dt.rows({ page: 'current' }).every(function () {
+      const row = this.node();
+      if (!row) return;
+      const text = normalize(row.textContent);
+      row.style.display = !query || text.indexOf(query) !== -1 ? '' : 'none';
+    });
+  }
+
+  input.addEventListener('input', applySearch);
+  dt.on('draw.dt page.dt order.dt length.dt', applySearch);
+  applySearch();
+};
+
 
 /* ============================================================
    PDF JOB TRACKING — survives page navigation via localStorage
@@ -437,7 +462,7 @@ document.addEventListener('DOMContentLoaded', function () {
     lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, 'All']],
     responsive: true,
     autoWidth: false,
-    order: [[1, 'asc']],
+    order: [],
     columnDefs: [{ orderable: false, targets: [0, 8] }],
     language: {
       search: '',
@@ -447,6 +472,15 @@ document.addEventListener('DOMContentLoaded', function () {
       paginate:   { previous: '&#8249;', next: '&#8250;' },
     },
   });
+
+  const currentPageSearch = document.getElementById('customStudentsSearch')
+                         || document.getElementById('customVouchersSearch');
+  if (currentPageSearch && window.VS && window.VS.bindCurrentPageSearch) {
+    const dtWrap = vouchersTable.closest('.dataTables_wrapper');
+    const dtSearch = dtWrap ? dtWrap.querySelector('.dataTables_filter') : null;
+    if (dtSearch) dtSearch.style.display = 'none';
+    window.VS.bindCurrentPageSearch(dt, currentPageSearch);
+  }
 
   // ── Cross-page selection (Set of string IDs) ──────────────────────────────────
   const selectedIds = new Set();

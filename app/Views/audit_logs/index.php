@@ -25,14 +25,18 @@
         </div>
     </div>
 
+    <form method="get" class="vs-advanced-search vs-advanced-search-outside mb-3">
+        <input type="text" name="q" class="vs-input vs-advanced-search-input" placeholder="Advanced search all audit logs..." value="<?= esc((string) ($keyword ?? ''), 'attr') ?>">
+        <button type="button" class="vs-btn vs-btn-outline" id="auditBtnOpenFilter">
+            Filters
+            <span id="auditFilterBadge" class="badge bg-primary" style="display:none;margin-left:.35rem"></span>
+        </button>
+    </form>
+
     <div class="vs-card">
         <div class="vs-card-body">
             <div class="d-flex align-items-center gap-2 mb-3 flex-wrap">
-                <input type="text" id="auditCustomSearch" class="vs-input" placeholder="Search audit logs..." style="max-width:340px">
-                <button type="button" class="vs-btn vs-btn-outline" id="auditBtnOpenFilter">
-                    Filters
-                    <span id="auditFilterBadge" class="badge bg-primary" style="display:none;margin-left:.35rem"></span>
-                </button>
+                <input type="text" id="auditCustomSearch" class="vs-input vs-page-search" placeholder="Search this page..." style="max-width:260px">
                 <label class="vs-length-label ms-auto">Show <input type="number" id="auditLengthInput" class="vs-length-input" value="10" min="1" max="500"> entries</label>
             </div>
             <table id="auditLogsTable" class="vs-datatable js-data-table" data-search-placeholder="Search audit logs..." style="width:100%">
@@ -171,10 +175,8 @@
         }
 
         var customSearch = document.getElementById('auditCustomSearch');
-        if (customSearch) {
-            customSearch.addEventListener('input', function () {
-                dt.search(this.value).draw();
-            });
+        if (window.VS && window.VS.bindCurrentPageSearch) {
+            window.VS.bindCurrentPageSearch(dt, customSearch);
         }
 
         function activeFilterCount() {

@@ -5,7 +5,7 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <title>Biñan City - Login</title>
+    <title>City Education Office - Login</title>
 
     <?php pre_style('default_lay'); ?>
 </head>
@@ -13,14 +13,14 @@
 <body class="login-screen">
     <nav class="sb-topnav navbar navbar-expand navbar-dark bg-dark fixed-top">
         <a class="navbar-brand ps-3 d-flex align-items-center fw-bold text-uppercase" href="<?= site_url('/') ?>">
-            <img src="<?= base_url('assets/img/logo_binan.png') ?>" class="navbar-logo me-2" alt="Biñan City">
-            Biñan City
+            <img src="<?= base_url('assets/img/city_education_office_seal.png') ?>" class="navbar-logo me-2" alt="City Education Office seal">
+            CEDO
         </a>
     </nav>
 
     <main class="login-shell">
         <section class="login-card-modern">
-            <div class="login-visual" style="background-image: linear-gradient(90deg, rgba(8, 32, 24, .86), rgba(8, 32, 24, .42)), url('<?= base_url('assets/img/bg_binan.jpg') ?>');">
+            <div class="login-visual" style="background-image: linear-gradient(90deg, rgba(7, 59, 120, .9), rgba(7, 120, 154, .5)), url('<?= base_url('assets/img/bg_binan.jpg') ?>');">
                 <div class="login-visual-content">
                     <span class="login-eyebrow">Welcome to</span>
                     <h1>Grants and Scholarships Program</h1>
@@ -30,6 +30,7 @@
 
             <div class="login-panel-modern">
                 <div class="login-panel-header">
+                    <img src="<?= base_url('assets/img/city_education_office_seal.png') ?>" class="login-panel-logo" alt="City Education Office seal">
                     <div>
                         <h2>Sign in</h2>
                         <p>Use your authorized account to continue.</p>

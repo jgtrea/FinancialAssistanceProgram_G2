@@ -9,7 +9,22 @@ class UsersController extends BaseController
     public function index()
     {
         $model = new UserLogin();
-        $data['users'] = $model->where('is_active', 1)->findAll();
+        $keyword = trim((string) $this->request->getGet('q'));
+
+        $model->where('is_active', 1);
+        if ($keyword !== '') {
+            $model
+                ->groupStart()
+                ->like('username', $keyword)
+                ->orLike('email', $keyword)
+                ->orLike('role', $keyword)
+                ->groupEnd();
+        }
+
+        $data['users'] = $model
+            ->orderBy('user_id', 'DESC')
+            ->findAll();
+        $data['keyword'] = $keyword;
         return view('admin/index', $data);
     }
 
