@@ -231,6 +231,27 @@ class SignatoryController extends BaseController
         }
 
         if ($action === 'select') {
+            $position = trim((string) ($signatory['position_title'] ?? ''));
+            if ($position !== '') {
+                $positionHolder = $signatoryModel
+                    ->where('is_selected', 1)
+                    ->where('position_title', $position)
+                    ->where('signatory_id !=', (int) $id)
+                    ->first();
+                if ($positionHolder) {
+                    $holderName = trim(implode(' ', array_filter([
+                        $positionHolder['prefix']      ?? null,
+                        $positionHolder['first_name']  ?? null,
+                        $positionHolder['last_name']   ?? null,
+                        $positionHolder['suffix']      ?? null,
+                    ])));
+                    return $this->response->setJSON([
+                        'success' => false,
+                        'message' => "Another signatory ({$holderName}) is already selected for {$position}. Deselect them first.",
+                    ]);
+                }
+            }
+
             $selectedCount = $signatoryModel->where('is_selected', 1)->countAllResults();
             if ($selectedCount >= 3) {
                 return $this->response->setJSON([
