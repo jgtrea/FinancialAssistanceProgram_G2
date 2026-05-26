@@ -4,11 +4,23 @@
 
 <?php $role = $role ?? 'admin' ?>
 <?php $prefix = $role === 'admin' ? 'admin' : 'user' ?>
+<?php $juniorHighSchools = $juniorHighSchools ?? [] ?>
+<?php $seniorHighSchools = $seniorHighSchools ?? [] ?>
 
 <div class="vs-page-header mb-4">
     <div>
       <h4 class="vs-page-title"><?= esc($title) ?></h4>
       <p class="vs-page-sub">Manage student financial assistance records.</p>
+    </div>
+    <div class="d-flex gap-2">
+      <button type="button" class="vs-btn vs-btn-primary" id="btnAddVoucher" data-mode="add">
+        <?= asset_icon('add', ['stroke-width' => '2.5']) ?>
+        Add Voucher
+      </button>
+      <button type="button" class="vs-btn vs-btn-outline" id="btnOpenImport">
+        <?= asset_icon('import') ?>
+        Import
+      </button>
     </div>
   </div>
 
@@ -26,6 +38,10 @@
         <?= asset_icon('voucher-add') ?>
         Generate Voucher
       </button>
+      <button type="button" class="vs-btn vs-btn-success" id="btnOpenExport">
+        <?= asset_icon('export') ?>
+        Export
+      </button>
       <button class="vs-btn vs-btn-danger" id="btnArchive">
         <?= asset_icon('archive') ?>
         Archive Selected
@@ -33,31 +49,19 @@
     </div>
   </div>
 
-  <div class="d-flex align-items-center gap-2 mb-3 flex-wrap">
-    <input type="text" id="customStudentsSearch" class="vs-input" placeholder="Search students..." style="max-width:340px">
-    <button type="button" class="vs-btn vs-btn-outline" id="btnOpenFilter">
-      Filters
-      <span id="filterBadge" class="badge bg-primary" style="display:none;margin-left:.35rem"></span>
-    </button>
-    <div id="customLengthSlot" class="ms-2"></div>
-    <div class="d-flex gap-2 ms-auto">
-      <button type="button" class="vs-btn vs-btn-primary" id="btnAddVoucher" data-mode="add">
-        <?= asset_icon('add', ['stroke-width' => '2.5']) ?>
-        Add Voucher
-      </button>
-      <button type="button" class="vs-btn vs-btn-outline" id="btnOpenImport">
-        <?= asset_icon('import') ?>
-        Import
-      </button>
-      <button type="button" class="vs-btn vs-btn-outline" id="btnOpenExport">
-        <?= asset_icon('export') ?>
-        Export
-      </button>
-    </div>
-  </div>
+  <div id="studentsAlertBox"></div>
 
   <div class="vs-card">
     <div class="vs-card-body">
+      <div class="d-flex align-items-center gap-2 mb-3 flex-wrap">
+        <input type="text" id="customStudentsSearch" class="vs-input" placeholder="Search students..." style="max-width:340px">
+        <button type="button" class="vs-btn vs-btn-outline" id="btnOpenFilter">
+          Filters
+          <span id="filterBadge" class="badge bg-primary" style="display:none;margin-left:.35rem"></span>
+        </button>
+        
+        <label class="vs-length-label ms-auto">Show <input type="number" id="vouchersLengthInput" class="vs-length-input" value="10" min="1" max="500"> entries</label>
+      </div>
       <table id="studentsTable" class="vs-datatable" data-search-placeholder="Search students..." style="width:100%">
         <thead>
           <tr>
@@ -197,7 +201,7 @@
           <div>
             <label class="vs-label" for="vmSuffix">Suffix</label>
             <select id="vmSuffix" name="suffix" class="vs-input">
-              <option value="">None</option>
+              <option value="">-- Select --</option>
               <option value="JR.">Jr.</option>
               <option value="SR.">Sr.</option>
               <option value="II">II</option>
@@ -232,12 +236,24 @@
 
           <div class="vs-span-2">
             <label class="vs-label" for="vmJuniorHs">Junior High School</label>
-            <input id="vmJuniorHs" name="junior_high_school" type="text" class="vs-input vs-uppercase">
+            <select id="vmJuniorHs" name="junior_high_school" class="vs-input">
+              <option value="">-- Select --</option>
+              <?php foreach ($juniorHighSchools as $school): ?>
+                <?php $schoolName = $school['school_name'] ?? '' ?>
+                <option value="<?= esc($schoolName) ?>"><?= esc($schoolName) ?></option>
+              <?php endforeach ?>
+            </select>
           </div>
 
           <div class="vs-span-2">
             <label class="vs-label required" for="vmPreferredHs">Preferred Senior High School</label>
-            <input id="vmPreferredHs" name="preferred_senior_high_school" type="text" class="vs-input vs-uppercase" required>
+            <select id="vmPreferredHs" name="preferred_senior_high_school" class="vs-input" required>
+              <option value="">-- Select --</option>
+              <?php foreach ($seniorHighSchools as $school): ?>
+                <?php $schoolName = $school['school_name'] ?? '' ?>
+                <option value="<?= esc($schoolName) ?>"><?= esc($schoolName) ?></option>
+              <?php endforeach ?>
+            </select>
           </div>
 
           <div>
@@ -258,6 +274,7 @@
           <div>
             <label class="vs-label" for="vmEligibility">Eligibility</label>
             <select id="vmEligibility" name="eligibility_status" class="vs-input">
+              <option value="">-- Select --</option>
               <option value="eligible">Eligible</option>
               <option value="not_eligible">Not Eligible</option>
             </select>
@@ -324,11 +341,23 @@
         </div>
         <div class="vs-span-2">
           <label class="vs-label" for="filterJuniorHs">Junior High School</label>
-          <select id="filterJuniorHs" class="vs-input"><option value="">All</option></select>
+          <select id="filterJuniorHs" class="vs-input">
+            <option value="">All</option>
+            <?php foreach ($juniorHighSchools as $school): ?>
+              <?php $schoolName = $school['school_name'] ?? '' ?>
+              <option value="<?= esc($schoolName) ?>"><?= esc($schoolName) ?></option>
+            <?php endforeach ?>
+          </select>
         </div>
         <div class="vs-span-2">
           <label class="vs-label" for="filterPreferredHs">Preferred Senior HS</label>
-          <select id="filterPreferredHs" class="vs-input"><option value="">All</option></select>
+          <select id="filterPreferredHs" class="vs-input">
+            <option value="">All</option>
+            <?php foreach ($seniorHighSchools as $school): ?>
+              <?php $schoolName = $school['school_name'] ?? '' ?>
+              <option value="<?= esc($schoolName) ?>"><?= esc($schoolName) ?></option>
+            <?php endforeach ?>
+          </select>
         </div>
         <div class="vs-span-2">
           <label class="vs-label" for="filterGwaMin">GWA Min</label>
@@ -356,12 +385,12 @@
       <button class="vs-modal-close" id="exportModalClose">&times;</button>
     </div>
     <div class="vs-modal-body">
-      <p>Choose the file format to export all current student records.</p>
+      <p>Choose the file format to export the selected student records.</p>
       <div class="d-flex gap-3 mt-3">
-        <a href="<?= site_url('vouchers/export?format=xlsx') ?>" class="vs-btn vs-btn-outline flex-fill text-center">
+        <a href="<?= site_url('vouchers/export?format=xlsx') ?>" data-export-format="xlsx" class="vs-btn vs-btn-outline flex-fill text-center">
           Excel (.xlsx)
         </a>
-        <a href="<?= site_url('vouchers/export?format=csv') ?>" class="vs-btn vs-btn-outline flex-fill text-center">
+        <a href="<?= site_url('vouchers/export?format=csv') ?>" data-export-format="csv" class="vs-btn vs-btn-outline flex-fill text-center">
           CSV (.csv)
         </a>
       </div>
@@ -426,9 +455,12 @@
   // ── Export ──────────────────────────────────────────────────────────────────
   var exportModal = document.getElementById('exportModal');
 
-  document.getElementById('btnOpenExport').addEventListener('click', function () {
-    exportModal.style.display = 'flex';
-  });
+  var btnOpenExport = document.getElementById('btnOpenExport');
+  if (btnOpenExport) {
+    btnOpenExport.addEventListener('click', function () {
+      exportModal.style.display = 'flex';
+    });
+  }
   document.getElementById('exportModalClose').addEventListener('click', function () {
     exportModal.style.display = 'none';
   });
@@ -471,8 +503,23 @@
     vmEligibility: 'eligibility_status',
   };
 
-  function vmShowAlert(msg, type) {
-    voucherModalAlert.innerHTML = '<div class="vs-alert vs-alert-' + (type || 'error') + ' mb-3">' + msg + '</div>';
+  function escapeHtml(value) {
+    return String(value || '').replace(/[&<>"']/g, function (ch) {
+      return {'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;'}[ch];
+    });
+  }
+
+  function vmShowAlert(msg, type, errors) {
+    var html = '<div class="vs-alert vs-alert-' + (type || 'error') + ' mb-3">' + escapeHtml(msg);
+    if (errors && Object.keys(errors).length) {
+      html += '<ul class="mb-0 mt-2">';
+      Object.keys(errors).forEach(function (field) {
+        html += '<li><strong>' + escapeHtml(field) + ':</strong> ' + escapeHtml(errors[field]) + '</li>';
+      });
+      html += '</ul>';
+    }
+    html += '</div>';
+    voucherModalAlert.innerHTML = html;
   }
   function vmClearAlert() { voucherModalAlert.innerHTML = ''; }
 
@@ -585,7 +632,7 @@
           location.reload();
           return;
         }
-        vmShowAlert(data.message || 'Save failed.', 'error');
+        vmShowAlert(data.message || 'Save failed.', 'error', data.errors);
       })
       .catch(function () {
         vmShowAlert('An error occurred while saving.', 'error');
@@ -658,11 +705,19 @@
   var dtSearch = dtWrap ? dtWrap.querySelector('.dataTables_filter') : null;
   if (dtSearch) dtSearch.style.display = 'none';
 
-  // Move DataTables' "Show N entries" control into the custom toolbar row.
+  // Hide DataTables' built-in length control — we use a custom input above the table.
   var dtLength = dtWrap ? dtWrap.querySelector('.dataTables_length') : null;
-  var lengthSlot = document.getElementById('customLengthSlot');
-  if (dtLength && lengthSlot) {
-    lengthSlot.appendChild(dtLength);
+  if (dtLength) dtLength.style.display = 'none';
+
+  // Wire custom length input.
+  var lenInput = document.getElementById('vouchersLengthInput');
+  if (lenInput) {
+    function applyVoucherLen() {
+      var v = parseInt(lenInput.value, 10);
+      if (!isNaN(v) && v > 0) dt.page.len(v).draw();
+    }
+    lenInput.addEventListener('change', applyVoucherLen);
+    lenInput.addEventListener('keydown', function (e) { if (e.key === 'Enter') applyVoucherLen(); });
   }
 
   // Wire the custom search input to the DataTable.

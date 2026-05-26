@@ -7,6 +7,8 @@
   $prefix = $role === 'admin' ? 'admin' : 'user';
   $suffix = old('suffix', $voucher['suffix'] ?? '');
   $remarks = old('remarks_status', $voucher['remarks_status'] ?? '');
+  $selectedJuniorHighSchool = old('junior_high_school', $voucher['junior_high_school'] ?? '');
+  $selectedSeniorHighSchool = old('preferred_senior_high_school', $voucher['preferred_senior_high_school'] ?? '');
 ?>
 
 <div class="vs-page-header mb-4">
@@ -64,7 +66,7 @@
         <div>
           <label class="vs-label" for="suffix">Suffix</label>
           <select id="suffix" name="suffix" class="vs-input">
-            <option value="" <?= $suffix === '' ? 'selected' : '' ?>>None</option>
+            <option value="" <?= $suffix === '' ? 'selected' : '' ?>>-- Select --</option>
             <?php foreach (['JR.' => 'Jr.', 'SR.' => 'Sr.', 'II' => 'II', 'III' => 'III', 'IV' => 'IV'] as $value => $label): ?>
               <option value="<?= esc($value) ?>" <?= strtoupper($suffix) === $value ? 'selected' : '' ?>><?= esc($label) ?></option>
             <?php endforeach ?>
@@ -101,15 +103,30 @@
 
         <div class="vs-span-2">
           <label class="vs-label" for="junior_high_school">Junior High School</label>
-          <input id="junior_high_school" name="junior_high_school" type="text" class="vs-input vs-uppercase"
-                 value="<?= old('junior_high_school', $voucher['junior_high_school'] ?? '') ?>">
+          <select id="junior_high_school" name="junior_high_school"
+                  class="vs-input <?= ($validation && $validation->hasError('junior_high_school')) ? 'vs-input-error' : '' ?>">
+            <option value="">-- Select --</option>
+            <?php foreach (($juniorHighSchools ?? []) as $school): ?>
+              <?php $schoolName = $school['school_name'] ?? '' ?>
+              <option value="<?= esc($schoolName) ?>" <?= strtoupper($selectedJuniorHighSchool) === strtoupper($schoolName) ? 'selected' : '' ?>>
+                <?= esc($schoolName) ?>
+              </option>
+            <?php endforeach ?>
+          </select>
         </div>
 
         <div class="vs-span-2">
           <label class="vs-label required" for="preferred_senior_high_school">Preferred Senior High School</label>
-          <input id="preferred_senior_high_school" name="preferred_senior_high_school" type="text"
-                 class="vs-input vs-uppercase <?= ($validation && $validation->hasError('preferred_senior_high_school')) ? 'vs-input-error' : '' ?>"
-                 value="<?= old('preferred_senior_high_school', $voucher['preferred_senior_high_school'] ?? '') ?>" required>
+          <select id="preferred_senior_high_school" name="preferred_senior_high_school"
+                  class="vs-input <?= ($validation && $validation->hasError('preferred_senior_high_school')) ? 'vs-input-error' : '' ?>" required>
+            <option value="">-- Select --</option>
+            <?php foreach (($seniorHighSchools ?? []) as $school): ?>
+              <?php $schoolName = $school['school_name'] ?? '' ?>
+              <option value="<?= esc($schoolName) ?>" <?= strtoupper($selectedSeniorHighSchool) === strtoupper($schoolName) ? 'selected' : '' ?>>
+                <?= esc($schoolName) ?>
+              </option>
+            <?php endforeach ?>
+          </select>
         </div>
 
         <div>
@@ -133,7 +150,8 @@
         <div>
           <label class="vs-label" for="eligibility_status">Eligibility</label>
           <select id="eligibility_status" name="eligibility_status" class="vs-input">
-            <?php $eligibility = old('eligibility_status', $voucher['eligibility_status'] ?? 'eligible') ?>
+            <?php $eligibility = old('eligibility_status', $voucher['eligibility_status'] ?? '') ?>
+            <option value="">-- Select --</option>
             <option value="eligible"     <?= $eligibility === 'eligible'     ? 'selected' : '' ?>>Eligible</option>
             <option value="not_eligible" <?= $eligibility === 'not_eligible' ? 'selected' : '' ?>>Not Eligible</option>
           </select>

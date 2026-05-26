@@ -1,6 +1,22 @@
 <?= $this->extend('layouts/main') ?>
 
 <?= $this->section('content') ?>
+<?php
+    $userOptions = [];
+    $ipOptions = [];
+    foreach ($logs as $log) {
+        $userLabel = trim((string) ($log['full_name'] ?? $log['username'] ?? ''));
+        if ($userLabel !== '') {
+            $userOptions[$userLabel] = $userLabel;
+        }
+        $ip = trim((string) ($log['ip_address'] ?? ''));
+        if ($ip !== '') {
+            $ipOptions[$ip] = $ip;
+        }
+    }
+    ksort($userOptions);
+    ksort($ipOptions);
+?>
 
 <div class="vs-page-header mb-4">
         <div>
@@ -9,45 +25,16 @@
         </div>
     </div>
 
-    <form method="get" action="<?= base_url('/user/audit-logs') ?>" class="vs-card mb-4">
-        <div class="vs-card-body">
-            <div class="row g-3 align-items-end">
-                <div class="col-lg-4 col-md-6">
-                    <label class="form-label">Search</label>
-                    <input type="text" name="q" class="form-control" value="<?= esc($keyword) ?>" placeholder="Description, action, IP, browser">
-                </div>
-
-                <div class="col-lg-2 col-md-6">
-                    <label class="form-label">Action</label>
-                    <select name="action" class="form-control">
-                        <option value="">All Actions</option>
-                        <?php foreach ($actionOptions as $option): ?>
-                            <option value="<?= esc($option['action']) ?>" <?= $selectedAction === $option['action'] ? 'selected' : '' ?>>
-                                <?= esc($option['action']) ?>
-                            </option>
-                        <?php endforeach; ?>
-                    </select>
-                </div>
-
-                <div class="col-lg-2 col-md-4">
-                    <label class="form-label">From</label>
-                    <input type="date" name="date_from" class="form-control" value="<?= esc($dateFrom ?? '') ?>">
-                </div>
-
-                <div class="col-lg-2 col-md-4">
-                    <label class="form-label">To</label>
-                    <input type="date" name="date_to" class="form-control" value="<?= esc($dateTo ?? '') ?>">
-                </div>
-
-                <div class="col-lg-2 col-md-4">
-                    <button type="submit" class="vs-btn vs-btn-primary w-100">Filter</button>
-                </div>
-            </div>
-        </div>
-    </form>
-
     <div class="vs-card">
         <div class="vs-card-body">
+            <div class="d-flex align-items-center gap-2 mb-3 flex-wrap">
+                <input type="text" id="auditCustomSearch" class="vs-input" placeholder="Search audit logs..." style="max-width:340px">
+                <button type="button" class="vs-btn vs-btn-outline" id="auditBtnOpenFilter">
+                    Filters
+                    <span id="auditFilterBadge" class="badge bg-primary" style="display:none;margin-left:.35rem"></span>
+                </button>
+                <label class="vs-length-label ms-auto">Show <input type="number" id="auditLengthInput" class="vs-length-input" value="10" min="1" max="500"> entries</label>
+            </div>
             <table id="auditLogsTable" class="vs-datatable js-data-table" data-search-placeholder="Search audit logs..." style="width:100%">
                 <thead>
                     <tr>
@@ -61,7 +48,14 @@
                 </thead>
                 <tbody>
                     <?php foreach ($logs as $log): ?>
-                        <tr>
+                        <?php
+                            $createdDate = !empty($log['created_at']) ? date('Y-m-d', strtotime($log['created_at'])) : '';
+                            $userLabel = trim((string) ($log['full_name'] ?? $log['username'] ?? ''));
+                        ?>
+                        <tr data-action="<?= esc((string) ($log['action'] ?? ''), 'attr') ?>"
+                            data-created-date="<?= esc($createdDate, 'attr') ?>"
+                            data-ip="<?= esc((string) ($log['ip_address'] ?? ''), 'attr') ?>"
+                            data-user="<?= esc($userLabel, 'attr') ?>">
                             <td><?= !empty($log['created_at']) ? esc(date('M d, Y h:i A', strtotime($log['created_at']))) : '-' ?></td>
                             <td><span class="badge text-bg-dark"><?= esc($log['action']) ?></span></td>
                             <td>
@@ -88,5 +82,176 @@
             </table>
         </div>
     </div>
+
+<div class="vs-modal-overlay" id="auditFilterModal" style="display:none">
+    <div class="vs-modal" style="max-width:680px">
+        <div class="vs-modal-header">
+            <h5>Advanced Filters</h5>
+            <button class="vs-modal-close" id="auditFilterModalClose">&times;</button>
+        </div>
+        <div class="vs-modal-body">
+            <div class="vs-form-grid vs-form-grid-4">
+                <div class="vs-span-2">
+                    <label class="vs-label" for="auditFilterAction">Action</label>
+                    <select id="auditFilterAction" class="vs-input">
+                        <option value="">All</option>
+                        <?php foreach ($actionOptions as $option): ?>
+                            <option value="<?= esc($option['action']) ?>"><?= esc($option['action']) ?></option>
+                        <?php endforeach ?>
+                    </select>
+                </div>
+                <div class="vs-span-2">
+                    <label class="vs-label" for="auditFilterUser">User</label>
+                    <select id="auditFilterUser" class="vs-input">
+                        <option value="">All</option>
+                        <?php foreach ($userOptions as $user): ?>
+                            <option value="<?= esc($user) ?>"><?= esc($user) ?></option>
+                        <?php endforeach ?>
+                    </select>
+                </div>
+                <div class="vs-span-2">
+                    <label class="vs-label" for="auditFilterDateFrom">Date From</label>
+                    <input type="date" id="auditFilterDateFrom" class="vs-input">
+                </div>
+                <div class="vs-span-2">
+                    <label class="vs-label" for="auditFilterDateTo">Date To</label>
+                    <input type="date" id="auditFilterDateTo" class="vs-input">
+                </div>
+                <div class="vs-span-2">
+                    <label class="vs-label" for="auditFilterIp">IP Address</label>
+                    <select id="auditFilterIp" class="vs-input">
+                        <option value="">All</option>
+                        <?php foreach ($ipOptions as $ip): ?>
+                            <option value="<?= esc($ip) ?>"><?= esc($ip) ?></option>
+                        <?php endforeach ?>
+                    </select>
+                </div>
+            </div>
+        </div>
+        <div class="vs-modal-footer">
+            <button class="vs-btn vs-btn-outline" id="auditFilterClear">Clear All</button>
+            <button class="vs-btn vs-btn-outline" id="auditFilterModalCancel">Cancel</button>
+            <button class="vs-btn vs-btn-primary" id="auditFilterApply">Apply Filters</button>
+        </div>
+    </div>
+</div>
+
+<script>
+(function () {
+    function initAuditFilters() {
+        var table = document.getElementById('auditLogsTable');
+        if (!table || !window.jQuery || !$.fn.DataTable.isDataTable(table)) {
+            return setTimeout(initAuditFilters, 50);
+        }
+
+        var dt = $(table).DataTable();
+        var active = {};
+        var fields = {
+            action: document.getElementById('auditFilterAction'),
+            user: document.getElementById('auditFilterUser'),
+            dateFrom: document.getElementById('auditFilterDateFrom'),
+            dateTo: document.getElementById('auditFilterDateTo'),
+            ip: document.getElementById('auditFilterIp'),
+        };
+
+        var wrap = table.closest('.dataTables_wrapper');
+        var dtSearch = wrap ? wrap.querySelector('.dataTables_filter') : null;
+        var dtLength = wrap ? wrap.querySelector('.dataTables_length') : null;
+        if (dtSearch) dtSearch.style.display = 'none';
+        if (dtLength) dtLength.style.display = 'none';
+
+        var lenInput = document.getElementById('auditLengthInput');
+        if (lenInput) {
+            function applyAuditLen() {
+                var v = parseInt(lenInput.value, 10);
+                if (!isNaN(v) && v > 0) dt.page.len(v).draw();
+            }
+            lenInput.addEventListener('change', applyAuditLen);
+            lenInput.addEventListener('keydown', function (e) { if (e.key === 'Enter') applyAuditLen(); });
+        }
+
+        var customSearch = document.getElementById('auditCustomSearch');
+        if (customSearch) {
+            customSearch.addEventListener('input', function () {
+                dt.search(this.value).draw();
+            });
+        }
+
+        function activeFilterCount() {
+            return Object.keys(active).filter(function (key) {
+                return active[key] !== undefined && active[key] !== null && String(active[key]).trim() !== '';
+            }).length;
+        }
+
+        function updateBadge() {
+            var badge = document.getElementById('auditFilterBadge');
+            if (!badge) return;
+            var count = activeFilterCount();
+            badge.textContent = count;
+            badge.style.display = count > 0 ? 'inline-block' : 'none';
+        }
+
+        $.fn.dataTable.ext.search.push(function (settings, rowData, rowIdx) {
+            if (settings.nTable.id !== 'auditLogsTable') return true;
+            if (activeFilterCount() === 0) return true;
+
+            var row = settings.aoData[rowIdx].nTr;
+            if (!row) return true;
+
+            if (active.action && (row.getAttribute('data-action') || '') !== active.action) return false;
+            if (active.user && (row.getAttribute('data-user') || '') !== active.user) return false;
+            if (active.ip && (row.getAttribute('data-ip') || '') !== active.ip) return false;
+
+            var createdDate = row.getAttribute('data-created-date') || '';
+            if ((active.dateFrom || active.dateTo) && !createdDate) return false;
+            if (active.dateFrom && createdDate < active.dateFrom) return false;
+            if (active.dateTo && createdDate > active.dateTo) return false;
+
+            return true;
+        });
+
+        var modal = document.getElementById('auditFilterModal');
+        function openFilter() { if (modal) modal.style.display = 'flex'; }
+        function closeFilter() { if (modal) modal.style.display = 'none'; }
+
+        var openButton = document.getElementById('auditBtnOpenFilter');
+        var closeButton = document.getElementById('auditFilterModalClose');
+        var cancelButton = document.getElementById('auditFilterModalCancel');
+        var applyButton = document.getElementById('auditFilterApply');
+        var clearButton = document.getElementById('auditFilterClear');
+
+        openButton && openButton.addEventListener('click', openFilter);
+        closeButton && closeButton.addEventListener('click', closeFilter);
+        cancelButton && cancelButton.addEventListener('click', closeFilter);
+        modal && modal.addEventListener('click', function (event) {
+            if (event.target === modal) closeFilter();
+        });
+
+        applyButton && applyButton.addEventListener('click', function () {
+            active = {
+                action: fields.action.value,
+                user: fields.user.value,
+                dateFrom: fields.dateFrom.value,
+                dateTo: fields.dateTo.value,
+                ip: fields.ip.value,
+            };
+            updateBadge();
+            dt.draw();
+            closeFilter();
+        });
+
+        clearButton && clearButton.addEventListener('click', function () {
+            Object.keys(fields).forEach(function (key) {
+                if (fields[key]) fields[key].value = '';
+            });
+            active = {};
+            updateBadge();
+            dt.draw();
+        });
+    }
+
+    initAuditFilters();
+}());
+</script>
 
 <?= $this->endSection() ?>

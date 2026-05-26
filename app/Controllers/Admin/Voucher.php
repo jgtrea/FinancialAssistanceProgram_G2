@@ -4,6 +4,7 @@ namespace App\Controllers\Admin;
 
 use App\Libraries\VoucherPdf;
 use App\Models\ArchiveModel;
+use App\Models\SchoolOptionModel;
 use App\Models\VoucherModel;
 use CodeIgniter\Controller;
 
@@ -31,6 +32,7 @@ class Voucher extends Controller
 {
     protected VoucherModel $voucherModel;
     protected ArchiveModel $archiveModel;
+    protected SchoolOptionModel $schoolOptionModel;
 
     public function __construct()
     {
@@ -92,7 +94,7 @@ class Voucher extends Controller
             'title'    => 'Vouchers',
             'vouchers' => $students,
             'role'     => session()->get('role') ?: 'admin',
-        ]);
+        ] + $this->getSchoolDropdownData());
     }
 
     /**
@@ -120,7 +122,7 @@ class Voucher extends Controller
             'action'     => site_url('admin/vouchers/store'),
             'voucher'    => [],
             'validation' => \Config\Services::validation(),
-        ]);
+        ] + $this->getSchoolDropdownData());
     }
 
     // ── Persist a new student/voucher ──────────────────────────────────────────
@@ -128,21 +130,11 @@ class Voucher extends Controller
     {
         helper(['form']);
 
-        $rules = [
-            'voucher_date'                 => 'required|valid_date',
-            'first_name'                   => 'required|max_length[100]',
-            'last_name'                    => 'required|max_length[100]',
-            'suffix'                       => 'permit_empty|in_list[JR.,SR.,II,III,IV]',
-            'preferred_senior_high_school' => 'required|max_length[200]',
-            'remarks_status'               => 'permit_empty|in_list[PASSED,FOR REVIEW,FAILED]',
-            'school_year'                  => 'required|max_length[20]',
-        ];
-
-        if (!$this->validate($rules)) {
+        if (!$this->validateStudentInput()) {
             return $this->create();
         }
 
-        $studentId = (int) $this->voucherModel->insert([
+        $data = $this->getStudentPayload() + [
             // voucher_no is deliberately null — assigned later by
             // generate_voucher_no() the first time a PDF is generated.
             'voucher_no'                   => null,
@@ -160,11 +152,13 @@ class Voucher extends Controller
             'remarks_status'               => $this->request->getPost('remarks_status') ?: '',
             'school_year'                  => $this->request->getPost('school_year'),
             'eligibility_status'           => $this->request->getPost('eligibility_status') ?: 'eligible',
-            'voucher_status'               => 'not_generated', // "Pending" in the UI
+            'voucher_status'               => 'not_generated',
             'is_archived'                  => 0,
-        ]);
+        ];
 
-        $name = trim($this->request->getPost('first_name') . ' ' . $this->request->getPost('last_name'));
+        $studentId = (int) $this->voucherModel->insert($data);
+
+        $name = trim($data['first_name'] . ' ' . $data['last_name']);
         log_action($this->getCurrentUserId(), 'CREATE_STUDENT',
             "Created student {$name}", $studentId);
 
@@ -202,7 +196,7 @@ class Voucher extends Controller
             'action'     => site_url('admin/vouchers/update/' . $id),
             'voucher'    => $student,
             'validation' => \Config\Services::validation(),
-        ]);
+        ] + $this->getSchoolDropdownData());
     }
 
     // ── Persist student/voucher edits ─────────────────────────────────────────
@@ -210,40 +204,16 @@ class Voucher extends Controller
     {
         helper(['form']);
 
-        $rules = [
-            'voucher_date'                 => 'required|valid_date',
-            'first_name'                   => 'required|max_length[100]',
-            'last_name'                    => 'required|max_length[100]',
-            'suffix'                       => 'permit_empty|in_list[JR.,SR.,II,III,IV]',
-            'preferred_senior_high_school' => 'required|max_length[200]',
-            'remarks_status'               => 'permit_empty|in_list[PASSED,FOR REVIEW,FAILED]',
-            'school_year'                  => 'required|max_length[20]',
-        ];
-
-        if (!$this->validate($rules)) {
+        if (!$this->validateStudentInput()) {
             return $this->edit($id);
         }
 
         // Note: voucher_no, voucher_status and is_archived are intentionally
         // omitted — they're system-managed, not user-editable here.
-        $this->voucherModel->update($id, [
-            'voucher_date'                 => $this->request->getPost('voucher_date'),
-            'first_name'                   => $this->request->getPost('first_name'),
-            'middle_name'                  => $this->request->getPost('middle_name') ?: '',
-            'last_name'                    => $this->request->getPost('last_name'),
-            'suffix'                       => $this->request->getPost('suffix') ?: '',
-            'rank_no'                      => $this->request->getPost('rank_no') ?: null,
-            'gwa'                          => $this->request->getPost('gwa') ?: null,
-            'gender'                       => $this->request->getPost('gender') ?: '',
-            'junior_high_school'           => $this->request->getPost('junior_high_school') ?: '',
-            'preferred_senior_high_school' => $this->request->getPost('preferred_senior_high_school'),
-            'contact_number'               => $this->request->getPost('contact_number') ?: '',
-            'remarks_status'               => $this->request->getPost('remarks_status') ?: '',
-            'school_year'                  => $this->request->getPost('school_year'),
-            'eligibility_status'           => $this->request->getPost('eligibility_status') ?: 'eligible',
-        ]);
+        $data = $this->getStudentPayload();
+        $this->voucherModel->update($id, $data);
 
-        $name = trim($this->request->getPost('first_name') . ' ' . $this->request->getPost('last_name'));
+        $name = trim($data['first_name'] . ' ' . $data['last_name']);
         log_action($this->getCurrentUserId(), 'UPDATE_STUDENT',
             "Updated student {$name}", $id);
 

@@ -120,7 +120,7 @@ function initGenericDataTables() {
 
     $(table).DataTable({
       dom: controlsDom,
-      pageLength: 25,
+      pageLength: 10,
       lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, 'All']],
       responsive: true,
       autoWidth: false,
@@ -433,7 +433,7 @@ document.addEventListener('DOMContentLoaded', function () {
       "<'row align-items-center mb-3'<'col-sm-12 col-md-6'f><'col-sm-12 col-md-6 text-md-end'l>>" +
       "<'row'<'col-sm-12'tr>>" +
       "<'row align-items-center mt-3'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7'p>>",
-    pageLength: 25,
+    pageLength: 10,
     lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, 'All']],
     responsive: true,
     autoWidth: false,
@@ -453,9 +453,24 @@ document.addEventListener('DOMContentLoaded', function () {
 
   const actionBar  = document.getElementById('actionBar');
   const countLabel = document.getElementById('selectedCount');
+  const btnOpenExport = document.getElementById('btnOpenExport');
+  const exportModal = document.getElementById('exportModal');
+  const exportModalClose = document.getElementById('exportModalClose');
 
   function getCheckAllBoxes() {
     return document.querySelectorAll('.vs-check-all');
+  }
+
+  function updateExportLinks() {
+    const ids = Array.from(selectedIds).join(',');
+    document.querySelectorAll('[data-export-format]').forEach(function (link) {
+      const format = link.dataset.exportFormat || 'xlsx';
+      if (!link.dataset.exportBase) {
+        link.dataset.exportBase = link.href.split('?')[0];
+      }
+      link.href = link.dataset.exportBase + '?format=' + encodeURIComponent(format)
+        + '&ids=' + encodeURIComponent(ids);
+    });
   }
 
   function updateActionBar() {
@@ -463,6 +478,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const totalFiltered = dt.rows({ search: 'applied' }).count();
     if (countLabel) countLabel.textContent = count;
     if (actionBar) actionBar.style.display = count > 0 ? 'flex' : 'none';
+    updateExportLinks();
     getCheckAllBoxes().forEach(checkAll => {
       checkAll.checked = totalFiltered > 0 && count >= totalFiltered;
       checkAll.indeterminate = count > 0 && count < totalFiltered;
@@ -511,6 +527,20 @@ document.addEventListener('DOMContentLoaded', function () {
   });
 
   // ── Generate PDF ──────────────────────────────────────────────────────────────
+  if (btnOpenExport && exportModal) {
+    btnOpenExport.addEventListener('click', function () {
+      if (!selectedIds.size) return;
+      updateExportLinks();
+      exportModal.style.display = 'flex';
+    });
+  }
+  exportModalClose && exportModalClose.addEventListener('click', function () {
+    exportModal.style.display = 'none';
+  });
+  exportModal && exportModal.addEventListener('click', function (e) {
+    if (e.target === exportModal) exportModal.style.display = 'none';
+  });
+
   const btnGeneratePdf = document.getElementById('btnGeneratePdf');
   const pdfForm        = document.getElementById('pdfForm');
   const pdfModal       = document.getElementById('pdfProgressModal');
@@ -652,7 +682,17 @@ document.addEventListener('DOMContentLoaded', function () {
         closeArchiveModal();
 
         if (data.success) {
-          showAlert(data.message, 'success');
+          const alertBox = document.getElementById('studentsAlertBox');
+          if (alertBox) {
+            const el = document.createElement('div');
+            el.className = 'vs-alert vs-alert-success mb-3';
+            el.textContent = data.message;
+            alertBox.innerHTML = '';
+            alertBox.appendChild(el);
+            setTimeout(() => el.remove(), 5000);
+          } else {
+            showAlert(data.message, 'success');
+          }
           // Remove archived rows from DataTable (only those currently in DOM)
           selectedIds.forEach(id => {
             const cb  = document.querySelector(`.vs-row-check[value="${id}"]`);
@@ -691,13 +731,23 @@ document.addEventListener('DOMContentLoaded', function () {
   if (!logsTable) return;
 
   $('#logsTable').DataTable({
-    pageLength: 25,
+    dom:
+      "<'row align-items-center mb-3'<'col-sm-12 col-md-6'f><'col-sm-12 col-md-6 text-md-end'l>>" +
+      "<'row'<'col-sm-12'tr>>" +
+      "<'row align-items-center mt-3'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7'p>>",
+    pageLength: 10,
+    lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, 'All']],
     order: [[6, 'desc']],
     columnDefs: [
       { orderable: false, targets: [4] },
       { width: '160px',  targets: [6] },
     ],
-    language: { search: '', searchPlaceholder: 'Search logs...' },
+    language: {
+      search: '',
+      searchPlaceholder: 'Search logs...',
+      lengthMenu: 'Show _MENU_ entries',
+      info: 'Showing _START_ to _END_ of _TOTAL_',
+    },
   });
 
 });

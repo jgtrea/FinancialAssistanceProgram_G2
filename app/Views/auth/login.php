@@ -48,13 +48,13 @@
                     <div class="mb-3">
                         <label for="username" class="form-label">Username or Email</label>
                         <input id="username" type="text" name="username" class="form-control"
-                            placeholder="username or email address" required autocomplete="username">
+                            placeholder="username or email address" required autocomplete="username" autocapitalize="none" spellcheck="false">
                     </div>
 
                     <div class="mb-3">
                         <label for="password" class="form-label">Password</label>
                         <input id="password" type="password" name="password" class="form-control"
-                            placeholder="Enter your password" required>
+                            placeholder="Enter your password" required autocomplete="current-password" autocapitalize="none" spellcheck="false">
                     </div>
 
                     <button type="submit" class="btn btn-primary w-100 login-submit mt-3">

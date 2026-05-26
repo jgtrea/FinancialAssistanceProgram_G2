@@ -10,6 +10,8 @@ class SignatoryController extends BaseController
     private const MAX_SIGNATURE_BYTES = 2097152;
     private const ALLOWED_MIME = ['image/png', 'image/jpeg', 'image/jpg', 'image/webp'];
     private const ALLOWED_EXT = ['png', 'jpg', 'jpeg', 'webp'];
+    private const PREFIX_OPTIONS = ['', 'DR.', 'ENGR.', 'HON.', 'MR.', 'MRS.', 'MS.', 'PROF.'];
+    private const SUFFIX_OPTIONS = ['', 'JR.', 'SR.', 'II', 'III', 'IV', 'V', 'CPA', 'LPT', 'MD', 'PHD'];
 
     public function index()
     {
@@ -20,7 +22,9 @@ class SignatoryController extends BaseController
             'signatories' => $signatoryModel
                 ->where('is_active', 1)
                 ->orderBy('signatory_id', 'DESC')
-                ->findAll()
+                ->findAll(),
+            'prefixOptions' => self::PREFIX_OPTIONS,
+            'suffixOptions' => self::SUFFIX_OPTIONS,
         ]);
     }
 
@@ -36,7 +40,9 @@ class SignatoryController extends BaseController
 
         return view('signatories/form', [
             'title' => $signatory ? 'Edit Signatory' : 'Add Signatory',
-            'signatory' => $signatory
+            'signatory' => $signatory,
+            'prefixOptions' => self::PREFIX_OPTIONS,
+            'suffixOptions' => self::SUFFIX_OPTIONS,
         ]);
     }
 
@@ -47,14 +53,49 @@ class SignatoryController extends BaseController
 
         $id = $this->request->getPost('signatory_id');
         $existing = $id ? $signatoryModel->find($id) : null;
+        $prefix = strtoupper(trim((string) $this->request->getPost('prefix')));
+        $suffix = strtoupper(trim((string) $this->request->getPost('suffix')));
+
+        if ($id && !$existing) {
+            return $this->signatorySaveError('Signatory not found.', $id, $isAjax);
+        }
+
+        $validation = \Config\Services::validation();
+        $validation->setRules([
+            'prefix'         => 'permit_empty|in_list[DR.,ENGR.,HON.,MR.,MRS.,MS.,PROF.]',
+            'first_name'     => 'required|max_length[100]',
+            'middle_name'    => 'permit_empty|max_length[100]',
+            'last_name'      => 'required|max_length[100]',
+            'suffix'         => 'permit_empty|in_list[JR.,SR.,II,III,IV,V,CPA,LPT,MD,PHD]',
+            'position_title' => 'required|max_length[200]',
+            'is_active'      => 'permit_empty|in_list[0,1]',
+        ]);
+
+        if (!$validation->withRequest($this->request)->run()) {
+            $errors = $validation->getErrors();
+            return $this->signatorySaveError(
+                $this->validationErrorMessage($errors, 'Please check the signatory details.'),
+                $id,
+                $isAjax,
+                $errors
+            );
+        }
+
+        if (!in_array($prefix, self::PREFIX_OPTIONS, true)) {
+            return $this->signatorySaveError('Please select a valid prefix.', $id, $isAjax);
+        }
+
+        if (!in_array($suffix, self::SUFFIX_OPTIONS, true)) {
+            return $this->signatorySaveError('Please select a valid suffix.', $id, $isAjax);
+        }
 
         $data = [
-            'prefix'         => $this->request->getPost('prefix') ?: null,
-            'first_name'     => $this->request->getPost('first_name'),
-            'middle_name'    => $this->request->getPost('middle_name'),
-            'last_name'      => $this->request->getPost('last_name'),
-            'suffix'         => $this->request->getPost('suffix'),
-            'position_title' => $this->request->getPost('position_title'),
+            'prefix'         => $prefix !== '' ? $prefix : null,
+            'first_name'     => trim((string) $this->request->getPost('first_name')),
+            'middle_name'    => trim((string) $this->request->getPost('middle_name')),
+            'last_name'      => trim((string) $this->request->getPost('last_name')),
+            'suffix'         => $suffix,
+            'position_title' => trim((string) $this->request->getPost('position_title')),
             'is_active'      => $this->request->getPost('is_active') ?? 1,
         ];
 
@@ -117,15 +158,24 @@ class SignatoryController extends BaseController
         return redirect()->to('/signatories')->with('success', 'Signatory added successfully.');
     }
 
-    private function signatorySaveError(string $message, $id, bool $isAjax)
+    private function signatorySaveError(string $message, $id, bool $isAjax, array $errors = [])
     {
         if ($isAjax) {
-            return $this->response->setJSON(['success' => false, 'message' => $message]);
+            return $this->response->setJSON(['success' => false, 'message' => $message, 'errors' => $errors]);
         }
         $redirect = $id
             ? redirect()->to('/signatories/form/' . $id)
             : redirect()->to('/signatories/form');
         return $redirect->withInput()->with('error', $message);
+    }
+
+    private function validationErrorMessage(array $errors, string $fallback): string
+    {
+        if (empty($errors)) {
+            return $fallback;
+        }
+
+        return 'Validation failed. Please review the field details below.';
     }
 
     public function getJson($id)

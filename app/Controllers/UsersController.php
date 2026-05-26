@@ -44,12 +44,58 @@ class UsersController extends BaseController
         $model = new UserLogin();
         $id = $this->request->getPost('user_id');
         $password = $this->request->getPost('password');
+        $role = strtolower(trim((string) $this->request->getPost('role')));
+
+        $validation = \Config\Services::validation();
+        $validation->setRules([
+            'full_name' => 'required|max_length[100]',
+            'username'  => 'required|valid_email|max_length[150]',
+            'password'  => ($id ? 'permit_empty' : 'required') . '|min_length[8]|max_length[255]',
+            'role'      => 'required|in_list[admin,user]',
+        ]);
+
+        if (!$validation->withRequest($this->request)->run()) {
+            $errors = $validation->getErrors();
+            return $this->response->setJSON([
+                'status' => 'error',
+                'message' => $this->validationErrorMessage($errors, 'Please check the user details.'),
+                'errors' => $errors,
+            ]);
+        }
+
+        if (!in_array($role, ['admin', 'user'], true)) {
+            return $this->response->setJSON([
+                'status' => 'error',
+                'message' => 'Role must be Admin or User only.',
+            ]);
+        }
+
+        if ($id && !$model->find($id)) {
+            return $this->response->setJSON([
+                'status' => 'error',
+                'message' => 'User not found.',
+            ]);
+        }
 
         $data = [
-            'username'  => $this->request->getPost('full_name'),
+            'username'  => trim((string) $this->request->getPost('full_name')),
             'email'     => strtolower(trim((string) $this->request->getPost('username'))),
-            'role'      => $this->request->getPost('role'),
+            'role'      => $role,
         ];
+
+        if ($this->userFieldTaken('username', $data['username'], $id)) {
+            return $this->response->setJSON([
+                'status' => 'error',
+                'message' => 'Username is already in use.',
+            ]);
+        }
+
+        if ($this->userFieldTaken('email', $data['email'], $id)) {
+            return $this->response->setJSON([
+                'status' => 'error',
+                'message' => 'Email is already in use.',
+            ]);
+        }
 
         if (!$id) {
             $data['is_active'] = 1;
@@ -72,6 +118,26 @@ class UsersController extends BaseController
         }
 
         return $this->response->setJSON(['status' => 'success', 'message' => $message]);
+    }
+
+    private function userFieldTaken(string $field, string $value, $ignoreId = null): bool
+    {
+        $query = (new UserLogin())->where($field, $value);
+
+        if ($ignoreId) {
+            $query->where('user_id !=', (int) $ignoreId);
+        }
+
+        return $query->first() !== null;
+    }
+
+    private function validationErrorMessage(array $errors, string $fallback): string
+    {
+        if (empty($errors)) {
+            return $fallback;
+        }
+
+        return 'Validation failed. Please review the field details below.';
     }
 
     public function archive($id)
