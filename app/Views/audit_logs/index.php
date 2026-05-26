@@ -2,20 +2,22 @@
 
 <?= $this->section('content') ?>
 <?php
-    $userOptions = [];
-    $ipOptions = [];
-    foreach ($logs as $log) {
-        $userLabel = trim((string) ($log['full_name'] ?? $log['username'] ?? ''));
-        if ($userLabel !== '') {
-            $userOptions[$userLabel] = $userLabel;
-        }
-        $ip = trim((string) ($log['ip_address'] ?? ''));
-        if ($ip !== '') {
-            $ipOptions[$ip] = $ip;
-        }
-    }
-    ksort($userOptions);
-    ksort($ipOptions);
+    // Dropdown source lists come from the controller (full DB, not the loaded slice).
+    $actionOptions = $actionOptions ?? [];
+    $userOptions   = $userOptions   ?? [];
+    $ipOptions     = $ipOptions     ?? [];
+
+    // Filter values come back from the URL via the controller — used to mark
+    // selected options + to mirror state in hidden form inputs.
+    $filterKeys = ['action', 'user', 'ip', 'date_from', 'date_to'];
+    $filterValues = [
+        'action'    => $selectedAction ?? '',
+        'user'      => $selectedUser   ?? '',
+        'ip'        => $selectedIp     ?? '',
+        'date_from' => $dateFrom       ?? '',
+        'date_to'   => $dateTo         ?? '',
+    ];
+    $activeFilterCount = count(array_filter($filterValues, static fn ($v) => trim((string) $v) !== ''));
 ?>
 
 <div class="vs-page-header mb-4">
@@ -25,12 +27,15 @@
         </div>
     </div>
 
-    <form method="get" class="vs-advanced-search vs-advanced-search-outside mb-3">
+    <form method="get" id="auditFilterForm" class="vs-advanced-search vs-advanced-search-outside mb-3">
         <input type="text" name="q" class="vs-input vs-advanced-search-input" placeholder="Advanced search all audit logs..." value="<?= esc((string) ($keyword ?? ''), 'attr') ?>">
         <button type="button" class="vs-btn vs-btn-outline" id="auditBtnOpenFilter">
             Filters
-            <span id="auditFilterBadge" class="badge bg-primary" style="display:none;margin-left:.35rem"></span>
+            <span id="auditFilterBadge" class="badge bg-primary" style="display:<?= $activeFilterCount > 0 ? 'inline-block' : 'none' ?>;margin-left:.35rem"><?= $activeFilterCount > 0 ? esc($activeFilterCount) : '' ?></span>
         </button>
+        <?php foreach ($filterKeys as $k): ?>
+            <input type="hidden" name="<?= esc($k, 'attr') ?>" value="<?= esc((string) $filterValues[$k], 'attr') ?>">
+        <?php endforeach ?>
     </form>
 
     <div class="vs-card">
@@ -100,7 +105,8 @@
                     <select id="auditFilterAction" class="vs-input">
                         <option value="">All</option>
                         <?php foreach ($actionOptions as $option): ?>
-                            <option value="<?= esc($option['action']) ?>"><?= esc($option['action']) ?></option>
+                            <?php $val = is_array($option) ? ($option['action'] ?? '') : $option ?>
+                            <option value="<?= esc($val) ?>" <?= $filterValues['action'] === $val ? 'selected' : '' ?>><?= esc($val) ?></option>
                         <?php endforeach ?>
                     </select>
                 </div>
@@ -109,24 +115,24 @@
                     <select id="auditFilterUser" class="vs-input">
                         <option value="">All</option>
                         <?php foreach ($userOptions as $user): ?>
-                            <option value="<?= esc($user) ?>"><?= esc($user) ?></option>
+                            <option value="<?= esc($user) ?>" <?= $filterValues['user'] === $user ? 'selected' : '' ?>><?= esc($user) ?></option>
                         <?php endforeach ?>
                     </select>
                 </div>
                 <div class="vs-span-2">
                     <label class="vs-label" for="auditFilterDateFrom">Date From</label>
-                    <input type="date" id="auditFilterDateFrom" class="vs-input">
+                    <input type="date" id="auditFilterDateFrom" class="vs-input" value="<?= esc((string) $filterValues['date_from'], 'attr') ?>">
                 </div>
                 <div class="vs-span-2">
                     <label class="vs-label" for="auditFilterDateTo">Date To</label>
-                    <input type="date" id="auditFilterDateTo" class="vs-input">
+                    <input type="date" id="auditFilterDateTo" class="vs-input" value="<?= esc((string) $filterValues['date_to'], 'attr') ?>">
                 </div>
                 <div class="vs-span-2">
                     <label class="vs-label" for="auditFilterIp">IP Address</label>
                     <select id="auditFilterIp" class="vs-input">
                         <option value="">All</option>
                         <?php foreach ($ipOptions as $ip): ?>
-                            <option value="<?= esc($ip) ?>"><?= esc($ip) ?></option>
+                            <option value="<?= esc($ip) ?>" <?= $filterValues['ip'] === $ip ? 'selected' : '' ?>><?= esc($ip) ?></option>
                         <?php endforeach ?>
                     </select>
                 </div>
@@ -149,13 +155,21 @@
         }
 
         var dt = $(table).DataTable();
-        var active = {};
+        var filterForm = document.getElementById('auditFilterForm');
         var fields = {
-            action: document.getElementById('auditFilterAction'),
-            user: document.getElementById('auditFilterUser'),
+            action:   document.getElementById('auditFilterAction'),
+            user:     document.getElementById('auditFilterUser'),
             dateFrom: document.getElementById('auditFilterDateFrom'),
-            dateTo: document.getElementById('auditFilterDateTo'),
-            ip: document.getElementById('auditFilterIp'),
+            dateTo:   document.getElementById('auditFilterDateTo'),
+            ip:       document.getElementById('auditFilterIp'),
+        };
+        // Modal field id → form hidden-input name (the GET param).
+        var filterFieldToParam = {
+            action:   'action',
+            user:     'user',
+            ip:       'ip',
+            dateFrom: 'date_from',
+            dateTo:   'date_to',
         };
 
         var wrap = table.closest('.dataTables_wrapper');
@@ -174,43 +188,12 @@
             lenInput.addEventListener('keydown', function (e) { if (e.key === 'Enter') applyAuditLen(); });
         }
 
+        // In-page search filters across ALL loaded rows (server caps the load at
+        // ~1000 most-recent; see AuditLogController::LISTING_DEFAULT_LIMIT).
         var customSearch = document.getElementById('auditCustomSearch');
-        if (window.VS && window.VS.bindCurrentPageSearch) {
-            window.VS.bindCurrentPageSearch(dt, customSearch);
+        if (window.VS && window.VS.bindFullTableSearch) {
+            window.VS.bindFullTableSearch(dt, customSearch);
         }
-
-        function activeFilterCount() {
-            return Object.keys(active).filter(function (key) {
-                return active[key] !== undefined && active[key] !== null && String(active[key]).trim() !== '';
-            }).length;
-        }
-
-        function updateBadge() {
-            var badge = document.getElementById('auditFilterBadge');
-            if (!badge) return;
-            var count = activeFilterCount();
-            badge.textContent = count;
-            badge.style.display = count > 0 ? 'inline-block' : 'none';
-        }
-
-        $.fn.dataTable.ext.search.push(function (settings, rowData, rowIdx) {
-            if (settings.nTable.id !== 'auditLogsTable') return true;
-            if (activeFilterCount() === 0) return true;
-
-            var row = settings.aoData[rowIdx].nTr;
-            if (!row) return true;
-
-            if (active.action && (row.getAttribute('data-action') || '') !== active.action) return false;
-            if (active.user && (row.getAttribute('data-user') || '') !== active.user) return false;
-            if (active.ip && (row.getAttribute('data-ip') || '') !== active.ip) return false;
-
-            var createdDate = row.getAttribute('data-created-date') || '';
-            if ((active.dateFrom || active.dateTo) && !createdDate) return false;
-            if (active.dateFrom && createdDate < active.dateFrom) return false;
-            if (active.dateTo && createdDate > active.dateTo) return false;
-
-            return true;
-        });
 
         var modal = document.getElementById('auditFilterModal');
         function openFilter() { if (modal) modal.style.display = 'flex'; }
@@ -229,26 +212,34 @@
             if (event.target === modal) closeFilter();
         });
 
+        // Filters are applied server-side — copy modal values into the hidden
+        // inputs in #auditFilterForm and submit. The form GETs the same page
+        // with q + filter params; the controller skips the row cap when any
+        // filter is active so the result reflects the whole DB.
+        function syncFormFromModal() {
+            if (!filterForm) return;
+            Object.keys(filterFieldToParam).forEach(function (k) {
+                var input = filterForm.elements[filterFieldToParam[k]];
+                if (input && fields[k]) input.value = fields[k].value;
+            });
+        }
+
         applyButton && applyButton.addEventListener('click', function () {
-            active = {
-                action: fields.action.value,
-                user: fields.user.value,
-                dateFrom: fields.dateFrom.value,
-                dateTo: fields.dateTo.value,
-                ip: fields.ip.value,
-            };
-            updateBadge();
-            dt.draw();
-            closeFilter();
+            syncFormFromModal();
+            if (filterForm) filterForm.submit();
         });
 
         clearButton && clearButton.addEventListener('click', function () {
-            Object.keys(fields).forEach(function (key) {
-                if (fields[key]) fields[key].value = '';
+            Object.keys(fields).forEach(function (k) {
+                if (fields[k]) fields[k].value = '';
             });
-            active = {};
-            updateBadge();
-            dt.draw();
+            if (filterForm) {
+                Object.keys(filterFieldToParam).forEach(function (k) {
+                    var input = filterForm.elements[filterFieldToParam[k]];
+                    if (input) input.value = '';
+                });
+                filterForm.submit();
+            }
         });
     }
 
