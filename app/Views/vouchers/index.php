@@ -677,8 +677,10 @@
   // earlier (at script-eval time), so defer until both DOM + DataTable exist.
   function initFilters() {
     var studentsTable = document.getElementById('studentsTable');
-    if (!studentsTable || !window.jQuery || !$.fn.DataTable.isDataTable(studentsTable)) {
-      // DataTable not ready yet — retry on next animation frame
+    if (!studentsTable || !window.jQuery || !$.fn.DataTable || !$.fn.DataTable.isDataTable(studentsTable)) {
+      // DataTable plugin or table not ready yet — retry shortly.
+      // The $.fn.DataTable existence check must precede the .isDataTable() call,
+      // otherwise we'd dereference undefined and the retry chain dies.
       return setTimeout(initFilters, 50);
     }
     setupFilters(studentsTable);

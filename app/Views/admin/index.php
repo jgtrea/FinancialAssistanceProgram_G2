@@ -498,7 +498,7 @@
 // ── Custom search + filter for users table ────────────────────────────
 (function initUserSearch() {
     var table = document.getElementById('userManagementTable');
-    if (!table || !window.jQuery || !$.fn.DataTable.isDataTable(table)) {
+    if (!table || !window.jQuery || !$.fn.DataTable || !$.fn.DataTable.isDataTable(table)) {
         return setTimeout(initUserSearch, 50);
     }
     var dt = $(table).DataTable();

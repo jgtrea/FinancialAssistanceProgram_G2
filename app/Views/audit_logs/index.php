@@ -150,7 +150,7 @@
 (function () {
     function initAuditFilters() {
         var table = document.getElementById('auditLogsTable');
-        if (!table || !window.jQuery || !$.fn.DataTable.isDataTable(table)) {
+        if (!table || !window.jQuery || !$.fn.DataTable || !$.fn.DataTable.isDataTable(table)) {
             return setTimeout(initAuditFilters, 50);
         }
 

@@ -654,7 +654,7 @@
 // ── Custom search + filter for signatories table ──────────────────────
 (function initSigSearch() {
     var table = document.getElementById('signatoriesTable');
-    if (!table || !window.jQuery || !$.fn.DataTable.isDataTable(table)) {
+    if (!table || !window.jQuery || !$.fn.DataTable || !$.fn.DataTable.isDataTable(table)) {
         return setTimeout(initSigSearch, 50);
     }
     var dt = $(table).DataTable();
