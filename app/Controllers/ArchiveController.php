@@ -4,7 +4,6 @@ namespace App\Controllers;
 
 use App\Models\ArchiveModel;
 use App\Models\SignatoryModel;
-use App\Models\UserModel;
 
 class ArchiveController extends BaseController
 {
@@ -14,8 +13,8 @@ class ArchiveController extends BaseController
         $type = $this->request->getGet('type') ?? ($role === 'admin' ? 'user' : 'voucher');
         $keyword = trim((string) $this->request->getGet('q'));
 
-        // Prevent non-admin users from accessing user archive
-        if ($type === 'user' && $role !== 'admin') {
+        // 'user' type no longer exists in archive — redirect to vouchers
+        if ($type === 'user') {
             $type = 'voucher';
         }
 

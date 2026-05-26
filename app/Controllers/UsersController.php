@@ -28,6 +28,33 @@ class UsersController extends BaseController
         return view('admin/index', $data);
     }
 
+    public function toggleStatus(int $id)
+    {
+        $model   = new UserLogin();
+        $user    = $model->find($id);
+        $adminId = session()->get('user_id');
+
+        if (!$user) {
+            return $this->response->setJSON(['status' => 'error', 'message' => 'User not found.']);
+        }
+
+        if ($id === (int) $adminId) {
+            return $this->response->setJSON(['status' => 'error', 'message' => 'You cannot deactivate your own account.']);
+        }
+
+        $newStatus = $user['is_active'] ? 0 : 1;
+        $model->update($id, ['is_active' => $newStatus]);
+
+        $action = $newStatus ? 'ACTIVATE_USER' : 'DEACTIVATE_USER';
+        log_action($adminId, $action, ($newStatus ? 'Activated' : 'Deactivated') . " user #{$id} ({$user['username']})");
+
+        return $this->response->setJSON([
+            'status'    => 'success',
+            'is_active' => $newStatus,
+            'message'   => $newStatus ? 'User activated.' : 'User deactivated.',
+        ]);
+    }
+
     public function form($id = null)
     {
         $model = new UserLogin();
@@ -135,6 +162,46 @@ class UsersController extends BaseController
         return $this->response->setJSON(['status' => 'success', 'message' => $message]);
     }
 
+    public function activateMultiple()
+    {
+        return $this->bulkSetStatus(1);
+    }
+
+    public function deactivateMultiple()
+    {
+        return $this->bulkSetStatus(0);
+    }
+
+    private function bulkSetStatus(int $status)
+    {
+        $ids = $this->request->getPost('ids');
+        if (!is_array($ids) || empty($ids)) {
+            return $this->response->setJSON(['status' => 'error', 'message' => 'No users selected.']);
+        }
+
+        $model   = new UserLogin();
+        $adminId = (int) session()->get('user_id');
+        $changed = 0;
+
+        foreach ($ids as $id) {
+            $id = (int) $id;
+            if ($id <= 0 || $id === $adminId) continue;
+            $user = $model->find($id);
+            if (!$user) continue;
+            $model->update($id, ['is_active' => $status]);
+            $action = $status ? 'ACTIVATE_USER' : 'DEACTIVATE_USER';
+            log_action($adminId, $action, ($status ? 'Activated' : 'Deactivated') . " user #{$id} ({$user['username']})");
+            $changed++;
+        }
+
+        if ($changed === 0) {
+            return $this->response->setJSON(['status' => 'error', 'message' => 'No users were updated.']);
+        }
+
+        $label = $status ? 'activated' : 'deactivated';
+        return $this->response->setJSON(['status' => 'success', 'message' => "{$changed} user(s) {$label}."]);
+    }
+
     private function userFieldTaken(string $field, string $value, $ignoreId = null): bool
     {
         $query = (new UserLogin())->where($field, $value);
@@ -155,48 +222,4 @@ class UsersController extends BaseController
         return 'Validation failed. Please review the field details below.';
     }
 
-    public function archive($id)
-    {
-        $model = new UserLogin();
-        $model->update($id, ['is_active' => 0]);
-        log_action(session()->get('user_id'), 'ARCHIVE_USER', "Deactivated user #{$id}");
-        return $this->response->setJSON(['status' => 'success', 'message' => 'User archived successfully.']);
-    }
-
-    public function archiveMultiple()
-    {
-        $ids = $this->request->getPost('ids');
-        if (!is_array($ids) || empty($ids)) {
-            return $this->response->setJSON(['status' => 'error', 'message' => 'No users selected.']);
-        }
-
-        $model  = new UserLogin();
-        $userId = session()->get('user_id');
-
-        foreach ($ids as $id) {
-            $id = (int) $id;
-            if ($id > 0 && $id !== (int) $userId) {
-                $model->update($id, ['is_active' => 0]);
-                log_action($userId, 'ARCHIVE_USER', "Deactivated user #{$id}");
-            }
-        }
-
-        return $this->response->setJSON(['status' => 'success', 'message' => count($ids) . ' user(s) archived.']);
-    }
-
-    // Loads view
-    public function archived()
-    {
-        $model = new UserLogin();
-        $data['users'] = $model->where('is_active', 0)->findAll();
-        return view('admin/user_management/archived', $data);
-    }
-
-    public function restore($id)
-    {
-        $model = new UserLogin();
-        $model->update($id, ['is_active' => 1]);
-        log_action(session()->get('user_id'), 'RESTORE_USER', "Restored user #{$id}");
-        return $this->response->setJSON(['status' => 'success', 'message' => 'User restored successfully.']);
-    }
 }

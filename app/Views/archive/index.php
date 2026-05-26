@@ -13,13 +13,6 @@
 
     <!-- Context Tabs -->
     <ul class="nav nav-tabs mb-4" id="archiveTabs">
-        <?php if ($role === 'admin'): ?>
-            <li class="nav-item">
-                <a class="nav-link <?= ($type ?? '') === 'user' ? 'active' : '' ?>"
-                   href="<?= site_url('archive?type=user') ?>">Users</a>
-            </li>
-        <?php endif; ?>
-
         <li class="nav-item">
             <a class="nav-link <?= ($type ?? '') === 'voucher' ? 'active' : '' ?>"
                href="<?= site_url('archive?type=voucher') ?>">Vouchers</a>
@@ -155,41 +148,7 @@
     <?php endif; ?>
 
 <!-- Archive filter modals — rendered only when the matching tab is active -->
-<?php if (($type ?? 'user') === 'user'): ?>
-<div class="vs-modal-overlay" id="archiveFilterModal" style="display:none">
-  <div class="vs-modal" style="max-width:400px">
-    <div class="vs-modal-header">
-      <h5>Filter Archived Users</h5>
-      <button class="vs-modal-close" id="archiveFilterClose">&times;</button>
-    </div>
-    <div class="vs-modal-body">
-      <div class="vs-form-grid vs-form-grid-2">
-        <div class="vs-span-2">
-          <label class="vs-label" for="afRole">Role</label>
-          <select id="afRole" class="vs-input">
-            <option value="">All</option>
-            <option value="Admin">Admin</option>
-            <option value="User">User</option>
-          </select>
-        </div>
-        <div>
-          <label class="vs-label" for="afDateFrom">Archived From</label>
-          <input type="date" id="afDateFrom" class="vs-input">
-        </div>
-        <div>
-          <label class="vs-label" for="afDateTo">Archived To</label>
-          <input type="date" id="afDateTo" class="vs-input">
-        </div>
-      </div>
-    </div>
-    <div class="vs-modal-footer">
-      <button type="button" class="vs-btn vs-btn-outline" id="archiveFilterClear">Clear All</button>
-      <button type="button" class="vs-btn vs-btn-outline" id="archiveFilterCancel">Cancel</button>
-      <button type="button" class="vs-btn vs-btn-primary" id="archiveFilterApply">Apply</button>
-    </div>
-  </div>
-</div>
-<?php elseif (($type ?? 'user') === 'signatory'): ?>
+<?php if (($type ?? 'voucher') === 'signatory'): ?>
 <div class="vs-modal-overlay" id="archiveFilterModal" style="display:none">
   <div class="vs-modal" style="max-width:400px">
     <div class="vs-modal-header">
@@ -258,10 +217,9 @@
 <script>
 (function initArchiveSearch() {
     var tableId = <?php
-        $t = $type ?? 'user';
-        if ($t === 'user')          echo "'archivedUsersTable'";
-        elseif ($t === 'signatory') echo "'archivedSignatoriesTable'";
-        else                        echo "'archivedVouchersTable'";
+        $t = $type ?? 'voucher';
+        if ($t === 'signatory') echo "'archivedSignatoriesTable'";
+        else                    echo "'archivedVouchersTable'";
     ?>;
 
     var table = document.getElementById(tableId);
@@ -325,44 +283,7 @@
             if (filterBadge) { filterBadge.textContent = n || ''; filterBadge.style.display = n ? '' : 'none'; }
         }
 
-        <?php if (($type ?? 'user') === 'user'): ?>
-        // ── Users: Role + Archived At date range ─────────────────────────────
-        var roleSel = document.getElementById('afRole');
-
-        $.fn.dataTable.ext.search.push(function (settings, rowData, rowIdx) {
-            if (settings.nTable.id !== 'archivedUsersTable') return true;
-            var row = settings.aoData[rowIdx].nTr;
-            if (!row) return true;
-            var date = row.getAttribute('data-archived-date') || '';
-            if (activeFilters.dateFrom && date < activeFilters.dateFrom) return false;
-            if (activeFilters.dateTo   && date > activeFilters.dateTo)   return false;
-            return true;
-        });
-
-        btnApply && btnApply.addEventListener('click', function () {
-            var role = roleSel ? roleSel.value : '';
-            activeFilters = {
-                role:     role,
-                dateFrom: (document.getElementById('afDateFrom') || {}).value || '',
-                dateTo:   (document.getElementById('afDateTo')   || {}).value || '',
-            };
-            updateBadge();
-            dt.column(2).search(role ? ('^' + role + '$') : '', true, false).draw();
-            closeFilter();
-        });
-
-        btnClear && btnClear.addEventListener('click', function () {
-            if (roleSel) roleSel.value = '';
-            var dfEl = document.getElementById('afDateFrom');
-            var dtEl = document.getElementById('afDateTo');
-            if (dfEl) dfEl.value = '';
-            if (dtEl) dtEl.value = '';
-            activeFilters = {};
-            updateBadge();
-            dt.column(2).search('').draw();
-        });
-
-        <?php elseif (($type ?? 'user') === 'signatory'): ?>
+        <?php if (($type ?? 'voucher') === 'signatory'): ?>
         // ── Signatories: Position Title + Archived At date range ─────────────
         var posSel = document.getElementById('afPosition');
         if (posSel) {
@@ -411,7 +332,7 @@
             dt.column(1).search('').draw();
         });
 
-        <?php else: ?>
+        <?php else: // vouchers ?>
         // ── Vouchers: School + Archived At date range ─────────────────────────
         $.fn.dataTable.ext.search.push(function (settings, rowData, rowIdx) {
             if (settings.nTable.id !== 'archivedVouchersTable') return true;

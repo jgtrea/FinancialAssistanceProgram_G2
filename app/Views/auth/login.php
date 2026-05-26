@@ -55,7 +55,7 @@
                     <div class="mb-3">
                         <label for="password" class="form-label">Password</label>
                         <input id="password" type="password" name="password" class="form-control"
-                            placeholder="Enter your password" required autocomplete="current-password" autocapitalize="none" spellcheck="false">
+                            placeholder="enter your password" required autocomplete="current-password" autocapitalize="none" spellcheck="false">
                     </div>
 
                     <button type="submit" class="btn btn-primary w-100 login-submit mt-3">

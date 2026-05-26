@@ -32,7 +32,7 @@
         <span class="vs-action-bar-count"><span id="sigSelectedCount">0</span> selected</span>
         <button class="vs-btn vs-btn-danger" id="btnArchiveSelected">
             <?= asset_icon('archive') ?>
-            Archive Selected
+            Archive
         </button>
     </div>
 
@@ -446,11 +446,12 @@
 
     var checkAll = document.getElementById('sigCheckAll');
     checkAll && checkAll.addEventListener('change', function () {
+        var shouldCheck = selectedIds.size === 0;
         document.querySelectorAll('.sig-row-check').forEach(function (cb) {
-            cb.checked = checkAll.checked;
-            if (checkAll.checked) selectedIds.add(cb.value);
+            cb.checked = shouldCheck;
+            if (shouldCheck) selectedIds.add(cb.value);
             else selectedIds.delete(cb.value);
-            cb.closest('tr').classList.toggle('vs-row-selected', checkAll.checked);
+            cb.closest('tr').classList.toggle('vs-row-selected', shouldCheck);
         });
         updateActionBar();
     });
