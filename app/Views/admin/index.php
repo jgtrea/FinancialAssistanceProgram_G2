@@ -32,10 +32,14 @@
     <!-- Action bar — appears when rows are checked -->
     <div class="vs-action-bar" id="userActionBar" style="display:none">
         <span class="vs-action-bar-count"><span id="userSelectedCount">0</span> selected</span>
-        <div class="ms-auto">
-            <button class="vs-btn vs-btn-danger" id="btnArchiveUsers">
-                <?= asset_icon('archive') ?>
-                Archive Selected
+        <div class="ms-auto d-flex gap-2">
+            <button class="vs-btn vs-btn-success" id="btnActivateUsers">
+                <?= asset_icon('add') ?>
+                Activate
+            </button>
+            <button class="vs-btn vs-btn-danger" id="btnDeactivateUsers">
+                <?= asset_icon('minus') ?>
+                Deactivate
             </button>
         </div>
     </div>
@@ -57,14 +61,20 @@
                     <th>Username</th>
                     <th>Email</th>
                     <th>Role</th>
+                    <th>Status</th>
                     <th>Last Login</th>
                     <th class="actions-column">Actions</th>
                 </tr>
             </thead>
             <tbody>
                 <?php foreach ($users as $user): ?>
-                    <tr id="user-row-<?= (int) $user['user_id'] ?>" data-last-login="<?= !empty($user['last_login']) ? esc(date('Y-m-d', strtotime($user['last_login']))) : '' ?>">
-                        <td><input type="checkbox" class="vs-check user-row-check" value="<?= (int) $user['user_id'] ?>"></td>
+                    <?php
+                        $uid      = (int) $user['user_id'];
+                        $isActive = !empty($user['is_active']);
+                        $isSelf   = $uid === (int) session()->get('user_id');
+                    ?>
+                    <tr id="user-row-<?= $uid ?>" data-last-login="<?= !empty($user['last_login']) ? esc(date('Y-m-d', strtotime($user['last_login']))) : '' ?>">
+                        <td><input type="checkbox" class="vs-check user-row-check" value="<?= $uid ?>"<?= $isSelf ? ' disabled title="You cannot modify your own account"' : '' ?>></td>
                         <td><?= esc($user['username']) ?></td>
                         <td><?= esc($user['email']) ?></td>
                         <td>
@@ -74,12 +84,24 @@
                             ?>
                             <span class="badge" style="background-color:<?= $roleColor ?>"><?= esc(ucfirst($user['role'])) ?></span>
                         </td>
+                        <td>
+                            <span class="badge <?= $isActive ? 'bg-success' : 'bg-secondary' ?>" id="user-status-badge-<?= $uid ?>">
+                                <?= $isActive ? 'Active' : 'Inactive' ?>
+                            </span>
+                        </td>
                         <td><?= !empty($user['last_login']) ? esc(date('M d, Y h:i A', strtotime($user['last_login']))) : 'Never' ?></td>
                         <td class="actions-cell">
                             <button type="button"
                                     class="vs-tbl-btn vs-tbl-btn-edit js-user-edit"
-                                    data-id="<?= (int) $user['user_id'] ?>">
+                                    data-id="<?= $uid ?>">
                                 Edit
+                            </button>
+                            <button type="button"
+                                    class="vs-tbl-btn <?= $isActive ? 'vs-tbl-btn-delete' : 'vs-tbl-btn-view' ?> js-user-toggle"
+                                    data-id="<?= $uid ?>"
+                                    data-active="<?= $isActive ? '1' : '0' ?>"
+                                    id="user-toggle-<?= $uid ?>">
+                                <?= $isActive ? 'Deactivate' : 'Activate' ?>
                             </button>
                         </td>
                     </tr>
@@ -88,28 +110,6 @@
             </table>
         </div>
     </div>
-
-<!-- User Archive Confirmation modal -->
-<div class="vs-modal-overlay" id="userArchiveModal" style="display:none">
-  <div class="vs-modal">
-    <div class="vs-modal-header">
-      <h5>Archive Users</h5>
-      <button class="vs-modal-close" id="userArchiveModalClose">&times;</button>
-    </div>
-    <div class="vs-modal-body">
-      <p>You are about to archive <strong id="userArchiveCount">0</strong> user(s). This will move them to the archive.</p>
-      <label class="vs-label" for="userArchiveReason">Reason (optional)</label>
-      <input type="text" id="userArchiveReason" class="vs-input" placeholder="e.g. Account deactivation">
-    </div>
-    <div class="vs-modal-footer">
-      <button class="vs-btn vs-btn-outline" id="userArchiveModalCancel">Cancel</button>
-      <button class="vs-btn vs-btn-danger" id="userArchiveConfirm">
-        <span id="userArchiveBtnText">Confirm Archive</span>
-        <span id="userArchiveBtnSpinner" class="vs-spinner" style="display:none"></span>
-      </button>
-    </div>
-  </div>
-</div>
 
 <!-- Users Filter modal -->
 <div class="vs-modal-overlay" id="userFilterModal" style="display:none">
@@ -126,6 +126,14 @@
             <option value="">All</option>
             <option value="admin">Admin</option>
             <option value="user">User</option>
+          </select>
+        </div>
+        <div class="vs-span-2">
+          <label class="vs-label" for="ufStatus">Status</label>
+          <select id="ufStatus" class="vs-input">
+            <option value="">All</option>
+            <option value="active">Active</option>
+            <option value="inactive">Inactive</option>
           </select>
         </div>
         <div>
@@ -358,16 +366,21 @@
             });
     });
 
+    // ── Checkbox selection + action bar ──────────────────────────────────
     var selectedIds = new Set();
     var actionBar   = document.getElementById('userActionBar');
     var countLabel  = document.getElementById('userSelectedCount');
+
+    function getSelectableChecks() {
+        return Array.from(document.querySelectorAll('.user-row-check:not([disabled])'));
+    }
 
     function updateBar() {
         if (countLabel) countLabel.textContent = selectedIds.size;
         if (actionBar)  actionBar.style.display = selectedIds.size > 0 ? 'flex' : 'none';
         var checkAll = document.getElementById('userCheckAll');
         if (checkAll) {
-            var all = document.querySelectorAll('.user-row-check');
+            var all = getSelectableChecks();
             checkAll.checked       = all.length > 0 && selectedIds.size >= all.length;
             checkAll.indeterminate = selectedIds.size > 0 && selectedIds.size < all.length;
         }
@@ -375,17 +388,19 @@
 
     var checkAll = document.getElementById('userCheckAll');
     checkAll && checkAll.addEventListener('change', function () {
-        document.querySelectorAll('.user-row-check').forEach(function (cb) {
-            cb.checked = checkAll.checked;
-            if (checkAll.checked) selectedIds.add(cb.value);
+        var shouldCheck = selectedIds.size === 0;
+        getSelectableChecks().forEach(function (cb) {
+            cb.checked = shouldCheck;
+            if (shouldCheck) selectedIds.add(cb.value);
             else selectedIds.delete(cb.value);
-            cb.closest('tr').classList.toggle('vs-row-selected', checkAll.checked);
+            cb.closest('tr').classList.toggle('vs-row-selected', shouldCheck);
         });
         updateBar();
     });
 
     document.querySelectorAll('.user-row-check').forEach(function (cb) {
         cb.addEventListener('change', function () {
+            if (cb.disabled) return;
             if (cb.checked) selectedIds.add(cb.value);
             else selectedIds.delete(cb.value);
             cb.closest('tr').classList.toggle('vs-row-selected', cb.checked);
@@ -393,73 +408,84 @@
         });
     });
 
-    var btnArchive      = document.getElementById('btnArchiveUsers');
-    var userArchModal   = document.getElementById('userArchiveModal');
-    var userArchConfirm = document.getElementById('userArchiveConfirm');
-    var userArchCancel  = document.getElementById('userArchiveModalCancel');
-    var userArchClose   = document.getElementById('userArchiveModalClose');
-    var userArchCount   = document.getElementById('userArchiveCount');
-    var userArchReason  = document.getElementById('userArchiveReason');
-    var userArchBtnText = document.getElementById('userArchiveBtnText');
-    var userArchSpinner = document.getElementById('userArchiveBtnSpinner');
+    // ── Bulk activate / deactivate ────────────────────────────────────────
+    var activateUrl   = '<?= base_url('admin/user_management/activate-multiple') ?>';
+    var deactivateUrl = '<?= base_url('admin/user_management/deactivate-multiple') ?>';
 
-    function closeUserArchModal() {
-        if (userArchModal) userArchModal.style.display = 'none';
-        if (userArchReason) userArchReason.value = '';
-    }
-
-    userArchClose  && userArchClose.addEventListener('click', closeUserArchModal);
-    userArchCancel && userArchCancel.addEventListener('click', closeUserArchModal);
-    userArchModal  && userArchModal.addEventListener('click', function (e) {
-        if (e.target === userArchModal) closeUserArchModal();
-    });
-
-    btnArchive && btnArchive.addEventListener('click', function () {
+    function bulkStatusRequest(url) {
         if (!selectedIds.size) return;
-        if (userArchCount) userArchCount.textContent = selectedIds.size;
-        if (userArchModal) userArchModal.style.display = 'flex';
-    });
-
-    userArchConfirm && userArchConfirm.addEventListener('click', function () {
-        var reason = userArchReason ? userArchReason.value.trim() : '';
         var csrf = getCsrf();
         var body = csrf.name + '=' + csrf.token;
         selectedIds.forEach(function (id) { body += '&ids[]=' + id; });
-        if (reason) body += '&reason=' + encodeURIComponent(reason);
 
-        userArchConfirm.disabled = true;
-        if (userArchBtnText) userArchBtnText.style.display = 'none';
-        if (userArchSpinner) userArchSpinner.style.display = 'inline-block';
-
-        fetch('<?= base_url('admin/user_management/archive-multiple') ?>', {
+        fetch(url, {
             method:  'POST',
             headers: { 'X-Requested-With': 'XMLHttpRequest', 'Content-Type': 'application/x-www-form-urlencoded' },
             body:    body,
         })
         .then(function (r) { return r.json(); })
         .then(function (data) {
-            if (data.status === 'success') {
-                closeUserArchModal();
-                selectedIds.forEach(function (id) {
-                    var row = document.getElementById('user-row-' + id);
-                    if (row) row.remove();
-                });
-                selectedIds.clear();
-                updateBar();
-                showAlert(data.message || 'Archived successfully.', 'success');
-            } else {
-                showAlert(data.message || 'Failed to archive.', 'error');
-                closeUserArchModal();
+            if (data.status !== 'success') {
+                showAlert(data.message || 'Action failed.', 'error');
+                return;
             }
+            // Reload so badges and buttons reflect the new state
+            showAlert(data.message, 'success');
+            setTimeout(function () { location.reload(); }, 800);
         })
-        .catch(function () {
-            showAlert('An error occurred.', 'error');
-            closeUserArchModal();
-        })
-        .finally(function () {
-            userArchConfirm.disabled = false;
-            if (userArchBtnText) userArchBtnText.style.display = 'inline';
-            if (userArchSpinner) userArchSpinner.style.display = 'none';
+        .catch(function () { showAlert('An error occurred.', 'error'); });
+    }
+
+    var btnActivate   = document.getElementById('btnActivateUsers');
+    var btnDeactivate = document.getElementById('btnDeactivateUsers');
+    btnActivate   && btnActivate.addEventListener('click',   function () { bulkStatusRequest(activateUrl); });
+    btnDeactivate && btnDeactivate.addEventListener('click', function () { bulkStatusRequest(deactivateUrl); });
+
+    // ── Activate / Deactivate toggle ──────────────────────────────────────
+    var toggleUrl = '<?= base_url('admin/user_management/toggle') ?>';
+
+    document.querySelectorAll('.js-user-toggle').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+            var id     = btn.getAttribute('data-id');
+            var active = btn.getAttribute('data-active') === '1';
+            var csrf   = getCsrf();
+
+            btn.disabled = true;
+
+            fetch(toggleUrl + '/' + id, {
+                method:  'POST',
+                headers: { 'X-Requested-With': 'XMLHttpRequest', 'Content-Type': 'application/x-www-form-urlencoded' },
+                body:    csrf.name + '=' + csrf.token,
+            })
+            .then(function (r) { return r.json(); })
+            .then(function (data) {
+                if (data.status !== 'success') {
+                    showAlert(data.message || 'Failed.', 'error');
+                    btn.disabled = false;
+                    return;
+                }
+
+                var nowActive = data.is_active === 1 || data.is_active === true;
+                var badge = document.getElementById('user-status-badge-' + id);
+
+                btn.setAttribute('data-active', nowActive ? '1' : '0');
+                btn.textContent = nowActive ? 'Deactivate' : 'Activate';
+                btn.className   = 'vs-tbl-btn ' + (nowActive ? 'vs-tbl-btn-delete' : 'vs-tbl-btn-view') + ' js-user-toggle';
+
+                if (badge) {
+                    badge.textContent = nowActive ? 'Active' : 'Inactive';
+                    badge.className   = 'badge ' + (nowActive ? 'bg-success' : 'bg-secondary');
+                }
+
+                var metaEl = document.querySelector('meta[name="csrf-token-value"]');
+                if (metaEl && data.csrf_token) metaEl.setAttribute('content', data.csrf_token);
+
+                btn.disabled = false;
+            })
+            .catch(function () {
+                showAlert('An error occurred.', 'error');
+                btn.disabled = false;
+            });
         });
     });
 
@@ -506,13 +532,15 @@
     var btnOpen   = document.getElementById('btnOpenUserFilter');
     var btnClose  = document.getElementById('userFilterClose');
     var btnCancel = document.getElementById('userFilterCancel');
-    var btnClear    = document.getElementById('userFilterClear');
-    var btnApply    = document.getElementById('userFilterApply');
-    var ufRole      = document.getElementById('ufRole');
+    var btnClear  = document.getElementById('userFilterClear');
+    var btnApply  = document.getElementById('userFilterApply');
+    var ufRole    = document.getElementById('ufRole');
+    var ufStatus  = document.getElementById('ufStatus');
     var ufLoginFrom = document.getElementById('ufLoginFrom');
     var ufLoginTo   = document.getElementById('ufLoginTo');
     var activeUserFilters = {};
 
+    // Custom date-range filter on the Last Login column
     $.fn.dataTable.ext.search.push(function (settings, rowData, rowIdx) {
         if (settings.nTable.id !== 'userManagementTable') return true;
         var row = settings.aoData[rowIdx].nTr;
@@ -532,28 +560,33 @@
 
     btnClear && btnClear.addEventListener('click', function () {
         if (ufRole)      ufRole.value      = '';
+        if (ufStatus)    ufStatus.value    = '';
         if (ufLoginFrom) ufLoginFrom.value = '';
         if (ufLoginTo)   ufLoginTo.value   = '';
         activeUserFilters = {};
         if (filterBadge) { filterBadge.textContent = ''; filterBadge.style.display = 'none'; }
-        dt.column(3).search('', false, false).draw();
+        dt.column(3).search('').column(4).search('').draw();
     });
 
     btnApply && btnApply.addEventListener('click', function () {
-        var val = ufRole ? ufRole.value : '';
+        var roleVal   = ufRole   ? ufRole.value   : '';
+        var statusVal = ufStatus ? ufStatus.value : '';
         activeUserFilters = {
-            role:      val,
+            role:      roleVal,
+            status:    statusVal,
             loginFrom: ufLoginFrom ? ufLoginFrom.value : '',
             loginTo:   ufLoginTo   ? ufLoginTo.value   : '',
         };
-        var count = [val, activeUserFilters.loginFrom, activeUserFilters.loginTo].filter(Boolean).length;
+        var count = [roleVal, statusVal, activeUserFilters.loginFrom, activeUserFilters.loginTo].filter(Boolean).length;
         if (filterBadge) {
             filterBadge.textContent = count || '';
             filterBadge.style.display = count ? '' : 'none';
         }
-        var roleSearch = val === 'admin' ? '^Admin$' : val === 'user' ? '^User$' : '';
-        var useRegex   = roleSearch !== '';
-        dt.column(3).search(roleSearch, useRegex, false).draw();
+        var roleSearch   = roleVal   === 'admin' ? '^Admin$'    : roleVal   === 'user'     ? '^User$'     : '';
+        var statusSearch = statusVal === 'active' ? '^Active$'  : statusVal === 'inactive' ? '^Inactive$' : '';
+        dt.column(3).search(roleSearch,   roleSearch   !== '', false)
+          .column(4).search(statusSearch, statusSearch !== '', false)
+          .draw();
         closeFilter();
     });
 }());

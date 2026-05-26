@@ -354,6 +354,53 @@ table.js-data-table tbody tr.vs-row-selected td {
 .vs-sidebar-icon { width: 18px; height: 18px; display: block; }
 
 /* ── Action bar ── */
+/* ── School Picker ────────────────────────────────────────────────────────── */
+.vs-school-picker { position: relative; }
+.vs-school-picker-wrap { display: flex; align-items: stretch; }
+.vs-school-picker-wrap .vs-input {
+  flex: 1; border-top-right-radius: 0; border-bottom-right-radius: 0;
+  border-right: none;
+}
+.vs-school-picker-wrap .vs-input:focus { z-index: 1; }
+.vs-school-picker-actions {
+  display: flex; align-items: stretch;
+  border: 1.5px solid var(--border); border-left: none;
+  border-top-right-radius: 8px; border-bottom-right-radius: 8px;
+  overflow: hidden; background: var(--surface);
+  transition: border-color .15s;
+}
+.vs-school-picker-wrap .vs-input:focus ~ .vs-school-picker-actions {
+  border-color: var(--navy-md);
+}
+.vs-school-picker-clear,
+.vs-school-picker-toggle {
+  background: transparent; border: none; padding: 0 .6rem;
+  cursor: pointer; color: var(--muted); display: flex; align-items: center;
+  transition: background .15s, color .15s;
+}
+.vs-school-picker-clear:hover,
+.vs-school-picker-toggle:hover { background: var(--surface-md); color: var(--navy); }
+.vs-school-picker-clear { font-size: 1rem; font-weight: 600; }
+.vs-school-picker-toggle svg { width: 16px; height: 16px; display: block; }
+.vs-school-picker-list {
+  position: absolute; top: calc(100% + 3px); left: 0; right: 0;
+  max-height: 220px; overflow-y: auto;
+  background: #fff; border: 1.5px solid var(--border);
+  border-radius: 8px; box-shadow: 0 4px 14px rgba(0,0,0,.1);
+  z-index: 999; list-style: none; padding: 4px 0; margin: 0;
+  display: none;
+}
+.vs-school-picker-list.open { display: block; }
+.vs-school-picker-list li {
+  padding: 7px 14px; cursor: pointer; font-size: .875rem; color: var(--navy);
+}
+.vs-school-picker-list li:hover { background: #eff6ff; }
+.vs-school-picker-list li.vs-sp-hidden { display: none; }
+.vs-school-picker-no-results {
+  padding: 7px 14px; font-size: .875rem; color: var(--muted);
+  cursor: default; pointer-events: none;
+}
+
 .vs-action-bar { display: flex; align-items: center; justify-content: space-between; background: var(--navy); color: #fff; border-radius: 10px; padding: .75rem 1.25rem; margin-bottom: 1rem; gap: 1rem; flex-wrap: wrap; }
 .vs-action-bar-count { font-size: .875rem; font-weight: 500; color: rgba(255,255,255,.8); }
 .vs-action-bar .vs-btn-outline { background: transparent; color: #fff; border-color: rgba(255,255,255,.45); }

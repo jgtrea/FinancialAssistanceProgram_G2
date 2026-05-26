@@ -505,14 +505,15 @@ document.addEventListener('DOMContentLoaded', function () {
 
     const filteredIds = dt.rows({ search: 'applied' }).ids().toArray()
       .map(function (rid) { return rid.replace('row-', ''); });
-    if (e.target.checked) {
+    const shouldCheck = selectedIds.size === 0;
+    if (shouldCheck) {
       filteredIds.forEach(function (id) { selectedIds.add(id); });
     } else {
       filteredIds.forEach(function (id) { selectedIds.delete(id); });
     }
     getCheckAllBoxes().forEach(checkAll => {
       checkAll.indeterminate = false;
-      checkAll.checked = e.target.checked;
+      checkAll.checked = shouldCheck;
     });
     syncPageCheckboxes();
   });
@@ -580,6 +581,9 @@ document.addEventListener('DOMContentLoaded', function () {
 
         // Mark rows as Generated regardless of sync/queued path
         const idsForUpdate = Array.from(selectedIds);
+        const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+        const now = new Date();
+        const todayFormatted = months[now.getMonth()] + ' ' + String(now.getDate()).padStart(2, '0') + ', ' + now.getFullYear();
         idsForUpdate.forEach(function (id) {
           const cb  = document.querySelector('.vs-row-check[value="' + id + '"]');
           const row = cb ? cb.closest('tr') : null;
@@ -593,6 +597,11 @@ document.addEventListener('DOMContentLoaded', function () {
             if (countCell) {
               const count = parseInt(countCell.textContent, 10) || 0;
               countCell.textContent = count + 1;
+            }
+
+            const lastGeneratedCell = row.querySelector('.js-last-generated');
+            if (lastGeneratedCell) {
+              lastGeneratedCell.textContent = todayFormatted;
             }
           }
         });
