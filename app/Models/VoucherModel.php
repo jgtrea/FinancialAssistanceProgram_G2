@@ -110,17 +110,20 @@ class VoucherModel extends Model
         int $limit = self::LISTING_DEFAULT_LIMIT,
         array $filters = []
     ): array {
+        // Soft-archived rows (is_archived = 1) stay in the listing — they show
+        // up with a disabled checkbox and an Unarchive-only action. Hard
+        // archive (Archive All) deletes the row from this table entirely, so
+        // those are gone by virtue of not existing here anymore.
         $builder = $this->db->table('students')
             ->select("
                 student_id, voucher_no, voucher_date,
                 first_name, middle_name, last_name, suffix,
                 CONCAT_WS(' ', NULLIF(first_name,''), NULLIF(middle_name,''), NULLIF(last_name,''), NULLIF(suffix,'')) AS full_name,
                 preferred_senior_high_school, school_year,
-                eligibility_status, voucher_status,
+                eligibility_status, voucher_status, is_archived,
                 gwa, rank_no, gender, junior_high_school,
                 contact_number, remarks_status, created_at, generated_at
-            ")
-            ->where('is_archived', 0);
+            ");
 
         $keyword = trim($keyword);
         if ($keyword !== '') {
@@ -253,6 +256,44 @@ class VoucherModel extends Model
         return $applied;
     }
 
+    // Return every non-archived student_id matching the listing query —
+    // uncapped, so "Archive All" can sweep the full DB, not just the loaded
+    // listing slice. Shares its WHERE-clause logic with getVouchersForListing.
+    public function getMatchingStudentIds(string $keyword = '', array $filters = []): array
+    {
+        // No is_archived filter: Archive All sweeps everything in the current
+        // listing scope, including soft-archived rows (which would otherwise
+        // be skipped and left behind in the students table).
+        $builder = $this->db->table('students')
+            ->select('student_id');
+
+        $keyword = trim($keyword);
+        if ($keyword !== '') {
+            $builder
+                ->groupStart()
+                ->like('voucher_no', $keyword)
+                ->orLike('first_name', $keyword)
+                ->orLike('middle_name', $keyword)
+                ->orLike('last_name', $keyword)
+                ->orLike('suffix', $keyword)
+                ->orLike('junior_high_school', $keyword)
+                ->orLike('preferred_senior_high_school', $keyword)
+                ->orLike('school_year', $keyword)
+                ->orLike('gender', $keyword)
+                ->orLike('remarks_status', $keyword)
+                ->orLike('voucher_status', $keyword)
+                ->orLike('contact_number', $keyword)
+                ->groupEnd();
+        }
+
+        $this->applyListingFilters($builder, $filters);
+
+        return array_map(
+            static fn ($r) => (int) $r['student_id'],
+            $builder->get()->getResultArray()
+        );
+    }
+
     public function getStudentById(int $studentId): ?array
     {
         $row = $this->db->table('students')
@@ -272,11 +313,14 @@ class VoucherModel extends Model
         return $row ? $this->uppercaseRow($row) : null;
     }
 
-    public function getVouchersByIds(array $ids): array
+    // $includeArchived defaults false so PDF-generation paths still skip
+    // soft-archived rows. The "promote to hard archive" path (archiveAll)
+    // passes true so soft-archived rows also get copied + deleted.
+    public function getVouchersByIds(array $ids, bool $includeArchived = false): array
     {
         if (empty($ids)) return [];
 
-        $rows = $this->db->table('students')
+        $builder = $this->db->table('students')
             ->select("
                 student_id, voucher_no, voucher_date,
                 first_name, middle_name, last_name, suffix,
@@ -286,8 +330,13 @@ class VoucherModel extends Model
                 contact_number, remarks_status, school_year,
                 eligibility_status, voucher_status
             ")
-            ->whereIn('student_id', $ids)
-            ->where('is_archived', 0)
+            ->whereIn('student_id', $ids);
+
+        if (!$includeArchived) {
+            $builder->where('is_archived', 0);
+        }
+
+        $rows = $builder
             ->orderBy('student_id', 'ASC')
             ->get()->getResultArray();
 

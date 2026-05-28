@@ -476,20 +476,227 @@ class Voucher extends Controller
             ->setBody(file_get_contents($filePath));
     }
 
-    // ── Archive selected students ─────────────────────────────────────────────
+    // ── Soft-archive selected students ────────────────────────────────────────
+    // Flips is_archived = 1 on each selected row. Rows stay in `students` and
+    // remain visible in the listing (disabled checkbox, Unarchive-only
+    // action). The hard purge into `student_archive` is handled by
+    // archiveAll() only.
     public function archive()
     {
-        $ids    = $this->parseVoucherIds($this->request->getPost('voucher_ids'));
-        $reason = $this->request->getPost('archive_reason') ?? 'Archived by admin';
+        $ids = $this->parseVoucherIds($this->request->getPost('voucher_ids'));
 
         if (empty($ids)) {
             return $this->response->setJSON(['success' => false, 'message' => 'No students selected.']);
         }
 
-        $students = $this->voucherModel->getVouchersByIds($ids);
-        $userId   = session()->get('user_id');
+        $archived = $this->softArchiveByIds($ids);
+
+        return $this->response->setJSON([
+            'success' => true,
+            'message' => "{$archived} student(s) archived.",
+        ]);
+    }
+
+    // ── Soft-archive a single student (per-row Archive button) ────────────────
+    public function softArchive(int $id)
+    {
+        $student = $this->voucherModel->getStudentById($id);
+        if (!$student) {
+            return $this->response->setJSON(['success' => false, 'message' => 'Student not found.']);
+        }
+
+        $this->softArchiveByIds([$id]);
+
+        return $this->response->setJSON([
+            'success' => true,
+            'message' => 'Student archived.',
+        ]);
+    }
+
+    // ── Unarchive a single student ────────────────────────────────────────────
+    public function unarchive(int $id)
+    {
+        $student = $this->voucherModel->getStudentById($id);
+        if (!$student) {
+            return $this->response->setJSON(['success' => false, 'message' => 'Student not found.']);
+        }
+
+        $this->voucherModel->update($id, ['is_archived' => 0]);
+
+        $userId = $this->getCurrentUserId();
+        $name   = trim(($student['first_name'] ?? '') . ' ' . ($student['last_name'] ?? ''));
+        log_action($userId, 'UNARCHIVE_STUDENT',
+            "Student {$name} (Voucher " . ($student['voucher_no'] ?: '-') . ') unarchived',
+            $id);
+
+        return $this->response->setJSON([
+            'success' => true,
+            'message' => 'Student unarchived.',
+        ]);
+    }
+
+    // Shared helper: set is_archived = 1 for each ID, write an audit entry per
+    // student, return the number of rows actually flipped.
+    protected function softArchiveByIds(array $ids): int
+    {
+        $students = $this->voucherModel->getVouchersByIds($ids, true);
+        $userId   = $this->getCurrentUserId();
+        $archived = 0;
+
+        foreach ($students as $s) {
+            if (!empty($s['is_archived'])) {
+                // Already archived — nothing to do, no audit noise.
+                continue;
+            }
+            $this->voucherModel->update((int) $s['student_id'], ['is_archived' => 1]);
+            log_action($userId, 'ARCHIVE_STUDENT',
+                "Student {$s['full_name']} (Voucher " . ($s['voucher_no'] ?: '-') . ') archived',
+                $s['student_id']);
+            $archived++;
+        }
+
+        return $archived;
+    }
+
+    // ── Bulk archive everything matching the current search + filter scope ────
+    // Sweeps the full DB (not just the loaded 1000-row slice), including
+    // not-eligible students that the per-row Archive checkbox can't select.
+    public function archiveAll()
+    {
+        $keyword = trim((string) $this->request->getPost('q'));
+        $filters = [];
+        foreach (VoucherModel::LISTING_FILTER_KEYS as $key) {
+            $filters[$key] = trim((string) $this->request->getPost($key));
+        }
+        $reason = $this->request->getPost('archive_reason') ?: 'Bulk archive (Archive All)';
+
+        $ids = $this->voucherModel->getMatchingStudentIds($keyword, $filters);
+
+        if (empty($ids)) {
+            return $this->response->setJSON([
+                'success' => false,
+                'message' => 'No students match the current search/filter — nothing to archive.',
+            ]);
+        }
+
+        $archived = $this->archiveStudentsByIds($ids, $reason);
+
+        return $this->response->setJSON([
+            'success' => true,
+            'message' => "{$archived} student(s) archived successfully.",
+        ]);
+    }
+
+    // ── TEMP: Restore everything from student_archive back into students ──────
+    // For testing the Archive All flow. Copies every row from student_archive
+    // into students (preserving the original student_id), then truncates
+    // student_archive. Safe to delete this method + its route + the matching
+    // button in the view once Archive All is done being tested.
+    public function restoreAllFromArchive()
+    {
+        $db = \Config\Database::connect();
+
+        $rows = $db->table('student_archive')->get()->getResultArray();
+
+        if (empty($rows)) {
+            return $this->response->setJSON([
+                'success' => false,
+                'message' => 'student_archive is empty — nothing to restore.',
+            ]);
+        }
+
+        $now      = date('Y-m-d H:i:s');
+        $restored = 0;
+        $skipped  = 0;
+
+        foreach ($rows as $r) {
+            $studentId = (int) ($r['student_id'] ?? 0);
+            if ($studentId <= 0) {
+                $skipped++;
+                continue;
+            }
+
+            // Skip if a fresh row was inserted with the same student_id
+            // between the archive and the restore.
+            $exists = $db->table('students')
+                ->where('student_id', $studentId)
+                ->countAllResults() > 0;
+            if ($exists) {
+                $skipped++;
+                continue;
+            }
+
+            $db->table('students')->insert([
+                'student_id'                   => $studentId,
+                'voucher_no'                   => $r['voucher_no']                   ?? null,
+                'voucher_date'                 => $r['voucher_date']                 ?? null,
+                'first_name'                   => $r['first_name']                   ?? '',
+                'middle_name'                  => $r['middle_name']                  ?? null,
+                'last_name'                    => $r['last_name']                    ?? '',
+                'suffix'                       => $r['suffix']                       ?? null,
+                'rank_no'                      => $r['rank_no']                      ?? null,
+                'gwa'                          => $r['gwa']                          ?? null,
+                'gender'                       => $r['gender']                       ?? null,
+                'junior_high_school'           => $r['junior_high_school']           ?? null,
+                'preferred_senior_high_school' => $r['preferred_senior_high_school'] ?? null,
+                'contact_number'               => $r['contact_number']               ?? null,
+                'remarks_status'               => $r['remarks_status']               ?? null,
+                'school_year'                  => $r['school_year']                  ?? null,
+                'eligibility_status'           => $r['eligibility_status']           ?? 'eligible',
+                'voucher_status'               => $r['voucher_status']               ?? 'not_generated',
+                'is_archived'                  => 0,
+                'created_at'                   => $r['archived_at']                  ?? $now,
+                'updated_at'                   => $now,
+            ]);
+
+            $db->table('student_archive')
+                ->where('archive_id', $r['archive_id'])
+                ->delete();
+
+            $restored++;
+        }
+
+        log_action($this->getCurrentUserId(), 'RESTORE_ARCHIVE_TEST',
+            "[TEST] Restored {$restored} student(s) from archive (skipped {$skipped})");
+
+        return $this->response->setJSON([
+            'success' => true,
+            'message' => "Restored {$restored} student(s) from archive. Skipped {$skipped} (already exist in students).",
+        ]);
+    }
+
+    // ── Count students matching the current search + filter scope (AJAX) ──────
+    // Called by the "Archive All" confirmation modal so the user sees the
+    // exact number before confirming the destructive action.
+    public function countMatching()
+    {
+        $keyword = trim((string) $this->request->getGet('q'));
+        $filters = [];
+        foreach (VoucherModel::LISTING_FILTER_KEYS as $key) {
+            $filters[$key] = trim((string) $this->request->getGet($key));
+        }
+
+        $ids = $this->voucherModel->getMatchingStudentIds($keyword, $filters);
+
+        return $this->response->setJSON([
+            'success' => true,
+            'count'   => count($ids),
+        ]);
+    }
+
+    // Shared archive loop — copies each student row into student_archive then
+    // deletes the source row. Used by both archive() (selected) and
+    // archiveAll() (bulk by filter).
+    protected function archiveStudentsByIds(array $ids, string $reason): int
+    {
+        // Include soft-archived rows so Archive All also promotes them into
+        // student_archive (instead of silently leaving them in students).
+        $students = $this->voucherModel->getVouchersByIds($ids, true);
+        $userId   = $this->getCurrentUserId();
         $now      = date('Y-m-d H:i:s');
         $archived = 0;
+
+        $db = \Config\Database::connect();
 
         foreach ($students as $s) {
             $this->archiveModel->insert([
@@ -515,19 +722,34 @@ class Voucher extends Controller
                 'archived_at'                  => $now,
             ]);
 
-            $this->voucherModel->delete((int) $s['student_id']);
-
-            log_action($userId, 'ARCHIVE_STUDENT',
-                "Student {$s['full_name']} (Voucher {$s['voucher_no']}) archived",
-                $s['student_id']);
-
             $archived++;
         }
 
-        return $this->response->setJSON([
-            'success' => true,
-            'message' => "{$archived} student(s) archived successfully.",
-        ]);
+        // The audit_log table has FKs (audit_log_ibfk_2 → students.student_id,
+        // and likely one for voucher_id) that block DELETE on `students`.
+        // Null them out for the affected IDs in one batch so the audit history
+        // is preserved (descriptions stay) but the FK is released. Doing it
+        // here, AFTER the archive inserts have succeeded, means we don't lose
+        // the FK pointers if the archive step fails.
+        if (!empty($ids)) {
+            $db->table('audit_log')
+                ->whereIn('student_id', $ids)
+                ->update(['student_id' => null]);
+            $db->table('audit_log')
+                ->whereIn('voucher_id', $ids)
+                ->update(['voucher_id' => null]);
+
+            // Delete in one statement instead of N round-trips.
+            $db->table('students')->whereIn('student_id', $ids)->delete();
+        }
+
+        foreach ($students as $s) {
+            log_action($userId, 'ARCHIVE_STUDENT',
+                "Student {$s['full_name']} (Voucher {$s['voucher_no']}) archived",
+                null);
+        }
+
+        return $archived;
     }
 
     // ── Save generated PDF bytes to disk and record the job ───────────────────

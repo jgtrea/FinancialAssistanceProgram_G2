@@ -51,6 +51,12 @@ $routes->group('admin', ['filter' => 'role:admin'], function ($routes) {
     $routes->get('vouchers/pdf-status/(:num)',    'Admin\Voucher::checkPdfJob/$1');
     $routes->get('vouchers/pdf-download/(:num)',  'Admin\Voucher::downloadPdf/$1');
     $routes->post('vouchers/archive',             'Admin\Voucher::archive');
+    $routes->post('vouchers/archive-all',         'Admin\Voucher::archiveAll');
+    $routes->get('vouchers/count-matching',       'Admin\Voucher::countMatching');
+    $routes->post('vouchers/soft-archive/(:num)', 'Admin\Voucher::softArchive/$1');
+    $routes->post('vouchers/unarchive/(:num)',    'Admin\Voucher::unarchive/$1');
+    // TEMP — remove after Archive All testing is done.
+    $routes->post('vouchers/restore-all-archive', 'Admin\Voucher::restoreAllFromArchive');
 
     // Schools
     $routes->get('schools',                       'Admin\School::index');
@@ -93,6 +99,12 @@ $routes->group('user', ['filter' => 'auth'], function ($routes) {
     $routes->get('vouchers/pdf-status/(:num)',    'User\Voucher::checkPdfJob/$1');
     $routes->get('vouchers/pdf-download/(:num)',  'User\Voucher::downloadPdf/$1');
     $routes->post('vouchers/archive',             'User\Voucher::archive');
+    $routes->post('vouchers/archive-all',         'User\Voucher::archiveAll');
+    $routes->get('vouchers/count-matching',       'User\Voucher::countMatching');
+    $routes->post('vouchers/soft-archive/(:num)', 'User\Voucher::softArchive/$1');
+    $routes->post('vouchers/unarchive/(:num)',    'User\Voucher::unarchive/$1');
+    // TEMP — remove after Archive All testing is done.
+    $routes->post('vouchers/restore-all-archive', 'User\Voucher::restoreAllFromArchive');
 });
 
 // ─── Students (madridbranch) ──────────────────────────────────────────────────

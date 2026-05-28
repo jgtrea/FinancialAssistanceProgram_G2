@@ -752,27 +752,12 @@ document.addEventListener('DOMContentLoaded', function () {
         closeArchiveModal();
 
         if (data.success) {
-          const alertBox = document.getElementById('studentsAlertBox');
-          if (alertBox) {
-            const el = document.createElement('div');
-            el.className = 'vs-alert vs-alert-success mb-3';
-            el.textContent = data.message;
-            alertBox.innerHTML = '';
-            alertBox.appendChild(el);
-            setTimeout(() => el.remove(), 5000);
-          } else {
-            showAlert(data.message, 'success');
-          }
-          // Remove archived rows from DataTable (only those currently in DOM)
-          selectedIds.forEach(id => {
-            const cb  = document.querySelector(`.vs-row-check[value="${id}"]`);
-            const row = cb ? cb.closest('tr') : null;
-            if (row) dt.row(row).remove();
-          });
-          dt.draw();
-          selectedIds.clear();
-          syncPageCheckboxes();
-          refreshCsrfToken();
+          // Soft archive: rows stay in the DataTable but flip to archived
+          // state (disabled checkbox + Unarchive-only actions). The cleanest
+          // way to redraw that is a full reload — the per-row inline JS does
+          // surgical DOM updates, but the bulk flow handles many rows at
+          // once and reloading also resets selection state.
+          window.location.reload();
         } else {
           showAlert(data.message || 'Archive failed.', 'error');
         }

@@ -26,6 +26,14 @@
         <?= asset_icon('import') ?>
         Import
       </button>
+      <button type="button" class="vs-btn vs-btn-danger" id="btnArchiveAll" title="Archive every student matching the current search and filters (full database, not just the loaded rows)">
+        <?= asset_icon('archive') ?>
+        Archive All
+      </button>
+      <!-- TEMP — testing helper for the Archive All flow. Remove after testing. -->
+      <button type="button" class="vs-btn vs-btn-outline" id="btnRestoreAllArchive" title="[TEMP/TEST] Move every row from student_archive back into students" style="border-color:#a02622;color:#a02622">
+        Restore All (test)
+      </button>
     </div>
   </div>
 
@@ -91,14 +99,20 @@
         <tbody>
           <?php foreach ($vouchers as $v): ?>
           <?php $notEligible = ($v['eligibility_status'] ?? '') === 'not_eligible' ?>
+          <?php $isArchived  = !empty($v['is_archived']) ?>
+          <?php $cbDisabled  = $notEligible || $isArchived ?>
+          <?php $cbTitle     = $isArchived
+                                  ? 'Archived — unarchive to interact with this row'
+                                  : ($notEligible ? 'Not eligible — cannot be selected' : '') ?>
           <tr id="row-<?= esc($v['student_id'], 'attr') ?>"
               data-gender="<?= esc((string) ($v['gender'] ?? ''), 'attr') ?>"
               data-remarks="<?= esc((string) ($v['remarks_status'] ?? ''), 'attr') ?>"
               data-voucher-date="<?= esc((string) ($v['voucher_date'] ?? ''), 'attr') ?>"
               data-voucher-status="<?= esc((string) ($v['voucher_status'] ?? ''), 'attr') ?>"
               data-eligibility="<?= esc((string) ($v['eligibility_status'] ?? ''), 'attr') ?>"
-              data-gwa="<?= esc((string) ($v['gwa'] ?? ''), 'attr') ?>">
-            <td><input type="checkbox" class="vs-check vs-row-check" value="<?= esc($v['student_id'], 'attr') ?>"<?= $notEligible ? ' disabled title="Not eligible — cannot be selected"' : '' ?>></td>
+              data-archived="<?= $isArchived ? '1' : '0' ?>"
+              data-gwa="<?= esc((string) ($v['gwa'] ?? ''), 'attr') ?>"<?= $isArchived ? ' class="vs-row-archived"' : '' ?>>
+            <td><input type="checkbox" class="vs-check vs-row-check" value="<?= esc($v['student_id'], 'attr') ?>"<?= $cbDisabled ? ' disabled' : '' ?><?= $cbTitle !== '' ? ' title="' . esc($cbTitle, 'attr') . '"' : '' ?>></td>
             <td class="js-voucher-no"><?= esc($v['voucher_no'] ?: '-') ?></td>
             <td><?= esc($v['full_name']) ?></td>
             <td><?= esc($v['junior_high_school'] ?: '-') ?></td>
@@ -120,9 +134,18 @@
             </td>
             <td class="js-last-generated"><?= !empty($v['generated_at']) ? date('M d, Y', strtotime($v['generated_at'])) : '-' ?></td>
             <td>
-              <div class="d-flex gap-1">
-                <button type="button" class="vs-tbl-btn vs-tbl-btn-view js-voucher-action" data-mode="view" data-id="<?= esc($v['student_id'], 'attr') ?>">View</button>
-                <button type="button" class="vs-tbl-btn vs-tbl-btn-edit js-voucher-action" data-mode="edit" data-id="<?= esc($v['student_id'], 'attr') ?>">Edit</button>
+              <div class="d-flex gap-1 js-actions-cell">
+                <?php if ($isArchived): ?>
+                  <button type="button" class="vs-tbl-btn vs-tbl-btn-view js-unarchive-one"
+                          data-id="<?= esc($v['student_id'], 'attr') ?>"
+                          data-name="<?= esc($v['full_name'], 'attr') ?>">Unarchive</button>
+                <?php else: ?>
+                  <button type="button" class="vs-tbl-btn vs-tbl-btn-view js-voucher-action" data-mode="view" data-id="<?= esc($v['student_id'], 'attr') ?>">View</button>
+                  <button type="button" class="vs-tbl-btn vs-tbl-btn-edit js-voucher-action" data-mode="edit" data-id="<?= esc($v['student_id'], 'attr') ?>">Edit</button>
+                  <button type="button" class="vs-tbl-btn vs-tbl-btn-delete js-archive-one"
+                          data-id="<?= esc($v['student_id'], 'attr') ?>"
+                          data-name="<?= esc($v['full_name'], 'attr') ?>">Archive</button>
+                <?php endif ?>
               </div>
             </td>
           </tr>
@@ -149,6 +172,59 @@
       <button class="vs-btn vs-btn-danger" id="archiveConfirm">
         <span id="archiveBtnText">Confirm Archive</span>
         <span id="archiveBtnSpinner" class="vs-spinner" style="display:none"></span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Archive One modal — confirmation for the per-row Archive button. Independent
+     of the bulk-selection flow so it works on any student, including ineligible
+     ones whose row checkbox is disabled. -->
+<div class="vs-modal-overlay" id="archiveOneModal" style="display:none">
+  <div class="vs-modal">
+    <div class="vs-modal-header">
+      <h5>Archive Student</h5>
+      <button class="vs-modal-close" id="archiveOneModalClose">&times;</button>
+    </div>
+    <div class="vs-modal-body">
+      <div id="archiveOneAlert"></div>
+      <p>Archive <strong id="archiveOneName">—</strong>? This moves the record to the archive.</p>
+      <label class="vs-label" for="archiveOneReason">Reason (optional)</label>
+      <input type="text" id="archiveOneReason" class="vs-input" placeholder="e.g. End of school year">
+    </div>
+    <div class="vs-modal-footer">
+      <button class="vs-btn vs-btn-outline" id="archiveOneModalCancel">Cancel</button>
+      <button class="vs-btn vs-btn-danger" id="archiveOneConfirm">
+        <span id="archiveOneBtnText">Confirm Archive</span>
+        <span id="archiveOneBtnSpinner" class="vs-spinner" style="display:none"></span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Archive All modal — bulk-archives every student matching current search + filters across the full DB. -->
+<div class="vs-modal-overlay" id="archiveAllModal" style="display:none">
+  <div class="vs-modal">
+    <div class="vs-modal-header">
+      <h5>Archive All Matching Students</h5>
+      <button class="vs-modal-close" id="archiveAllModalClose">&times;</button>
+    </div>
+    <div class="vs-modal-body">
+      <div id="archiveAllAlert"></div>
+      <p>
+        This will archive <strong id="archiveAllCount">—</strong> student(s) across the
+        <strong>entire database</strong> matching the current search and filters
+        (not just the rows shown on this page). Not-eligible students are included.
+      </p>
+      <p class="text-muted small mb-3">This action cannot be undone in bulk — restoration would have to be done individually from the Archive page.</p>
+      <label class="vs-label" for="archiveAllReason">Reason (optional)</label>
+      <input type="text" id="archiveAllReason" class="vs-input" placeholder="e.g. End of school year">
+    </div>
+    <div class="vs-modal-footer">
+      <button class="vs-btn vs-btn-outline" id="archiveAllModalCancel">Cancel</button>
+      <button class="vs-btn vs-btn-danger" id="archiveAllConfirm" disabled>
+        <span id="archiveAllBtnText">Confirm Archive All</span>
+        <span id="archiveAllBtnSpinner" class="vs-spinner" style="display:none"></span>
       </button>
     </div>
   </div>
@@ -640,6 +716,8 @@
   });
 
   document.querySelectorAll('.js-voucher-action').forEach(function (btn) {
+    if (btn.dataset.voucherActionBound === '1') return;
+    btn.dataset.voucherActionBound = '1';
     btn.addEventListener('click', function () {
       vmOpen(btn.getAttribute('data-mode'), btn.getAttribute('data-id'));
     });
@@ -813,6 +891,343 @@
     }
   });
   }
+
+  // ── Archive One / Unarchive One (per-row buttons) ──────────────────────────
+  // Both flip students.is_archived without copying to student_archive — that
+  // hard-archive purge is reserved for the Archive All button. After success
+  // we mutate the row in-place: swap the action buttons, toggle the
+  // disabled/title state on the checkbox, and dim the row.
+  var archiveOneModal      = document.getElementById('archiveOneModal');
+  var archiveOneModalClose = document.getElementById('archiveOneModalClose');
+  var archiveOneModalCancel= document.getElementById('archiveOneModalCancel');
+  var archiveOneConfirm    = document.getElementById('archiveOneConfirm');
+  var archiveOneName       = document.getElementById('archiveOneName');
+  var archiveOneReason     = document.getElementById('archiveOneReason');
+  var archiveOneAlert      = document.getElementById('archiveOneAlert');
+  var archiveOneBtnText    = document.getElementById('archiveOneBtnText');
+  var archiveOneBtnSpinner = document.getElementById('archiveOneBtnSpinner');
+  var softArchiveUrlBase   = '<?= site_url($prefix . '/vouchers/soft-archive') ?>';
+  var unarchiveUrlBase     = '<?= site_url($prefix . '/vouchers/unarchive') ?>';
+  var pendingArchiveId     = null;
+
+  function closeArchiveOneModal() {
+    if (archiveOneModal) archiveOneModal.style.display = 'none';
+    pendingArchiveId = null;
+  }
+
+  function setArchiveOneAlert(msg, type) {
+    if (!archiveOneAlert) return;
+    archiveOneAlert.innerHTML = msg
+      ? '<div class="vs-alert vs-alert-' + (type || 'error') + ' mb-3">' + msg + '</div>'
+      : '';
+  }
+
+  // Replace the actions cell + checkbox state for a given row to reflect the
+  // new archived state. Called after a successful soft-archive or unarchive.
+  function setRowArchivedState(rowEl, archived) {
+    if (!rowEl) return;
+    var id = (rowEl.id || '').replace(/^row-/, '');
+    var nameAttr = '';
+    var existingActionBtn = rowEl.querySelector('.js-archive-one, .js-unarchive-one');
+    if (existingActionBtn) nameAttr = existingActionBtn.getAttribute('data-name') || '';
+    var nameEsc = nameAttr.replace(/"/g, '&quot;');
+
+    rowEl.setAttribute('data-archived', archived ? '1' : '0');
+    rowEl.classList.toggle('vs-row-archived', archived);
+
+    var cb = rowEl.querySelector('.vs-row-check');
+    if (cb) {
+      var notEligible = (rowEl.getAttribute('data-eligibility') || '') === 'not_eligible';
+      cb.checked = false;
+      cb.disabled = archived || notEligible;
+      cb.title = archived
+        ? 'Archived — unarchive to interact with this row'
+        : (notEligible ? 'Not eligible — cannot be selected' : '');
+    }
+
+    var actionsCell = rowEl.querySelector('.js-actions-cell');
+    if (actionsCell) {
+      if (archived) {
+        actionsCell.innerHTML =
+          '<button type="button" class="vs-tbl-btn vs-tbl-btn-view js-unarchive-one"' +
+          ' data-id="' + id + '" data-name="' + nameEsc + '">Unarchive</button>';
+      } else {
+        actionsCell.innerHTML =
+          '<button type="button" class="vs-tbl-btn vs-tbl-btn-view js-voucher-action" data-mode="view" data-id="' + id + '">View</button>' +
+          '<button type="button" class="vs-tbl-btn vs-tbl-btn-edit js-voucher-action" data-mode="edit" data-id="' + id + '">Edit</button>' +
+          '<button type="button" class="vs-tbl-btn vs-tbl-btn-delete js-archive-one"' +
+          ' data-id="' + id + '" data-name="' + nameEsc + '">Archive</button>';
+      }
+      // Re-wire the new buttons since the original event listeners attached
+      // by querySelectorAll on page load don't reach replaced elements.
+      wireRowActionButtons(actionsCell);
+    }
+  }
+
+  function flashSuccess(msg) {
+    var alertBox = document.getElementById('studentsAlertBox');
+    if (!alertBox) return;
+    var el = document.createElement('div');
+    el.className = 'vs-alert vs-alert-success mb-3';
+    el.textContent = msg;
+    alertBox.innerHTML = '';
+    alertBox.appendChild(el);
+    setTimeout(function () { el.remove(); }, 5000);
+  }
+
+  function wireArchiveOneButton(btn) {
+    btn.addEventListener('click', function () {
+      pendingArchiveId = btn.getAttribute('data-id');
+      if (!pendingArchiveId || !archiveOneModal) return;
+      setArchiveOneAlert('');
+      if (archiveOneReason) archiveOneReason.value = '';
+      if (archiveOneName)   archiveOneName.textContent = btn.getAttribute('data-name') || ('student #' + pendingArchiveId);
+      archiveOneConfirm.disabled = false;
+      archiveOneModal.style.display = 'flex';
+    });
+  }
+
+  function wireUnarchiveOneButton(btn) {
+    btn.addEventListener('click', function () {
+      var id = btn.getAttribute('data-id');
+      if (!id) return;
+      btn.disabled = true;
+
+      var fd = new FormData();
+      fd.append(csrfName, csrfHash);
+
+      fetch(unarchiveUrlBase + '/' + id, {
+        method:  'POST',
+        headers: { 'X-Requested-With': 'XMLHttpRequest' },
+        credentials: 'same-origin',
+        body:    fd,
+      })
+        .then(function (r) { return r.json(); })
+        .then(function (data) {
+          if (!data.success) {
+            btn.disabled = false;
+            alert(data.message || 'Unarchive failed.');
+            return;
+          }
+          setRowArchivedState(document.getElementById('row-' + id), false);
+          flashSuccess(data.message || 'Student unarchived.');
+          if (data.csrf_token) csrfHash = data.csrf_token;
+        })
+        .catch(function () {
+          btn.disabled = false;
+          alert('An error occurred. Please try again.');
+        });
+    });
+  }
+
+  // Wires the action buttons inside a specific actions cell (or the whole
+  // document if no element is passed). Used on initial load and after a
+  // soft-archive / unarchive replaces a row's buttons.
+  function wireRowActionButtons(scope) {
+    var root = scope || document;
+    root.querySelectorAll('.js-archive-one').forEach(wireArchiveOneButton);
+    root.querySelectorAll('.js-unarchive-one').forEach(wireUnarchiveOneButton);
+    // Re-wire View/Edit so newly-inserted buttons open the modal.
+    root.querySelectorAll('.js-voucher-action').forEach(function (b) {
+      if (b.dataset.voucherActionBound === '1') return;
+      b.dataset.voucherActionBound = '1';
+      b.addEventListener('click', function () {
+        vmOpen(b.getAttribute('data-mode'), b.getAttribute('data-id'));
+      });
+    });
+  }
+  wireRowActionButtons();
+
+  archiveOneModalClose  && archiveOneModalClose.addEventListener('click', closeArchiveOneModal);
+  archiveOneModalCancel && archiveOneModalCancel.addEventListener('click', closeArchiveOneModal);
+  archiveOneModal       && archiveOneModal.addEventListener('click', function (e) {
+    if (e.target === archiveOneModal) closeArchiveOneModal();
+  });
+
+  archiveOneConfirm && archiveOneConfirm.addEventListener('click', function () {
+    if (!pendingArchiveId) return;
+    setArchiveOneAlert('');
+    archiveOneConfirm.disabled = true;
+    if (archiveOneBtnText)    archiveOneBtnText.style.display    = 'none';
+    if (archiveOneBtnSpinner) archiveOneBtnSpinner.style.display = 'inline-block';
+
+    var fd = new FormData();
+    fd.append(csrfName, csrfHash);
+
+    var idForRequest = pendingArchiveId;
+    fetch(softArchiveUrlBase + '/' + idForRequest, {
+      method:  'POST',
+      headers: { 'X-Requested-With': 'XMLHttpRequest' },
+      credentials: 'same-origin',
+      body:    fd,
+    })
+      .then(function (r) { return r.json(); })
+      .then(function (data) {
+        archiveOneConfirm.disabled = false;
+        if (archiveOneBtnText)    archiveOneBtnText.style.display    = 'inline';
+        if (archiveOneBtnSpinner) archiveOneBtnSpinner.style.display = 'none';
+        if (!data.success) {
+          setArchiveOneAlert(data.message || 'Archive failed.', 'error');
+          return;
+        }
+        setRowArchivedState(document.getElementById('row-' + idForRequest), true);
+        closeArchiveOneModal();
+        flashSuccess(data.message || 'Student archived.');
+        if (data.csrf_token) csrfHash = data.csrf_token;
+      })
+      .catch(function () {
+        setArchiveOneAlert('An error occurred. Please try again.', 'error');
+        archiveOneConfirm.disabled = false;
+        if (archiveOneBtnText)    archiveOneBtnText.style.display    = 'inline';
+        if (archiveOneBtnSpinner) archiveOneBtnSpinner.style.display = 'none';
+      });
+  });
+
+  // ── Archive All ─────────────────────────────────────────────────────────────
+  // Opens a confirmation modal that first AJAX-fetches the count of students
+  // matching the current search + filter scope (from the URL query string), so
+  // the user knows exactly how many rows are about to be archived across the
+  // whole DB — not just the loaded 1000.
+  var btnArchiveAll        = document.getElementById('btnArchiveAll');
+  var archiveAllModal      = document.getElementById('archiveAllModal');
+  var archiveAllModalClose = document.getElementById('archiveAllModalClose');
+  var archiveAllModalCancel= document.getElementById('archiveAllModalCancel');
+  var archiveAllConfirm    = document.getElementById('archiveAllConfirm');
+  var archiveAllCount      = document.getElementById('archiveAllCount');
+  var archiveAllReason     = document.getElementById('archiveAllReason');
+  var archiveAllAlert      = document.getElementById('archiveAllAlert');
+  var archiveAllBtnText    = document.getElementById('archiveAllBtnText');
+  var archiveAllBtnSpinner = document.getElementById('archiveAllBtnSpinner');
+  var countMatchingUrl     = '<?= site_url($prefix . '/vouchers/count-matching') ?>';
+  var archiveAllUrl        = '<?= site_url($prefix . '/vouchers/archive-all') ?>';
+
+  // TEMP — handler for the "Restore All (test)" button. Remove with the
+  // button + route + controller method when Archive All is done being tested.
+  var btnRestoreAllArchive = document.getElementById('btnRestoreAllArchive');
+  var restoreAllArchiveUrl = '<?= site_url($prefix . '/vouchers/restore-all-archive') ?>';
+  btnRestoreAllArchive && btnRestoreAllArchive.addEventListener('click', function () {
+    if (!window.confirm('[TEST] Move every row from student_archive back into students?\n\nThis is a destructive testing shortcut — only use it while testing Archive All.')) {
+      return;
+    }
+    btnRestoreAllArchive.disabled = true;
+    var fd = new FormData();
+    fd.append(csrfName, csrfHash);
+    fetch(restoreAllArchiveUrl, {
+      method:  'POST',
+      headers: { 'X-Requested-With': 'XMLHttpRequest' },
+      credentials: 'same-origin',
+      body:    fd,
+    })
+      .then(function (r) { return r.json(); })
+      .then(function (data) {
+        alert((data && data.message) || (data && data.success ? 'Restored.' : 'Restore failed.'));
+        if (data && data.success) window.location.reload();
+        else btnRestoreAllArchive.disabled = false;
+      })
+      .catch(function () {
+        alert('Restore request failed.');
+        btnRestoreAllArchive.disabled = false;
+      });
+  });
+
+  function closeArchiveAllModal() {
+    if (archiveAllModal) archiveAllModal.style.display = 'none';
+  }
+
+  function setArchiveAllAlert(msg, type) {
+    if (!archiveAllAlert) return;
+    archiveAllAlert.innerHTML = msg
+      ? '<div class="vs-alert vs-alert-' + (type || 'error') + ' mb-3">' + msg + '</div>'
+      : '';
+  }
+
+  function currentListingQuery() {
+    // Use the current URL's search params so the count + archive operate on
+    // exactly the same scope the listing was rendered with (keyword + every
+    // hidden filter input that the filter form submitted on its last apply).
+    return new URLSearchParams(window.location.search);
+  }
+
+  btnArchiveAll && btnArchiveAll.addEventListener('click', function () {
+    if (!archiveAllModal) return;
+    setArchiveAllAlert('');
+    if (archiveAllReason) archiveAllReason.value = '';
+    if (archiveAllCount)  archiveAllCount.textContent = '…';
+    if (archiveAllConfirm) archiveAllConfirm.disabled = true;
+    archiveAllModal.style.display = 'flex';
+
+    var qs = currentListingQuery().toString();
+    fetch(countMatchingUrl + (qs ? '?' + qs : ''), {
+      method: 'GET',
+      headers: { 'X-Requested-With': 'XMLHttpRequest' },
+      credentials: 'same-origin'
+    })
+      .then(function (r) { return r.json(); })
+      .then(function (data) {
+        if (!data.success) {
+          setArchiveAllAlert(data.message || 'Failed to count matching records.', 'error');
+          return;
+        }
+        var n = parseInt(data.count, 10) || 0;
+        if (archiveAllCount) archiveAllCount.textContent = n.toLocaleString();
+        if (archiveAllConfirm) archiveAllConfirm.disabled = n === 0;
+        if (n === 0) {
+          setArchiveAllAlert('No students match the current search/filter — nothing to archive.', 'info');
+        }
+      })
+      .catch(function () {
+        setArchiveAllAlert('Failed to count matching records.', 'error');
+      });
+  });
+
+  archiveAllModalClose  && archiveAllModalClose.addEventListener('click', closeArchiveAllModal);
+  archiveAllModalCancel && archiveAllModalCancel.addEventListener('click', closeArchiveAllModal);
+  archiveAllModal       && archiveAllModal.addEventListener('click', function (e) {
+    if (e.target === archiveAllModal) closeArchiveAllModal();
+  });
+
+  archiveAllConfirm && archiveAllConfirm.addEventListener('click', function () {
+    if (archiveAllConfirm.disabled) return;
+    setArchiveAllAlert('');
+    archiveAllConfirm.disabled = true;
+    if (archiveAllBtnText)    archiveAllBtnText.style.display    = 'none';
+    if (archiveAllBtnSpinner) archiveAllBtnSpinner.style.display = 'inline-block';
+
+    var fd = new FormData();
+    fd.append(csrfName, csrfHash);
+    fd.append('archive_reason', archiveAllReason ? archiveAllReason.value : '');
+    // Mirror the URL's q + filter params into the POST body so the server
+    // archives exactly the same scope the user is viewing.
+    currentListingQuery().forEach(function (value, key) {
+      fd.append(key, value);
+    });
+
+    fetch(archiveAllUrl, {
+      method:  'POST',
+      headers: { 'X-Requested-With': 'XMLHttpRequest' },
+      credentials: 'same-origin',
+      body:    fd,
+    })
+      .then(function (r) { return r.json(); })
+      .then(function (data) {
+        if (!data.success) {
+          setArchiveAllAlert(data.message || 'Archive All failed.', 'error');
+          archiveAllConfirm.disabled = false;
+          if (archiveAllBtnText)    archiveAllBtnText.style.display    = 'inline';
+          if (archiveAllBtnSpinner) archiveAllBtnSpinner.style.display = 'none';
+          return;
+        }
+        // Refresh the page to reflect the archived rows leaving the listing.
+        // Preserve the user's current search/filter scope in the URL.
+        window.location.reload();
+      })
+      .catch(function () {
+        setArchiveAllAlert('An error occurred. Please try again.', 'error');
+        archiveAllConfirm.disabled = false;
+        if (archiveAllBtnText)    archiveAllBtnText.style.display    = 'inline';
+        if (archiveAllBtnSpinner) archiveAllBtnSpinner.style.display = 'none';
+      });
+  });
 }());
 </script>
 
