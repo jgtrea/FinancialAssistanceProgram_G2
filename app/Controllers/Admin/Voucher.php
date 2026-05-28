@@ -515,11 +515,56 @@ class Voucher extends Controller
             ]);
         }
 
-        $archived = $this->archiveStudentsByIds($ids, $reason);
+        $archived = $this->archiveStudentsByIds($ids, $reason, true);
 
         return $this->response->setJSON([
             'success' => true,
             'message' => "{$archived} student(s) archived successfully.",
+        ]);
+    }
+
+    // ── Bulk activate everything matching the current search + filter scope ───
+    public function activateAll()
+    {
+        return $this->bulkSetActiveAll(1);
+    }
+
+    // ── Bulk deactivate everything matching the current search + filter scope ─
+    public function deactivateAll()
+    {
+        return $this->bulkSetActiveAll(0);
+    }
+
+    protected function bulkSetActiveAll(int $state)
+    {
+        $keyword = trim((string) $this->request->getPost('q'));
+        $filters = [];
+        foreach (VoucherModel::LISTING_FILTER_KEYS as $key) {
+            $filters[$key] = trim((string) $this->request->getPost($key));
+        }
+
+        $ids = $this->voucherModel->getMatchingStudentIds($keyword, $filters);
+
+        if (empty($ids)) {
+            return $this->response->setJSON([
+                'success' => false,
+                'message' => 'No students match the current search/filter.',
+            ]);
+        }
+
+        $userId = $this->getCurrentUserId();
+        $label  = $state === 1 ? 'activated' : 'deactivated';
+        $action = $state === 1 ? 'ACTIVATE_STUDENT' : 'DEACTIVATE_STUDENT';
+
+        foreach ($ids as $id) {
+            $this->voucherModel->update($id, ['is_active' => $state]);
+        }
+        $count = count($ids);
+        log_action($userId, $action, "Bulk {$label} {$count} student(s) (" . ucfirst($label) . " All)");
+
+        return $this->response->setJSON([
+            'success' => true,
+            'message' => "{$count} student(s) {$label}.",
         ]);
     }
 
@@ -622,8 +667,9 @@ class Voucher extends Controller
 
     // Shared archive loop — copies each student row into student_archive then
     // deletes the source row. Used by both archive() (selected) and
-    // archiveAll() (bulk by filter).
-    protected function archiveStudentsByIds(array $ids, string $reason): int
+    // archiveAll() (bulk by filter). $bulkLog=true collapses N per-student
+    // audit entries into a single summary row, matching the unarchive flow.
+    protected function archiveStudentsByIds(array $ids, string $reason, bool $bulkLog = false): int
     {
         $students = $this->voucherModel->getVouchersByIds($ids);
         $userId   = $this->getCurrentUserId();
@@ -669,18 +715,26 @@ class Voucher extends Controller
             $db->table('audit_log')
                 ->whereIn('student_id', $ids)
                 ->update(['student_id' => null]);
-            $db->table('audit_log')
-                ->whereIn('voucher_id', $ids)
-                ->update(['voucher_id' => null]);
+            if ($db->fieldExists('voucher_id', 'audit_log')) {
+                $db->table('audit_log')
+                    ->whereIn('voucher_id', $ids)
+                    ->update(['voucher_id' => null]);
+            }
 
             // Delete in one statement instead of N round-trips.
             $db->table('students')->whereIn('student_id', $ids)->delete();
         }
 
-        foreach ($students as $s) {
+        if ($bulkLog) {
             log_action($userId, 'ARCHIVE_STUDENT',
-                "Student {$s['full_name']} (Voucher {$s['voucher_no']}) archived",
+                "Bulk archived {$archived} student(s) (Archive All)",
                 null);
+        } else {
+            foreach ($students as $s) {
+                log_action($userId, 'ARCHIVE_STUDENT',
+                    "Student {$s['full_name']} (Voucher {$s['voucher_no']}) archived",
+                    null);
+            }
         }
 
         return $archived;

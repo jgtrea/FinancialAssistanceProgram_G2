@@ -55,6 +55,8 @@ $routes->group('admin', ['filter' => 'role:admin'], function ($routes) {
     $routes->get('vouchers/count-matching',       'Admin\Voucher::countMatching');
     $routes->post('vouchers/activate-multiple',          'Admin\Voucher::activateMultiple');
     $routes->post('vouchers/deactivate-multiple',        'Admin\Voucher::deactivateMultiple');
+    $routes->post('vouchers/activate-all',               'Admin\Voucher::activateAll');
+    $routes->post('vouchers/deactivate-all',             'Admin\Voucher::deactivateAll');
     $routes->post('vouchers/toggle-active/(:num)',       'Admin\Voucher::toggleActive/$1');
     $routes->post('vouchers/toggle-eligibility/(:num)', 'Admin\Voucher::toggleEligibility/$1');
     // TEMP — remove after Archive All testing is done.
@@ -106,6 +108,8 @@ $routes->group('user', ['filter' => 'auth'], function ($routes) {
     $routes->get('vouchers/count-matching',       'User\Voucher::countMatching');
     $routes->post('vouchers/activate-multiple',          'User\Voucher::activateMultiple');
     $routes->post('vouchers/deactivate-multiple',        'User\Voucher::deactivateMultiple');
+    $routes->post('vouchers/activate-all',               'User\Voucher::activateAll');
+    $routes->post('vouchers/deactivate-all',             'User\Voucher::deactivateAll');
     $routes->post('vouchers/toggle-active/(:num)',       'User\Voucher::toggleActive/$1');
     $routes->post('vouchers/toggle-eligibility/(:num)', 'User\Voucher::toggleEligibility/$1');
     // TEMP — remove after Archive All testing is done.

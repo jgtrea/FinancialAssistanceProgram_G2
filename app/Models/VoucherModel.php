@@ -148,6 +148,8 @@ class VoucherModel extends Model
 
         $builder
             ->orderBy('created_at', 'DESC')
+            ->orderBy("CASE WHEN eligibility_status = 'eligible' THEN 0 ELSE 1 END", '', false)
+            ->orderBy('is_active', 'DESC')
             ->orderBy('student_id', 'DESC');
 
         if ($keyword === '' && !$hasFilter && $limit > 0) {

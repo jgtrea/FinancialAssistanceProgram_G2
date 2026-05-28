@@ -26,6 +26,20 @@
         <?= asset_icon('import') ?>
         Import
       </button>
+      <div class="dropdown">
+        <button type="button" class="vs-btn vs-btn-outline dropdown-toggle"
+                id="btnMoreActions" data-bs-toggle="dropdown" aria-expanded="false">
+          More Actions
+        </button>
+        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="btnMoreActions">
+          <li><button class="dropdown-item js-bulk-all" type="button" data-action="activate">Activate All</button></li>
+          <li><button class="dropdown-item js-bulk-all" type="button" data-action="deactivate">Deactivate All</button></li>
+          <li><hr class="dropdown-divider"></li>
+          <li><button class="dropdown-item text-danger js-bulk-all" type="button" data-action="archive">Archive All</button></li>
+          <li><hr class="dropdown-divider"></li>
+          <li><button class="dropdown-item text-warning" type="button" id="btnRestoreAllArchive">Unarchive All (TEMP)</button></li>
+        </ul>
+      </div>
     </div>
   </div>
 
@@ -46,19 +60,6 @@
       <button type="button" class="vs-btn vs-btn-success" id="btnOpenExport">
         <?= asset_icon('export') ?>
         Export
-      </button>
-      <button class="vs-btn vs-btn-danger" id="btnArchive">
-        <?= asset_icon('archive') ?>
-        Archive
-      </button>
-      <span style="border-left:1px solid rgba(255,255,255,.35);height:22px;align-self:center"></span>
-      <button class="vs-btn vs-btn-success" id="btnActivateSelected">
-        <?= asset_icon('circle_check', ['width' => '18', 'height' => '18']) ?>
-        Activate
-      </button>
-      <button class="vs-btn vs-btn-danger" id="btnDeactivateSelected">
-        <?= asset_icon('circle_x', ['width' => '18', 'height' => '18']) ?>
-        Deactivate
       </button>
     </div>
   </div>
@@ -153,15 +154,14 @@
                         <?= ($v['eligibility_status'] ?? '') === 'not_eligible' ? 'Mark Eligible' : 'Mark Not Eligible' ?>
                       </button>
                     </li>
+                    <li><hr class="dropdown-divider"></li>
                     <li>
-                      <button class="dropdown-item js-toggle-active" type="button"
+                      <button class="dropdown-item text-danger js-toggle-active" type="button"
                               data-id="<?= esc($v['student_id'], 'attr') ?>"
                               data-active="<?= $isActive ? '1' : '0' ?>">
                         <?= $isActive ? 'Deactivate' : 'Activate' ?>
                       </button>
                     </li>
-                    <li><hr class="dropdown-divider"></li>
-                    <li><button class="dropdown-item text-danger js-archive-single" type="button" data-id="<?= esc($v['student_id'], 'attr') ?>">Archive</button></li>
                   </ul>
                 </div>
               </div>
@@ -202,6 +202,46 @@
 <form id="archiveForm" action="<?= site_url($prefix . '/vouchers/archive') ?>" style="display:none">
   <?= csrf_field() ?>
 </form>
+
+<!-- Generic info/error modal -->
+<div class="vs-modal-overlay" id="infoModal" style="display:none">
+  <div class="vs-modal" style="max-width:420px">
+    <div class="vs-modal-header">
+      <h5 id="infoModalTitle">Notice</h5>
+      <button class="vs-modal-close" id="infoModalClose">&times;</button>
+    </div>
+    <div class="vs-modal-body">
+      <p id="infoModalMessage" class="mb-0"></p>
+    </div>
+    <div class="vs-modal-footer">
+      <button class="vs-btn vs-btn-primary" id="infoModalOk">OK</button>
+    </div>
+  </div>
+</div>
+
+<!-- Bulk-All confirm modal (Activate / Deactivate / Archive All) -->
+<div class="vs-modal-overlay" id="bulkAllModal" style="display:none">
+  <div class="vs-modal">
+    <div class="vs-modal-header">
+      <h5 id="bulkAllTitle">Confirm</h5>
+      <button class="vs-modal-close" id="bulkAllModalClose">&times;</button>
+    </div>
+    <div class="vs-modal-body">
+      <p id="bulkAllMessage">You are about to update <strong id="bulkAllCount">0</strong> student(s) matching the current search/filters.</p>
+      <div id="bulkAllReasonWrap" style="display:none">
+        <label class="vs-label" for="bulkAllReason">Reason (optional)</label>
+        <input type="text" id="bulkAllReason" class="vs-input" placeholder="e.g. End of school year">
+      </div>
+    </div>
+    <div class="vs-modal-footer">
+      <button class="vs-btn vs-btn-outline" id="bulkAllCancel">Cancel</button>
+      <button class="vs-btn vs-btn-primary" id="bulkAllConfirm">
+        <span id="bulkAllBtnText">Confirm</span>
+        <span id="bulkAllBtnSpinner" class="vs-spinner" style="display:none"></span>
+      </button>
+    </div>
+  </div>
+</div>
 
 <!-- Import modal -->
 <div class="vs-modal-overlay" id="importModal" style="display:none">
@@ -1101,13 +1141,186 @@
       .catch(function () { alert('An error occurred. Please try again.'); });
   }
 
-  var btnActivateSelected   = document.getElementById('btnActivateSelected');
-  var btnDeactivateSelected = document.getElementById('btnDeactivateSelected');
-  btnActivateSelected   && btnActivateSelected.addEventListener('click', function () {
-    bulkActiveAction(activateMultipleUrl, 'Activate', 1);
+  // ── More Actions dropdown — sweep DB by current search + filter scope ──────
+  var activateAllUrl   = '<?= site_url($prefix . '/vouchers/activate-all') ?>';
+  var deactivateAllUrl = '<?= site_url($prefix . '/vouchers/deactivate-all') ?>';
+  var archiveAllUrl    = '<?= site_url($prefix . '/vouchers/archive-all') ?>';
+  var countMatchingUrl = '<?= site_url($prefix . '/vouchers/count-matching') ?>';
+
+  function collectFilterScope() {
+    var fd = new FormData();
+    fd.append(csrfName, csrfHash);
+    var form = document.getElementById('vouchersFilterForm');
+    if (form) {
+      var qInput = form.querySelector('input[name="q"]');
+      if (qInput) fd.append('q', qInput.value || '');
+      Array.from(form.querySelectorAll('input[type="hidden"]')).forEach(function (inp) {
+        if (inp.name && inp.name !== csrfName) fd.append(inp.name, inp.value || '');
+      });
+    }
+    return fd;
+  }
+
+  function buildCountQuery() {
+    var params = new URLSearchParams();
+    var form = document.getElementById('vouchersFilterForm');
+    if (form) {
+      var qInput = form.querySelector('input[name="q"]');
+      if (qInput) params.append('q', qInput.value || '');
+      Array.from(form.querySelectorAll('input[type="hidden"]')).forEach(function (inp) {
+        if (inp.name && inp.name !== csrfName) params.append(inp.name, inp.value || '');
+      });
+    }
+    return params.toString();
+  }
+
+  // ── Generic info modal (replaces window.alert for bulk flows) ─────────────
+  var infoModal       = document.getElementById('infoModal');
+  var infoModalTitle  = document.getElementById('infoModalTitle');
+  var infoModalMsg    = document.getElementById('infoModalMessage');
+  var infoModalClose  = document.getElementById('infoModalClose');
+  var infoModalOk     = document.getElementById('infoModalOk');
+
+  function showInfo(message, title) {
+    if (!infoModal) { alert(message); return; }
+    infoModalTitle.textContent = title || 'Notice';
+    infoModalMsg.textContent   = message;
+    infoModal.style.display    = 'flex';
+  }
+  function closeInfo() { if (infoModal) infoModal.style.display = 'none'; }
+  infoModalClose && infoModalClose.addEventListener('click', closeInfo);
+  infoModalOk    && infoModalOk.addEventListener('click', closeInfo);
+  infoModal      && infoModal.addEventListener('click', function (e) {
+    if (e.target === infoModal) closeInfo();
   });
-  btnDeactivateSelected && btnDeactivateSelected.addEventListener('click', function () {
-    bulkActiveAction(deactivateMultipleUrl, 'Deactivate', 0);
+
+  var bulkAllModal       = document.getElementById('bulkAllModal');
+  var bulkAllTitle       = document.getElementById('bulkAllTitle');
+  var bulkAllMessage     = document.getElementById('bulkAllMessage');
+  var bulkAllCount       = document.getElementById('bulkAllCount');
+  var bulkAllReasonWrap  = document.getElementById('bulkAllReasonWrap');
+  var bulkAllReason      = document.getElementById('bulkAllReason');
+  var bulkAllCancel      = document.getElementById('bulkAllCancel');
+  var bulkAllClose       = document.getElementById('bulkAllModalClose');
+  var bulkAllConfirm     = document.getElementById('bulkAllConfirm');
+  var bulkAllBtnText     = document.getElementById('bulkAllBtnText');
+  var bulkAllBtnSpinner  = document.getElementById('bulkAllBtnSpinner');
+  var pendingBulkAction  = null;
+
+  function closeBulkAllModal() {
+    if (bulkAllModal) bulkAllModal.style.display = 'none';
+    pendingBulkAction = null;
+  }
+  bulkAllCancel && bulkAllCancel.addEventListener('click', closeBulkAllModal);
+  bulkAllClose  && bulkAllClose.addEventListener('click', closeBulkAllModal);
+  bulkAllModal  && bulkAllModal.addEventListener('click', function (e) {
+    if (e.target === bulkAllModal) closeBulkAllModal();
+  });
+
+  function openBulkAllModal(action, count) {
+    var titleMap = { activate: 'Activate All', deactivate: 'Deactivate All', archive: 'Archive All' };
+    var verbMap  = { activate: 'activate', deactivate: 'deactivate', archive: 'archive' };
+    var btnClass = action === 'archive' ? 'vs-btn vs-btn-danger' : 'vs-btn vs-btn-primary';
+
+    bulkAllTitle.textContent   = titleMap[action] || 'Confirm';
+    bulkAllCount.textContent   = count;
+    bulkAllMessage.innerHTML   = 'You are about to <strong>' + verbMap[action] + '</strong> '
+      + '<strong id="bulkAllCount">' + count + '</strong> student(s) matching the current search/filters.'
+      + (action === 'archive' ? ' This cannot be undone.' : '');
+    bulkAllReasonWrap.style.display = action === 'archive' ? 'block' : 'none';
+    if (bulkAllReason) bulkAllReason.value = '';
+    bulkAllConfirm.className = btnClass;
+    bulkAllBtnText.textContent = 'Confirm ' + (titleMap[action] || '');
+    pendingBulkAction = action;
+    bulkAllModal.style.display = 'flex';
+  }
+
+  function runBulkAll(action) {
+    fetch(countMatchingUrl + '?' + buildCountQuery(), {
+      headers: { 'X-Requested-With': 'XMLHttpRequest' },
+      credentials: 'same-origin',
+    })
+      .then(function (r) { return r.json(); })
+      .then(function (data) {
+        var count = (data && data.count) ? parseInt(data.count, 10) : 0;
+        if (!count) {
+          showInfo('No students match the current search/filter.', 'No matches');
+          return;
+        }
+        openBulkAllModal(action, count);
+      })
+      .catch(function () { showInfo('Failed to count matching students.', 'Error'); });
+  }
+
+  bulkAllConfirm && bulkAllConfirm.addEventListener('click', function () {
+    if (!pendingBulkAction) return;
+    var action = pendingBulkAction;
+    var urlMap = { activate: activateAllUrl, deactivate: deactivateAllUrl, archive: archiveAllUrl };
+    var url    = urlMap[action];
+    if (!url) return;
+
+    var fd = collectFilterScope();
+    if (action === 'archive') {
+      var reason = bulkAllReason && bulkAllReason.value.trim();
+      fd.append('archive_reason', reason || 'Bulk archive (Archive All)');
+    }
+
+    bulkAllConfirm.disabled = true;
+    bulkAllBtnText.style.display    = 'none';
+    bulkAllBtnSpinner.style.display = 'inline-block';
+
+    fetch(url, {
+      method:      'POST',
+      headers:     { 'X-Requested-With': 'XMLHttpRequest' },
+      credentials: 'same-origin',
+      body:        fd,
+    })
+      .then(function (r) { return r.json(); })
+      .then(function (data) {
+        if (!data.success) {
+          showInfo(data.message || (action + ' failed.'), 'Error');
+          return;
+        }
+        flashSuccess(data.message || (action + ' successful.'));
+        location.reload();
+      })
+      .catch(function () { showInfo('An error occurred. Please try again.', 'Error'); })
+      .finally(function () {
+        bulkAllConfirm.disabled = false;
+        bulkAllBtnText.style.display    = 'inline';
+        bulkAllBtnSpinner.style.display = 'none';
+        closeBulkAllModal();
+      });
+  });
+
+  document.querySelectorAll('.js-bulk-all').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      runBulkAll(btn.getAttribute('data-action'));
+    });
+  });
+
+  // ── TEMP: Unarchive All — restore every student_archive row to students ────
+  var restoreAllUrl = '<?= site_url($prefix . '/vouchers/restore-all-archive') ?>';
+  var btnRestoreAllArchive = document.getElementById('btnRestoreAllArchive');
+  btnRestoreAllArchive && btnRestoreAllArchive.addEventListener('click', function () {
+    if (!window.confirm('TEMP: Restore every row from student_archive back into students? Use only for testing Archive All.')) return;
+    var fd = new FormData();
+    fd.append(csrfName, csrfHash);
+    btnRestoreAllArchive.disabled = true;
+    fetch(restoreAllUrl, {
+      method:      'POST',
+      headers:     { 'X-Requested-With': 'XMLHttpRequest' },
+      credentials: 'same-origin',
+      body:        fd,
+    })
+      .then(function (r) { return r.json(); })
+      .then(function (data) {
+        btnRestoreAllArchive.disabled = false;
+        if (!data.success) { showInfo(data.message || 'Restore failed.', 'Error'); return; }
+        flashSuccess(data.message || 'Restored from archive.');
+        location.reload();
+      })
+      .catch(function () { btnRestoreAllArchive.disabled = false; showInfo('An error occurred. Please try again.', 'Error'); });
   });
 }());
 </script>
