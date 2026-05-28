@@ -210,8 +210,7 @@ class Voucher extends AdminVoucher
                 'archived_at'                  => $now,
             ]);
 
-            // Soft-delete: flag the live row rather than removing it.
-            $this->voucherModel->update($s['student_id'], ['is_archived' => 1]);
+            $this->voucherModel->delete((int) $s['student_id']);
             $archived++;
         }
 

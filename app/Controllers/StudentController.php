@@ -214,7 +214,11 @@ class StudentController extends BaseController
         $voucherNo = $student['voucher_no'] ?? null;
 
         if (empty($voucherNo)) {
-            $voucherNo = generate_voucher_no();
+            $jhs  = $student['junior_high_school'] ?? '';
+            $year = !empty($student['voucher_date'])
+                ? date('Y', strtotime($student['voucher_date']))
+                : date('Y');
+            $voucherNo = generate_voucher_no($jhs, $year);
         }
 
         $studentModel->update($id, [

@@ -102,13 +102,13 @@
         </div>
 
         <div class="vs-span-2">
-          <label class="vs-label" for="junior_high_school">Junior High School</label>
+          <label class="vs-label required" for="junior_high_school">Junior High School</label>
           <div class="vs-school-picker" id="jhs-picker">
             <div class="vs-school-picker-wrap">
               <input type="text" id="junior_high_school" name="junior_high_school"
                      class="vs-input vs-uppercase <?= ($validation && $validation->hasError('junior_high_school')) ? 'vs-input-error' : '' ?>"
                      value="<?= esc($selectedJuniorHighSchool) ?>"
-                     placeholder="Type school name..." autocomplete="off">
+                     placeholder="Type school name..." autocomplete="off" required>
               <div class="vs-school-picker-actions">
                 <button type="button" class="vs-school-picker-toggle" title="Show schools"><?= asset_icon('dropdown') ?></button>
               </div>

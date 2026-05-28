@@ -15,6 +15,7 @@ class SignatoryModel extends Model
         'middle_name',
         'last_name',
         'suffix',
+        'degree',
         'position_title',
         'signature_image',
         'is_active',

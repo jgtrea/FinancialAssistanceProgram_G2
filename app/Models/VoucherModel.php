@@ -98,7 +98,7 @@ class VoucherModel extends Model
     public const LISTING_FILTER_KEYS = [
         'school_year', 'gender', 'remarks', 'voucher_status',
         'date_from', 'date_to', 'junior_hs', 'preferred_hs',
-        'gwa_min', 'gwa_max',
+        'gwa_min', 'gwa_max', 'eligibility',
     ];
 
     // When no keyword and no filter are given, return only the most recently
@@ -243,6 +243,10 @@ class VoucherModel extends Model
         }
         if (($v = $value($filters, 'gwa_max')) !== '') {
             $builder->where('gwa <=', (float) $v);
+            $applied = true;
+        }
+        if (($v = $value($filters, 'eligibility')) !== '') {
+            $builder->where('eligibility_status', $v);
             $applied = true;
         }
 

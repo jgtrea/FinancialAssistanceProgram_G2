@@ -56,7 +56,7 @@ class Voucher extends Controller
             'rank_no'                      => 'permit_empty|is_natural_no_zero|less_than_equal_to[999999]',
             'gwa'                          => 'permit_empty|decimal|greater_than_equal_to[0]|less_than_equal_to[100]',
             'gender'                       => 'permit_empty|in_list[MALE,FEMALE]',
-            'junior_high_school'           => 'permit_empty|max_length[200]',
+            'junior_high_school'           => 'required|max_length[200]',
             'preferred_senior_high_school' => 'required|max_length[200]',
             'contact_number'               => 'permit_empty|max_length[30]|regex_match[/^[0-9+().\\-\\s]+$/]',
             'remarks_status'               => 'permit_empty|in_list[PASSED,FOR REVIEW,FAILED]',
@@ -515,7 +515,7 @@ class Voucher extends Controller
                 'archived_at'                  => $now,
             ]);
 
-            $this->voucherModel->update($s['student_id'], ['is_archived' => 1]);
+            $this->voucherModel->delete((int) $s['student_id']);
 
             log_action($userId, 'ARCHIVE_STUDENT',
                 "Student {$s['full_name']} (Voucher {$s['voucher_no']}) archived",
@@ -573,8 +573,13 @@ class Voucher extends Controller
                 continue;
             }
 
+            $jhs  = $student['junior_high_school'] ?? '';
+            $year = !empty($student['voucher_date'])
+                ? date('Y', strtotime($student['voucher_date']))
+                : date('Y');
+
             $this->voucherModel->update((int) $student['student_id'], [
-                'voucher_no' => generate_voucher_no(),
+                'voucher_no' => generate_voucher_no($jhs, $year),
             ]);
         }
 

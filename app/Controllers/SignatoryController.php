@@ -11,7 +11,14 @@ class SignatoryController extends BaseController
     private const ALLOWED_MIME = ['image/png', 'image/jpeg', 'image/jpg', 'image/webp'];
     private const ALLOWED_EXT = ['png', 'jpg', 'jpeg', 'webp'];
     private const PREFIX_OPTIONS = ['', 'DR.', 'ENGR.', 'HON.', 'MR.', 'MRS.', 'MS.', 'PROF.'];
-    private const SUFFIX_OPTIONS = ['', 'JR.', 'SR.', 'II', 'III', 'IV', 'V', 'CPA', 'LPT', 'MD', 'PHD'];
+    private const SUFFIX_OPTIONS = ['', 'JR.', 'SR.', 'II', 'III', 'IV', 'V'];
+    private const DEGREE_OPTIONS = [
+        'None', 'Elementary', 'High School', 'Vocational',
+        'Associate', 'Bachelor', 'BSc', 'BA',
+        'Master', 'MSc', 'MA', 'MBA',
+        'Doctorate', 'PhD', 'MD', 'JD', 'LLB', 'DDS', 'EdD',
+        'Other',
+    ];
 
     public function index()
     {
@@ -40,6 +47,7 @@ class SignatoryController extends BaseController
             'keyword' => $keyword,
             'prefixOptions' => self::PREFIX_OPTIONS,
             'suffixOptions' => self::SUFFIX_OPTIONS,
+            'degreeOptions' => self::DEGREE_OPTIONS,
         ]);
     }
 
@@ -58,6 +66,7 @@ class SignatoryController extends BaseController
             'signatory' => $signatory,
             'prefixOptions' => self::PREFIX_OPTIONS,
             'suffixOptions' => self::SUFFIX_OPTIONS,
+            'degreeOptions' => self::DEGREE_OPTIONS,
         ]);
     }
 
@@ -81,7 +90,8 @@ class SignatoryController extends BaseController
             'first_name'     => 'required|max_length[100]',
             'middle_name'    => 'permit_empty|max_length[100]',
             'last_name'      => 'required|max_length[100]',
-            'suffix'         => 'permit_empty|in_list[JR.,SR.,II,III,IV,V,CPA,LPT,MD,PHD]',
+            'suffix'         => 'permit_empty|in_list[JR.,SR.,II,III,IV,V]',
+            'degree'         => 'permit_empty|in_list[None,Elementary,High School,Vocational,Associate,Bachelor,BSc,BA,Master,MSc,MA,MBA,Doctorate,PhD,MD,JD,LLB,DDS,EdD,Other]',
             'position_title' => 'required|max_length[200]',
             'is_active'      => 'permit_empty|in_list[0,1]',
         ]);
@@ -104,12 +114,18 @@ class SignatoryController extends BaseController
             return $this->signatorySaveError('Please select a valid suffix.', $id, $isAjax);
         }
 
+        $degree = trim((string) $this->request->getPost('degree')) ?: 'None';
+        if (!in_array($degree, self::DEGREE_OPTIONS, true)) {
+            return $this->signatorySaveError('Please select a valid degree.', $id, $isAjax);
+        }
+
         $data = [
             'prefix'         => $prefix !== '' ? $prefix : null,
             'first_name'     => trim((string) $this->request->getPost('first_name')),
             'middle_name'    => trim((string) $this->request->getPost('middle_name')),
             'last_name'      => trim((string) $this->request->getPost('last_name')),
             'suffix'         => $suffix,
+            'degree'         => $degree,
             'position_title' => trim((string) $this->request->getPost('position_title')),
             'is_active'      => $this->request->getPost('is_active') ?? 1,
         ];

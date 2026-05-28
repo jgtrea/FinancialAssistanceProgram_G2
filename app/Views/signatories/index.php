@@ -3,7 +3,14 @@
 <?= $this->section('content') ?>
 <?php
     $prefixOptions = $prefixOptions ?? ['', 'DR.', 'ENGR.', 'HON.', 'MR.', 'MRS.', 'MS.', 'PROF.'];
-    $suffixOptions = $suffixOptions ?? ['', 'JR.', 'SR.', 'II', 'III', 'IV', 'V', 'CPA', 'LPT', 'MD', 'PHD'];
+    $suffixOptions = $suffixOptions ?? ['', 'JR.', 'SR.', 'II', 'III', 'IV', 'V'];
+    $degreeOptions = $degreeOptions ?? [
+        'None', 'Elementary', 'High School', 'Vocational',
+        'Associate', 'Bachelor', 'BSc', 'BA',
+        'Master', 'MSc', 'MA', 'MBA',
+        'Doctorate', 'PhD', 'MD', 'JD', 'LLB', 'DDS', 'EdD',
+        'Other',
+    ];
 ?>
 
 <div class="vs-page-header mb-4">
@@ -229,6 +236,15 @@
             </select>
           </div>
 
+          <div>
+            <label class="vs-label" for="smDegree">Degree</label>
+            <select id="smDegree" name="degree" class="vs-input">
+              <?php foreach ($degreeOptions as $option): ?>
+                <option value="<?= esc($option) ?>"><?= esc($option) ?></option>
+              <?php endforeach ?>
+            </select>
+          </div>
+
           <div class="vs-span-2">
             <label class="vs-label required" for="smPositionTitle">Position Title</label>
             <input id="smPositionTitle" name="position_title" type="text" class="vs-input" required>
@@ -303,13 +319,14 @@
     var sigSaveUrl      = '<?= base_url('signatories/save') ?>';
     var sigFetchUrl     = '<?= base_url('signatories/json') ?>';
 
-    var smFieldIds = ['smPrefix', 'smFirstName', 'smMiddleName', 'smLastName', 'smSuffix', 'smPositionTitle'];
+    var smFieldIds = ['smPrefix', 'smFirstName', 'smMiddleName', 'smLastName', 'smSuffix', 'smDegree', 'smPositionTitle'];
     var smFieldToName = {
         smPrefix:        'prefix',
         smFirstName:     'first_name',
         smMiddleName:    'middle_name',
         smLastName:      'last_name',
         smSuffix:        'suffix',
+        smDegree:        'degree',
         smPositionTitle: 'position_title',
     };
 

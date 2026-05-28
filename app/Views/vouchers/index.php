@@ -8,7 +8,7 @@
 <?php $seniorHighSchools = $seniorHighSchools ?? [] ?>
 <?php $filterOptions = $filterOptions ?? ['junior_high_schools' => [], 'senior_high_schools' => [], 'school_years' => []] ?>
 <?php $filters = $filters ?? [] ?>
-<?php $filterKeys = ['school_year','gender','remarks','voucher_status','date_from','date_to','junior_hs','preferred_hs','gwa_min','gwa_max'] ?>
+<?php $filterKeys = ['school_year','gender','remarks','voucher_status','date_from','date_to','junior_hs','preferred_hs','gwa_min','gwa_max','eligibility'] ?>
 <?php $f = static fn (string $k) => (string) ($filters[$k] ?? '') ?>
 <?php $activeFilterCount = count(array_filter($filterKeys, fn ($k) => $f($k) !== '')) ?>
 
@@ -260,8 +260,8 @@
           </div>
 
           <div class="vs-span-2">
-            <label class="vs-label" for="vmJuniorHs">Junior High School</label>
-            <select id="vmJuniorHs" name="junior_high_school" class="vs-input">
+            <label class="vs-label required" for="vmJuniorHs">Junior High School</label>
+            <select id="vmJuniorHs" name="junior_high_school" class="vs-input" required>
               <option value="">-- Select --</option>
               <?php foreach ($juniorHighSchools as $school): ?>
                 <?php $schoolName = $school['school_name'] ?? '' ?>
@@ -394,6 +394,14 @@
         <div class="vs-span-2">
           <label class="vs-label" for="filterGwaMax">GWA Max</label>
           <input type="number" step="0.01" id="filterGwaMax" class="vs-input" placeholder="e.g. 100" value="<?= esc($f('gwa_max'), 'attr') ?>">
+        </div>
+        <div class="vs-span-2">
+          <label class="vs-label" for="filterEligibility">Eligibility Status</label>
+          <select id="filterEligibility" class="vs-input">
+            <option value="">All</option>
+            <option value="eligible"     <?= $f('eligibility') === 'eligible'     ? 'selected' : '' ?>>Eligible</option>
+            <option value="not_eligible" <?= $f('eligibility') === 'not_eligible' ? 'selected' : '' ?>>Not Eligible</option>
+          </select>
         </div>
       </div>
     </div>
@@ -706,6 +714,7 @@
     preferredHs:    document.getElementById('filterPreferredHs'),
     gwaMin:         document.getElementById('filterGwaMin'),
     gwaMax:         document.getElementById('filterGwaMax'),
+    eligibility:    document.getElementById('filterEligibility'),
   };
 
   var filterForm = document.getElementById('vouchersFilterForm');
@@ -723,6 +732,7 @@
     preferredHs:   'preferred_hs',
     gwaMin:        'gwa_min',
     gwaMax:        'gwa_max',
+    eligibility:   'eligibility',
   };
 
   // School Year / JHS / SHS dropdowns are fully populated server-side from

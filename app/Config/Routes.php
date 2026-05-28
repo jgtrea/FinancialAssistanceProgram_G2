@@ -52,6 +52,16 @@ $routes->group('admin', ['filter' => 'role:admin'], function ($routes) {
     $routes->get('vouchers/pdf-download/(:num)',  'Admin\Voucher::downloadPdf/$1');
     $routes->post('vouchers/archive',             'Admin\Voucher::archive');
 
+    // Schools
+    $routes->get('schools',                       'Admin\School::index');
+    $routes->get('schools/json/(:num)',           'Admin\School::getJson/$1');
+    $routes->post('schools/save',                 'Admin\School::save');
+    $routes->post('schools/archive-multiple',     'Admin\School::archiveMultiple');
+    $routes->post('schools/restore-multiple',     'Admin\School::restoreMultiple');
+    $routes->get('schools/export',                'Admin\School::export');
+    $routes->post('schools/import',               'Admin\School::importSchools');
+    $routes->get('schools/import-template',       'Admin\School::importTemplate');
+
     // Archive & Logs
     $routes->get('archive', 'ArchiveController::index');
     $routes->get('logs',    'Admin\Report::logs');

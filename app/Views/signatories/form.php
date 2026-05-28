@@ -2,9 +2,17 @@
 <?= $this->section('content') ?>
 <?php
   $prefixOptions = $prefixOptions ?? ['', 'DR.', 'ENGR.', 'HON.', 'MR.', 'MRS.', 'MS.', 'PROF.'];
-  $suffixOptions = $suffixOptions ?? ['', 'JR.', 'SR.', 'II', 'III', 'IV', 'V', 'CPA', 'LPT', 'MD', 'PHD'];
+  $suffixOptions = $suffixOptions ?? ['', 'JR.', 'SR.', 'II', 'III', 'IV', 'V'];
+  $degreeOptions = $degreeOptions ?? [
+      'None', 'Elementary', 'High School', 'Vocational',
+      'Associate', 'Bachelor', 'BSc', 'BA',
+      'Master', 'MSc', 'MA', 'MBA',
+      'Doctorate', 'PhD', 'MD', 'JD', 'LLB', 'DDS', 'EdD',
+      'Other',
+  ];
   $selectedPrefix = strtoupper((string) ($signatory['prefix'] ?? ''));
   $selectedSuffix = strtoupper((string) ($signatory['suffix'] ?? ''));
+  $selectedDegree = (string) ($signatory['degree'] ?? 'None');
 ?>
 
 <div class="vs-page-header mb-4">
@@ -65,6 +73,17 @@
             <?php foreach ($suffixOptions as $option): ?>
               <option value="<?= esc($option) ?>" <?= $selectedSuffix === $option ? 'selected' : '' ?>>
                 <?= $option === '' ? '-- Select --' : esc($option) ?>
+              </option>
+            <?php endforeach ?>
+          </select>
+        </div>
+
+        <div>
+          <label class="vs-label" for="degree">Degree</label>
+          <select id="degree" name="degree" class="vs-input">
+            <?php foreach ($degreeOptions as $option): ?>
+              <option value="<?= esc($option) ?>" <?= $selectedDegree === $option ? 'selected' : '' ?>>
+                <?= esc($option) ?>
               </option>
             <?php endforeach ?>
           </select>

@@ -83,7 +83,7 @@
                         <td><?= esc($user['email']) ?></td>
                         <td>
                             <?php
-                                $roleColors = ['admin' => '#1a5c2e', 'user' => '#2e9e52'];
+                                $roleColors = ['admin' => '#1e3a8a', 'user' => '#2563eb'];
                                 $roleColor  = $roleColors[$user['role']] ?? '#6c757d';
                             ?>
                             <span class="badge" style="background-color:<?= $roleColor ?>"><?= esc(ucfirst($user['role'])) ?></span>

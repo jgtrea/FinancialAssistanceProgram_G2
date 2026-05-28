@@ -29,6 +29,10 @@ $icon = static fn (string $name): string => asset_icon($name, ['class' => 'vs-si
                     <div class="sb-nav-link-icon"><?= $icon('voucher') ?></div>
                     Vouchers
                 </a>
+                <a class="nav-link <?= $isActive('admin/schools') ?>" href="<?= site_url('admin/schools') ?>">
+                    <div class="sb-nav-link-icon"><?= $icon('school') ?></div>
+                    Schools
+                </a>
                 <a class="nav-link <?= $isActive('signatories') ?>" href="<?= site_url('signatories') ?>">
                     <div class="sb-nav-link-icon"><?= $icon('sign') ?></div>
                     Signatories
@@ -39,7 +43,7 @@ $icon = static fn (string $name): string => asset_icon($name, ['class' => 'vs-si
                     <div class="sb-nav-link-icon"><?= $icon('users') ?></div>
                     Users
                 </a>
-                <a class="nav-link <?= $isActive('archive') ?>" href="<?= site_url('archive?type=user') ?>">
+                <a class="nav-link <?= $isActive('archive') ?>" href="<?= site_url('archive?type=voucher') ?>">
                     <div class="sb-nav-link-icon"><?= $icon('archive') ?></div>
                     Archive
                 </a>

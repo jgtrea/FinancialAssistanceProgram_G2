@@ -150,7 +150,7 @@ class VoucherImport extends BaseController
             $voucherDate = trim((string) ($row[1] ?? ''));
             $fullName    = trim((string) ($row[2] ?? ''));
 
-            if ($voucherNo === '' || $voucherDate === '' || $fullName === '') {
+            if ($voucherDate === '' || $fullName === '') {
                 continue;
             }
 
@@ -167,8 +167,8 @@ class VoucherImport extends BaseController
             $contact   = trim((string) ($row[8] ?? ''));
             $remarks   = strtoupper(trim((string) ($row[9] ?? '')));
 
-            if ($voucherNo === '' || strlen($voucherNo) > 50) {
-                return $this->importRowError($i, 'Voucher number is required and must be 50 characters or fewer.');
+            if ($voucherNo !== '' && strlen($voucherNo) > 50) {
+                return $this->importRowError($i, 'Voucher number must be 50 characters or fewer.');
             }
 
             // Validate gender
@@ -215,7 +215,7 @@ class VoucherImport extends BaseController
             }
 
             $voucherModel->insert([
-                'voucher_no'                   => $voucherNo,
+                'voucher_no'                   => $voucherNo !== '' ? $voucherNo : null,
                 'voucher_date'                 => date('Y-m-d', strtotime($voucherDate)),
                 'first_name'                   => strtoupper($firstName),
                 'middle_name'                  => strtoupper($middleName),
