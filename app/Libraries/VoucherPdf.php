@@ -271,7 +271,13 @@ class VoucherPdf
             $sig['suffix'] ?? '',
         ], static fn ($v) => trim((string) $v) !== '');
 
-        return strtoupper(implode(' ', $parts));
+        $name   = strtoupper(implode(' ', $parts));
+        $degree = strtoupper(trim((string) ($sig['degree'] ?? '')));
+        if ($degree !== '' && $degree !== 'NONE') {
+            $name .= ', ' . $degree;
+        }
+
+        return $name;
     }
 
     /**

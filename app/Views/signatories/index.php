@@ -5,8 +5,7 @@
     $prefixOptions = $prefixOptions ?? ['', 'DR.', 'ENGR.', 'HON.', 'MR.', 'MRS.', 'MS.', 'PROF.'];
     $suffixOptions = $suffixOptions ?? ['', 'JR.', 'SR.', 'II', 'III', 'IV', 'V'];
     $degreeOptions = $degreeOptions ?? [
-        'None', 'Elementary', 'High School', 'Vocational',
-        'Associate', 'Bachelor', 'BSc', 'BA',
+        'None', 'MPA', 'BSc', 'BA',
         'Master', 'MSc', 'MA', 'MBA',
         'Doctorate', 'PhD', 'MD', 'JD', 'LLB', 'DDS', 'EdD',
         'Other',
@@ -80,6 +79,10 @@
                             $signatory['suffix'] ?? '',
                         ]);
                         $fullName = trim(implode(' ', $parts));
+                        $sigDegree = trim((string) ($signatory['degree'] ?? ''));
+                        if ($sigDegree !== '' && strcasecmp($sigDegree, 'None') !== 0) {
+                            $fullName .= ', ' . $sigDegree;
+                        }
                         $isSelected = !empty($signatory['is_selected']);
                         $isArchived = empty($signatory['is_active']);
                         $sid = (int) $signatory['signatory_id'];
@@ -261,6 +264,8 @@
                 <option value="<?= esc($option) ?>"><?= esc($option) ?></option>
               <?php endforeach ?>
             </select>
+            <input id="smDegreeOther" name="degree_other" type="text"
+                   class="vs-input mt-2" placeholder="Specify degree" style="display:none">
           </div>
 
           <div class="vs-span-2">
@@ -379,6 +384,8 @@
         document.getElementById('smCurrentSignatureWrap').style.display = 'none';
         document.getElementById('smRemoveSignature').checked = false;
         document.getElementById('smAutoRemoveBg').checked = true;
+        var dOther = document.getElementById('smDegreeOther');
+        if (dOther) { dOther.value = ''; dOther.style.display = 'none'; }
     }
 
     function smPopulate(sig) {
@@ -390,6 +397,8 @@
             el.value = (val === null || val === undefined) ? '' : val;
         });
 
+        applyDegreeValue(sig.degree || '');
+
         var wrap = document.getElementById('smCurrentSignatureWrap');
         var img  = document.getElementById('smCurrentSignaturePreview');
         if (sig.signature_url) {
@@ -399,6 +408,39 @@
             wrap.style.display = 'none';
         }
     }
+
+    var smDegreeSelect = document.getElementById('smDegree');
+    var smDegreeOther  = document.getElementById('smDegreeOther');
+
+    function knownDegreeOption(value) {
+        if (!smDegreeSelect) return false;
+        return Array.from(smDegreeSelect.options).some(function (o) { return o.value === value; });
+    }
+
+    function applyDegreeValue(value) {
+        if (!smDegreeSelect || !smDegreeOther) return;
+        if (value && !knownDegreeOption(value)) {
+            smDegreeSelect.value = 'Other';
+            smDegreeOther.value  = value;
+            smDegreeOther.style.display = 'block';
+        } else if (value === 'Other') {
+            smDegreeOther.value = '';
+            smDegreeOther.style.display = 'block';
+        } else {
+            smDegreeOther.value = '';
+            smDegreeOther.style.display = 'none';
+        }
+    }
+
+    smDegreeSelect && smDegreeSelect.addEventListener('change', function () {
+        if (smDegreeSelect.value === 'Other') {
+            smDegreeOther.style.display = 'block';
+            smDegreeOther.focus();
+        } else {
+            smDegreeOther.style.display = 'none';
+            smDegreeOther.value = '';
+        }
+    });
 
     function smOpen(mode, sigId) {
         smClearAlert();

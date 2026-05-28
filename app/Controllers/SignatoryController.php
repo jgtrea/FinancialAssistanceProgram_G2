@@ -13,8 +13,7 @@ class SignatoryController extends BaseController
     private const PREFIX_OPTIONS = ['', 'DR.', 'ENGR.', 'HON.', 'MR.', 'MRS.', 'MS.', 'PROF.'];
     private const SUFFIX_OPTIONS = ['', 'JR.', 'SR.', 'II', 'III', 'IV', 'V'];
     private const DEGREE_OPTIONS = [
-        'None', 'Elementary', 'High School', 'Vocational',
-        'Associate', 'Bachelor', 'BSc', 'BA',
+        'None', 'MPA', 'BSc', 'BA',
         'Master', 'MSc', 'MA', 'MBA',
         'Doctorate', 'PhD', 'MD', 'JD', 'LLB', 'DDS', 'EdD',
         'Other',
@@ -42,6 +41,8 @@ class SignatoryController extends BaseController
         return view('signatories/index', [
             'title' => 'Signatories',
             'signatories' => $signatoryModel
+                ->orderBy('is_active', 'DESC')
+                ->orderBy('is_selected', 'DESC')
                 ->orderBy('signatory_id', 'DESC')
                 ->findAll(),
             'keyword' => $keyword,
@@ -91,7 +92,8 @@ class SignatoryController extends BaseController
             'middle_name'    => 'permit_empty|max_length[100]',
             'last_name'      => 'required|max_length[100]',
             'suffix'         => 'permit_empty|in_list[JR.,SR.,II,III,IV,V]',
-            'degree'         => 'permit_empty|in_list[None,Elementary,High School,Vocational,Associate,Bachelor,BSc,BA,Master,MSc,MA,MBA,Doctorate,PhD,MD,JD,LLB,DDS,EdD,Other]',
+            'degree'         => 'permit_empty|in_list[None,MPA,BSc,BA,Master,MSc,MA,MBA,Doctorate,PhD,MD,JD,LLB,DDS,EdD,Other]',
+            'degree_other'   => 'permit_empty|max_length[100]',
             'position_title' => 'required|max_length[200]',
             'is_active'      => 'permit_empty|in_list[0,1]',
         ]);
@@ -117,6 +119,16 @@ class SignatoryController extends BaseController
         $degree = trim((string) $this->request->getPost('degree')) ?: 'None';
         if (!in_array($degree, self::DEGREE_OPTIONS, true)) {
             return $this->signatorySaveError('Please select a valid degree.', $id, $isAjax);
+        }
+        if ($degree === 'Other') {
+            $custom = trim((string) $this->request->getPost('degree_other'));
+            if ($custom === '') {
+                return $this->signatorySaveError('Please specify a degree.', $id, $isAjax);
+            }
+            if (mb_strlen($custom) > 100) {
+                return $this->signatorySaveError('Custom degree must be 100 characters or fewer.', $id, $isAjax);
+            }
+            $degree = $custom;
         }
 
         $data = [

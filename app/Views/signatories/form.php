@@ -4,15 +4,17 @@
   $prefixOptions = $prefixOptions ?? ['', 'DR.', 'ENGR.', 'HON.', 'MR.', 'MRS.', 'MS.', 'PROF.'];
   $suffixOptions = $suffixOptions ?? ['', 'JR.', 'SR.', 'II', 'III', 'IV', 'V'];
   $degreeOptions = $degreeOptions ?? [
-      'None', 'Elementary', 'High School', 'Vocational',
-      'Associate', 'Bachelor', 'BSc', 'BA',
+      'None', 'MPA', 'BSc', 'BA',
       'Master', 'MSc', 'MA', 'MBA',
       'Doctorate', 'PhD', 'MD', 'JD', 'LLB', 'DDS', 'EdD',
       'Other',
   ];
   $selectedPrefix = strtoupper((string) ($signatory['prefix'] ?? ''));
   $selectedSuffix = strtoupper((string) ($signatory['suffix'] ?? ''));
-  $selectedDegree = (string) ($signatory['degree'] ?? 'None');
+  $rawDegree      = (string) ($signatory['degree'] ?? 'None');
+  $isCustomDegree = $rawDegree !== '' && !in_array($rawDegree, $degreeOptions, true);
+  $selectedDegree = $isCustomDegree ? 'Other' : $rawDegree;
+  $degreeOtherValue = $isCustomDegree ? $rawDegree : '';
 ?>
 
 <div class="vs-page-header mb-4">
@@ -87,6 +89,10 @@
               </option>
             <?php endforeach ?>
           </select>
+          <input id="degree_other" name="degree_other" type="text"
+                 class="vs-input mt-2" placeholder="Specify degree"
+                 value="<?= esc($degreeOtherValue, 'attr') ?>"
+                 style="display:<?= $selectedDegree === 'Other' ? 'block' : 'none' ?>">
         </div>
 
         <div class="vs-span-2">
@@ -136,5 +142,22 @@
     </form>
   </div>
 </div>
+
+<script>
+(function () {
+  var sel = document.getElementById('degree');
+  var oth = document.getElementById('degree_other');
+  if (!sel || !oth) return;
+  sel.addEventListener('change', function () {
+    if (sel.value === 'Other') {
+      oth.style.display = 'block';
+      oth.focus();
+    } else {
+      oth.style.display = 'none';
+      oth.value = '';
+    }
+  });
+}());
+</script>
 
 <?= $this->endSection() ?>
