@@ -591,25 +591,9 @@
                     btn.disabled = false;
                     return;
                 }
-
-                var nowSelected = data.selected;
-                var badge = document.getElementById('sig-badge-' + id);
-
-                btn.setAttribute('data-selected', nowSelected ? '1' : '0');
-                btn.textContent = nowSelected ? 'Unselect' : 'Select';
-
-                if (badge) {
-                    badge.innerHTML   = nowSelected ? sigIcons.selected : sigIcons.unselected;
-                    badge.style.color = nowSelected ? '#16a34a' : '#9ca3af';
-                    badge.title       = nowSelected ? 'Selected' : 'Unselected';
-                    badge.setAttribute('aria-label', nowSelected ? 'Selected' : 'Unselected');
-                }
-
-                /* Refresh CSRF for next request */
-                var metaEl = document.querySelector('meta[name="csrf-token-value"]');
-                if (metaEl && data.csrf_token) metaEl.setAttribute('content', data.csrf_token);
-
-                btn.disabled = false;
+                // Reload so the table re-renders with the new sort order
+                // (selected rows bubble to the top server-side).
+                window.location.reload();
             })
             .catch(function () {
                 showAlert('An error occurred.', 'error');

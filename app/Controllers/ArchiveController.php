@@ -29,6 +29,8 @@ class ArchiveController extends BaseController
             )
             : [];
 
+        $schoolModel = new SchoolOptionModel();
+
         $data = [
             'title'       => 'Archive',
             'type'        => 'voucher',
@@ -36,14 +38,76 @@ class ArchiveController extends BaseController
             'filters'     => $filters,
             'vouchers'    => $vouchers,
             'schoolYears' => $archiveModel->getDistinctSchoolYears(),
-            // School dropdowns for the filter modal — drawn from the full
-            // school options table so they work against the entire archive,
-            // not just the loaded slice.
-            'juniorHighSchools' => (new SchoolOptionModel())->getJuniorHighSchools(),
-            'seniorHighSchools' => (new SchoolOptionModel())->getSeniorHighSchools(),
+            // School dropdowns — merged from the school options table, the
+            // distinct values present in student_archive, AND the distinct
+            // values still present in the live students table, so users can
+            // filter by any school that has ever appeared.
+            'juniorHighSchools' => $this->mergeSchoolOptions(
+                $schoolModel->getJuniorHighSchools(),
+                array_merge(
+                    $archiveModel->getDistinctSchools('junior_high_school'),
+                    $this->distinctFromStudents('junior_high_school')
+                )
+            ),
+            'seniorHighSchools' => $this->mergeSchoolOptions(
+                $schoolModel->getSeniorHighSchools(),
+                array_merge(
+                    $archiveModel->getDistinctSchools('preferred_senior_high_school'),
+                    $this->distinctFromStudents('preferred_senior_high_school')
+                )
+            ),
         ];
 
         return view('archive/index', $data);
+    }
+
+    // Distinct non-empty school values from the live students table —
+    // folded into archive filter dropdowns so a school that exists only in
+    // active records (not in school table or archive) stays selectable.
+    protected function distinctFromStudents(string $column): array
+    {
+        if (!in_array($column, ['junior_high_school', 'preferred_senior_high_school'], true)) {
+            return [];
+        }
+        try {
+            $rows = \Config\Database::connect()->table('students')
+                ->distinct()
+                ->select($column)
+                ->where($column . ' IS NOT NULL')
+                ->where($column . ' !=', '')
+                ->get()
+                ->getResultArray();
+        } catch (\Throwable $e) {
+            return [];
+        }
+        return array_values(array_filter(array_map(
+            static fn ($r) => trim((string) ($r[$column] ?? '')),
+            $rows
+        ), static fn ($v) => $v !== ''));
+    }
+
+    // Merge school-table rows (['school_name' => ...]) with a flat list of
+    // distinct strings into one deduped, naturally-sorted shape that the
+    // archive view expects (array of ['school_name' => ...]).
+    protected function mergeSchoolOptions(array $schoolRows, array $extraNames): array
+    {
+        $seen = [];
+        $out  = [];
+
+        $push = static function (string $name) use (&$seen, &$out) {
+            $name = trim($name);
+            if ($name === '') return;
+            $key = mb_strtoupper($name);
+            if (isset($seen[$key])) return;
+            $seen[$key] = true;
+            $out[] = ['school_name' => $name];
+        };
+
+        foreach ($schoolRows as $r) $push((string) ($r['school_name'] ?? ''));
+        foreach ($extraNames as $n) $push((string) $n);
+
+        usort($out, static fn ($a, $b) => strnatcasecmp($a['school_name'], $b['school_name']));
+        return $out;
     }
 
     protected function getListingFilters(): array

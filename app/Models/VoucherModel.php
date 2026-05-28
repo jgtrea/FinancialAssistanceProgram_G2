@@ -192,9 +192,39 @@ class VoucherModel extends Model
             ), static fn ($v) => $v !== ''));
         };
 
+        $fromSchoolTable = function (string $level): array {
+            try {
+                $rows = $this->db->table('school')
+                    ->select('school_name')
+                    ->where('school_level', $level)
+                    ->where('is_active', 1)
+                    ->get()
+                    ->getResultArray();
+            } catch (\Throwable $e) {
+                return [];
+            }
+            return array_values(array_filter(array_map(
+                static fn ($r) => trim((string) ($r['school_name'] ?? '')),
+                $rows
+            ), static fn ($v) => $v !== ''));
+        };
+
+        $mergeSchools = function (array $a, array $b): array {
+            $seen = [];
+            $out  = [];
+            foreach (array_merge($a, $b) as $name) {
+                $key = mb_strtoupper($name);
+                if (isset($seen[$key])) continue;
+                $seen[$key] = true;
+                $out[] = $name;
+            }
+            sort($out, SORT_NATURAL | SORT_FLAG_CASE);
+            return $out;
+        };
+
         return [
-            'junior_high_schools' => $distinct('junior_high_school'),
-            'senior_high_schools' => $distinct('preferred_senior_high_school'),
+            'junior_high_schools' => $mergeSchools($fromSchoolTable('JHS'), $distinct('junior_high_school')),
+            'senior_high_schools' => $mergeSchools($fromSchoolTable('SHS'), $distinct('preferred_senior_high_school')),
             'school_years'        => $distinct('school_year'),
         ];
     }

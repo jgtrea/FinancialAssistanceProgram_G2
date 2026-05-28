@@ -246,9 +246,46 @@ class School extends Controller
     public function optionsJson()
     {
         $model = new \App\Models\SchoolOptionModel();
+
+        $merge = static function (array $tableRows, array $extras): array {
+            $seen = [];
+            $out  = [];
+            $push = static function (string $name) use (&$seen, &$out) {
+                $name = trim($name);
+                if ($name === '') return;
+                $key = mb_strtoupper($name);
+                if (isset($seen[$key])) return;
+                $seen[$key] = true;
+                $out[] = $name;
+            };
+            foreach ($tableRows as $r) $push((string) ($r['school_name'] ?? ''));
+            foreach ($extras as $n)    $push((string) $n);
+            usort($out, static fn ($a, $b) => strnatcasecmp($a, $b));
+            return $out;
+        };
+
+        $db = \Config\Database::connect();
+        $distinct = static function (string $column) use ($db): array {
+            try {
+                $rows = $db->table('students')
+                    ->distinct()
+                    ->select($column)
+                    ->where($column . ' IS NOT NULL')
+                    ->where($column . ' !=', '')
+                    ->get()
+                    ->getResultArray();
+            } catch (\Throwable $e) {
+                return [];
+            }
+            return array_values(array_filter(array_map(
+                static fn ($r) => trim((string) ($r[$column] ?? '')),
+                $rows
+            ), static fn ($v) => $v !== ''));
+        };
+
         return $this->response->setJSON([
-            'jhs' => array_column($model->getJuniorHighSchools(), 'school_name'),
-            'shs' => array_column($model->getSeniorHighSchools(), 'school_name'),
+            'jhs' => $merge($model->getJuniorHighSchools(), $distinct('junior_high_school')),
+            'shs' => $merge($model->getSeniorHighSchools(), $distinct('preferred_senior_high_school')),
         ]);
     }
 

@@ -151,4 +151,27 @@ class ArchiveModel extends Model
             $rows
         )));
     }
+
+    // Distinct non-empty values for a given school column. Used to fold
+    // archive-only school names (no longer in the school options table)
+    // into the filter dropdown so they remain selectable.
+    public function getDistinctSchools(string $column): array
+    {
+        if (!in_array($column, ['junior_high_school', 'preferred_senior_high_school'], true)) {
+            return [];
+        }
+
+        $rows = $this->db->table('student_archive')
+            ->select($column)
+            ->distinct()
+            ->where($column . ' IS NOT NULL')
+            ->where($column . ' !=', '')
+            ->get()
+            ->getResultArray();
+
+        return array_values(array_filter(array_map(
+            static fn ($r) => trim((string) ($r[$column] ?? '')),
+            $rows
+        ), static fn ($v) => $v !== ''));
+    }
 }
