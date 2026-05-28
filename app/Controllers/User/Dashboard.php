@@ -12,9 +12,9 @@ class Dashboard extends Controller
         $db           = \Config\Database::connect();
         $voucherModel = new VoucherModel();
 
-        $myVouchers = $db->table('students')->where('is_archived', 0)->countAllResults();
+        $myVouchers = $db->table('students')->countAllResults();
         $generated  = $voucherModel->getTotalGeneratedVouchers();
-        $pending    = $db->table('students')->where('is_archived', 0)->where('voucher_status', 'not_generated')->countAllResults();
+        $pending    = $db->table('students')->where('voucher_status', 'not_generated')->countAllResults();
         $archived   = $db->table('student_archive')->countAll();
 
         $recentVouchers = $db->table('students')
@@ -25,8 +25,7 @@ class Dashboard extends Controller
                 voucher_status,
                 generated_at
             ")
-            ->where('is_archived', 0)
-            ->orderBy('created_at', 'DESC')
+                        ->orderBy('created_at', 'DESC')
             ->limit(10)
             ->get()->getResultArray();
 

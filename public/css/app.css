@@ -234,6 +234,14 @@
     border-radius: 999px;
 }
 
+.border-left-primary {
+    border-left: .25rem solid #0aa6c8 !important;
+}
+
+.border-left-success {
+    border-left: .25rem solid #16956f !important;
+}
+
 .border-left-pending {
     border-left: .25rem solid #f6c633 !important;
 }

@@ -231,7 +231,7 @@ class VoucherImport extends BaseController
                 'school_year'                  => date('Y'),
                 'eligibility_status'           => 'eligible',
                 'voucher_status'               => 'not_generated',
-                'is_archived'                  => 0,
+                'is_active'                    => 1,
             ]);
 
             $count++;

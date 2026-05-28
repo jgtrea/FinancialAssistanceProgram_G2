@@ -11,7 +11,6 @@ class UsersController extends BaseController
         $model = new UserLogin();
         $keyword = trim((string) $this->request->getGet('q'));
 
-        $model->where('is_active', 1);
         if ($keyword !== '') {
             $model
                 ->groupStart()

@@ -82,7 +82,7 @@ class Voucher extends AdminVoucher
         $data = $this->getStudentPayload() + [
             'voucher_no'                   => null,
             'voucher_status'               => 'not_generated',
-            'is_archived'                  => 0,
+            'is_active'                    => 1,
         ];
 
         $studentId = (int) $this->voucherModel->insert($data);

@@ -26,14 +26,6 @@
         <?= asset_icon('import') ?>
         Import
       </button>
-      <button type="button" class="vs-btn vs-btn-danger" id="btnArchiveAll" title="Archive every student matching the current search and filters (full database, not just the loaded rows)">
-        <?= asset_icon('archive') ?>
-        Archive All
-      </button>
-      <!-- TEMP — testing helper for the Archive All flow. Remove after testing. -->
-      <button type="button" class="vs-btn vs-btn-outline" id="btnRestoreAllArchive" title="[TEMP/TEST] Move every row from student_archive back into students" style="border-color:#a02622;color:#a02622">
-        Restore All (test)
-      </button>
     </div>
   </div>
 
@@ -46,8 +38,8 @@
 
   <div class="vs-action-bar" id="actionBar" style="display:none">
     <span class="vs-action-bar-count"><span id="selectedCount">0</span> selected</span>
-    <div class="d-flex gap-2 ms-auto">
-      <button class="vs-btn vs-btn-blue" id="btnGeneratePdf">
+    <div class="d-flex gap-2 ms-auto align-items-center">
+      <button class="vs-btn vs-btn-dark-green" id="btnGeneratePdf">
         <?= asset_icon('voucher-add') ?>
         Generate Voucher
       </button>
@@ -58,6 +50,15 @@
       <button class="vs-btn vs-btn-danger" id="btnArchive">
         <?= asset_icon('archive') ?>
         Archive
+      </button>
+      <span style="border-left:1px solid rgba(255,255,255,.35);height:22px;align-self:center"></span>
+      <button class="vs-btn vs-btn-success" id="btnActivateSelected">
+        <?= asset_icon('circle_check', ['width' => '18', 'height' => '18']) ?>
+        Activate
+      </button>
+      <button class="vs-btn vs-btn-danger" id="btnDeactivateSelected">
+        <?= asset_icon('circle_x', ['width' => '18', 'height' => '18']) ?>
+        Deactivate
       </button>
     </div>
   </div>
@@ -91,6 +92,7 @@
             <th>Preferred School</th>
             <th>School Year</th>
             <th>Eligibility</th>
+            <th>Status</th>
             <th>Generate Count</th>
             <th>Last Generated</th>
             <th>Actions</th>
@@ -99,20 +101,16 @@
         <tbody>
           <?php foreach ($vouchers as $v): ?>
           <?php $notEligible = ($v['eligibility_status'] ?? '') === 'not_eligible' ?>
-          <?php $isArchived  = !empty($v['is_archived']) ?>
-          <?php $cbDisabled  = $notEligible || $isArchived ?>
-          <?php $cbTitle     = $isArchived
-                                  ? 'Archived — unarchive to interact with this row'
-                                  : ($notEligible ? 'Not eligible — cannot be selected' : '') ?>
+          <?php $isActive    = !isset($v['is_active']) || !empty($v['is_active']) ?>
           <tr id="row-<?= esc($v['student_id'], 'attr') ?>"
               data-gender="<?= esc((string) ($v['gender'] ?? ''), 'attr') ?>"
               data-remarks="<?= esc((string) ($v['remarks_status'] ?? ''), 'attr') ?>"
               data-voucher-date="<?= esc((string) ($v['voucher_date'] ?? ''), 'attr') ?>"
               data-voucher-status="<?= esc((string) ($v['voucher_status'] ?? ''), 'attr') ?>"
               data-eligibility="<?= esc((string) ($v['eligibility_status'] ?? ''), 'attr') ?>"
-              data-archived="<?= $isArchived ? '1' : '0' ?>"
-              data-gwa="<?= esc((string) ($v['gwa'] ?? ''), 'attr') ?>"<?= $isArchived ? ' class="vs-row-archived"' : '' ?>>
-            <td><input type="checkbox" class="vs-check vs-row-check" value="<?= esc($v['student_id'], 'attr') ?>"<?= $cbDisabled ? ' disabled' : '' ?><?= $cbTitle !== '' ? ' title="' . esc($cbTitle, 'attr') . '"' : '' ?>></td>
+              data-active="<?= $isActive ? '1' : '0' ?>"
+              data-gwa="<?= esc((string) ($v['gwa'] ?? ''), 'attr') ?>">
+            <td><input type="checkbox" class="vs-check vs-row-check" value="<?= esc($v['student_id'], 'attr') ?>"<?= $notEligible ? ' disabled title="Not eligible — cannot be selected"' : '' ?>></td>
             <td class="js-voucher-no"><?= esc($v['voucher_no'] ?: '-') ?></td>
             <td><?= esc($v['full_name']) ?></td>
             <td><?= esc($v['junior_high_school'] ?: '-') ?></td>
@@ -122,30 +120,50 @@
               <?php $elig = (string) ($v['eligibility_status'] ?? '') ?>
               <?php $eligLabel = $elig === 'eligible' ? 'Eligible' : ($elig === 'not_eligible' ? 'Not eligible' : '—') ?>
               <?php if ($elig === 'eligible' || $elig === 'not_eligible'): ?>
-                <span class="vs-eligibility-icon vs-eligibility-icon-<?= esc($elig, 'attr') ?>" title="<?= esc($eligLabel, 'attr') ?>" aria-label="<?= esc($eligLabel, 'attr') ?>">
-                  <?= asset_icon($elig === 'eligible' ? 'check' : 'cross') ?>
+                <span class="js-elig-icon" style="color:<?= $elig === 'eligible' ? '#16a34a' : '#9ca3af' ?>;display:inline-flex"
+                      title="<?= esc($eligLabel, 'attr') ?>" aria-label="<?= esc($eligLabel, 'attr') ?>">
+                  <?= asset_icon($elig === 'eligible' ? 'circle_check' : 'circle_x', ['width' => '18', 'height' => '18']) ?>
                 </span>
               <?php else: ?>
                 <span aria-label="Unknown">—</span>
               <?php endif ?>
             </td>
             <td>
+              <span class="js-status-icon" style="color:<?= $isActive ? '#16a34a' : '#9ca3af' ?>;display:inline-flex"
+                    title="<?= $isActive ? 'Active' : 'Inactive' ?>" aria-label="<?= $isActive ? 'Active' : 'Inactive' ?>">
+                <?= asset_icon($isActive ? 'circle_check' : 'circle_x', ['width' => '18', 'height' => '18']) ?>
+              </span>
+            </td>
+            <td>
               <span class="js-generate-count"><?= esc((string) ($v['generate_count'] ?? 0)) ?></span>
             </td>
             <td class="js-last-generated"><?= !empty($v['generated_at']) ? date('M d, Y', strtotime($v['generated_at'])) : '-' ?></td>
             <td>
-              <div class="d-flex gap-1 js-actions-cell">
-                <?php if ($isArchived): ?>
-                  <button type="button" class="vs-tbl-btn vs-tbl-btn-view js-unarchive-one"
-                          data-id="<?= esc($v['student_id'], 'attr') ?>"
-                          data-name="<?= esc($v['full_name'], 'attr') ?>">Unarchive</button>
-                <?php else: ?>
-                  <button type="button" class="vs-tbl-btn vs-tbl-btn-view js-voucher-action" data-mode="view" data-id="<?= esc($v['student_id'], 'attr') ?>">View</button>
-                  <button type="button" class="vs-tbl-btn vs-tbl-btn-edit js-voucher-action" data-mode="edit" data-id="<?= esc($v['student_id'], 'attr') ?>">Edit</button>
-                  <button type="button" class="vs-tbl-btn vs-tbl-btn-delete js-archive-one"
-                          data-id="<?= esc($v['student_id'], 'attr') ?>"
-                          data-name="<?= esc($v['full_name'], 'attr') ?>">Archive</button>
-                <?php endif ?>
+              <div class="js-actions-cell">
+                <div class="dropdown">
+                  <button type="button" class="vs-tbl-btn vs-tbl-btn-actions dropdown-toggle"
+                          data-bs-toggle="dropdown" aria-expanded="false">Actions</button>
+                  <ul class="dropdown-menu dropdown-menu-end">
+                    <li><button class="dropdown-item js-voucher-action" type="button" data-mode="view" data-id="<?= esc($v['student_id'], 'attr') ?>">View</button></li>
+                    <li><button class="dropdown-item js-voucher-action" type="button" data-mode="edit" data-id="<?= esc($v['student_id'], 'attr') ?>">Edit</button></li>
+                    <li>
+                      <button class="dropdown-item js-toggle-eligibility" type="button"
+                              data-id="<?= esc($v['student_id'], 'attr') ?>"
+                              data-eligibility="<?= esc($v['eligibility_status'] ?? '', 'attr') ?>">
+                        <?= ($v['eligibility_status'] ?? '') === 'not_eligible' ? 'Mark Eligible' : 'Mark Not Eligible' ?>
+                      </button>
+                    </li>
+                    <li>
+                      <button class="dropdown-item js-toggle-active" type="button"
+                              data-id="<?= esc($v['student_id'], 'attr') ?>"
+                              data-active="<?= $isActive ? '1' : '0' ?>">
+                        <?= $isActive ? 'Deactivate' : 'Activate' ?>
+                      </button>
+                    </li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li><button class="dropdown-item text-danger js-archive-single" type="button" data-id="<?= esc($v['student_id'], 'attr') ?>">Archive</button></li>
+                  </ul>
+                </div>
               </div>
             </td>
           </tr>
@@ -172,59 +190,6 @@
       <button class="vs-btn vs-btn-danger" id="archiveConfirm">
         <span id="archiveBtnText">Confirm Archive</span>
         <span id="archiveBtnSpinner" class="vs-spinner" style="display:none"></span>
-      </button>
-    </div>
-  </div>
-</div>
-
-<!-- Archive One modal — confirmation for the per-row Archive button. Independent
-     of the bulk-selection flow so it works on any student, including ineligible
-     ones whose row checkbox is disabled. -->
-<div class="vs-modal-overlay" id="archiveOneModal" style="display:none">
-  <div class="vs-modal">
-    <div class="vs-modal-header">
-      <h5>Archive Student</h5>
-      <button class="vs-modal-close" id="archiveOneModalClose">&times;</button>
-    </div>
-    <div class="vs-modal-body">
-      <div id="archiveOneAlert"></div>
-      <p>Archive <strong id="archiveOneName">—</strong>? This moves the record to the archive.</p>
-      <label class="vs-label" for="archiveOneReason">Reason (optional)</label>
-      <input type="text" id="archiveOneReason" class="vs-input" placeholder="e.g. End of school year">
-    </div>
-    <div class="vs-modal-footer">
-      <button class="vs-btn vs-btn-outline" id="archiveOneModalCancel">Cancel</button>
-      <button class="vs-btn vs-btn-danger" id="archiveOneConfirm">
-        <span id="archiveOneBtnText">Confirm Archive</span>
-        <span id="archiveOneBtnSpinner" class="vs-spinner" style="display:none"></span>
-      </button>
-    </div>
-  </div>
-</div>
-
-<!-- Archive All modal — bulk-archives every student matching current search + filters across the full DB. -->
-<div class="vs-modal-overlay" id="archiveAllModal" style="display:none">
-  <div class="vs-modal">
-    <div class="vs-modal-header">
-      <h5>Archive All Matching Students</h5>
-      <button class="vs-modal-close" id="archiveAllModalClose">&times;</button>
-    </div>
-    <div class="vs-modal-body">
-      <div id="archiveAllAlert"></div>
-      <p>
-        This will archive <strong id="archiveAllCount">—</strong> student(s) across the
-        <strong>entire database</strong> matching the current search and filters
-        (not just the rows shown on this page). Not-eligible students are included.
-      </p>
-      <p class="text-muted small mb-3">This action cannot be undone in bulk — restoration would have to be done individually from the Archive page.</p>
-      <label class="vs-label" for="archiveAllReason">Reason (optional)</label>
-      <input type="text" id="archiveAllReason" class="vs-input" placeholder="e.g. End of school year">
-    </div>
-    <div class="vs-modal-footer">
-      <button class="vs-btn vs-btn-outline" id="archiveAllModalCancel">Cancel</button>
-      <button class="vs-btn vs-btn-danger" id="archiveAllConfirm" disabled>
-        <span id="archiveAllBtnText">Confirm Archive All</span>
-        <span id="archiveAllBtnSpinner" class="vs-spinner" style="display:none"></span>
       </button>
     </div>
   </div>
@@ -670,6 +635,36 @@
     voucherSubmitBtn.style.display = readOnly ? 'none' : 'inline-flex';
   }
 
+  var schoolOptionsUrl = '<?= site_url($prefix . '/schools/options') ?>';
+
+  function loadSchoolOptions(selectedJhs, selectedShs) {
+    fetch(schoolOptionsUrl, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+    .then(function (r) { return r.json(); })
+    .then(function (data) {
+      var jhsSel = document.getElementById('vmJuniorHs');
+      var shsSel = document.getElementById('vmPreferredHs');
+      if (jhsSel && Array.isArray(data.jhs)) {
+        jhsSel.innerHTML = '<option value="">-- Select --</option>';
+        data.jhs.forEach(function (name) {
+          var opt = document.createElement('option');
+          opt.value = name; opt.textContent = name;
+          if (name === (selectedJhs || '')) opt.selected = true;
+          jhsSel.appendChild(opt);
+        });
+      }
+      if (shsSel && Array.isArray(data.shs)) {
+        shsSel.innerHTML = '<option value="">-- Select --</option>';
+        data.shs.forEach(function (name) {
+          var opt = document.createElement('option');
+          opt.value = name; opt.textContent = name;
+          if (name === (selectedShs || '')) opt.selected = true;
+          shsSel.appendChild(opt);
+        });
+      }
+    })
+    .catch(function () {}); // silently fail; static PHP options remain as fallback
+  }
+
   function vmOpen(mode, studentId) {
     vmClearAlert();
     vmClearFields();
@@ -680,6 +675,7 @@
       vmSetReadOnly(false);
       // Default voucher_date to today for convenience
       document.getElementById('vmVoucherDate').value = new Date().toISOString().slice(0, 10);
+      loadSchoolOptions('', '');
       voucherModal.style.display = 'flex';
       return;
     }
@@ -698,6 +694,12 @@
           return;
         }
         vmPopulateFields(data.student);
+        if (mode !== 'view') {
+          loadSchoolOptions(
+            data.student.junior_high_school || '',
+            data.student.preferred_senior_high_school || ''
+          );
+        }
         // After populate, re-apply readOnly state to anything new
         vmSetReadOnly(mode === 'view');
       })
@@ -852,7 +854,37 @@
   var filterApply       = document.getElementById('filterApply');
   var filterClear       = document.getElementById('filterClear');
 
-  function openFilter()  { if (filterModal) filterModal.style.display = 'flex'; }
+  function refreshFilterSchoolOptions() {
+    fetch(schoolOptionsUrl, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+    .then(function (r) { return r.json(); })
+    .then(function (data) {
+      var jhsSel = document.getElementById('filterJuniorHs');
+      var shsSel = document.getElementById('filterPreferredHs');
+      var curJhs = jhsSel ? jhsSel.value : '';
+      var curShs = shsSel ? shsSel.value : '';
+      if (jhsSel && Array.isArray(data.jhs)) {
+        jhsSel.innerHTML = '<option value="">All</option>';
+        data.jhs.forEach(function (name) {
+          var opt = document.createElement('option');
+          opt.value = name; opt.textContent = name;
+          if (name === curJhs) opt.selected = true;
+          jhsSel.appendChild(opt);
+        });
+      }
+      if (shsSel && Array.isArray(data.shs)) {
+        shsSel.innerHTML = '<option value="">All</option>';
+        data.shs.forEach(function (name) {
+          var opt = document.createElement('option');
+          opt.value = name; opt.textContent = name;
+          if (name === curShs) opt.selected = true;
+          shsSel.appendChild(opt);
+        });
+      }
+    })
+    .catch(function () {});
+  }
+
+  function openFilter()  { if (filterModal) filterModal.style.display = 'flex'; refreshFilterSchoolOptions(); }
   function closeFilter() { if (filterModal) filterModal.style.display = 'none'; }
 
   filterBtn         && filterBtn.addEventListener('click', openFilter);
@@ -887,82 +919,25 @@
         var input = filterForm.elements[filterFieldToParam[k]];
         if (input) input.value = '';
       });
-      filterForm.submit();
     }
   });
   }
 
-  // ── Archive One / Unarchive One (per-row buttons) ──────────────────────────
-  // Both flip students.is_archived without copying to student_archive — that
-  // hard-archive purge is reserved for the Archive All button. After success
-  // we mutate the row in-place: swap the action buttons, toggle the
-  // disabled/title state on the checkbox, and dim the row.
-  var archiveOneModal      = document.getElementById('archiveOneModal');
-  var archiveOneModalClose = document.getElementById('archiveOneModalClose');
-  var archiveOneModalCancel= document.getElementById('archiveOneModalCancel');
-  var archiveOneConfirm    = document.getElementById('archiveOneConfirm');
-  var archiveOneName       = document.getElementById('archiveOneName');
-  var archiveOneReason     = document.getElementById('archiveOneReason');
-  var archiveOneAlert      = document.getElementById('archiveOneAlert');
-  var archiveOneBtnText    = document.getElementById('archiveOneBtnText');
-  var archiveOneBtnSpinner = document.getElementById('archiveOneBtnSpinner');
-  var softArchiveUrlBase   = '<?= site_url($prefix . '/vouchers/soft-archive') ?>';
-  var unarchiveUrlBase     = '<?= site_url($prefix . '/vouchers/unarchive') ?>';
-  var pendingArchiveId     = null;
+  // ── Per-row Toggle-active + Bulk Activate / Deactivate ────────────────────
+  var toggleActiveUrlBase       = '<?= site_url($prefix . '/vouchers/toggle-active') ?>';
+  var toggleEligibilityUrlBase  = '<?= site_url($prefix . '/vouchers/toggle-eligibility') ?>';
+  var activateMultipleUrl       = '<?= site_url($prefix . '/vouchers/activate-multiple') ?>';
+  var deactivateMultipleUrl     = '<?= site_url($prefix . '/vouchers/deactivate-multiple') ?>';
 
-  function closeArchiveOneModal() {
-    if (archiveOneModal) archiveOneModal.style.display = 'none';
-    pendingArchiveId = null;
-  }
+  var statusIcons = {
+    active:   <?= json_encode(asset_icon('circle_check', ['width' => '18', 'height' => '18'])) ?>,
+    inactive: <?= json_encode(asset_icon('circle_x',     ['width' => '18', 'height' => '18'])) ?>,
+  };
 
-  function setArchiveOneAlert(msg, type) {
-    if (!archiveOneAlert) return;
-    archiveOneAlert.innerHTML = msg
-      ? '<div class="vs-alert vs-alert-' + (type || 'error') + ' mb-3">' + msg + '</div>'
-      : '';
-  }
-
-  // Replace the actions cell + checkbox state for a given row to reflect the
-  // new archived state. Called after a successful soft-archive or unarchive.
-  function setRowArchivedState(rowEl, archived) {
-    if (!rowEl) return;
-    var id = (rowEl.id || '').replace(/^row-/, '');
-    var nameAttr = '';
-    var existingActionBtn = rowEl.querySelector('.js-archive-one, .js-unarchive-one');
-    if (existingActionBtn) nameAttr = existingActionBtn.getAttribute('data-name') || '';
-    var nameEsc = nameAttr.replace(/"/g, '&quot;');
-
-    rowEl.setAttribute('data-archived', archived ? '1' : '0');
-    rowEl.classList.toggle('vs-row-archived', archived);
-
-    var cb = rowEl.querySelector('.vs-row-check');
-    if (cb) {
-      var notEligible = (rowEl.getAttribute('data-eligibility') || '') === 'not_eligible';
-      cb.checked = false;
-      cb.disabled = archived || notEligible;
-      cb.title = archived
-        ? 'Archived — unarchive to interact with this row'
-        : (notEligible ? 'Not eligible — cannot be selected' : '');
-    }
-
-    var actionsCell = rowEl.querySelector('.js-actions-cell');
-    if (actionsCell) {
-      if (archived) {
-        actionsCell.innerHTML =
-          '<button type="button" class="vs-tbl-btn vs-tbl-btn-view js-unarchive-one"' +
-          ' data-id="' + id + '" data-name="' + nameEsc + '">Unarchive</button>';
-      } else {
-        actionsCell.innerHTML =
-          '<button type="button" class="vs-tbl-btn vs-tbl-btn-view js-voucher-action" data-mode="view" data-id="' + id + '">View</button>' +
-          '<button type="button" class="vs-tbl-btn vs-tbl-btn-edit js-voucher-action" data-mode="edit" data-id="' + id + '">Edit</button>' +
-          '<button type="button" class="vs-tbl-btn vs-tbl-btn-delete js-archive-one"' +
-          ' data-id="' + id + '" data-name="' + nameEsc + '">Archive</button>';
-      }
-      // Re-wire the new buttons since the original event listeners attached
-      // by querySelectorAll on page load don't reach replaced elements.
-      wireRowActionButtons(actionsCell);
-    }
-  }
+  var eligIcons = {
+    eligible:   <?= json_encode(asset_icon('circle_check', ['width' => '18', 'height' => '18'])) ?>,
+    ineligible: <?= json_encode(asset_icon('circle_x',     ['width' => '18', 'height' => '18'])) ?>,
+  };
 
   function flashSuccess(msg) {
     var alertBox = document.getElementById('studentsAlertBox');
@@ -975,19 +950,9 @@
     setTimeout(function () { el.remove(); }, 5000);
   }
 
-  function wireArchiveOneButton(btn) {
-    btn.addEventListener('click', function () {
-      pendingArchiveId = btn.getAttribute('data-id');
-      if (!pendingArchiveId || !archiveOneModal) return;
-      setArchiveOneAlert('');
-      if (archiveOneReason) archiveOneReason.value = '';
-      if (archiveOneName)   archiveOneName.textContent = btn.getAttribute('data-name') || ('student #' + pendingArchiveId);
-      archiveOneConfirm.disabled = false;
-      archiveOneModal.style.display = 'flex';
-    });
-  }
-
-  function wireUnarchiveOneButton(btn) {
+  function wireToggleActiveButton(btn) {
+    if (btn.dataset.toggleActiveBound === '1') return;
+    btn.dataset.toggleActiveBound = '1';
     btn.addEventListener('click', function () {
       var id = btn.getAttribute('data-id');
       if (!id) return;
@@ -996,237 +961,153 @@
       var fd = new FormData();
       fd.append(csrfName, csrfHash);
 
-      fetch(unarchiveUrlBase + '/' + id, {
-        method:  'POST',
-        headers: { 'X-Requested-With': 'XMLHttpRequest' },
+      fetch(toggleActiveUrlBase + '/' + id, {
+        method:      'POST',
+        headers:     { 'X-Requested-With': 'XMLHttpRequest' },
         credentials: 'same-origin',
-        body:    fd,
+        body:        fd,
       })
         .then(function (r) { return r.json(); })
         .then(function (data) {
-          if (!data.success) {
-            btn.disabled = false;
-            alert(data.message || 'Unarchive failed.');
-            return;
-          }
-          setRowArchivedState(document.getElementById('row-' + id), false);
-          flashSuccess(data.message || 'Student unarchived.');
-          if (data.csrf_token) csrfHash = data.csrf_token;
-        })
-        .catch(function () {
           btn.disabled = false;
-          alert('An error occurred. Please try again.');
-        });
+          if (!data.success) { alert(data.message || 'Toggle failed.'); return; }
+          if (data.csrf_token) csrfHash = data.csrf_token;
+          var isActive = data.is_active === 1 || data.is_active === '1';
+          var rowEl = document.getElementById('row-' + id);
+          if (rowEl) {
+            rowEl.setAttribute('data-active', isActive ? '1' : '0');
+            var iconSpan = rowEl.querySelector('.js-status-icon');
+            if (iconSpan) {
+              iconSpan.innerHTML   = isActive ? statusIcons.active : statusIcons.inactive;
+              iconSpan.style.color = isActive ? '#16a34a' : '#9ca3af';
+              iconSpan.title       = isActive ? 'Active' : 'Inactive';
+              iconSpan.setAttribute('aria-label', isActive ? 'Active' : 'Inactive');
+            }
+          }
+          btn.textContent = isActive ? 'Deactivate' : 'Activate';
+          btn.setAttribute('data-active', isActive ? '1' : '0');
+          flashSuccess(data.message || 'Student ' + (isActive ? 'activated' : 'deactivated') + '.');
+        })
+        .catch(function () { btn.disabled = false; alert('An error occurred. Please try again.'); });
     });
   }
 
-  // Wires the action buttons inside a specific actions cell (or the whole
-  // document if no element is passed). Used on initial load and after a
-  // soft-archive / unarchive replaces a row's buttons.
+  function wireEligibilityButton(btn) {
+    if (btn.dataset.eligibilityBound === '1') return;
+    btn.dataset.eligibilityBound = '1';
+    btn.addEventListener('click', function () {
+      var id = btn.getAttribute('data-id');
+      if (!id) return;
+      btn.disabled = true;
+
+      var fd = new FormData();
+      fd.append(csrfName, csrfHash);
+
+      fetch(toggleEligibilityUrlBase + '/' + id, {
+        method:      'POST',
+        headers:     { 'X-Requested-With': 'XMLHttpRequest' },
+        credentials: 'same-origin',
+        body:        fd,
+      })
+        .then(function (r) { return r.json(); })
+        .then(function (data) {
+          btn.disabled = false;
+          if (!data.success) { alert(data.message || 'Toggle failed.'); return; }
+          if (data.csrf_token) csrfHash = data.csrf_token;
+          var newElig = data.eligibility_status;
+          var rowEl = document.getElementById('row-' + id);
+          if (rowEl) {
+            rowEl.setAttribute('data-eligibility', newElig);
+            var iconSpan = rowEl.querySelector('.js-elig-icon');
+            if (iconSpan) {
+              iconSpan.innerHTML   = newElig === 'eligible' ? eligIcons.eligible : eligIcons.ineligible;
+              iconSpan.style.color = newElig === 'eligible' ? '#16a34a' : '#9ca3af';
+              iconSpan.title       = newElig === 'eligible' ? 'Eligible' : 'Not eligible';
+              iconSpan.setAttribute('aria-label', newElig === 'eligible' ? 'Eligible' : 'Not eligible');
+            }
+            var cb = rowEl.querySelector('.vs-row-check');
+            if (cb) {
+              cb.disabled = newElig === 'not_eligible';
+              if (newElig === 'not_eligible') { cb.checked = false; }
+              cb.title = newElig === 'not_eligible' ? 'Not eligible — cannot be selected' : '';
+            }
+          }
+          btn.textContent = newElig === 'not_eligible' ? 'Mark Eligible' : 'Mark Not Eligible';
+          btn.setAttribute('data-eligibility', newElig);
+          flashSuccess(data.message || 'Eligibility updated.');
+        })
+        .catch(function () { btn.disabled = false; alert('An error occurred. Please try again.'); });
+    });
+  }
+
   function wireRowActionButtons(scope) {
     var root = scope || document;
-    root.querySelectorAll('.js-archive-one').forEach(wireArchiveOneButton);
-    root.querySelectorAll('.js-unarchive-one').forEach(wireUnarchiveOneButton);
-    // Re-wire View/Edit so newly-inserted buttons open the modal.
+    root.querySelectorAll('.js-toggle-active').forEach(wireToggleActiveButton);
+    root.querySelectorAll('.js-toggle-eligibility').forEach(wireEligibilityButton);
     root.querySelectorAll('.js-voucher-action').forEach(function (b) {
       if (b.dataset.voucherActionBound === '1') return;
       b.dataset.voucherActionBound = '1';
-      b.addEventListener('click', function () {
-        vmOpen(b.getAttribute('data-mode'), b.getAttribute('data-id'));
-      });
+      b.addEventListener('click', function () { vmOpen(b.getAttribute('data-mode'), b.getAttribute('data-id')); });
     });
   }
   wireRowActionButtons();
 
-  archiveOneModalClose  && archiveOneModalClose.addEventListener('click', closeArchiveOneModal);
-  archiveOneModalCancel && archiveOneModalCancel.addEventListener('click', closeArchiveOneModal);
-  archiveOneModal       && archiveOneModal.addEventListener('click', function (e) {
-    if (e.target === archiveOneModal) closeArchiveOneModal();
-  });
+  // ── Bulk Activate / Deactivate ─────────────────────────────────────────────
+  function getSelectedIds() {
+    return Array.from(document.querySelectorAll('.vs-row-check:checked:not([disabled])'))
+      .map(function (cb) { return cb.value; }).filter(Boolean);
+  }
 
-  archiveOneConfirm && archiveOneConfirm.addEventListener('click', function () {
-    if (!pendingArchiveId) return;
-    setArchiveOneAlert('');
-    archiveOneConfirm.disabled = true;
-    if (archiveOneBtnText)    archiveOneBtnText.style.display    = 'none';
-    if (archiveOneBtnSpinner) archiveOneBtnSpinner.style.display = 'inline-block';
-
+  function bulkActiveAction(url, actionLabel, newActiveState) {
+    var ids = getSelectedIds();
+    if (!ids.length) { alert('No students selected.'); return; }
     var fd = new FormData();
     fd.append(csrfName, csrfHash);
-
-    var idForRequest = pendingArchiveId;
-    fetch(softArchiveUrlBase + '/' + idForRequest, {
-      method:  'POST',
-      headers: { 'X-Requested-With': 'XMLHttpRequest' },
+    fd.append('voucher_ids', ids.join(','));
+    fetch(url, {
+      method:      'POST',
+      headers:     { 'X-Requested-With': 'XMLHttpRequest' },
       credentials: 'same-origin',
-      body:    fd,
+      body:        fd,
     })
       .then(function (r) { return r.json(); })
       .then(function (data) {
-        archiveOneConfirm.disabled = false;
-        if (archiveOneBtnText)    archiveOneBtnText.style.display    = 'inline';
-        if (archiveOneBtnSpinner) archiveOneBtnSpinner.style.display = 'none';
-        if (!data.success) {
-          setArchiveOneAlert(data.message || 'Archive failed.', 'error');
-          return;
-        }
-        setRowArchivedState(document.getElementById('row-' + idForRequest), true);
-        closeArchiveOneModal();
-        flashSuccess(data.message || 'Student archived.');
+        if (!data.success) { alert(data.message || actionLabel + ' failed.'); return; }
         if (data.csrf_token) csrfHash = data.csrf_token;
+        var isActive = newActiveState === 1;
+        ids.forEach(function (id) {
+          var rowEl = document.getElementById('row-' + id);
+          if (!rowEl) return;
+          rowEl.setAttribute('data-active', isActive ? '1' : '0');
+          var iconSpan = rowEl.querySelector('.js-status-icon');
+          if (iconSpan) {
+            iconSpan.innerHTML   = isActive ? statusIcons.active : statusIcons.inactive;
+            iconSpan.style.color = isActive ? '#16a34a' : '#9ca3af';
+            iconSpan.title       = isActive ? 'Active' : 'Inactive';
+            iconSpan.setAttribute('aria-label', isActive ? 'Active' : 'Inactive');
+          }
+          var toggleBtn = rowEl.querySelector('.js-toggle-active');
+          if (toggleBtn) {
+            toggleBtn.textContent = isActive ? 'Deactivate' : 'Activate';
+            toggleBtn.setAttribute('data-active', isActive ? '1' : '0');
+          }
+        });
+        if (window.jQuery && $.fn.DataTable) {
+          var tbl = document.getElementById('studentsTable');
+          if (tbl && $.fn.DataTable.isDataTable(tbl)) $(tbl).DataTable().draw(false);
+        }
+        flashSuccess(data.message || actionLabel + ' successful.');
       })
-      .catch(function () {
-        setArchiveOneAlert('An error occurred. Please try again.', 'error');
-        archiveOneConfirm.disabled = false;
-        if (archiveOneBtnText)    archiveOneBtnText.style.display    = 'inline';
-        if (archiveOneBtnSpinner) archiveOneBtnSpinner.style.display = 'none';
-      });
-  });
-
-  // ── Archive All ─────────────────────────────────────────────────────────────
-  // Opens a confirmation modal that first AJAX-fetches the count of students
-  // matching the current search + filter scope (from the URL query string), so
-  // the user knows exactly how many rows are about to be archived across the
-  // whole DB — not just the loaded 1000.
-  var btnArchiveAll        = document.getElementById('btnArchiveAll');
-  var archiveAllModal      = document.getElementById('archiveAllModal');
-  var archiveAllModalClose = document.getElementById('archiveAllModalClose');
-  var archiveAllModalCancel= document.getElementById('archiveAllModalCancel');
-  var archiveAllConfirm    = document.getElementById('archiveAllConfirm');
-  var archiveAllCount      = document.getElementById('archiveAllCount');
-  var archiveAllReason     = document.getElementById('archiveAllReason');
-  var archiveAllAlert      = document.getElementById('archiveAllAlert');
-  var archiveAllBtnText    = document.getElementById('archiveAllBtnText');
-  var archiveAllBtnSpinner = document.getElementById('archiveAllBtnSpinner');
-  var countMatchingUrl     = '<?= site_url($prefix . '/vouchers/count-matching') ?>';
-  var archiveAllUrl        = '<?= site_url($prefix . '/vouchers/archive-all') ?>';
-
-  // TEMP — handler for the "Restore All (test)" button. Remove with the
-  // button + route + controller method when Archive All is done being tested.
-  var btnRestoreAllArchive = document.getElementById('btnRestoreAllArchive');
-  var restoreAllArchiveUrl = '<?= site_url($prefix . '/vouchers/restore-all-archive') ?>';
-  btnRestoreAllArchive && btnRestoreAllArchive.addEventListener('click', function () {
-    if (!window.confirm('[TEST] Move every row from student_archive back into students?\n\nThis is a destructive testing shortcut — only use it while testing Archive All.')) {
-      return;
-    }
-    btnRestoreAllArchive.disabled = true;
-    var fd = new FormData();
-    fd.append(csrfName, csrfHash);
-    fetch(restoreAllArchiveUrl, {
-      method:  'POST',
-      headers: { 'X-Requested-With': 'XMLHttpRequest' },
-      credentials: 'same-origin',
-      body:    fd,
-    })
-      .then(function (r) { return r.json(); })
-      .then(function (data) {
-        alert((data && data.message) || (data && data.success ? 'Restored.' : 'Restore failed.'));
-        if (data && data.success) window.location.reload();
-        else btnRestoreAllArchive.disabled = false;
-      })
-      .catch(function () {
-        alert('Restore request failed.');
-        btnRestoreAllArchive.disabled = false;
-      });
-  });
-
-  function closeArchiveAllModal() {
-    if (archiveAllModal) archiveAllModal.style.display = 'none';
+      .catch(function () { alert('An error occurred. Please try again.'); });
   }
 
-  function setArchiveAllAlert(msg, type) {
-    if (!archiveAllAlert) return;
-    archiveAllAlert.innerHTML = msg
-      ? '<div class="vs-alert vs-alert-' + (type || 'error') + ' mb-3">' + msg + '</div>'
-      : '';
-  }
-
-  function currentListingQuery() {
-    // Use the current URL's search params so the count + archive operate on
-    // exactly the same scope the listing was rendered with (keyword + every
-    // hidden filter input that the filter form submitted on its last apply).
-    return new URLSearchParams(window.location.search);
-  }
-
-  btnArchiveAll && btnArchiveAll.addEventListener('click', function () {
-    if (!archiveAllModal) return;
-    setArchiveAllAlert('');
-    if (archiveAllReason) archiveAllReason.value = '';
-    if (archiveAllCount)  archiveAllCount.textContent = '…';
-    if (archiveAllConfirm) archiveAllConfirm.disabled = true;
-    archiveAllModal.style.display = 'flex';
-
-    var qs = currentListingQuery().toString();
-    fetch(countMatchingUrl + (qs ? '?' + qs : ''), {
-      method: 'GET',
-      headers: { 'X-Requested-With': 'XMLHttpRequest' },
-      credentials: 'same-origin'
-    })
-      .then(function (r) { return r.json(); })
-      .then(function (data) {
-        if (!data.success) {
-          setArchiveAllAlert(data.message || 'Failed to count matching records.', 'error');
-          return;
-        }
-        var n = parseInt(data.count, 10) || 0;
-        if (archiveAllCount) archiveAllCount.textContent = n.toLocaleString();
-        if (archiveAllConfirm) archiveAllConfirm.disabled = n === 0;
-        if (n === 0) {
-          setArchiveAllAlert('No students match the current search/filter — nothing to archive.', 'info');
-        }
-      })
-      .catch(function () {
-        setArchiveAllAlert('Failed to count matching records.', 'error');
-      });
+  var btnActivateSelected   = document.getElementById('btnActivateSelected');
+  var btnDeactivateSelected = document.getElementById('btnDeactivateSelected');
+  btnActivateSelected   && btnActivateSelected.addEventListener('click', function () {
+    bulkActiveAction(activateMultipleUrl, 'Activate', 1);
   });
-
-  archiveAllModalClose  && archiveAllModalClose.addEventListener('click', closeArchiveAllModal);
-  archiveAllModalCancel && archiveAllModalCancel.addEventListener('click', closeArchiveAllModal);
-  archiveAllModal       && archiveAllModal.addEventListener('click', function (e) {
-    if (e.target === archiveAllModal) closeArchiveAllModal();
-  });
-
-  archiveAllConfirm && archiveAllConfirm.addEventListener('click', function () {
-    if (archiveAllConfirm.disabled) return;
-    setArchiveAllAlert('');
-    archiveAllConfirm.disabled = true;
-    if (archiveAllBtnText)    archiveAllBtnText.style.display    = 'none';
-    if (archiveAllBtnSpinner) archiveAllBtnSpinner.style.display = 'inline-block';
-
-    var fd = new FormData();
-    fd.append(csrfName, csrfHash);
-    fd.append('archive_reason', archiveAllReason ? archiveAllReason.value : '');
-    // Mirror the URL's q + filter params into the POST body so the server
-    // archives exactly the same scope the user is viewing.
-    currentListingQuery().forEach(function (value, key) {
-      fd.append(key, value);
-    });
-
-    fetch(archiveAllUrl, {
-      method:  'POST',
-      headers: { 'X-Requested-With': 'XMLHttpRequest' },
-      credentials: 'same-origin',
-      body:    fd,
-    })
-      .then(function (r) { return r.json(); })
-      .then(function (data) {
-        if (!data.success) {
-          setArchiveAllAlert(data.message || 'Archive All failed.', 'error');
-          archiveAllConfirm.disabled = false;
-          if (archiveAllBtnText)    archiveAllBtnText.style.display    = 'inline';
-          if (archiveAllBtnSpinner) archiveAllBtnSpinner.style.display = 'none';
-          return;
-        }
-        // Refresh the page to reflect the archived rows leaving the listing.
-        // Preserve the user's current search/filter scope in the URL.
-        window.location.reload();
-      })
-      .catch(function () {
-        setArchiveAllAlert('An error occurred. Please try again.', 'error');
-        archiveAllConfirm.disabled = false;
-        if (archiveAllBtnText)    archiveAllBtnText.style.display    = 'inline';
-        if (archiveAllBtnSpinner) archiveAllBtnSpinner.style.display = 'none';
-      });
+  btnDeactivateSelected && btnDeactivateSelected.addEventListener('click', function () {
+    bulkActiveAction(deactivateMultipleUrl, 'Deactivate', 0);
   });
 }());
 </script>

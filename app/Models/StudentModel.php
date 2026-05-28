@@ -26,7 +26,7 @@ class StudentModel extends Model
         'school_year',
         'eligibility_status',
         'voucher_status',
-        'is_archived',
+        'is_active',
         'generated_at',
     ];
 

@@ -99,32 +99,50 @@
                             <?php endif; ?>
                         </td>
                         <td>
-                            <?php if ($isArchived): ?>
-                                <span class="badge bg-dark" id="sig-badge-<?= $sid ?>">Archived</span>
-                            <?php else: ?>
-                                <span class="badge <?= $isSelected ? 'bg-success' : 'bg-secondary' ?>" id="sig-badge-<?= $sid ?>"><?= $isSelected ? 'Selected' : 'Unselected' ?></span>
-                            <?php endif; ?>
+                            <?php
+                                $iconName  = ($isArchived || !$isSelected) ? 'circle_x' : 'circle_check';
+                                $iconColor = $isArchived ? '#334155' : ($isSelected ? '#16a34a' : '#9ca3af');
+                                $iconTitle = $isArchived ? 'Archived' : ($isSelected ? 'Selected' : 'Unselected');
+                            ?>
+                            <span id="sig-badge-<?= $sid ?>"
+                                  style="color:<?= $iconColor ?>;display:inline-flex"
+                                  title="<?= $iconTitle ?>" aria-label="<?= $iconTitle ?>">
+                                <?= asset_icon($iconName, ['width' => '18', 'height' => '18']) ?>
+                            </span>
                         </td>
                         <td class="actions-cell">
-                            <button type="button"
-                                    class="vs-tbl-btn vs-tbl-btn-edit js-sig-edit"
-                                    data-id="<?= $sid ?>">
-                                Edit
-                            </button>
-                            <?php if ($isArchived): ?>
-                                <button class="vs-tbl-btn vs-tbl-btn-view sig-restore-btn"
-                                        data-id="<?= $sid ?>"
-                                        id="sig-restore-<?= $sid ?>">
-                                    Restore
-                                </button>
-                            <?php else: ?>
-                                <button class="vs-tbl-btn <?= $isSelected ? 'vs-tbl-btn-delete' : 'vs-tbl-btn-view' ?> sig-toggle-btn"
-                                        data-id="<?= $sid ?>"
-                                        data-selected="<?= $isSelected ? '1' : '0' ?>"
-                                        id="sig-toggle-<?= $sid ?>">
-                                    <?= $isSelected ? 'Unselect' : 'Select' ?>
-                                </button>
-                            <?php endif; ?>
+                            <div class="dropdown">
+                                <button type="button" class="vs-tbl-btn vs-tbl-btn-actions dropdown-toggle"
+                                        data-bs-toggle="dropdown" aria-expanded="false">Actions</button>
+                                <ul class="dropdown-menu dropdown-menu-end">
+                                    <li>
+                                        <button type="button" class="dropdown-item js-sig-edit"
+                                                data-id="<?= $sid ?>">Edit</button>
+                                    </li>
+                                    <?php if ($isArchived): ?>
+                                        <li><hr class="dropdown-divider"></li>
+                                        <li>
+                                            <button class="dropdown-item sig-restore-btn"
+                                                    data-id="<?= $sid ?>"
+                                                    id="sig-restore-<?= $sid ?>">Restore</button>
+                                        </li>
+                                    <?php else: ?>
+                                        <li>
+                                            <button class="dropdown-item sig-toggle-btn"
+                                                    data-id="<?= $sid ?>"
+                                                    data-selected="<?= $isSelected ? '1' : '0' ?>"
+                                                    id="sig-toggle-<?= $sid ?>">
+                                                <?= $isSelected ? 'Unselect' : 'Select' ?>
+                                            </button>
+                                        </li>
+                                        <li><hr class="dropdown-divider"></li>
+                                        <li>
+                                            <button class="dropdown-item text-danger js-sig-archive-single"
+                                                    data-id="<?= $sid ?>">Archive</button>
+                                        </li>
+                                    <?php endif; ?>
+                                </ul>
+                            </div>
                         </td>
                     </tr>
                 <?php endforeach; ?>
@@ -290,6 +308,11 @@
 (function () {
     var csrfName = '<?= csrf_token() ?>';
     var csrfHash = '<?= csrf_hash() ?>';
+
+    var sigIcons = {
+        selected:   <?= json_encode(asset_icon('circle_check', ['width' => '18', 'height' => '18'])) ?>,
+        unselected: <?= json_encode(asset_icon('circle_x',     ['width' => '18', 'height' => '18'])) ?>,
+    };
 
     function getCsrf() {
         var meta = document.querySelector('meta[name="csrf-token-value"]');
@@ -478,9 +501,8 @@
 
         var checkAll = document.getElementById('sigCheckAll');
         if (checkAll) {
-            var selectable = getSelectableCheckboxes();
-            checkAll.checked = selectable.length > 0 && selectedIds.size >= selectable.length;
-            checkAll.indeterminate = selectedIds.size > 0 && selectedIds.size < selectable.length;
+            checkAll.checked = false;
+            checkAll.indeterminate = selectedIds.size > 0;
         }
     }
 
@@ -533,11 +555,12 @@
 
                 btn.setAttribute('data-selected', nowSelected ? '1' : '0');
                 btn.textContent = nowSelected ? 'Unselect' : 'Select';
-                btn.className   = 'vs-tbl-btn ' + (nowSelected ? 'vs-tbl-btn-delete' : 'vs-tbl-btn-view') + ' sig-toggle-btn';
 
                 if (badge) {
-                    badge.textContent = nowSelected ? 'Selected' : 'Unselected';
-                    badge.className   = 'badge ' + (nowSelected ? 'bg-success' : 'bg-secondary');
+                    badge.innerHTML   = nowSelected ? sigIcons.selected : sigIcons.unselected;
+                    badge.style.color = nowSelected ? '#16a34a' : '#9ca3af';
+                    badge.title       = nowSelected ? 'Selected' : 'Unselected';
+                    badge.setAttribute('aria-label', nowSelected ? 'Selected' : 'Unselected');
                 }
 
                 /* Refresh CSRF for next request */
@@ -554,16 +577,11 @@
     });
 
     // ── Restore (unarchive) ───────────────────────────────────────────────────
-    // Reloads the page on success so the row re-renders as an active signatory
-    // with the normal Select/Unselect button — simpler than rebuilding the cell
-    // in-place, and matches the post-action flow elsewhere on this page.
-    document.querySelectorAll('.sig-restore-btn').forEach(function (btn) {
+    function wireSigRestoreBtn(btn) {
         btn.addEventListener('click', function () {
             var id   = btn.getAttribute('data-id');
             var csrf = getCsrf();
-
             btn.disabled = true;
-
             fetch('<?= base_url('signatories/restore') ?>/' + id, {
                 method:  'POST',
                 headers: { 'X-Requested-With': 'XMLHttpRequest', 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -583,7 +601,8 @@
                 btn.disabled = false;
             });
         });
-    });
+    }
+    document.querySelectorAll('.sig-restore-btn').forEach(wireSigRestoreBtn);
 
     // ── Bulk archive ─────────────────────────────────────────────────────────
     var btnArchive     = document.getElementById('btnArchiveSelected');
@@ -596,9 +615,12 @@
     var sigArchBtnText = document.getElementById('sigArchiveBtnText');
     var sigArchSpinner = document.getElementById('sigArchiveBtnSpinner');
 
+    var pendingSigArchiveId = null;
+
     function closeSigArchModal() {
         if (sigArchModal) sigArchModal.style.display = 'none';
         if (sigArchReason) sigArchReason.value = '';
+        pendingSigArchiveId = null;
     }
 
     sigArchClose  && sigArchClose.addEventListener('click', closeSigArchModal);
@@ -624,11 +646,53 @@
         if (sigArchModal) sigArchModal.style.display = 'flex';
     });
 
+    document.addEventListener('click', function (e) {
+        var btn = e.target.closest('.js-sig-archive-single');
+        if (!btn) return;
+        var id = btn.getAttribute('data-id');
+        var toggle = document.getElementById('sig-toggle-' + id);
+        if (toggle && toggle.getAttribute('data-selected') === '1') {
+            showAlert('Cannot archive a signatory that is currently selected. Please unselect it first.', 'error');
+            return;
+        }
+        pendingSigArchiveId = id;
+        if (sigArchCount) sigArchCount.textContent = '1';
+        if (sigArchModal) sigArchModal.style.display = 'flex';
+    });
+
+    function applySigArchiveDom(id) {
+        var row = document.getElementById('sig-row-' + id);
+        if (!row) return;
+        row.classList.add('vs-row-archived');
+        row.setAttribute('data-archived', '1');
+        var cb = row.querySelector('.sig-row-check');
+        if (cb) { cb.disabled = true; cb.checked = false; }
+        var badge = document.getElementById('sig-badge-' + id);
+        if (badge) {
+            badge.innerHTML = sigIcons.unselected;
+            badge.style.color = '#334155';
+            badge.title = 'Archived';
+            badge.setAttribute('aria-label', 'Archived');
+        }
+        var ul = row.querySelector('.actions-cell .dropdown-menu');
+        if (ul) {
+            ul.innerHTML =
+                '<li><button type="button" class="dropdown-item js-sig-edit" data-id="' + id + '">Edit</button></li>' +
+                '<li><hr class="dropdown-divider"></li>' +
+                '<li><button class="dropdown-item sig-restore-btn" data-id="' + id + '" id="sig-restore-' + id + '">Restore</button></li>';
+            var newEdit = ul.querySelector('.js-sig-edit');
+            if (newEdit) newEdit.addEventListener('click', function () { smOpen('edit', id); });
+            var restBtn = ul.querySelector('.sig-restore-btn');
+            if (restBtn) wireSigRestoreBtn(restBtn);
+        }
+    }
+
     sigArchConfirm && sigArchConfirm.addEventListener('click', function () {
         var reason = sigArchReason ? sigArchReason.value.trim() : '';
         var csrf = getCsrf();
         var body = csrf.name + '=' + csrf.token;
-        selectedIds.forEach(function (id) { body += '&ids[]=' + id; });
+        var idsToArchive = pendingSigArchiveId ? [pendingSigArchiveId] : Array.from(selectedIds);
+        idsToArchive.forEach(function (id) { body += '&ids[]=' + id; });
         if (reason) body += '&reason=' + encodeURIComponent(reason);
 
         sigArchConfirm.disabled = true;
@@ -644,11 +708,10 @@
         .then(function (data) {
             if (data.success) {
                 closeSigArchModal();
-                selectedIds.forEach(function (id) {
-                    var row = document.getElementById('sig-row-' + id);
-                    if (row) row.remove();
+                idsToArchive.forEach(function (id) {
+                    applySigArchiveDom(id);
+                    selectedIds.delete(id);
                 });
-                selectedIds.clear();
                 updateActionBar();
                 showAlert(data.message || 'Archived successfully.', 'success');
             } else {

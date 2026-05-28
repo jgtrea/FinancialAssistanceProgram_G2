@@ -53,8 +53,10 @@ $routes->group('admin', ['filter' => 'role:admin'], function ($routes) {
     $routes->post('vouchers/archive',             'Admin\Voucher::archive');
     $routes->post('vouchers/archive-all',         'Admin\Voucher::archiveAll');
     $routes->get('vouchers/count-matching',       'Admin\Voucher::countMatching');
-    $routes->post('vouchers/soft-archive/(:num)', 'Admin\Voucher::softArchive/$1');
-    $routes->post('vouchers/unarchive/(:num)',    'Admin\Voucher::unarchive/$1');
+    $routes->post('vouchers/activate-multiple',          'Admin\Voucher::activateMultiple');
+    $routes->post('vouchers/deactivate-multiple',        'Admin\Voucher::deactivateMultiple');
+    $routes->post('vouchers/toggle-active/(:num)',       'Admin\Voucher::toggleActive/$1');
+    $routes->post('vouchers/toggle-eligibility/(:num)', 'Admin\Voucher::toggleEligibility/$1');
     // TEMP — remove after Archive All testing is done.
     $routes->post('vouchers/restore-all-archive', 'Admin\Voucher::restoreAllFromArchive');
 
@@ -67,6 +69,7 @@ $routes->group('admin', ['filter' => 'role:admin'], function ($routes) {
     $routes->get('schools/export',                'Admin\School::export');
     $routes->post('schools/import',               'Admin\School::importSchools');
     $routes->get('schools/import-template',       'Admin\School::importTemplate');
+    $routes->get('schools/options',               'Admin\School::optionsJson');
 
     // Archive & Logs
     $routes->get('archive', 'ArchiveController::index');
@@ -101,10 +104,23 @@ $routes->group('user', ['filter' => 'auth'], function ($routes) {
     $routes->post('vouchers/archive',             'User\Voucher::archive');
     $routes->post('vouchers/archive-all',         'User\Voucher::archiveAll');
     $routes->get('vouchers/count-matching',       'User\Voucher::countMatching');
-    $routes->post('vouchers/soft-archive/(:num)', 'User\Voucher::softArchive/$1');
-    $routes->post('vouchers/unarchive/(:num)',    'User\Voucher::unarchive/$1');
+    $routes->post('vouchers/activate-multiple',          'User\Voucher::activateMultiple');
+    $routes->post('vouchers/deactivate-multiple',        'User\Voucher::deactivateMultiple');
+    $routes->post('vouchers/toggle-active/(:num)',       'User\Voucher::toggleActive/$1');
+    $routes->post('vouchers/toggle-eligibility/(:num)', 'User\Voucher::toggleEligibility/$1');
     // TEMP — remove after Archive All testing is done.
     $routes->post('vouchers/restore-all-archive', 'User\Voucher::restoreAllFromArchive');
+
+    // Schools (read + write for user role)
+    $routes->get('schools',                       'Admin\School::index');
+    $routes->get('schools/json/(:num)',           'Admin\School::getJson/$1');
+    $routes->post('schools/save',                 'Admin\School::save');
+    $routes->post('schools/archive-multiple',     'Admin\School::archiveMultiple');
+    $routes->post('schools/restore-multiple',     'Admin\School::restoreMultiple');
+    $routes->get('schools/export',                'Admin\School::export');
+    $routes->post('schools/import',               'Admin\School::importSchools');
+    $routes->get('schools/import-template',       'Admin\School::importTemplate');
+    $routes->get('schools/options',               'Admin\School::optionsJson');
 });
 
 // ─── Students (madridbranch) ──────────────────────────────────────────────────

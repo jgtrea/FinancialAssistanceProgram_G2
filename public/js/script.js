@@ -109,12 +109,12 @@ function initGenericDataTables() {
   document.querySelectorAll('table.js-data-table').forEach(table => {
     if ($.fn.DataTable.isDataTable(table)) return;
 
-    const actionTargets = Array.from(table.querySelectorAll('thead th'))
+    const nonOrderableTargets = Array.from(table.querySelectorAll('thead th'))
       .map((th, index) => {
         const isActions = th.classList.contains('actions-column')
           || th.textContent.trim().toLowerCase() === 'actions';
-
-        return isActions ? index : -1;
+        const isCheckCol = th.classList.contains('vs-th-check');
+        return (isActions || isCheckCol) ? index : -1;
       })
       .filter(index => index >= 0);
 
@@ -125,13 +125,17 @@ function initGenericDataTables() {
       responsive: true,
       autoWidth: false,
       order: [],
-      columnDefs: actionTargets.length ? [{ orderable: false, targets: actionTargets }] : [],
+      columnDefs: nonOrderableTargets.length ? [{ orderable: false, targets: nonOrderableTargets }] : [],
       language: {
         search: '',
         searchPlaceholder: table.dataset.searchPlaceholder || 'Search...',
         emptyTable: table.dataset.emptyText || 'No records found.',
         lengthMenu: 'Show _MENU_ entries',
         info: 'Showing _START_ to _END_ of _TOTAL_',
+      },
+      drawCallback: function () {
+        var tbody = $(this.api().table().body());
+        tbody.find('tr.vs-row-archived, tr[data-active="0"]').appendTo(tbody);
       },
     });
   });
@@ -487,6 +491,10 @@ document.addEventListener('DOMContentLoaded', function () {
       info:       'Showing _START_ to _END_ of _TOTAL_',
       paginate:   { previous: '&#8249;', next: '&#8250;' },
     },
+    drawCallback: function () {
+      var tbody = $(vouchersTable).find('tbody');
+      tbody.find('tr[data-active="0"]').appendTo(tbody);
+    },
   });
 
   // The in-table search filters across ALL rows the server loaded (capped at
@@ -533,8 +541,8 @@ document.addEventListener('DOMContentLoaded', function () {
     if (actionBar) actionBar.style.display = count > 0 ? 'flex' : 'none';
     updateExportLinks();
     getCheckAllBoxes().forEach(checkAll => {
-      checkAll.checked = totalFiltered > 0 && count >= totalFiltered;
-      checkAll.indeterminate = count > 0 && count < totalFiltered;
+      checkAll.checked = false;
+      checkAll.indeterminate = count > 0;
     });
   }
 
@@ -572,10 +580,6 @@ document.addEventListener('DOMContentLoaded', function () {
     } else {
       filteredIds.forEach(function (id) { selectedIds.delete(id); });
     }
-    getCheckAllBoxes().forEach(checkAll => {
-      checkAll.indeterminate = false;
-      checkAll.checked = shouldCheck;
-    });
     syncPageCheckboxes();
   });
 
@@ -716,23 +720,46 @@ document.addEventListener('DOMContentLoaded', function () {
     ? archiveForm.action
     : (pdfForm ? pdfForm.action.replace('/generate-pdf', '/archive') : '');
 
-  const closeArchiveModal = () => { if (archiveModal) archiveModal.style.display = 'none'; };
+  let pendingArchiveSingleId = null;
 
-  btnArchive        && btnArchive.addEventListener('click', () => {
-    if (archiveCount)  archiveCount.textContent = selectedIds.size;
+  const closeArchiveModal = () => {
+    if (archiveModal) archiveModal.style.display = 'none';
+    pendingArchiveSingleId = null;
+  };
+
+  function openArchiveModal(ids) {
+    if (archiveCount)  archiveCount.textContent = ids.length;
     if (archiveReason) archiveReason.value = '';
     if (archiveModal)  archiveModal.style.display = 'flex';
+  }
+
+  btnArchive        && btnArchive.addEventListener('click', () => {
+    if (!selectedIds.size) return;
+    pendingArchiveSingleId = null;
+    openArchiveModal(Array.from(selectedIds));
   });
+
+  // Per-row archive button
+  document.addEventListener('click', function (e) {
+    var btn = e.target.closest('.js-archive-single');
+    if (!btn) return;
+    pendingArchiveSingleId = btn.getAttribute('data-id');
+    openArchiveModal([pendingArchiveSingleId]);
+  });
+
   archiveModalClose  && archiveModalClose.addEventListener('click',  closeArchiveModal);
   archiveModalCancel && archiveModalCancel.addEventListener('click', closeArchiveModal);
   archiveModal       && archiveModal.addEventListener('click', e => { if (e.target === archiveModal) closeArchiveModal(); });
 
   if (archiveConfirm) {
     archiveConfirm.addEventListener('click', async function () {
-      if (!selectedIds.size) return;
+      const ids = pendingArchiveSingleId
+        ? [pendingArchiveSingleId]
+        : Array.from(selectedIds);
+      if (!ids.length) return;
 
-      if (selectedIds.size > MAX_BATCH) {
-        showAlert('You can only archive up to ' + MAX_BATCH + ' students at a time. You have ' + selectedIds.size + ' selected.', 'warning');
+      if (ids.length > MAX_BATCH) {
+        showAlert('You can only archive up to ' + MAX_BATCH + ' students at a time. You have ' + ids.length + ' selected.', 'warning');
         return;
       }
 
@@ -744,7 +771,7 @@ document.addEventListener('DOMContentLoaded', function () {
       const formData = new FormData();
       formData.append(csrf.name, csrf.token);
       formData.append('archive_reason', archiveReason ? archiveReason.value : '');
-      formData.append('voucher_ids', Array.from(selectedIds).join(','));
+      formData.append('voucher_ids', ids.join(','));
 
       try {
         const res  = await fetch(archiveUrl, ajaxOptions({ method: 'POST', body: formData }));
@@ -752,12 +779,14 @@ document.addEventListener('DOMContentLoaded', function () {
         closeArchiveModal();
 
         if (data.success) {
-          // Soft archive: rows stay in the DataTable but flip to archived
-          // state (disabled checkbox + Unarchive-only actions). The cleanest
-          // way to redraw that is a full reload — the per-row inline JS does
-          // surgical DOM updates, but the bulk flow handles many rows at
-          // once and reloading also resets selection state.
-          window.location.reload();
+          ids.forEach(function (id) {
+            var row = document.getElementById('row-' + id);
+            if (row) dt.row(row).remove();
+            selectedIds.delete(id);
+          });
+          dt.draw(false);
+          syncPageCheckboxes();
+          showAlert(data.message || 'Archived successfully.', 'success');
         } else {
           showAlert(data.message || 'Archive failed.', 'error');
         }

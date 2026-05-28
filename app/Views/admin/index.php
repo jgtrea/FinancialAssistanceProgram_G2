@@ -34,11 +34,11 @@
         <span class="vs-action-bar-count"><span id="userSelectedCount">0</span> selected</span>
         <div class="ms-auto d-flex gap-2">
             <button class="vs-btn vs-btn-success" id="btnActivateUsers">
-                <?= asset_icon('add') ?>
+                <?= asset_icon('circle_check', ['width' => '18', 'height' => '18']) ?>
                 Activate
             </button>
             <button class="vs-btn vs-btn-danger" id="btnDeactivateUsers">
-                <?= asset_icon('minus') ?>
+                <?= asset_icon('circle_x', ['width' => '18', 'height' => '18']) ?>
                 Deactivate
             </button>
         </div>
@@ -77,7 +77,10 @@
                         $isActive = !empty($user['is_active']);
                         $isSelf   = $uid === (int) session()->get('user_id');
                     ?>
-                    <tr id="user-row-<?= $uid ?>" data-last-login="<?= !empty($user['last_login']) ? esc(date('Y-m-d', strtotime($user['last_login']))) : '' ?>">
+                    <tr id="user-row-<?= $uid ?>"
+                        data-active="<?= $isActive ? '1' : '0' ?>"
+                        data-last-login="<?= !empty($user['last_login']) ? esc(date('Y-m-d', strtotime($user['last_login']))) : '' ?>"
+                        <?= !$isActive ? 'class="vs-row-archived"' : '' ?>>
                         <td><input type="checkbox" class="vs-check user-row-check" value="<?= $uid ?>"<?= $isSelf ? ' disabled title="You cannot modify your own account"' : '' ?>></td>
                         <td><?= esc($user['username']) ?></td>
                         <td><?= esc($user['email']) ?></td>
@@ -89,24 +92,34 @@
                             <span class="badge" style="background-color:<?= $roleColor ?>"><?= esc(ucfirst($user['role'])) ?></span>
                         </td>
                         <td>
-                            <span class="badge <?= $isActive ? 'bg-success' : 'bg-secondary' ?>" id="user-status-badge-<?= $uid ?>">
-                                <?= $isActive ? 'Active' : 'Inactive' ?>
+                            <span id="user-status-badge-<?= $uid ?>"
+                                  style="color:<?= $isActive ? '#16a34a' : '#9ca3af' ?>;display:inline-flex"
+                                  title="<?= $isActive ? 'Active' : 'Inactive' ?>"
+                                  aria-label="<?= $isActive ? 'Active' : 'Inactive' ?>">
+                                <?= asset_icon($isActive ? 'circle_check' : 'circle_x', ['width' => '18', 'height' => '18']) ?>
                             </span>
                         </td>
                         <td><?= !empty($user['last_login']) ? esc(date('M d, Y h:i A', strtotime($user['last_login']))) : 'Never' ?></td>
                         <td class="actions-cell">
-                            <button type="button"
-                                    class="vs-tbl-btn vs-tbl-btn-edit js-user-edit"
-                                    data-id="<?= $uid ?>">
-                                Edit
-                            </button>
-                            <button type="button"
-                                    class="vs-tbl-btn <?= $isActive ? 'vs-tbl-btn-delete' : 'vs-tbl-btn-view' ?> js-user-toggle"
-                                    data-id="<?= $uid ?>"
-                                    data-active="<?= $isActive ? '1' : '0' ?>"
-                                    id="user-toggle-<?= $uid ?>">
-                                <?= $isActive ? 'Deactivate' : 'Activate' ?>
-                            </button>
+                            <div class="dropdown">
+                                <button type="button" class="vs-tbl-btn vs-tbl-btn-actions dropdown-toggle"
+                                        data-bs-toggle="dropdown" aria-expanded="false">Actions</button>
+                                <ul class="dropdown-menu dropdown-menu-end">
+                                    <li>
+                                        <button type="button" class="dropdown-item js-user-edit"
+                                                data-id="<?= $uid ?>">Edit</button>
+                                    </li>
+                                    <li>
+                                        <button type="button"
+                                                class="dropdown-item js-user-toggle"
+                                                data-id="<?= $uid ?>"
+                                                data-active="<?= $isActive ? '1' : '0' ?>"
+                                                id="user-toggle-<?= $uid ?>">
+                                            <?= $isActive ? 'Deactivate' : 'Activate' ?>
+                                        </button>
+                                    </li>
+                                </ul>
+                            </div>
                         </td>
                     </tr>
                 <?php endforeach; ?>
@@ -213,6 +226,11 @@
 (function () {
     var csrfName = '<?= csrf_token() ?>';
     var csrfHash = '<?= csrf_hash() ?>';
+
+    var userStatusIcons = {
+        active:   <?= json_encode(asset_icon('circle_check', ['width' => '18', 'height' => '18'])) ?>,
+        inactive: <?= json_encode(asset_icon('circle_x',     ['width' => '18', 'height' => '18'])) ?>,
+    };
 
     function getCsrf() {
         var meta = document.querySelector('meta[name="csrf-token-value"]');
@@ -384,9 +402,8 @@
         if (actionBar)  actionBar.style.display = selectedIds.size > 0 ? 'flex' : 'none';
         var checkAll = document.getElementById('userCheckAll');
         if (checkAll) {
-            var all = getSelectableChecks();
-            checkAll.checked       = all.length > 0 && selectedIds.size >= all.length;
-            checkAll.indeterminate = selectedIds.size > 0 && selectedIds.size < all.length;
+            checkAll.checked       = false;
+            checkAll.indeterminate = selectedIds.size > 0;
         }
     }
 
@@ -416,7 +433,7 @@
     var activateUrl   = '<?= base_url('admin/user_management/activate-multiple') ?>';
     var deactivateUrl = '<?= base_url('admin/user_management/deactivate-multiple') ?>';
 
-    function bulkStatusRequest(url) {
+    function bulkStatusRequest(url, newActiveState) {
         if (!selectedIds.size) return;
         var csrf = getCsrf();
         var body = csrf.name + '=' + csrf.token;
@@ -433,17 +450,43 @@
                 showAlert(data.message || 'Action failed.', 'error');
                 return;
             }
-            // Reload so badges and buttons reflect the new state
+            var nowActive = newActiveState === 1;
+            selectedIds.forEach(function (id) {
+                var row = document.getElementById('user-row-' + id);
+                if (!row) return;
+                row.setAttribute('data-active', nowActive ? '1' : '0');
+                if (nowActive) row.classList.remove('vs-row-archived');
+                else           row.classList.add('vs-row-archived');
+
+                var badge = document.getElementById('user-status-badge-' + id);
+                if (badge) {
+                    badge.innerHTML   = nowActive ? userStatusIcons.active : userStatusIcons.inactive;
+                    badge.style.color = nowActive ? '#16a34a' : '#9ca3af';
+                    badge.title       = nowActive ? 'Active' : 'Inactive';
+                    badge.setAttribute('aria-label', nowActive ? 'Active' : 'Inactive');
+                }
+
+                var toggleBtn = document.getElementById('user-toggle-' + id);
+                if (toggleBtn) {
+                    toggleBtn.textContent = nowActive ? 'Deactivate' : 'Activate';
+                    toggleBtn.setAttribute('data-active', nowActive ? '1' : '0');
+                }
+            });
+            selectedIds.clear();
+            updateBar();
+            if (window.jQuery && $.fn.DataTable) {
+                var tbl = document.getElementById('userManagementTable');
+                if (tbl && $.fn.DataTable.isDataTable(tbl)) $(tbl).DataTable().draw(false);
+            }
             showAlert(data.message, 'success');
-            setTimeout(function () { location.reload(); }, 800);
         })
         .catch(function () { showAlert('An error occurred.', 'error'); });
     }
 
     var btnActivate   = document.getElementById('btnActivateUsers');
     var btnDeactivate = document.getElementById('btnDeactivateUsers');
-    btnActivate   && btnActivate.addEventListener('click',   function () { bulkStatusRequest(activateUrl); });
-    btnDeactivate && btnDeactivate.addEventListener('click', function () { bulkStatusRequest(deactivateUrl); });
+    btnActivate   && btnActivate.addEventListener('click',   function () { bulkStatusRequest(activateUrl, 1); });
+    btnDeactivate && btnDeactivate.addEventListener('click', function () { bulkStatusRequest(deactivateUrl, 0); });
 
     // ── Activate / Deactivate toggle ──────────────────────────────────────
     var toggleUrl = '<?= base_url('admin/user_management/toggle') ?>';
@@ -474,11 +517,12 @@
 
                 btn.setAttribute('data-active', nowActive ? '1' : '0');
                 btn.textContent = nowActive ? 'Deactivate' : 'Activate';
-                btn.className   = 'vs-tbl-btn ' + (nowActive ? 'vs-tbl-btn-delete' : 'vs-tbl-btn-view') + ' js-user-toggle';
 
                 if (badge) {
-                    badge.textContent = nowActive ? 'Active' : 'Inactive';
-                    badge.className   = 'badge ' + (nowActive ? 'bg-success' : 'bg-secondary');
+                    badge.innerHTML   = nowActive ? userStatusIcons.active : userStatusIcons.inactive;
+                    badge.style.color = nowActive ? '#16a34a' : '#9ca3af';
+                    badge.title       = nowActive ? 'Active' : 'Inactive';
+                    badge.setAttribute('aria-label', nowActive ? 'Active' : 'Inactive');
                 }
 
                 var metaEl = document.querySelector('meta[name="csrf-token-value"]');

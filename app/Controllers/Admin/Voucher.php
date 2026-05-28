@@ -228,9 +228,9 @@ class Voucher extends Controller
         }
 
         $data = $this->getStudentPayload() + [
-            'voucher_no'                   => null,
-            'voucher_status'               => 'not_generated',
-            'is_archived'                  => 0,
+            'voucher_no'     => null,
+            'voucher_status' => 'not_generated',
+            'is_active'      => 1,
         ];
 
         $studentId = (int) $this->voucherModel->insert($data);
@@ -476,11 +476,7 @@ class Voucher extends Controller
             ->setBody(file_get_contents($filePath));
     }
 
-    // ── Soft-archive selected students ────────────────────────────────────────
-    // Flips is_archived = 1 on each selected row. Rows stay in `students` and
-    // remain visible in the listing (disabled checkbox, Unarchive-only
-    // action). The hard purge into `student_archive` is handled by
-    // archiveAll() only.
+    // ── Archive selected students (hard — copies to student_archive, deletes from students) ─
     public function archive()
     {
         $ids = $this->parseVoucherIds($this->request->getPost('voucher_ids'));
@@ -489,73 +485,13 @@ class Voucher extends Controller
             return $this->response->setJSON(['success' => false, 'message' => 'No students selected.']);
         }
 
-        $archived = $this->softArchiveByIds($ids);
+        $reason   = $this->request->getPost('archive_reason') ?: 'Bulk archive (selected)';
+        $archived = $this->archiveStudentsByIds($ids, $reason);
 
         return $this->response->setJSON([
             'success' => true,
             'message' => "{$archived} student(s) archived.",
         ]);
-    }
-
-    // ── Soft-archive a single student (per-row Archive button) ────────────────
-    public function softArchive(int $id)
-    {
-        $student = $this->voucherModel->getStudentById($id);
-        if (!$student) {
-            return $this->response->setJSON(['success' => false, 'message' => 'Student not found.']);
-        }
-
-        $this->softArchiveByIds([$id]);
-
-        return $this->response->setJSON([
-            'success' => true,
-            'message' => 'Student archived.',
-        ]);
-    }
-
-    // ── Unarchive a single student ────────────────────────────────────────────
-    public function unarchive(int $id)
-    {
-        $student = $this->voucherModel->getStudentById($id);
-        if (!$student) {
-            return $this->response->setJSON(['success' => false, 'message' => 'Student not found.']);
-        }
-
-        $this->voucherModel->update($id, ['is_archived' => 0]);
-
-        $userId = $this->getCurrentUserId();
-        $name   = trim(($student['first_name'] ?? '') . ' ' . ($student['last_name'] ?? ''));
-        log_action($userId, 'UNARCHIVE_STUDENT',
-            "Student {$name} (Voucher " . ($student['voucher_no'] ?: '-') . ') unarchived',
-            $id);
-
-        return $this->response->setJSON([
-            'success' => true,
-            'message' => 'Student unarchived.',
-        ]);
-    }
-
-    // Shared helper: set is_archived = 1 for each ID, write an audit entry per
-    // student, return the number of rows actually flipped.
-    protected function softArchiveByIds(array $ids): int
-    {
-        $students = $this->voucherModel->getVouchersByIds($ids, true);
-        $userId   = $this->getCurrentUserId();
-        $archived = 0;
-
-        foreach ($students as $s) {
-            if (!empty($s['is_archived'])) {
-                // Already archived — nothing to do, no audit noise.
-                continue;
-            }
-            $this->voucherModel->update((int) $s['student_id'], ['is_archived' => 1]);
-            log_action($userId, 'ARCHIVE_STUDENT',
-                "Student {$s['full_name']} (Voucher " . ($s['voucher_no'] ?: '-') . ') archived',
-                $s['student_id']);
-            $archived++;
-        }
-
-        return $archived;
     }
 
     // ── Bulk archive everything matching the current search + filter scope ────
@@ -644,7 +580,7 @@ class Voucher extends Controller
                 'school_year'                  => $r['school_year']                  ?? null,
                 'eligibility_status'           => $r['eligibility_status']           ?? 'eligible',
                 'voucher_status'               => $r['voucher_status']               ?? 'not_generated',
-                'is_archived'                  => 0,
+                'is_active'                    => 1,
                 'created_at'                   => $r['archived_at']                  ?? $now,
                 'updated_at'                   => $now,
             ]);
@@ -689,9 +625,7 @@ class Voucher extends Controller
     // archiveAll() (bulk by filter).
     protected function archiveStudentsByIds(array $ids, string $reason): int
     {
-        // Include soft-archived rows so Archive All also promotes them into
-        // student_archive (instead of silently leaving them in students).
-        $students = $this->voucherModel->getVouchersByIds($ids, true);
+        $students = $this->voucherModel->getVouchersByIds($ids);
         $userId   = $this->getCurrentUserId();
         $now      = date('Y-m-d H:i:s');
         $archived = 0;
@@ -781,6 +715,92 @@ class Voucher extends Controller
             ]);
 
         return $jobId;
+    }
+
+    // ── Bulk activate ─────────────────────────────────────────────────────────
+    public function activateMultiple()
+    {
+        $ids = $this->parseVoucherIds($this->request->getPost('voucher_ids'));
+        if (empty($ids)) {
+            return $this->response->setJSON(['success' => false, 'message' => 'No students selected.']);
+        }
+
+        $userId = $this->getCurrentUserId();
+        foreach ($ids as $id) {
+            $this->voucherModel->update($id, ['is_active' => 1]);
+            log_action($userId, 'ACTIVATE_STUDENT', "Activated student #{$id}");
+        }
+
+        return $this->response->setJSON([
+            'success' => true,
+            'message' => count($ids) . ' student(s) activated.',
+        ]);
+    }
+
+    // ── Bulk deactivate ───────────────────────────────────────────────────────
+    public function deactivateMultiple()
+    {
+        $ids = $this->parseVoucherIds($this->request->getPost('voucher_ids'));
+        if (empty($ids)) {
+            return $this->response->setJSON(['success' => false, 'message' => 'No students selected.']);
+        }
+
+        $userId = $this->getCurrentUserId();
+        foreach ($ids as $id) {
+            $this->voucherModel->update($id, ['is_active' => 0]);
+            log_action($userId, 'DEACTIVATE_STUDENT', "Deactivated student #{$id}");
+        }
+
+        return $this->response->setJSON([
+            'success' => true,
+            'message' => count($ids) . ' student(s) deactivated.',
+        ]);
+    }
+
+    // ── Per-row toggle active ─────────────────────────────────────────────────
+    public function toggleActive(int $id)
+    {
+        $student = $this->voucherModel->find($id);
+        if (!$student) {
+            return $this->response->setJSON(['success' => false, 'message' => 'Student not found.']);
+        }
+
+        $newActive = empty($student['is_active']) ? 1 : 0;
+        $this->voucherModel->update($id, ['is_active' => $newActive]);
+
+        $userId = $this->getCurrentUserId();
+        $action = $newActive ? 'ACTIVATE_STUDENT' : 'DEACTIVATE_STUDENT';
+        log_action($userId, $action, ($newActive ? 'Activated' : 'Deactivated') . " student #{$id}");
+
+        return $this->response->setJSON([
+            'success'    => true,
+            'is_active'  => $newActive,
+            'message'    => 'Student ' . ($newActive ? 'activated' : 'deactivated') . '.',
+            'csrf_token' => csrf_hash(),
+        ]);
+    }
+
+    // ── Per-row toggle eligibility ────────────────────────────────────────────
+    public function toggleEligibility(int $id)
+    {
+        $student = $this->voucherModel->find($id);
+        if (!$student) {
+            return $this->response->setJSON(['success' => false, 'message' => 'Student not found.']);
+        }
+
+        $current = $student['eligibility_status'] ?? '';
+        $newEligibility = ($current === 'not_eligible') ? 'eligible' : 'not_eligible';
+        $this->voucherModel->update($id, ['eligibility_status' => $newEligibility]);
+
+        $userId = $this->getCurrentUserId();
+        log_action($userId, 'UPDATE_ELIGIBILITY', "Set student #{$id} eligibility to {$newEligibility}");
+
+        return $this->response->setJSON([
+            'success'            => true,
+            'eligibility_status' => $newEligibility,
+            'message'            => 'Eligibility updated.',
+            'csrf_token'         => csrf_hash(),
+        ]);
     }
 
     protected function prepareStudentsForGeneration(array $ids): array

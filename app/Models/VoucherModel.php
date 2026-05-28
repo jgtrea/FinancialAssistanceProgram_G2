@@ -15,7 +15,7 @@ class VoucherModel extends Model
         'rank_no', 'gwa', 'gender',
         'junior_high_school', 'preferred_senior_high_school',
         'contact_number', 'remarks_status', 'school_year',
-        'eligibility_status', 'voucher_status', 'is_archived',
+        'eligibility_status', 'voucher_status', 'is_active',
     ];
 
     protected $useTimestamps = true;
@@ -120,7 +120,7 @@ class VoucherModel extends Model
                 first_name, middle_name, last_name, suffix,
                 CONCAT_WS(' ', NULLIF(first_name,''), NULLIF(middle_name,''), NULLIF(last_name,''), NULLIF(suffix,'')) AS full_name,
                 preferred_senior_high_school, school_year,
-                eligibility_status, voucher_status, is_archived,
+                eligibility_status, voucher_status, is_active,
                 gwa, rank_no, gender, junior_high_school,
                 contact_number, remarks_status, created_at, generated_at
             ");
@@ -179,7 +179,6 @@ class VoucherModel extends Model
             $rows = $this->db->table('students')
                 ->distinct()
                 ->select($column)
-                ->where('is_archived', 0)
                 ->where($column . ' IS NOT NULL')
                 ->where($column . ' !=', '')
                 ->orderBy($column, 'ASC')
@@ -304,7 +303,7 @@ class VoucherModel extends Model
                 rank_no, gwa, gender,
                 junior_high_school, preferred_senior_high_school,
                 contact_number, remarks_status, school_year,
-                eligibility_status, voucher_status, is_archived,
+                eligibility_status, voucher_status,
                 created_at, updated_at
             ")
             ->where('student_id', $studentId)
@@ -313,14 +312,11 @@ class VoucherModel extends Model
         return $row ? $this->uppercaseRow($row) : null;
     }
 
-    // $includeArchived defaults false so PDF-generation paths still skip
-    // soft-archived rows. The "promote to hard archive" path (archiveAll)
-    // passes true so soft-archived rows also get copied + deleted.
-    public function getVouchersByIds(array $ids, bool $includeArchived = false): array
+    public function getVouchersByIds(array $ids): array
     {
         if (empty($ids)) return [];
 
-        $builder = $this->db->table('students')
+        $rows = $this->db->table('students')
             ->select("
                 student_id, voucher_no, voucher_date,
                 first_name, middle_name, last_name, suffix,
@@ -330,13 +326,7 @@ class VoucherModel extends Model
                 contact_number, remarks_status, school_year,
                 eligibility_status, voucher_status
             ")
-            ->whereIn('student_id', $ids);
-
-        if (!$includeArchived) {
-            $builder->where('is_archived', 0);
-        }
-
-        $rows = $builder
+            ->whereIn('student_id', $ids)
             ->orderBy('student_id', 'ASC')
             ->get()->getResultArray();
 

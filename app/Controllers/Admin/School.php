@@ -78,8 +78,24 @@ class School extends Controller
         $userId = session()->get('user_id');
 
         if ($id > 0) {
+            $existing = $this->schoolModel->find($id);
+            $oldName  = isset($existing['school_name'])
+                ? (function_exists('mb_strtoupper') ? mb_strtoupper($existing['school_name'], 'UTF-8') : strtoupper($existing['school_name']))
+                : '';
+
             $this->schoolModel->update($id, ['school_name' => $name, 'school_level' => $level]);
             log_action($userId, 'UPDATE_SCHOOL', "Updated school #{$id}: {$name} ({$level})");
+
+            // Propagate the name change to all matching voucher rows.
+            if ($oldName !== '' && $oldName !== $name) {
+                $db = \Config\Database::connect();
+                if ($level === 'JHS') {
+                    $db->table('students')->where('junior_high_school', $oldName)->update(['junior_high_school' => $name]);
+                } else {
+                    $db->table('students')->where('preferred_senior_high_school', $oldName)->update(['preferred_senior_high_school' => $name]);
+                }
+            }
+
             return $this->response->setJSON(['success' => true, 'message' => 'School updated successfully.']);
         }
 
@@ -222,6 +238,17 @@ class School extends Controller
         return $this->response->setJSON([
             'success' => true,
             'message' => "Import complete: {$inserted} added, {$skipped} skipped.",
+        ]);
+    }
+
+    // ── Active school options (JSON for dynamic dropdowns) ────────────────────
+
+    public function optionsJson()
+    {
+        $model = new \App\Models\SchoolOptionModel();
+        return $this->response->setJSON([
+            'jhs' => array_column($model->getJuniorHighSchools(), 'school_name'),
+            'shs' => array_column($model->getSeniorHighSchools(), 'school_name'),
         ]);
     }
 

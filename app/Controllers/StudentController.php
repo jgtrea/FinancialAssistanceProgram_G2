@@ -16,7 +16,6 @@ class StudentController extends BaseController
         return view('students/index', [
             'title' => 'Students',
             'students' => $studentModel
-                ->where('is_archived', 0)
                 ->orderBy('student_id', 'DESC')
                 ->findAll()
         ]);
@@ -166,11 +165,11 @@ class StudentController extends BaseController
             'archived_by' => $userId,
         ]);
 
-        $studentModel->update($id, [
-            'is_archived' => 1
-        ]);
+        $db = \Config\Database::connect();
+        $db->table('audit_log')->where('student_id', $id)->update(['student_id' => null]);
+        $studentModel->delete($id);
 
-        $this->writeAuditLog('student_archived', 'Archived student ' . $this->formatStudentName($student) . ' (ID #' . $id . ').', null, (int) $id);
+        $this->writeAuditLog('student_archived', 'Archived student ' . $this->formatStudentName($student) . ' (ID #' . $id . ').', null, null);
 
         return $this->response->setJSON([
             'status' => 'success',
