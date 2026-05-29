@@ -141,19 +141,19 @@
       <div class="vs-form-grid vs-form-grid-2">
         <div class="vs-span-2">
           <label class="vs-label" for="ufRole">Role</label>
-          <select id="ufRole" class="vs-input">
-            <option value="">All</option>
-            <option value="admin">Admin</option>
-            <option value="user">User</option>
-          </select>
+          <input list="ufRole-list" id="ufRole" class="vs-input" placeholder="All">
+          <datalist id="ufRole-list">
+            <option value="admin">
+            <option value="user">
+          </datalist>
         </div>
         <div class="vs-span-2">
           <label class="vs-label" for="ufStatus">Status</label>
-          <select id="ufStatus" class="vs-input">
-            <option value="">All</option>
-            <option value="active">Active</option>
-            <option value="inactive">Inactive</option>
-          </select>
+          <input list="ufStatus-list" id="ufStatus" class="vs-input" placeholder="All">
+          <datalist id="ufStatus-list">
+            <option value="active">
+            <option value="inactive">
+          </datalist>
         </div>
         <div>
           <label class="vs-label" for="ufLoginFrom">Last Login From</label>
@@ -205,10 +205,11 @@
 
           <div class="vs-span-2">
             <label class="vs-label required" for="umRole">Role</label>
-            <select id="umRole" name="role" class="vs-input" required>
-              <option value="admin">Admin</option>
-              <option value="user">User</option>
-            </select>
+            <input list="umRole-list" id="umRole" name="role" class="vs-input" placeholder="-- Select --" required>
+            <datalist id="umRole-list">
+              <option value="admin">
+              <option value="user">
+            </datalist>
           </div>
         </div>
       </div>

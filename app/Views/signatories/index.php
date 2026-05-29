@@ -189,17 +189,16 @@
       <div class="d-flex flex-column gap-3">
         <div>
           <label class="vs-label" for="sfStatus">Selected Status</label>
-          <select id="sfStatus" class="vs-input">
-            <option value="">All</option>
-            <option value="selected">Selected</option>
-            <option value="unselected">Unselected</option>
-          </select>
+          <input list="sfStatus-list" id="sfStatus" class="vs-input" placeholder="All">
+          <datalist id="sfStatus-list">
+            <option value="selected">
+            <option value="unselected">
+          </datalist>
         </div>
         <div>
           <label class="vs-label" for="sfPosition">Position Title</label>
-          <select id="sfPosition" class="vs-input">
-            <option value="">All</option>
-          </select>
+          <input list="sfPosition-list" id="sfPosition" class="vs-input" placeholder="All">
+          <datalist id="sfPosition-list"></datalist>
         </div>
       </div>
     </div>
@@ -228,11 +227,12 @@
         <div class="vs-form-grid vs-form-grid-4">
           <div>
             <label class="vs-label" for="smPrefix">Prefix</label>
-            <select id="smPrefix" name="prefix" class="vs-input">
-              <?php foreach ($prefixOptions as $option): ?>
-                <option value="<?= esc($option) ?>"><?= $option === '' ? '-- Select --' : esc($option) ?></option>
+            <input list="smPrefix-list" id="smPrefix" name="prefix" class="vs-input" placeholder="-- Select --">
+            <datalist id="smPrefix-list">
+              <?php foreach ($prefixOptions as $option): if ($option === '') continue; ?>
+                <option value="<?= esc($option) ?>">
               <?php endforeach ?>
-            </select>
+            </datalist>
           </div>
 
           <div>
@@ -252,20 +252,22 @@
 
           <div>
             <label class="vs-label" for="smSuffix">Suffix</label>
-            <select id="smSuffix" name="suffix" class="vs-input">
-              <?php foreach ($suffixOptions as $option): ?>
-                <option value="<?= esc($option) ?>"><?= $option === '' ? '-- Select --' : esc($option) ?></option>
+            <input list="smSuffix-list" id="smSuffix" name="suffix" class="vs-input" placeholder="-- Select --">
+            <datalist id="smSuffix-list">
+              <?php foreach ($suffixOptions as $option): if ($option === '') continue; ?>
+                <option value="<?= esc($option) ?>">
               <?php endforeach ?>
-            </select>
+            </datalist>
           </div>
 
           <div>
             <label class="vs-label" for="smDegree">Degree</label>
-            <select id="smDegree" name="degree" class="vs-input">
+            <input list="smDegree-list" id="smDegree" name="degree" class="vs-input" placeholder="-- Select --">
+            <datalist id="smDegree-list">
               <?php foreach ($degreeOptions as $option): ?>
-                <option value="<?= esc($option) ?>"><?= esc($option) ?></option>
+                <option value="<?= esc($option) ?>">
               <?php endforeach ?>
-            </select>
+            </datalist>
             <input id="smDegreeOther" name="degree_other" type="text"
                    class="vs-input mt-2" placeholder="Specify degree" style="display:none">
           </div>
@@ -411,18 +413,19 @@
         }
     }
 
-    var smDegreeSelect = document.getElementById('smDegree');
-    var smDegreeOther  = document.getElementById('smDegreeOther');
+    var smDegreeInput = document.getElementById('smDegree');
+    var smDegreeList  = document.getElementById('smDegree-list');
+    var smDegreeOther = document.getElementById('smDegreeOther');
 
     function knownDegreeOption(value) {
-        if (!smDegreeSelect) return false;
-        return Array.from(smDegreeSelect.options).some(function (o) { return o.value === value; });
+        if (!smDegreeList) return false;
+        return Array.from(smDegreeList.options).some(function (o) { return o.value === value; });
     }
 
     function applyDegreeValue(value) {
-        if (!smDegreeSelect || !smDegreeOther) return;
+        if (!smDegreeInput || !smDegreeOther) return;
         if (value && !knownDegreeOption(value)) {
-            smDegreeSelect.value = 'Other';
+            smDegreeInput.value = 'Other';
             smDegreeOther.value  = value;
             smDegreeOther.style.display = 'block';
         } else if (value === 'Other') {
@@ -434,8 +437,8 @@
         }
     }
 
-    smDegreeSelect && smDegreeSelect.addEventListener('change', function () {
-        if (smDegreeSelect.value === 'Other') {
+    smDegreeInput && smDegreeInput.addEventListener('input', function () {
+        if (smDegreeInput.value === 'Other') {
             smDegreeOther.style.display = 'block';
             smDegreeOther.focus();
         } else {
@@ -802,9 +805,10 @@
     var btnApply  = document.getElementById('sigFilterApply');
     var sfStatus  = document.getElementById('sfStatus');
     var sfPosition = document.getElementById('sfPosition');
+    var sfPositionList = document.getElementById('sfPosition-list');
 
-    // Populate Position Title dropdown from table data
-    if (sfPosition) {
+    // Populate Position Title datalist from table data
+    if (sfPositionList) {
         var posSet = new Set();
         dt.column(2).data().each(function (val) {
             var p = (val || '').toString().trim();
@@ -812,8 +816,8 @@
         });
         Array.from(posSet).sort().forEach(function (p) {
             var opt = document.createElement('option');
-            opt.value = p; opt.textContent = p;
-            sfPosition.appendChild(opt);
+            opt.value = p;
+            sfPositionList.appendChild(opt);
         });
     }
 

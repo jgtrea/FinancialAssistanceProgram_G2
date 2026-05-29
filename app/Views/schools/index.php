@@ -202,11 +202,11 @@
                     </div>
                     <div>
                         <label class="vs-label required" for="smSchoolLevel">Level</label>
-                        <select id="smSchoolLevel" name="school_level" class="vs-input" required>
-                            <option value="">-- Select --</option>
-                            <option value="JHS">JHS (Junior High School)</option>
-                            <option value="SHS">SHS (Senior High School)</option>
-                        </select>
+                        <input list="smSchoolLevel-list" id="smSchoolLevel" name="school_level" class="vs-input" placeholder="-- Select --" required>
+                        <datalist id="smSchoolLevel-list">
+                            <option value="JHS">
+                            <option value="SHS">
+                        </datalist>
                     </div>
                 </div>
             </div>

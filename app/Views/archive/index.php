@@ -104,40 +104,40 @@
       <div class="vs-form-grid vs-form-grid-4">
         <div class="vs-span-2">
           <label class="vs-label required" for="afSchoolYear">School Year</label>
-          <select id="afSchoolYear" class="vs-input">
-            <option value="">— Select a school year —</option>
+          <input list="afSchoolYear-list" id="afSchoolYear" class="vs-input" placeholder="— Select a school year —" value="<?= esc($f('school_year'), 'attr') ?>">
+          <datalist id="afSchoolYear-list">
             <?php foreach ($schoolYears as $sy): ?>
-              <option value="<?= esc($sy) ?>" <?= $f('school_year') === $sy ? 'selected' : '' ?>><?= esc($sy) ?></option>
+              <option value="<?= esc($sy) ?>">
             <?php endforeach ?>
             <?php if ($f('school_year') !== '' && !in_array($f('school_year'), $schoolYears, true)): ?>
-              <option value="<?= esc($f('school_year')) ?>" selected><?= esc($f('school_year')) ?></option>
+              <option value="<?= esc($f('school_year')) ?>">
             <?php endif ?>
-          </select>
+          </datalist>
         </div>
         <div class="vs-span-2">
           <label class="vs-label" for="afGender">Sex</label>
-          <select id="afGender" class="vs-input">
-            <option value="">All</option>
-            <option value="MALE" <?= $f('gender') === 'MALE' ? 'selected' : '' ?>>Male</option>
-            <option value="FEMALE" <?= $f('gender') === 'FEMALE' ? 'selected' : '' ?>>Female</option>
-          </select>
+          <input list="afGender-list" id="afGender" class="vs-input" placeholder="All" value="<?= esc($f('gender'), 'attr') ?>">
+          <datalist id="afGender-list">
+            <option value="MALE">
+            <option value="FEMALE">
+          </datalist>
         </div>
         <div class="vs-span-2">
           <label class="vs-label" for="afRemarks">Remarks</label>
-          <select id="afRemarks" class="vs-input">
-            <option value="">All</option>
-            <option value="PASSED" <?= $f('remarks') === 'PASSED' ? 'selected' : '' ?>>Passed</option>
-            <option value="FOR REVIEW" <?= $f('remarks') === 'FOR REVIEW' ? 'selected' : '' ?>>For Review</option>
-            <option value="FAILED" <?= $f('remarks') === 'FAILED' ? 'selected' : '' ?>>Failed</option>
-          </select>
+          <input list="afRemarks-list" id="afRemarks" class="vs-input" placeholder="All" value="<?= esc($f('remarks'), 'attr') ?>">
+          <datalist id="afRemarks-list">
+            <option value="PASSED">
+            <option value="FOR REVIEW">
+            <option value="FAILED">
+          </datalist>
         </div>
         <div class="vs-span-2">
           <label class="vs-label" for="afVoucherStatus">Voucher Status</label>
-          <select id="afVoucherStatus" class="vs-input">
-            <option value="">All</option>
-            <option value="generated" <?= $f('voucher_status') === 'generated' ? 'selected' : '' ?>>Generated</option>
-            <option value="not_generated" <?= $f('voucher_status') === 'not_generated' ? 'selected' : '' ?>>Pending</option>
-          </select>
+          <input list="afVoucherStatus-list" id="afVoucherStatus" class="vs-input" placeholder="All" value="<?= esc($f('voucher_status'), 'attr') ?>">
+          <datalist id="afVoucherStatus-list">
+            <option value="generated">
+            <option value="not_generated">
+          </datalist>
         </div>
         <div class="vs-span-2">
           <label class="vs-label" for="afDateFrom">Voucher Date From</label>
@@ -149,23 +149,23 @@
         </div>
         <div class="vs-span-2">
           <label class="vs-label" for="afJuniorHs">Junior High School</label>
-          <select id="afJuniorHs" class="vs-input">
-            <option value="">All</option>
+          <input list="afJuniorHs-list" id="afJuniorHs" class="vs-input" placeholder="All" value="<?= esc($f('junior_hs'), 'attr') ?>">
+          <datalist id="afJuniorHs-list">
             <?php foreach ($juniorHighSchools as $school): ?>
               <?php $schoolName = $school['school_name'] ?? '' ?>
-              <option value="<?= esc($schoolName) ?>" <?= $f('junior_hs') === $schoolName ? 'selected' : '' ?>><?= esc($schoolName) ?></option>
+              <option value="<?= esc($schoolName) ?>">
             <?php endforeach ?>
-          </select>
+          </datalist>
         </div>
         <div class="vs-span-2">
           <label class="vs-label" for="afPreferredHs">Preferred Senior HS</label>
-          <select id="afPreferredHs" class="vs-input">
-            <option value="">All</option>
+          <input list="afPreferredHs-list" id="afPreferredHs" class="vs-input" placeholder="All" value="<?= esc($f('preferred_hs'), 'attr') ?>">
+          <datalist id="afPreferredHs-list">
             <?php foreach ($seniorHighSchools as $school): ?>
               <?php $schoolName = $school['school_name'] ?? '' ?>
-              <option value="<?= esc($schoolName) ?>" <?= $f('preferred_hs') === $schoolName ? 'selected' : '' ?>><?= esc($schoolName) ?></option>
+              <option value="<?= esc($schoolName) ?>">
             <?php endforeach ?>
-          </select>
+          </datalist>
         </div>
         <div class="vs-span-2">
           <label class="vs-label" for="afGwaMin">GWA Min</label>

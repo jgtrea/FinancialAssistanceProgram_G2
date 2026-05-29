@@ -91,13 +91,13 @@
             <div class="vs-form-grid vs-form-grid-4">
                 <div class="vs-span-4">
                     <label class="vs-label" for="auditFilterAction">Action</label>
-                    <select id="auditFilterAction" class="vs-input">
-                        <option value="">All</option>
+                    <input list="auditFilterAction-list" id="auditFilterAction" class="vs-input" placeholder="All" value="<?= esc((string) $filterValues['action'], 'attr') ?>">
+                    <datalist id="auditFilterAction-list">
                         <?php foreach ($actionOptions as $option): ?>
                             <?php $val = is_array($option) ? ($option['action'] ?? '') : $option ?>
-                            <option value="<?= esc($val) ?>" <?= $filterValues['action'] === $val ? 'selected' : '' ?>><?= esc($val) ?></option>
+                            <option value="<?= esc($val) ?>">
                         <?php endforeach ?>
-                    </select>
+                    </datalist>
                 </div>
                 <div class="vs-span-2">
                     <label class="vs-label" for="auditFilterDateFrom">Date From</label>

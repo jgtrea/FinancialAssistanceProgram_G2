@@ -65,22 +65,24 @@
 
         <div>
           <label class="vs-label" for="suffix">Suffix</label>
-          <select id="suffix" name="suffix" class="vs-input">
-            <option value="" <?= $suffix === '' ? 'selected' : '' ?>>-- Select --</option>
-            <?php foreach (['JR.' => 'Jr.', 'SR.' => 'Sr.', 'II' => 'II', 'III' => 'III', 'IV' => 'IV'] as $value => $label): ?>
-              <option value="<?= esc($value) ?>" <?= strtoupper($suffix) === $value ? 'selected' : '' ?>><?= esc($label) ?></option>
-            <?php endforeach ?>
-          </select>
+          <input list="suffix-list" id="suffix" name="suffix" class="vs-input" placeholder="-- Select --" value="<?= esc($suffix) ?>">
+          <datalist id="suffix-list">
+            <option value="JR.">
+            <option value="SR.">
+            <option value="II">
+            <option value="III">
+            <option value="IV">
+          </datalist>
         </div>
 
         <div>
           <label class="vs-label" for="gender">Sex</label>
-          <select id="gender" name="gender" class="vs-input">
-            <?php $gender = old('gender', $voucher['gender'] ?? '') ?>
-            <option value="">-- Select --</option>
-            <option value="MALE"   <?= strtoupper($gender) === 'MALE'   ? 'selected' : '' ?>>Male</option>
-            <option value="FEMALE" <?= strtoupper($gender) === 'FEMALE' ? 'selected' : '' ?>>Female</option>
-          </select>
+          <?php $gender = old('gender', $voucher['gender'] ?? '') ?>
+          <input list="gender-list" id="gender" name="gender" class="vs-input" placeholder="-- Select --" value="<?= esc($gender) ?>">
+          <datalist id="gender-list">
+            <option value="MALE">
+            <option value="FEMALE">
+          </datalist>
         </div>
 
         <div>
@@ -145,12 +147,12 @@
 
         <div>
           <label class="vs-label" for="remarks_status">Remarks</label>
-          <select id="remarks_status" name="remarks_status" class="vs-input">
-            <option value="" <?= $remarks === '' ? 'selected' : '' ?>>-- Select --</option>
-            <?php foreach (['PASSED' => 'Passed', 'FOR REVIEW' => 'For Review', 'FAILED' => 'Failed'] as $value => $label): ?>
-              <option value="<?= esc($value) ?>" <?= strtoupper($remarks) === $value ? 'selected' : '' ?>><?= esc($label) ?></option>
-            <?php endforeach ?>
-          </select>
+          <input list="remarks-list" id="remarks_status" name="remarks_status" class="vs-input" placeholder="-- Select --" value="<?= esc($remarks) ?>">
+          <datalist id="remarks-list">
+            <option value="PASSED">
+            <option value="FOR REVIEW">
+            <option value="FAILED">
+          </datalist>
         </div>
 
         <div>
@@ -163,12 +165,12 @@
 
         <div>
           <label class="vs-label" for="eligibility_status">Eligibility</label>
-          <select id="eligibility_status" name="eligibility_status" class="vs-input">
-            <?php $eligibility = old('eligibility_status', $voucher['eligibility_status'] ?? '') ?>
-            <option value="">-- Select --</option>
-            <option value="eligible"     <?= $eligibility === 'eligible'     ? 'selected' : '' ?>>Eligible</option>
-            <option value="not_eligible" <?= $eligibility === 'not_eligible' ? 'selected' : '' ?>>Not Eligible</option>
-          </select>
+          <?php $eligibility = old('eligibility_status', $voucher['eligibility_status'] ?? '') ?>
+          <input list="eligibility-list" id="eligibility_status" name="eligibility_status" class="vs-input" placeholder="-- Select --" value="<?= esc($eligibility) ?>">
+          <datalist id="eligibility-list">
+            <option value="eligible">
+            <option value="not_eligible">
+          </datalist>
         </div>
 
       </div>

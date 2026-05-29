@@ -284,28 +284,28 @@
         </div>
         <div class="vs-span-2">
           <label class="vs-label" for="filterGender">Sex</label>
-          <select id="filterGender" class="vs-input">
-            <option value="">All</option>
-            <option value="MALE" <?= $f('gender') === 'MALE' ? 'selected' : '' ?>>Male</option>
-            <option value="FEMALE" <?= $f('gender') === 'FEMALE' ? 'selected' : '' ?>>Female</option>
-          </select>
+          <input list="filterGender-list" id="filterGender" class="vs-input" placeholder="All" value="<?= esc($f('gender'), 'attr') ?>">
+          <datalist id="filterGender-list">
+            <option value="MALE">
+            <option value="FEMALE">
+          </datalist>
         </div>
         <div class="vs-span-2">
           <label class="vs-label" for="filterRemarks">Remarks</label>
-          <select id="filterRemarks" class="vs-input">
-            <option value="">All</option>
-            <option value="PASSED" <?= $f('remarks') === 'PASSED' ? 'selected' : '' ?>>Passed</option>
-            <option value="FOR REVIEW" <?= $f('remarks') === 'FOR REVIEW' ? 'selected' : '' ?>>For Review</option>
-            <option value="FAILED" <?= $f('remarks') === 'FAILED' ? 'selected' : '' ?>>Failed</option>
-          </select>
+          <input list="filterRemarks-list" id="filterRemarks" class="vs-input" placeholder="All" value="<?= esc($f('remarks'), 'attr') ?>">
+          <datalist id="filterRemarks-list">
+            <option value="PASSED">
+            <option value="FOR REVIEW">
+            <option value="FAILED">
+          </datalist>
         </div>
         <div class="vs-span-2">
           <label class="vs-label" for="filterVoucherStatus">Voucher Status</label>
-          <select id="filterVoucherStatus" class="vs-input">
-            <option value="">All</option>
-            <option value="generated" <?= $f('voucher_status') === 'generated' ? 'selected' : '' ?>>Generated</option>
-            <option value="not_generated" <?= $f('voucher_status') === 'not_generated' ? 'selected' : '' ?>>Pending</option>
-          </select>
+          <input list="filterVoucherStatus-list" id="filterVoucherStatus" class="vs-input" placeholder="All" value="<?= esc($f('voucher_status'), 'attr') ?>">
+          <datalist id="filterVoucherStatus-list">
+            <option value="generated">
+            <option value="not_generated">
+          </datalist>
         </div>
         <div class="vs-span-2">
           <label class="vs-label" for="filterDateFrom">Voucher Date From</label>
@@ -317,21 +317,21 @@
         </div>
         <div class="vs-span-2">
           <label class="vs-label" for="filterJuniorHs">Junior High School</label>
-          <select id="filterJuniorHs" class="vs-input">
-            <option value="">All</option>
+          <input list="filterJuniorHs-list" id="filterJuniorHs" class="vs-input" placeholder="All" value="<?= esc($f('junior_hs'), 'attr') ?>">
+          <datalist id="filterJuniorHs-list">
             <?php foreach (($filterOptions['junior_high_schools'] ?? []) as $schoolName): ?>
-              <option value="<?= esc($schoolName) ?>" <?= $f('junior_hs') === $schoolName ? 'selected' : '' ?>><?= esc($schoolName) ?></option>
+              <option value="<?= esc($schoolName) ?>">
             <?php endforeach ?>
-          </select>
+          </datalist>
         </div>
         <div class="vs-span-2">
           <label class="vs-label" for="filterPreferredHs">Preferred Senior HS</label>
-          <select id="filterPreferredHs" class="vs-input">
-            <option value="">All</option>
+          <input list="filterPreferredHs-list" id="filterPreferredHs" class="vs-input" placeholder="All" value="<?= esc($f('preferred_hs'), 'attr') ?>">
+          <datalist id="filterPreferredHs-list">
             <?php foreach (($filterOptions['senior_high_schools'] ?? []) as $schoolName): ?>
-              <option value="<?= esc($schoolName) ?>" <?= $f('preferred_hs') === $schoolName ? 'selected' : '' ?>><?= esc($schoolName) ?></option>
+              <option value="<?= esc($schoolName) ?>">
             <?php endforeach ?>
-          </select>
+          </datalist>
         </div>
         <div class="vs-span-2">
           <label class="vs-label" for="filterGwaMin">GWA Min</label>
@@ -343,11 +343,11 @@
         </div>
         <div class="vs-span-2">
           <label class="vs-label" for="filterEligibility">Eligibility Status</label>
-          <select id="filterEligibility" class="vs-input">
-            <option value="">All</option>
-            <option value="eligible"     <?= $f('eligibility') === 'eligible'     ? 'selected' : '' ?>>Eligible</option>
-            <option value="not_eligible" <?= $f('eligibility') === 'not_eligible' ? 'selected' : '' ?>>Not Eligible</option>
-          </select>
+          <input list="filterEligibility-list" id="filterEligibility" class="vs-input" placeholder="All" value="<?= esc($f('eligibility'), 'attr') ?>">
+          <datalist id="filterEligibility-list">
+            <option value="eligible">
+            <option value="not_eligible">
+          </datalist>
         </div>
       </div>
     </div>
@@ -561,26 +561,22 @@ window.VM_CONFIG = {
     fetch(schoolOptionsUrl, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
     .then(function (r) { return r.json(); })
     .then(function (data) {
-      var jhsSel = document.getElementById('filterJuniorHs');
-      var shsSel = document.getElementById('filterPreferredHs');
-      var curJhs = jhsSel ? jhsSel.value : '';
-      var curShs = shsSel ? shsSel.value : '';
-      if (jhsSel && Array.isArray(data.jhs)) {
-        jhsSel.innerHTML = '<option value="">All</option>';
+      var jhsList = document.getElementById('filterJuniorHs-list');
+      var shsList = document.getElementById('filterPreferredHs-list');
+      if (jhsList && Array.isArray(data.jhs)) {
+        jhsList.innerHTML = '';
         data.jhs.forEach(function (name) {
           var opt = document.createElement('option');
-          opt.value = name; opt.textContent = name;
-          if (name === curJhs) opt.selected = true;
-          jhsSel.appendChild(opt);
+          opt.value = name;
+          jhsList.appendChild(opt);
         });
       }
-      if (shsSel && Array.isArray(data.shs)) {
-        shsSel.innerHTML = '<option value="">All</option>';
+      if (shsList && Array.isArray(data.shs)) {
+        shsList.innerHTML = '';
         data.shs.forEach(function (name) {
           var opt = document.createElement('option');
-          opt.value = name; opt.textContent = name;
-          if (name === curShs) opt.selected = true;
-          shsSel.appendChild(opt);
+          opt.value = name;
+          shsList.appendChild(opt);
         });
       }
     })
