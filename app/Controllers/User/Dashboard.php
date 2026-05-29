@@ -2,20 +2,18 @@
 
 namespace App\Controllers\User;
 
-use App\Models\VoucherModel;
 use CodeIgniter\Controller;
 
 class Dashboard extends Controller
 {
     public function index()
     {
-        $db           = \Config\Database::connect();
-        $voucherModel = new VoucherModel();
+        $db = \Config\Database::connect();
 
-        $myVouchers = $db->table('students')->countAllResults();
-        $generated  = $voucherModel->getTotalGeneratedVouchers();
-        $pending    = $db->table('students')->where('voucher_status', 'not_generated')->countAllResults();
-        $archived   = $db->table('student_archive')->countAll();
+        $myVouchers   = $db->table('students')->countAllResults();
+        $generated    = $db->table('students')->where('generated_at IS NOT NULL', null, false)->countAllResults();
+        $eligible     = $db->table('students')->where('eligibility_status', 'eligible')->countAllResults();
+        $notEligible  = $db->table('students')->where('eligibility_status', 'not_eligible')->countAllResults();
 
         $recentVouchers = $db->table('students')
             ->select("
@@ -33,8 +31,8 @@ class Dashboard extends Controller
             'title'          => 'Dashboard',
             'myVouchers'     => $myVouchers,
             'generated'      => $generated,
-            'pending'        => $pending,
-            'archived'       => $archived,
+            'eligible'       => $eligible,
+            'notEligible'    => $notEligible,
             'recentVouchers' => $recentVouchers,
         ]);
     }

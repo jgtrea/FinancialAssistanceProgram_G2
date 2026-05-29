@@ -246,7 +246,8 @@
     border-left: .25rem solid #f6c633 !important;
 }
 
-.border-left-archived {
+.border-left-archived,
+.border-left-danger {
     border-left: .25rem solid #c93131 !important;
 }
 

@@ -12,34 +12,10 @@
 <?php $f = static fn (string $k) => (string) ($filters[$k] ?? '') ?>
 <?php $activeFilterCount = count(array_filter($filterKeys, fn ($k) => $f($k) !== '')) ?>
 
-<div class="vs-page-header mb-4">
+<div class="vs-page-header mb-3">
     <div>
       <h4 class="vs-page-title"><?= esc($title) ?></h4>
       <p class="vs-page-sub">Manage student financial assistance records.</p>
-    </div>
-    <div class="d-flex gap-2">
-      <button type="button" class="vs-btn vs-btn-primary" id="btnAddVoucher" data-mode="add">
-        <?= asset_icon('add', ['stroke-width' => '2.5']) ?>
-        Add Voucher
-      </button>
-      <button type="button" class="vs-btn vs-btn-outline" id="btnOpenImport">
-        <?= asset_icon('import') ?>
-        Import
-      </button>
-      <div class="dropdown">
-        <button type="button" class="vs-btn vs-btn-outline dropdown-toggle"
-                id="btnMoreActions" data-bs-toggle="dropdown" aria-expanded="false">
-          More Actions
-        </button>
-        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="btnMoreActions">
-          <li><button class="dropdown-item js-bulk-all" type="button" data-action="activate">Activate All</button></li>
-          <li><button class="dropdown-item js-bulk-all" type="button" data-action="deactivate">Deactivate All</button></li>
-          <li><hr class="dropdown-divider"></li>
-          <li><button class="dropdown-item text-danger js-bulk-all" type="button" data-action="archive">Archive All</button></li>
-          <li><hr class="dropdown-divider"></li>
-          <li><button class="dropdown-item text-warning" type="button" id="btnRestoreAllArchive">Unarchive All (TEMP)</button></li>
-        </ul>
-      </div>
     </div>
   </div>
 
@@ -66,16 +42,29 @@
 
   <div id="studentsAlertBox"></div>
 
-  <form method="get" id="vouchersFilterForm" class="vs-advanced-search vs-advanced-search-outside mb-3">
-    <input type="text" name="q" class="vs-input vs-advanced-search-input" placeholder="Advanced search all students..." value="<?= esc((string) ($keyword ?? ''), 'attr') ?>">
-    <button type="button" class="vs-btn vs-btn-outline" id="btnOpenFilter">
-      Filters
-      <span id="filterBadge" class="badge bg-primary" style="display:<?= $activeFilterCount > 0 ? 'inline-block' : 'none' ?>;margin-left:.35rem"><?= $activeFilterCount > 0 ? esc($activeFilterCount) : '' ?></span>
-    </button>
-    <?php foreach ($filterKeys as $k): ?>
-      <input type="hidden" name="<?= esc($k, 'attr') ?>" value="<?= esc($f($k), 'attr') ?>">
-    <?php endforeach ?>
-  </form>
+  <div class="d-flex align-items-center gap-2 flex-wrap mb-3">
+    <form method="get" id="vouchersFilterForm" class="vs-advanced-search vs-advanced-search-outside">
+      <input type="text" name="q" class="vs-input vs-advanced-search-input" placeholder="Enter keyword to search (voucher no, name)" value="<?= esc((string) ($keyword ?? ''), 'attr') ?>">
+      <button type="button" class="vs-btn vs-btn-outline" id="btnOpenFilter">
+        Filters
+        <span id="filterBadge" class="badge bg-primary" style="display:<?= $activeFilterCount > 0 ? 'inline-block' : 'none' ?>;margin-left:.35rem"><?= $activeFilterCount > 0 ? esc($activeFilterCount) : '' ?></span>
+      </button>
+      <?php foreach ($filterKeys as $k): ?>
+        <input type="hidden" name="<?= esc($k, 'attr') ?>" value="<?= esc($f($k), 'attr') ?>">
+      <?php endforeach ?>
+    </form>
+    <div class="ms-auto d-flex gap-2">
+      <button type="button" class="vs-btn vs-btn-primary" id="btnAddVoucher" data-mode="add">
+        <?= asset_icon('add', ['stroke-width' => '2.5']) ?>
+        Add Voucher
+      </button>
+      <button type="button" class="vs-btn vs-btn-outline" id="btnOpenImport">
+        <?= asset_icon('import') ?>
+        Import
+      </button>
+      <button type="button" class="vs-btn vs-btn-outline" id="btnActivateAll">Activate All</button>
+    </div>
+  </div>
 
   <div class="vs-card">
     <div class="vs-card-body">
@@ -89,11 +78,13 @@
             <th class="vs-th-check"><input type="checkbox" class="vs-check vs-check-all" aria-label="Select all students"></th>
             <th>Voucher No.</th>
             <th>Name</th>
+            <th style="display:none">Name Sort</th>
             <th>Junior High School</th>
             <th>Preferred School</th>
             <th>School Year</th>
             <th>Eligibility</th>
             <th>Status</th>
+            <th>Remarks</th>
             <th>Generate Count</th>
             <th>Last Generated</th>
             <th>Actions</th>
@@ -114,6 +105,7 @@
             <td><input type="checkbox" class="vs-check vs-row-check" value="<?= esc($v['student_id'], 'attr') ?>"<?= $notEligible ? ' disabled title="Not eligible — cannot be selected"' : '' ?>></td>
             <td class="js-voucher-no"><?= esc($v['voucher_no'] ?: '-') ?></td>
             <td><?= esc($v['full_name']) ?></td>
+            <td style="display:none"><?= esc(trim(($v['last_name'] ?? '') . ' ' . ($v['first_name'] ?? '') . ' ' . ($v['middle_name'] ?? ''))) ?></td>
             <td><?= esc($v['junior_high_school'] ?: '-') ?></td>
             <td><?= esc($v['preferred_senior_high_school']) ?></td>
             <td><?= esc($v['school_year']) ?></td>
@@ -135,6 +127,7 @@
                 <?= asset_icon($isActive ? 'circle_check' : 'circle_x', ['width' => '18', 'height' => '18']) ?>
               </span>
             </td>
+            <td><?= esc($v['remarks_status'] ?: '-') ?></td>
             <td>
               <span class="js-generate-count"><?= esc((string) ($v['generate_count'] ?? 0)) ?></span>
             </td>
@@ -254,7 +247,7 @@
       <p class="text-muted small mb-3">
         Upload an <strong>.xlsx</strong>, <strong>.xls</strong>, or <strong>.csv</strong> file.<br>
         Columns must be in this exact order:
-        <em>Voucher No., Voucher Date, Full Name, Rank No., GWA, Gender, Junior High School, Preferred Senior High School, Contact Number, Remarks</em>
+        <em>Voucher No., Voucher Date, Full Name, Rank No., GWA, Sex, Junior High School, Preferred Senior High School, Contact Number, Remarks</em>
       </p>
       <label class="vs-label" for="importFile">File</label>
       <input type="file" id="importFile" class="vs-input" accept=".xlsx,.xls,.csv">
@@ -269,135 +262,7 @@
   </div>
 </div>
 
-<!-- Voucher Add/View/Edit modal -->
-<div class="vs-modal-overlay" id="voucherModal" style="display:none">
-  <div class="vs-modal" style="max-width:780px">
-    <div class="vs-modal-header">
-      <h5 id="voucherModalTitle">Add Voucher</h5>
-      <button class="vs-modal-close" id="voucherModalClose">&times;</button>
-    </div>
-    <form id="voucherModalForm" novalidate>
-      <?= csrf_field() ?>
-      <input type="hidden" name="student_id" id="vmStudentId" value="">
-
-      <div class="vs-modal-body">
-        <div id="voucherModalAlert"></div>
-
-        <div class="vs-form-grid vs-form-grid-4">
-          <div>
-            <label class="vs-label required" for="vmVoucherDate">Voucher Date</label>
-            <input id="vmVoucherDate" name="voucher_date" type="date" class="vs-input" required>
-          </div>
-
-          <div>
-            <label class="vs-label required" for="vmFirstName">First Name</label>
-            <input id="vmFirstName" name="first_name" type="text" class="vs-input vs-uppercase" required>
-          </div>
-
-          <div>
-            <label class="vs-label" for="vmMiddleName">Middle Name</label>
-            <input id="vmMiddleName" name="middle_name" type="text" class="vs-input vs-uppercase">
-          </div>
-
-          <div>
-            <label class="vs-label required" for="vmLastName">Last Name</label>
-            <input id="vmLastName" name="last_name" type="text" class="vs-input vs-uppercase" required>
-          </div>
-
-          <div>
-            <label class="vs-label" for="vmSuffix">Suffix</label>
-            <select id="vmSuffix" name="suffix" class="vs-input">
-              <option value="">-- Select --</option>
-              <option value="JR.">Jr.</option>
-              <option value="SR.">Sr.</option>
-              <option value="II">II</option>
-              <option value="III">III</option>
-              <option value="IV">IV</option>
-            </select>
-          </div>
-
-          <div>
-            <label class="vs-label" for="vmGender">Gender</label>
-            <select id="vmGender" name="gender" class="vs-input">
-              <option value="">-- Select --</option>
-              <option value="MALE">Male</option>
-              <option value="FEMALE">Female</option>
-            </select>
-          </div>
-
-          <div>
-            <label class="vs-label" for="vmGwa">GWA</label>
-            <input id="vmGwa" name="gwa" type="number" step="0.01" class="vs-input">
-          </div>
-
-          <div>
-            <label class="vs-label" for="vmRankNo">Rank No.</label>
-            <input id="vmRankNo" name="rank_no" type="number" class="vs-input">
-          </div>
-
-          <div>
-            <label class="vs-label" for="vmContactNumber">Contact Number</label>
-            <input id="vmContactNumber" name="contact_number" type="text" class="vs-input vs-uppercase">
-          </div>
-
-          <div class="vs-span-2">
-            <label class="vs-label required" for="vmJuniorHs">Junior High School</label>
-            <select id="vmJuniorHs" name="junior_high_school" class="vs-input" required>
-              <option value="">-- Select --</option>
-              <?php foreach ($juniorHighSchools as $school): ?>
-                <?php $schoolName = $school['school_name'] ?? '' ?>
-                <option value="<?= esc($schoolName) ?>"><?= esc($schoolName) ?></option>
-              <?php endforeach ?>
-            </select>
-          </div>
-
-          <div class="vs-span-2">
-            <label class="vs-label required" for="vmPreferredHs">Preferred Senior High School</label>
-            <select id="vmPreferredHs" name="preferred_senior_high_school" class="vs-input" required>
-              <option value="">-- Select --</option>
-              <?php foreach ($seniorHighSchools as $school): ?>
-                <?php $schoolName = $school['school_name'] ?? '' ?>
-                <option value="<?= esc($schoolName) ?>"><?= esc($schoolName) ?></option>
-              <?php endforeach ?>
-            </select>
-          </div>
-
-          <div>
-            <label class="vs-label" for="vmRemarks">Remarks</label>
-            <select id="vmRemarks" name="remarks_status" class="vs-input">
-              <option value="">-- Select --</option>
-              <option value="PASSED">Passed</option>
-              <option value="FOR REVIEW">For Review</option>
-              <option value="FAILED">Failed</option>
-            </select>
-          </div>
-
-          <div>
-            <label class="vs-label required" for="vmSchoolYear">School Year</label>
-            <input id="vmSchoolYear" name="school_year" type="text" class="vs-input" placeholder="e.g. 2025-2026" required>
-          </div>
-
-          <div>
-            <label class="vs-label" for="vmEligibility">Eligibility</label>
-            <select id="vmEligibility" name="eligibility_status" class="vs-input">
-              <option value="">-- Select --</option>
-              <option value="eligible">Eligible</option>
-              <option value="not_eligible">Not Eligible</option>
-            </select>
-          </div>
-        </div>
-      </div>
-
-      <div class="vs-modal-footer">
-        <button type="button" class="vs-btn vs-btn-outline" id="voucherModalCancel">Close</button>
-        <button type="submit" class="vs-btn vs-btn-primary" id="voucherModalSubmit">
-          <span id="vmSubmitText">Save Voucher</span>
-          <span id="vmSubmitSpinner" class="vs-spinner" style="display:none"></span>
-        </button>
-      </div>
-    </form>
-  </div>
-</div>
+<?= $this->include('vouchers/_voucher_modal') ?>
 
 <!-- Advanced Filters modal -->
 <div class="vs-modal-overlay" id="filterModal" style="display:none">
@@ -410,15 +275,15 @@
       <div class="vs-form-grid vs-form-grid-4">
         <div class="vs-span-2">
           <label class="vs-label" for="filterSchoolYear">School Year</label>
-          <select id="filterSchoolYear" class="vs-input">
-            <option value="">All</option>
+          <input id="filterSchoolYear" type="text" list="dl-filter-school-year" class="vs-input" placeholder="All" value="<?= esc($f('school_year'), 'attr') ?>">
+          <datalist id="dl-filter-school-year">
             <?php foreach (($filterOptions['school_years'] ?? []) as $sy): ?>
-              <option value="<?= esc($sy) ?>" <?= $f('school_year') === $sy ? 'selected' : '' ?>><?= esc($sy) ?></option>
+              <option value="<?= esc($sy) ?>">
             <?php endforeach ?>
-          </select>
+          </datalist>
         </div>
         <div class="vs-span-2">
-          <label class="vs-label" for="filterGender">Gender</label>
+          <label class="vs-label" for="filterGender">Sex</label>
           <select id="filterGender" class="vs-input">
             <option value="">All</option>
             <option value="MALE" <?= $f('gender') === 'MALE' ? 'selected' : '' ?>>Male</option>
@@ -516,9 +381,18 @@
 </div>
 
 <script>
+window.VM_CONFIG = {
+  saveUrl:          '<?= site_url('students/save') ?>',
+  fetchUrl:         '<?= site_url('students/json') ?>',
+  schoolOptionsUrl: '<?= site_url($prefix . '/schools/options') ?>',
+};
+</script>
+
+<script>
 (function () {
   var csrfName = '<?= csrf_token() ?>';
   var csrfHash = '<?= csrf_hash() ?>';
+  var schoolOptionsUrl = '<?= site_url($prefix . '/schools/options') ?>';
 
   // ── Import ──────────────────────────────────────────────────────────────────
   var importModal  = document.getElementById('importModal');
@@ -587,217 +461,6 @@
   });
   importModal.addEventListener('click', function (e) {
     if (e.target === importModal) importModal.style.display = 'none';
-  });
-
-  // ── Voucher Add / View / Edit modal ────────────────────────────────────────
-  var voucherModal       = document.getElementById('voucherModal');
-  var voucherModalForm   = document.getElementById('voucherModalForm');
-  var voucherModalTitle  = document.getElementById('voucherModalTitle');
-  var voucherModalClose  = document.getElementById('voucherModalClose');
-  var voucherModalCancel = document.getElementById('voucherModalCancel');
-  var voucherModalAlert  = document.getElementById('voucherModalAlert');
-  var voucherSubmitBtn   = document.getElementById('voucherModalSubmit');
-  var vmSubmitText       = document.getElementById('vmSubmitText');
-  var vmSubmitSpinner    = document.getElementById('vmSubmitSpinner');
-  var btnAddVoucher      = document.getElementById('btnAddVoucher');
-  var saveStudentUrl     = '<?= site_url('students/save') ?>';
-  var fetchStudentUrl    = '<?= site_url('students/json') ?>';
-
-  // Field map: form input id → form name. Used for clear/populate cycles.
-  var vmFieldIds = [
-    'vmVoucherDate', 'vmFirstName', 'vmMiddleName', 'vmLastName',
-    'vmSuffix', 'vmGender', 'vmGwa', 'vmRankNo', 'vmContactNumber',
-    'vmJuniorHs', 'vmPreferredHs', 'vmRemarks', 'vmSchoolYear', 'vmEligibility',
-  ];
-  var vmFieldToName = {
-    vmVoucherDate: 'voucher_date',     vmFirstName:   'first_name',
-    vmMiddleName:  'middle_name',      vmLastName:    'last_name',
-    vmSuffix:      'suffix',           vmGender:      'gender',
-    vmGwa:         'gwa',              vmRankNo:      'rank_no',
-    vmContactNumber: 'contact_number', vmJuniorHs:    'junior_high_school',
-    vmPreferredHs: 'preferred_senior_high_school',
-    vmRemarks:     'remarks_status',   vmSchoolYear:  'school_year',
-    vmEligibility: 'eligibility_status',
-  };
-
-  function escapeHtml(value) {
-    return String(value || '').replace(/[&<>"']/g, function (ch) {
-      return {'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;'}[ch];
-    });
-  }
-
-  function vmShowAlert(msg, type, errors) {
-    var html = '<div class="vs-alert vs-alert-' + (type || 'error') + ' mb-3">' + escapeHtml(msg);
-    if (errors && Object.keys(errors).length) {
-      html += '<ul class="mb-0 mt-2">';
-      Object.keys(errors).forEach(function (field) {
-        html += '<li><strong>' + escapeHtml(field) + ':</strong> ' + escapeHtml(errors[field]) + '</li>';
-      });
-      html += '</ul>';
-    }
-    html += '</div>';
-    voucherModalAlert.innerHTML = html;
-  }
-  function vmClearAlert() { voucherModalAlert.innerHTML = ''; }
-
-  function vmClearFields() {
-    document.getElementById('vmStudentId').value = '';
-    vmFieldIds.forEach(function (id) {
-      var el = document.getElementById(id);
-      if (!el) return;
-      if (el.tagName === 'SELECT') el.selectedIndex = 0;
-      else el.value = '';
-    });
-    document.getElementById('vmEligibility').value = 'eligible';
-  }
-
-  function vmPopulateFields(student) {
-    document.getElementById('vmStudentId').value = student.student_id || '';
-    vmFieldIds.forEach(function (id) {
-      var el = document.getElementById(id);
-      if (!el) return;
-      var name = vmFieldToName[id];
-      var val  = student[name];
-      el.value = (val === null || val === undefined) ? '' : val;
-    });
-  }
-
-  function vmSetReadOnly(readOnly) {
-    vmFieldIds.forEach(function (id) {
-      var el = document.getElementById(id);
-      if (!el) return;
-      if (el.tagName === 'SELECT') {
-        el.disabled = readOnly;
-      } else {
-        el.readOnly = readOnly;
-      }
-    });
-    voucherSubmitBtn.style.display = readOnly ? 'none' : 'inline-flex';
-  }
-
-  var schoolOptionsUrl = '<?= site_url($prefix . '/schools/options') ?>';
-
-  function loadSchoolOptions(selectedJhs, selectedShs) {
-    fetch(schoolOptionsUrl, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
-    .then(function (r) { return r.json(); })
-    .then(function (data) {
-      var jhsSel = document.getElementById('vmJuniorHs');
-      var shsSel = document.getElementById('vmPreferredHs');
-      if (jhsSel && Array.isArray(data.jhs)) {
-        jhsSel.innerHTML = '<option value="">-- Select --</option>';
-        data.jhs.forEach(function (name) {
-          var opt = document.createElement('option');
-          opt.value = name; opt.textContent = name;
-          if (name === (selectedJhs || '')) opt.selected = true;
-          jhsSel.appendChild(opt);
-        });
-      }
-      if (shsSel && Array.isArray(data.shs)) {
-        shsSel.innerHTML = '<option value="">-- Select --</option>';
-        data.shs.forEach(function (name) {
-          var opt = document.createElement('option');
-          opt.value = name; opt.textContent = name;
-          if (name === (selectedShs || '')) opt.selected = true;
-          shsSel.appendChild(opt);
-        });
-      }
-    })
-    .catch(function () {}); // silently fail; static PHP options remain as fallback
-  }
-
-  function vmOpen(mode, studentId) {
-    vmClearAlert();
-    vmClearFields();
-
-    if (mode === 'add') {
-      voucherModalTitle.textContent = 'Add Voucher';
-      vmSubmitText.textContent = 'Save Voucher';
-      vmSetReadOnly(false);
-      // Default voucher_date to today for convenience
-      document.getElementById('vmVoucherDate').value = new Date().toISOString().slice(0, 10);
-      loadSchoolOptions('', '');
-      voucherModal.style.display = 'flex';
-      return;
-    }
-
-    voucherModalTitle.textContent = mode === 'edit' ? 'Edit Voucher' : 'View Voucher';
-    vmSubmitText.textContent = 'Update Voucher';
-    vmSetReadOnly(mode === 'view');
-    voucherModal.style.display = 'flex';
-
-    // Fetch the student data
-    fetch(fetchStudentUrl + '/' + studentId, ajaxOptions({ method: 'GET' }))
-      .then(function (r) { return r.json(); })
-      .then(function (data) {
-        if (data.status !== 'success') {
-          vmShowAlert(data.message || 'Failed to load student.', 'error');
-          return;
-        }
-        vmPopulateFields(data.student);
-        if (mode !== 'view') {
-          loadSchoolOptions(
-            data.student.junior_high_school || '',
-            data.student.preferred_senior_high_school || ''
-          );
-        }
-        // After populate, re-apply readOnly state to anything new
-        vmSetReadOnly(mode === 'view');
-      })
-      .catch(function () {
-        vmShowAlert('Failed to load student.', 'error');
-      });
-  }
-
-  function vmClose() { voucherModal.style.display = 'none'; }
-
-  btnAddVoucher && btnAddVoucher.addEventListener('click', function () { vmOpen('add'); });
-  voucherModalClose  && voucherModalClose.addEventListener('click', vmClose);
-  voucherModalCancel && voucherModalCancel.addEventListener('click', vmClose);
-  voucherModal && voucherModal.addEventListener('click', function (e) {
-    if (e.target === voucherModal) vmClose();
-  });
-
-  document.querySelectorAll('.js-voucher-action').forEach(function (btn) {
-    if (btn.dataset.voucherActionBound === '1') return;
-    btn.dataset.voucherActionBound = '1';
-    btn.addEventListener('click', function () {
-      vmOpen(btn.getAttribute('data-mode'), btn.getAttribute('data-id'));
-    });
-  });
-
-  voucherModalForm && voucherModalForm.addEventListener('submit', function (e) {
-    e.preventDefault();
-    vmClearAlert();
-
-    var fd = new FormData(voucherModalForm);
-    var csrf = getCsrfToken && getCsrfToken();
-    if (csrf && csrf.name && !fd.get(csrf.name)) {
-      fd.append(csrf.name, csrf.token);
-    }
-
-    voucherSubmitBtn.disabled = true;
-    vmSubmitText.style.display = 'none';
-    vmSubmitSpinner.style.display = 'inline-block';
-
-    fetch(saveStudentUrl, ajaxOptions({ method: 'POST', body: fd }))
-      .then(function (r) { return r.json(); })
-      .then(function (data) {
-        if (data.status === 'success') {
-          vmClose();
-          // Refresh the listing so the row reflects the changes
-          location.reload();
-          return;
-        }
-        vmShowAlert(data.message || 'Save failed.', 'error', data.errors);
-      })
-      .catch(function () {
-        vmShowAlert('An error occurred while saving.', 'error');
-      })
-      .finally(function () {
-        voucherSubmitBtn.disabled = false;
-        vmSubmitText.style.display = 'inline';
-        vmSubmitSpinner.style.display = 'none';
-      });
   });
 
   // ── Advanced Filters ───────────────────────────────────────────────────────
@@ -1087,7 +750,7 @@
     root.querySelectorAll('.js-voucher-action').forEach(function (b) {
       if (b.dataset.voucherActionBound === '1') return;
       b.dataset.voucherActionBound = '1';
-      b.addEventListener('click', function () { vmOpen(b.getAttribute('data-mode'), b.getAttribute('data-id')); });
+      b.addEventListener('click', function () { window.vmOpen(b.getAttribute('data-mode'), b.getAttribute('data-id')); });
     });
   }
   wireRowActionButtons();
@@ -1293,10 +956,9 @@
       });
   });
 
-  document.querySelectorAll('.js-bulk-all').forEach(function (btn) {
-    btn.addEventListener('click', function () {
-      runBulkAll(btn.getAttribute('data-action'));
-    });
+  var btnActivateAll = document.getElementById('btnActivateAll');
+  btnActivateAll && btnActivateAll.addEventListener('click', function () {
+    runBulkAll('activate');
   });
 
   // ── TEMP: Unarchive All — restore every student_archive row to students ────
@@ -1325,4 +987,8 @@
 }());
 </script>
 
+<?= $this->endSection() ?>
+
+<?= $this->section('scripts') ?>
+<script src="<?= base_url('js/voucher-modal.js') ?>"></script>
 <?= $this->endSection() ?>

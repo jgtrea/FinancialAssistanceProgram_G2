@@ -74,7 +74,7 @@
         </div>
 
         <div>
-          <label class="vs-label" for="gender">Gender</label>
+          <label class="vs-label" for="gender">Sex</label>
           <select id="gender" name="gender" class="vs-input">
             <?php $gender = old('gender', $voucher['gender'] ?? '') ?>
             <option value="">-- Select --</option>

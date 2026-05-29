@@ -46,6 +46,7 @@
             <th class="vs-th-check"><input type="checkbox" class="vs-check vs-check-all" aria-label="Select all vouchers"></th>
             <th>Voucher No.</th>
             <th>Name</th>
+            <th style="display:none">Name Sort</th>
             <th>Preferred School</th>
             <th>School Year</th>
             <th>Eligibility</th>
@@ -62,6 +63,7 @@
             <td><input type="checkbox" class="vs-check vs-row-check" value="<?= esc($v['student_id'], 'attr') ?>"<?= $notEligible ? ' disabled title="Not eligible — cannot be selected"' : '' ?>></td>
             <td class="js-voucher-no"><?= esc($v['voucher_no'] ?: '-') ?></td>
             <td><?= esc($v['full_name']) ?></td>
+            <td style="display:none"><?= esc(trim(($v['last_name'] ?? '') . ' ' . ($v['first_name'] ?? '') . ' ' . ($v['middle_name'] ?? ''))) ?></td>
             <td><?= esc($v['preferred_senior_high_school']) ?></td>
             <td><?= esc($v['school_year']) ?></td>
             <td>

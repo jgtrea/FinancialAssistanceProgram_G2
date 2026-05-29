@@ -5,26 +5,13 @@
 <?php
     $keyword      = $keyword ?? '';
     $filters      = $filters ?? [];
-    $filterStatus = $filters['status'] ?? '';
-
-    $jhsSchools = array_values(array_filter($schools, fn($s) => $s['school_level'] === 'JHS'));
-    $shsSchools = array_values(array_filter($schools, fn($s) => $s['school_level'] === 'SHS'));
+    $filterLevel  = $filters['level'] ?? '';
 ?>
 
-<div class="vs-page-header mb-4">
+<div class="vs-page-header mb-3">
     <div>
         <h4 class="vs-page-title">Schools</h4>
         <p class="vs-page-sub">Manage junior and senior high school data.</p>
-    </div>
-    <div class="d-flex gap-2">
-        <button type="button" class="vs-btn vs-btn-primary" id="btnAddSchool">
-            <?= asset_icon('add', ['stroke-width' => '2.5']) ?>
-            Add School
-        </button>
-        <button type="button" class="vs-btn vs-btn-outline" id="btnOpenImport">
-            <?= asset_icon('import') ?>
-            Import
-        </button>
     </div>
 </div>
 
@@ -45,190 +32,104 @@
     </div>
 </div>
 
-<!-- Advanced search -->
-<form method="get" class="vs-advanced-search vs-advanced-search-outside mb-3" id="schoolSearchForm">
-    <input type="text" name="q" class="vs-input vs-advanced-search-input"
-           placeholder="Advanced search all schools..."
-           value="<?= esc($keyword, 'attr') ?>">
-    <?php if ($filterStatus !== ''): ?>
-        <input type="hidden" name="status" value="<?= esc($filterStatus, 'attr') ?>">
-    <?php endif ?>
-    <button type="button" class="vs-btn vs-btn-outline" id="btnOpenSchoolFilter">
-        Filters
-        <span id="schoolFilterBadge" class="badge bg-primary"
-              style="display:<?= $filterStatus !== '' ? '' : 'none' ?>;margin-left:.35rem">
-            <?= $filterStatus !== '' ? 1 : '' ?>
-        </span>
-    </button>
-</form>
-
-<!-- ── Tabs ───────────────────────────────────────────────────────────────── -->
-<div style="display:flex;gap:0;border-bottom:2px solid #e5e7eb;margin-bottom:1rem">
-    <button type="button" id="tabJhs" data-tab="jhs"
-            class="school-tab"
-            style="background:transparent;border:none;border-bottom:3px solid #2563eb;color:#2563eb;padding:.6rem 1.4rem;font-weight:600;cursor:pointer;margin-bottom:-2px;font-size:.95rem">
-        Junior High School
-        <span class="badge ms-1" style="background-color:#2563eb" id="jhsBadge"><?= count($jhsSchools) ?></span>
-    </button>
-    <button type="button" id="tabShs" data-tab="shs"
-            class="school-tab"
-            style="background:transparent;border:none;border-bottom:3px solid transparent;color:#6b7280;padding:.6rem 1.4rem;font-weight:600;cursor:pointer;margin-bottom:-2px;font-size:.95rem">
-        Senior High School
-        <span class="badge ms-1" style="background-color:#1e3a8a" id="shsBadge"><?= count($shsSchools) ?></span>
-    </button>
-</div>
-
-<!-- ── JHS Panel ─────────────────────────────────────────────────────────── -->
-<div id="panel-jhs">
-    <div class="vs-card">
-        <div class="vs-card-body">
-            <div class="d-flex align-items-center gap-2 mb-3 flex-wrap">
-                <input type="text" id="customJhsSearch" class="vs-input vs-page-search"
-                       placeholder="Search JHS..." style="max-width:260px">
-                <label class="vs-length-label ms-auto">Show
-                    <input type="number" id="jhsLengthInput" class="vs-length-input" value="10" min="1" max="500">
-                entries</label>
-            </div>
-
-            <table id="jhsTable" class="vs-datatable js-data-table" style="width:100%">
-                <thead>
-                    <tr>
-                        <th class="vs-th-check">
-                            <input type="checkbox" class="vs-check" id="jhsCheckAll" aria-label="Select all JHS">
-                        </th>
-                        <th>School Name</th>
-                        <th class="actions-column actions-column--sm" data-orderable="false">Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <?php foreach ($jhsSchools as $school): ?>
-                        <?php
-                            $sid      = (int) $school['school_id'];
-                            $isActive = !empty($school['is_active']);
-                        ?>
-                        <tr id="school-row-<?= $sid ?>"
-                            data-id="<?= $sid ?>"
-                            data-level="JHS"
-                            data-active="<?= $isActive ? '1' : '0' ?>"
-                            <?= !$isActive ? 'class="vs-row-archived"' : '' ?>>
-                            <td>
-                                <input type="checkbox"
-                                       class="vs-check school-row-check jhs-check"
-                                       value="<?= $sid ?>"
-                                       <?= !$isActive ? 'disabled title="Inactive schools cannot be archived"' : '' ?>>
-                            </td>
-                            <td><?= esc($school['school_name']) ?></td>
-                            <td class="actions-cell">
-                                <?php if ($isActive): ?>
-                                    <div class="dropdown">
-                                        <button type="button" class="vs-tbl-btn vs-tbl-btn-actions dropdown-toggle"
-                                                data-bs-toggle="dropdown" aria-expanded="false">Actions</button>
-                                        <ul class="dropdown-menu dropdown-menu-end">
-                                            <li><button type="button" class="dropdown-item js-school-edit" data-id="<?= $sid ?>">Edit</button></li>
-                                            <li><hr class="dropdown-divider"></li>
-                                            <li><button type="button" class="dropdown-item text-danger js-school-archive-single" data-id="<?= $sid ?>">Archive</button></li>
-                                        </ul>
-                                    </div>
-                                <?php else: ?>
-                                    <div class="dropdown">
-                                        <button type="button" class="vs-tbl-btn vs-tbl-btn-actions dropdown-toggle"
-                                                data-bs-toggle="dropdown" aria-expanded="false">Actions</button>
-                                        <ul class="dropdown-menu dropdown-menu-end">
-                                            <li>
-                                                <button type="button" class="dropdown-item js-school-edit"
-                                                        data-id="<?= $sid ?>">Edit</button>
-                                            </li>
-                                            <li><hr class="dropdown-divider"></li>
-                                            <li>
-                                                <button type="button" class="dropdown-item js-school-restore"
-                                                        data-id="<?= $sid ?>">Restore</button>
-                                            </li>
-                                        </ul>
-                                    </div>
-                                <?php endif ?>
-                            </td>
-                        </tr>
-                    <?php endforeach ?>
-                </tbody>
-            </table>
+<!-- Search + Level quick filter + action buttons -->
+<div class="d-flex align-items-center gap-2 flex-wrap mb-3">
+    <form method="get" class="vs-advanced-search vs-advanced-search-outside" id="schoolSearchForm">
+        <input type="text" name="q" class="vs-input vs-advanced-search-input"
+               placeholder="Enter keyword to search schools (name, level)"
+               value="<?= esc($keyword, 'attr') ?>">
+        <?php if ($filterLevel !== ''): ?>
+            <input type="hidden" name="level" value="<?= esc($filterLevel, 'attr') ?>">
+        <?php endif ?>
+        <div id="schoolLevelFilter" class="d-flex gap-1">
+            <button type="button" class="vs-btn vs-btn-outline js-level-filter <?= $filterLevel === '' ? 'active' : '' ?>" data-level="">All</button>
+            <button type="button" class="vs-btn vs-btn-outline js-level-filter <?= $filterLevel === 'JHS' ? 'active' : '' ?>" data-level="JHS">JHS</button>
+            <button type="button" class="vs-btn vs-btn-outline js-level-filter <?= $filterLevel === 'SHS' ? 'active' : '' ?>" data-level="SHS">SHS</button>
         </div>
+    </form>
+    <div class="ms-auto d-flex gap-2">
+        <button type="button" class="vs-btn vs-btn-primary" id="btnAddSchool">
+            <?= asset_icon('add', ['stroke-width' => '2.5']) ?>
+            Add School
+        </button>
+        <button type="button" class="vs-btn vs-btn-outline" id="btnOpenImport">
+            <?= asset_icon('import') ?>
+            Import
+        </button>
     </div>
 </div>
 
-<!-- ── SHS Panel ─────────────────────────────────────────────────────────── -->
-<div id="panel-shs" style="display:none">
-    <div class="vs-card">
-        <div class="vs-card-body">
-            <div class="d-flex align-items-center gap-2 mb-3 flex-wrap">
-                <input type="text" id="customShsSearch" class="vs-input vs-page-search"
-                       placeholder="Search SHS..." style="max-width:260px">
-                <label class="vs-length-label ms-auto">Show
-                    <input type="number" id="shsLengthInput" class="vs-length-input" value="10" min="1" max="500">
-                entries</label>
-            </div>
-
-            <table id="shsTable" class="vs-datatable js-data-table" style="width:100%">
-                <thead>
-                    <tr>
-                        <th class="vs-th-check">
-                            <input type="checkbox" class="vs-check" id="shsCheckAll" aria-label="Select all SHS">
-                        </th>
-                        <th>School Name</th>
-                        <th class="actions-column actions-column--sm" data-orderable="false">Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <?php foreach ($shsSchools as $school): ?>
-                        <?php
-                            $sid      = (int) $school['school_id'];
-                            $isActive = !empty($school['is_active']);
-                        ?>
-                        <tr id="school-row-<?= $sid ?>"
-                            data-id="<?= $sid ?>"
-                            data-level="SHS"
-                            data-active="<?= $isActive ? '1' : '0' ?>"
-                            <?= !$isActive ? 'class="vs-row-archived"' : '' ?>>
-                            <td>
-                                <input type="checkbox"
-                                       class="vs-check school-row-check shs-check"
-                                       value="<?= $sid ?>"
-                                       <?= !$isActive ? 'disabled title="Inactive schools cannot be archived"' : '' ?>>
-                            </td>
-                            <td><?= esc($school['school_name']) ?></td>
-                            <td class="actions-cell">
-                                <?php if ($isActive): ?>
-                                    <div class="dropdown">
-                                        <button type="button" class="vs-tbl-btn vs-tbl-btn-actions dropdown-toggle"
-                                                data-bs-toggle="dropdown" aria-expanded="false">Actions</button>
-                                        <ul class="dropdown-menu dropdown-menu-end">
-                                            <li><button type="button" class="dropdown-item js-school-edit" data-id="<?= $sid ?>">Edit</button></li>
-                                            <li><hr class="dropdown-divider"></li>
-                                            <li><button type="button" class="dropdown-item text-danger js-school-archive-single" data-id="<?= $sid ?>">Archive</button></li>
-                                        </ul>
-                                    </div>
-                                <?php else: ?>
-                                    <div class="dropdown">
-                                        <button type="button" class="vs-tbl-btn vs-tbl-btn-actions dropdown-toggle"
-                                                data-bs-toggle="dropdown" aria-expanded="false">Actions</button>
-                                        <ul class="dropdown-menu dropdown-menu-end">
-                                            <li>
-                                                <button type="button" class="dropdown-item js-school-edit"
-                                                        data-id="<?= $sid ?>">Edit</button>
-                                            </li>
-                                            <li><hr class="dropdown-divider"></li>
-                                            <li>
-                                                <button type="button" class="dropdown-item js-school-restore"
-                                                        data-id="<?= $sid ?>">Restore</button>
-                                            </li>
-                                        </ul>
-                                    </div>
-                                <?php endif ?>
-                            </td>
-                        </tr>
-                    <?php endforeach ?>
-                </tbody>
-            </table>
+<div class="vs-card">
+    <div class="vs-card-body">
+        <div class="d-flex align-items-center gap-2 mb-3 flex-wrap">
+            <input type="text" id="customSchoolSearch" class="vs-input vs-page-search"
+                   placeholder="Search this page..." style="max-width:260px">
+            <label class="vs-length-label ms-auto">Show
+                <input type="number" id="schoolLengthInput" class="vs-length-input" value="10" min="1" max="500">
+            entries</label>
         </div>
+
+        <table id="schoolsTable" class="vs-datatable js-data-table" style="width:100%">
+            <thead>
+                <tr>
+                    <th class="vs-th-check">
+                        <input type="checkbox" class="vs-check" id="schoolCheckAll" aria-label="Select all schools">
+                    </th>
+                    <th>School Name</th>
+                    <th>Level</th>
+                    <th class="actions-column actions-column--sm" data-orderable="false">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php
+                    usort($schools, fn($a, $b) => strcmp($a['school_name'] ?? '', $b['school_name'] ?? ''));
+                ?>
+                <?php foreach ($schools as $school): ?>
+                    <?php
+                        $sid      = (int) $school['school_id'];
+                        $isActive = !empty($school['is_active']);
+                        $level    = $school['school_level'] ?? '';
+                    ?>
+                    <tr id="school-row-<?= $sid ?>"
+                        data-id="<?= $sid ?>"
+                        data-level="<?= esc($level, 'attr') ?>"
+                        data-active="<?= $isActive ? '1' : '0' ?>"
+                        <?= !$isActive ? 'class="vs-row-archived"' : '' ?>>
+                        <td>
+                            <input type="checkbox"
+                                   class="vs-check school-row-check"
+                                   value="<?= $sid ?>"
+                                   <?= !$isActive ? 'disabled title="Inactive schools cannot be archived"' : '' ?>>
+                        </td>
+                        <td><?= esc($school['school_name']) ?></td>
+                        <td><?= esc($level) ?></td>
+                        <td class="actions-cell">
+                            <?php if ($isActive): ?>
+                                <div class="dropdown">
+                                    <button type="button" class="vs-tbl-btn vs-tbl-btn-actions dropdown-toggle"
+                                            data-bs-toggle="dropdown" aria-expanded="false">Actions</button>
+                                    <ul class="dropdown-menu dropdown-menu-end">
+                                        <li><button type="button" class="dropdown-item js-school-edit" data-id="<?= $sid ?>">Edit</button></li>
+                                        <li><hr class="dropdown-divider"></li>
+                                        <li><button type="button" class="dropdown-item text-danger js-school-archive-single" data-id="<?= $sid ?>">Archive</button></li>
+                                    </ul>
+                                </div>
+                            <?php else: ?>
+                                <div class="dropdown">
+                                    <button type="button" class="vs-tbl-btn vs-tbl-btn-actions dropdown-toggle"
+                                            data-bs-toggle="dropdown" aria-expanded="false">Actions</button>
+                                    <ul class="dropdown-menu dropdown-menu-end">
+                                        <li><button type="button" class="dropdown-item js-school-edit" data-id="<?= $sid ?>">Edit</button></li>
+                                        <li><hr class="dropdown-divider"></li>
+                                        <li><button type="button" class="dropdown-item js-school-restore" data-id="<?= $sid ?>">Restore</button></li>
+                                    </ul>
+                                </div>
+                            <?php endif ?>
+                        </td>
+                    </tr>
+                <?php endforeach ?>
+            </tbody>
+        </table>
     </div>
 </div>
 
@@ -274,33 +175,6 @@
                     CSV (.csv)
                 </a>
             </div>
-        </div>
-    </div>
-</div>
-
-<!-- ── Filter Modal ───────────────────────────────────────────────────────── -->
-<div class="vs-modal-overlay" id="schoolFilterModal" style="display:none">
-    <div class="vs-modal" style="max-width:380px">
-        <div class="vs-modal-header">
-            <h5>Filter Schools</h5>
-            <button class="vs-modal-close" id="schoolFilterClose">&times;</button>
-        </div>
-        <div class="vs-modal-body">
-            <div class="d-flex flex-column gap-3">
-                <div>
-                    <label class="vs-label" for="sfStatus">Status</label>
-                    <select id="sfStatus" class="vs-input">
-                        <option value="">All</option>
-                        <option value="1" <?= $filterStatus === '1' ? 'selected' : '' ?>>Active</option>
-                        <option value="0" <?= $filterStatus === '0' ? 'selected' : '' ?>>Inactive</option>
-                    </select>
-                </div>
-            </div>
-        </div>
-        <div class="vs-modal-footer">
-            <button type="button" class="vs-btn vs-btn-outline" id="schoolFilterClear">Clear All</button>
-            <button type="button" class="vs-btn vs-btn-outline" id="schoolFilterCancel">Cancel</button>
-            <button type="button" class="vs-btn vs-btn-primary" id="schoolFilterApply">Apply</button>
         </div>
     </div>
 </div>
@@ -404,116 +278,64 @@
         });
     }
 
-    // ── Tab state ─────────────────────────────────────────────────────────────
-    var activeTab    = 'jhs';
-    var jhsSelected  = new Set();
-    var shsSelected  = new Set();
-
-    function getActiveSelected() { return activeTab === 'jhs' ? jhsSelected : shsSelected; }
-
-    function switchTab(tab) {
-        activeTab = tab;
-
-        // Clear the opposite tab's selections
-        var opposite = tab === 'jhs' ? shsSelected : jhsSelected;
-        opposite.forEach(function (id) {
-            var cb = document.querySelector('.school-row-check[value="' + id + '"]');
-            if (cb) { cb.checked = false; cb.closest('tr').classList.remove('vs-row-selected'); }
-        });
-        opposite.clear();
-
-        // Panel visibility
-        document.getElementById('panel-jhs').style.display = tab === 'jhs' ? '' : 'none';
-        document.getElementById('panel-shs').style.display = tab === 'shs' ? '' : 'none';
-
-        // Tab button active styles
-        var jhsBtn = document.getElementById('tabJhs');
-        var shsBtn = document.getElementById('tabShs');
-        if (tab === 'jhs') {
-            jhsBtn.style.borderBottomColor = '#2563eb';
-            jhsBtn.style.color = '#2563eb';
-            jhsBtn.style.fontWeight = '600';
-            shsBtn.style.borderBottomColor = 'transparent';
-            shsBtn.style.color = '#6b7280';
-            shsBtn.style.fontWeight = '600';
-        } else {
-            shsBtn.style.borderBottomColor = '#1e3a8a';
-            shsBtn.style.color = '#1e3a8a';
-            shsBtn.style.fontWeight = '600';
-            jhsBtn.style.borderBottomColor = 'transparent';
-            jhsBtn.style.color = '#6b7280';
-            jhsBtn.style.fontWeight = '600';
-        }
-
-        // Redraw the newly-shown DataTable so columns align
-        if (window.jQuery && $.fn.DataTable) {
-            var tblId = tab === 'jhs' ? 'jhsTable' : 'shsTable';
-            var el = document.getElementById(tblId);
-            if (el && $.fn.DataTable.isDataTable(el)) {
-                $(el).DataTable().columns.adjust().draw(false);
-            }
-        }
-
-        updateBar();
-        updateCheckAll(tab === 'jhs' ? 'jhsCheckAll' : 'shsCheckAll',
-                       tab === 'jhs' ? jhsSelected : shsSelected,
-                       tab === 'jhs' ? '.jhs-check' : '.shs-check');
-    }
-
-    document.getElementById('tabJhs').addEventListener('click', function () { switchTab('jhs'); });
-    document.getElementById('tabShs').addEventListener('click', function () { switchTab('shs'); });
-
-    // ── Action Bar ────────────────────────────────────────────────────────────
-    var actionBar  = document.getElementById('schoolActionBar');
-    var countLabel = document.getElementById('schoolSelectedCount');
+    // ── Single selection set ──────────────────────────────────────────────────
+    var schoolSelected = new Set();
+    var actionBar      = document.getElementById('schoolActionBar');
+    var countLabel     = document.getElementById('schoolSelectedCount');
 
     function updateBar() {
-        var sel = getActiveSelected();
-        if (countLabel) countLabel.textContent = sel.size;
-        if (actionBar)  actionBar.style.display = sel.size > 0 ? 'flex' : 'none';
+        if (countLabel) countLabel.textContent = schoolSelected.size;
+        if (actionBar)  actionBar.style.display = schoolSelected.size > 0 ? 'flex' : 'none';
     }
 
-    function updateCheckAll(allId, selected, checkboxSelector) {
-        var all      = document.getElementById(allId);
+    function updateCheckAll() {
+        var all = document.getElementById('schoolCheckAll');
         if (!all) return;
-        var enabled  = Array.prototype.filter.call(
-            document.querySelectorAll(checkboxSelector),
-            function (cb) { return !cb.disabled; }
-        );
         all.checked       = false;
-        all.indeterminate = selected.size > 0;
+        all.indeterminate = schoolSelected.size > 0;
     }
 
-    function bindCheckboxGroup(checkAllId, rowClass, selected) {
-        var checkAll = document.getElementById(checkAllId);
-        checkAll && checkAll.addEventListener('change', function () {
-            var toCheck = selected.size === 0;
-            Array.prototype.filter.call(
-                document.querySelectorAll('.' + rowClass),
-                function (cb) { return !cb.disabled; }
-            ).forEach(function (cb) {
-                cb.checked = toCheck;
-                if (toCheck) selected.add(cb.value);
-                else         selected.delete(cb.value);
-                cb.closest('tr').classList.toggle('vs-row-selected', toCheck);
-            });
+    var checkAll = document.getElementById('schoolCheckAll');
+    checkAll && checkAll.addEventListener('change', function () {
+        var toCheck = schoolSelected.size === 0;
+        document.querySelectorAll('.school-row-check:not(:disabled)').forEach(function (cb) {
+            cb.checked = toCheck;
+            if (toCheck) schoolSelected.add(cb.value);
+            else         schoolSelected.delete(cb.value);
+            cb.closest('tr').classList.toggle('vs-row-selected', toCheck);
+        });
+        updateBar();
+        updateCheckAll();
+    });
+
+    document.querySelectorAll('.school-row-check').forEach(function (cb) {
+        cb.addEventListener('change', function () {
+            if (cb.checked) schoolSelected.add(cb.value);
+            else            schoolSelected.delete(cb.value);
+            cb.closest('tr').classList.toggle('vs-row-selected', cb.checked);
             updateBar();
-            updateCheckAll(checkAllId, selected, '.' + rowClass);
+            updateCheckAll();
         });
+    });
 
-        document.querySelectorAll('.' + rowClass).forEach(function (cb) {
-            cb.addEventListener('change', function () {
-                if (cb.checked) selected.add(cb.value);
-                else            selected.delete(cb.value);
-                cb.closest('tr').classList.toggle('vs-row-selected', cb.checked);
-                updateBar();
-                updateCheckAll(checkAllId, selected, '.' + rowClass);
-            });
+    // ── Level quick-filter (client-side DataTable column filter) ──────────────
+    var activeLevelFilter = '<?= esc($filterLevel, 'js') ?>';
+
+    document.querySelectorAll('.js-level-filter').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+            document.querySelectorAll('.js-level-filter').forEach(function (b) { b.classList.remove('active'); });
+            btn.classList.add('active');
+            activeLevelFilter = btn.getAttribute('data-level') || '';
+
+            if (window.jQuery && $.fn.DataTable) {
+                var tbl = document.getElementById('schoolsTable');
+                if (tbl && $.fn.DataTable.isDataTable(tbl)) {
+                    var dt = $(tbl).DataTable();
+                    dt.column(2).search(activeLevelFilter, false, false).draw();
+                }
+            }
         });
-    }
-
-    bindCheckboxGroup('jhsCheckAll', 'jhs-check', jhsSelected);
-    bindCheckboxGroup('shsCheckAll', 'shs-check', shsSelected);
+    });
 
     // ── Export modal ──────────────────────────────────────────────────────────
     var exportModal = document.getElementById('schoolExportModal');
@@ -521,7 +343,7 @@
     function buildExportUrl(format) {
         var base   = '<?= site_url('admin/schools/export') ?>';
         var params = ['format=' + format];
-        getActiveSelected().forEach(function (id) { params.push('ids[]=' + id); });
+        schoolSelected.forEach(function (id) { params.push('ids[]=' + id); });
         return base + '?' + params.join('&');
     }
 
@@ -533,7 +355,7 @@
         if (exportModal) exportModal.style.display = 'flex';
     }
 
-    document.getElementById('btnOpenExport')     && document.getElementById('btnOpenExport').addEventListener('click', openExportModal);
+    document.getElementById('btnOpenExport') && document.getElementById('btnOpenExport').addEventListener('click', openExportModal);
     document.getElementById('schoolExportModalClose') && document.getElementById('schoolExportModalClose').addEventListener('click', function () { exportModal.style.display = 'none'; });
     exportModal && exportModal.addEventListener('click', function (e) { if (e.target === exportModal) exportModal.style.display = 'none'; });
 
@@ -542,7 +364,6 @@
     var archConfirm    = document.getElementById('schoolArchiveConfirm');
     var archBtnText    = document.getElementById('schoolArchiveBtnText');
     var archBtnSpinner = document.getElementById('schoolArchiveBtnSpinner');
-
     var pendingArchiveSchoolId = null;
 
     function closeArchModal() {
@@ -555,10 +376,9 @@
     archModal && archModal.addEventListener('click', function (e) { if (e.target === archModal) closeArchModal(); });
 
     document.getElementById('btnArchiveSelected') && document.getElementById('btnArchiveSelected').addEventListener('click', function () {
-        var sel = getActiveSelected();
-        if (!sel.size) return;
+        if (!schoolSelected.size) return;
         var ct = document.getElementById('schoolArchiveCount');
-        if (ct) ct.textContent = sel.size;
+        if (ct) ct.textContent = schoolSelected.size;
         if (archModal) archModal.style.display = 'flex';
     });
 
@@ -596,7 +416,7 @@
     }
 
     archConfirm && archConfirm.addEventListener('click', function () {
-        var idsToArchive = pendingArchiveSchoolId ? [pendingArchiveSchoolId] : Array.from(getActiveSelected());
+        var idsToArchive = pendingArchiveSchoolId ? [pendingArchiveSchoolId] : Array.from(schoolSelected);
         var csrf = getCsrf();
         var body = csrf.name + '=' + csrf.token;
         idsToArchive.forEach(function (id) { body += '&ids[]=' + id; });
@@ -614,17 +434,12 @@
         .then(function (data) {
             closeArchModal();
             if (data.success) {
-                var sel = getActiveSelected();
                 idsToArchive.forEach(function (id) {
                     applySchoolArchiveDom(id);
-                    sel.delete(id);
+                    schoolSelected.delete(id);
                 });
                 updateBar();
-                updateCheckAll(
-                    activeTab === 'jhs' ? 'jhsCheckAll' : 'shsCheckAll',
-                    activeTab === 'jhs' ? jhsSelected : shsSelected,
-                    activeTab === 'jhs' ? '.jhs-check' : '.shs-check'
-                );
+                updateCheckAll();
                 showAlert(data.message || 'Archived successfully.', 'success');
             } else {
                 showAlert(data.message || 'Failed to archive.', 'error');
@@ -709,10 +524,8 @@
     function smOpen(mode, id) {
         smReset();
         if (mode === 'add') {
-            schoolTitle.textContent = 'Add School';
+            schoolTitle.textContent  = 'Add School';
             smSubmitText.textContent = 'Save';
-            // Pre-select level based on active tab
-            document.getElementById('smSchoolLevel').value = activeTab === 'jhs' ? 'JHS' : 'SHS';
             schoolModal.style.display = 'flex';
             return;
         }
@@ -736,9 +549,9 @@
 
     function smClose() { schoolModal.style.display = 'none'; }
 
-    document.getElementById('btnAddSchool')   && document.getElementById('btnAddSchool').addEventListener('click', function () { smOpen('add'); });
-    document.getElementById('schoolModalClose') && document.getElementById('schoolModalClose').addEventListener('click', smClose);
-    document.getElementById('schoolModalCancel') && document.getElementById('schoolModalCancel').addEventListener('click', smClose);
+    document.getElementById('btnAddSchool')    && document.getElementById('btnAddSchool').addEventListener('click', function () { smOpen('add'); });
+    document.getElementById('schoolModalClose')   && document.getElementById('schoolModalClose').addEventListener('click', smClose);
+    document.getElementById('schoolModalCancel')  && document.getElementById('schoolModalCancel').addEventListener('click', smClose);
     schoolModal && schoolModal.addEventListener('click', function (e) { if (e.target === schoolModal) smClose(); });
 
     document.querySelectorAll('.js-school-edit').forEach(function (btn) {
@@ -766,25 +579,8 @@
         .then(function (data) {
             if (data.success) {
                 smClose();
-                var schoolId = document.getElementById('smSchoolId').value;
-                var newName  = document.getElementById('smSchoolName').value.trim().toUpperCase();
-                var newLevel = document.getElementById('smSchoolLevel').value;
-                var row = schoolId ? document.getElementById('school-row-' + schoolId) : null;
-                var oldLevel = row ? row.getAttribute('data-level') : null;
-
-                if (row && oldLevel === newLevel) {
-                    // Edit, same level — update in-place, preserve active tab
-                    var nameTd = row.querySelector('td:nth-child(2)');
-                    if (nameTd) nameTd.textContent = newName;
-                    var tblId = newLevel === 'JHS' ? 'jhsTable' : 'shsTable';
-                    if (window.jQuery && $.fn.DataTable && $.fn.DataTable.isDataTable('#' + tblId)) {
-                        $('#' + tblId).DataTable().row(row).invalidate().draw(false);
-                    }
-                    showAlert(data.message || 'School updated successfully.', 'success');
-                } else {
-                    showAlert(data.message || 'School saved successfully.', 'success');
-                    setTimeout(function () { location.reload(); }, 800);
-                }
+                showAlert(data.message || 'School saved successfully.', 'success');
+                setTimeout(function () { location.reload(); }, 800);
                 return;
             }
             smOpenAlert(data.message || 'Save failed.');
@@ -853,49 +649,44 @@
         });
     });
 
-    // ── Filter Modal ──────────────────────────────────────────────────────────
-    var filterModal = document.getElementById('schoolFilterModal');
-    var sfStatus    = document.getElementById('sfStatus');
-
-    function openFilter()  { if (filterModal) filterModal.style.display = 'flex'; }
-    function closeFilter() { if (filterModal) filterModal.style.display = 'none'; }
-
-    document.getElementById('btnOpenSchoolFilter') && document.getElementById('btnOpenSchoolFilter').addEventListener('click', openFilter);
-    document.getElementById('schoolFilterClose')   && document.getElementById('schoolFilterClose').addEventListener('click', closeFilter);
-    document.getElementById('schoolFilterCancel')  && document.getElementById('schoolFilterCancel').addEventListener('click', closeFilter);
-    filterModal && filterModal.addEventListener('click', function (e) { if (e.target === filterModal) closeFilter(); });
-
-    document.getElementById('schoolFilterClear') && document.getElementById('schoolFilterClear').addEventListener('click', function () {
-        if (sfStatus) sfStatus.value = '';
-    });
-
-    document.getElementById('schoolFilterApply') && document.getElementById('schoolFilterApply').addEventListener('click', function () {
-        var q      = '<?= esc($keyword, 'js') ?>';
-        var status = sfStatus ? sfStatus.value : '';
-        var params = [];
-        if (q)      params.push('q='      + encodeURIComponent(q));
-        if (status) params.push('status=' + encodeURIComponent(status));
-        window.location.href = '<?= site_url('admin/schools') ?>' + (params.length ? '?' + params.join('&') : '');
-    });
-
 }());
 
 // ── DataTable init ────────────────────────────────────────────────────────────
-(function initSeparatedTables() {
-    function initTable(tableId, searchId, lenId) {
-        var table = document.getElementById(tableId);
-        if (!table || !window.jQuery || !$.fn.DataTable || !$.fn.DataTable.isDataTable(table)) {
-            return setTimeout(function () { initTable(tableId, searchId, lenId); }, 50);
+(function initSchoolTable() {
+    function init() {
+        var table = document.getElementById('schoolsTable');
+        if (!table || !window.jQuery || !$.fn.DataTable || $.fn.DataTable.isDataTable(table)) {
+            if (!table || (window.jQuery && $.fn.DataTable && $.fn.DataTable.isDataTable(table))) return;
+            return setTimeout(init, 50);
         }
-        var dt     = $(table).DataTable();
-        var dtWrap = table.closest('.dataTables_wrapper');
 
+        var dt = $(table).DataTable({
+            dom:
+                "<'row align-items-center mb-3'<'col-sm-12 col-md-6'f><'col-sm-12 col-md-6 text-md-end'l>>" +
+                "<'row'<'col-sm-12'tr>>" +
+                "<'row align-items-center mt-3'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7'p>>",
+            pageLength: 10,
+            lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, 'All']],
+            responsive: true,
+            autoWidth: false,
+            order: [[1, 'asc']],
+            columnDefs: [{ orderable: false, targets: [0, -1] }],
+            language: {
+                search: '',
+                searchPlaceholder: 'Search schools...',
+                lengthMenu: 'Show _MENU_ entries',
+                info: 'Showing _START_ to _END_ of _TOTAL_',
+                paginate: { previous: '&#8249;', next: '&#8250;' },
+            },
+        });
+
+        var dtWrap   = table.closest('.dataTables_wrapper');
         var dtSearch = dtWrap ? dtWrap.querySelector('.dataTables_filter') : null;
-        if (dtSearch) dtSearch.style.display = 'none';
         var dtLength = dtWrap ? dtWrap.querySelector('.dataTables_length') : null;
+        if (dtSearch) dtSearch.style.display = 'none';
         if (dtLength) dtLength.style.display = 'none';
 
-        var lenInput = document.getElementById(lenId);
+        var lenInput = document.getElementById('schoolLengthInput');
         if (lenInput) {
             function applyLen() {
                 var v = parseInt(lenInput.value, 10);
@@ -905,14 +696,22 @@
             lenInput.addEventListener('keydown', function (e) { if (e.key === 'Enter') applyLen(); });
         }
 
-        var searchInput = document.getElementById(searchId);
-        if (window.VS && window.VS.bindCurrentPageSearch) {
-            window.VS.bindCurrentPageSearch(dt, searchInput);
+        var searchInput = document.getElementById('customSchoolSearch');
+        if (window.VS && window.VS.bindFullTableSearch) {
+            window.VS.bindFullTableSearch(dt, searchInput);
+        }
+
+        var initialLevel = '<?= esc($filterLevel, 'js') ?>';
+        if (initialLevel) {
+            dt.column(2).search(initialLevel, false, false).draw();
         }
     }
 
-    initTable('jhsTable', 'customJhsSearch', 'jhsLengthInput');
-    initTable('shsTable', 'customShsSearch', 'shsLengthInput');
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', init);
+    } else {
+        init();
+    }
 }());
 </script>
 

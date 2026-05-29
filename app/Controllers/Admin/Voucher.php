@@ -236,8 +236,8 @@ class Voucher extends Controller
         $studentId = (int) $this->voucherModel->insert($data);
 
         $name = trim($data['first_name'] . ' ' . $data['last_name']);
-        log_action($this->getCurrentUserId(), 'CREATE_STUDENT',
-            "Created student {$name}", $studentId);
+        log_action($this->getCurrentUserId(), 'CREATE_VOUCHER',
+            "Created voucher for {$name}", $studentId);
 
         return redirect()->to(site_url('admin/students'))->with('message', 'Student voucher created successfully.');
     }
@@ -512,6 +512,33 @@ class Voucher extends Controller
             return $this->response->setJSON([
                 'success' => false,
                 'message' => 'No students match the current search/filter — nothing to archive.',
+            ]);
+        }
+
+        $archived = $this->archiveStudentsByIds($ids, $reason, true);
+
+        return $this->response->setJSON([
+            'success' => true,
+            'message' => "{$archived} student(s) archived successfully.",
+        ]);
+    }
+
+    // ── Archive all students matching the archive-page filter (GET params) ───
+    public function archiveByFilter()
+    {
+        $keyword = trim((string) $this->request->getGet('q'));
+        $filters = [];
+        foreach (VoucherModel::LISTING_FILTER_KEYS as $key) {
+            $filters[$key] = trim((string) $this->request->getGet($key));
+        }
+        $reason = trim((string) ($this->request->getPost('archive_reason') ?: '')) ?: 'Archive current data';
+
+        $ids = $this->voucherModel->getMatchingStudentIds($keyword, $filters);
+
+        if (empty($ids)) {
+            return $this->response->setJSON([
+                'success' => false,
+                'message' => 'No students match the current filters — nothing to archive.',
             ]);
         }
 
@@ -880,5 +907,40 @@ class Voucher extends Controller
         }
 
         return $this->voucherModel->getVouchersByIds($ids);
+    }
+
+    // ── Preview archive scope: count + distinct school years ─────────────────
+    public function archivePreview()
+    {
+        $keyword = trim((string) $this->request->getGet('q'));
+        $filters = [];
+        foreach (VoucherModel::LISTING_FILTER_KEYS as $key) {
+            $filters[$key] = trim((string) $this->request->getGet($key));
+        }
+
+        $ids = $this->voucherModel->getMatchingStudentIds($keyword, $filters);
+
+        if (empty($ids)) {
+            return $this->response->setJSON([
+                'success'     => true,
+                'count'       => 0,
+                'schoolYears' => [],
+            ]);
+        }
+
+        $rows = \Config\Database::connect()
+            ->table('students')
+            ->select('school_year')
+            ->distinct()
+            ->whereIn('student_id', $ids)
+            ->where('school_year !=', '')
+            ->orderBy('school_year', 'ASC')
+            ->get()->getResultArray();
+
+        return $this->response->setJSON([
+            'success'     => true,
+            'count'       => count($ids),
+            'schoolYears' => array_column($rows, 'school_year'),
+        ]);
     }
 }

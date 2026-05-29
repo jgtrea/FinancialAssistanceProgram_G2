@@ -50,6 +50,19 @@ class StudentController extends BaseController
             ]);
         }
 
+        $db  = \Config\Database::connect();
+        $job = $db->table('pdf_jobs')
+            ->select('u.username')
+            ->join('users u', 'u.user_id = pdf_jobs.created_by', 'left')
+            ->where('pdf_jobs.status', 'done')
+            ->where("JSON_CONTAINS(pdf_jobs.voucher_ids, '" . (int) $id . "')", null, false)
+            ->orderBy('pdf_jobs.created_at', 'DESC')
+            ->limit(1)
+            ->get()
+            ->getRow();
+
+        $student['last_generated_by'] = $job->username ?? null;
+
         return $this->response->setJSON([
             'status'  => 'success',
             'student' => $student,
@@ -110,7 +123,7 @@ class StudentController extends BaseController
             $message = 'Student updated successfully.';
         } else {
             $newStudentId = $studentModel->insert($data);
-            $this->writeAuditLog('student_created', 'Added student ' . $this->formatStudentName($data) . ' (ID #' . $newStudentId . ').', null, $newStudentId ? (int) $newStudentId : null);
+            $this->writeAuditLog('CREATE_VOUCHER', 'Created voucher for ' . $this->formatStudentName($data) . ' (ID #' . $newStudentId . ').', null, $newStudentId ? (int) $newStudentId : null);
             $message = 'Student added successfully.';
         }
 

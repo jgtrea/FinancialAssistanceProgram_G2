@@ -2,16 +2,10 @@
 
 <?= $this->section('content') ?>
 
-<div class="vs-page-header mb-4">
+<div class="vs-page-header mb-3">
         <div>
             <h4 class="vs-page-title">User Management</h4>
             <p class="vs-page-sub">Manage staff accounts and system access.</p>
-        </div>
-        <div class="d-flex gap-2">
-            <button type="button" class="vs-btn vs-btn-primary" id="btnAddUser">
-                <?= asset_icon('add', ['stroke-width' => '2.5']) ?>
-                Add User
-            </button>
         </div>
     </div>
 
@@ -44,13 +38,21 @@
         </div>
     </div>
 
-    <form method="get" class="vs-advanced-search vs-advanced-search-outside mb-3">
-        <input type="text" name="q" class="vs-input vs-advanced-search-input" placeholder="Advanced search all users..." value="<?= esc((string) ($keyword ?? ''), 'attr') ?>">
-        <button type="button" class="vs-btn vs-btn-outline" id="btnOpenUserFilter">
-            Filters
-            <span id="userFilterBadge" class="badge bg-primary" style="display:none;margin-left:.35rem"></span>
-        </button>
-    </form>
+    <div class="d-flex align-items-center gap-2 flex-wrap mb-3">
+        <form method="get" class="vs-advanced-search vs-advanced-search-outside">
+            <input type="text" name="q" class="vs-input vs-advanced-search-input" placeholder="Enter keyword to search (username, email)" value="<?= esc((string) ($keyword ?? ''), 'attr') ?>">
+            <button type="button" class="vs-btn vs-btn-outline" id="btnOpenUserFilter">
+                Filters
+                <span id="userFilterBadge" class="badge bg-primary" style="display:none;margin-left:.35rem"></span>
+            </button>
+        </form>
+        <div class="ms-auto d-flex gap-2">
+            <button type="button" class="vs-btn vs-btn-primary" id="btnAddUser">
+                <?= asset_icon('add', ['stroke-width' => '2.5']) ?>
+                Add User
+            </button>
+        </div>
+    </div>
 
     <div class="vs-card">
         <div class="vs-card-body">

@@ -482,8 +482,12 @@ document.addEventListener('DOMContentLoaded', function () {
     lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, 'All']],
     responsive: true,
     autoWidth: false,
-    order: [],
-    columnDefs: [{ orderable: false, targets: [0, -1] }],
+    order: [[2, 'asc']],
+    columnDefs: [
+      { orderable: false, targets: [0, -1] },
+      { visible: false, targets: [3] },
+      { orderData: [3], targets: [2] },
+    ],
     language: {
       search: '',
       searchPlaceholder: vouchersTable.dataset.searchPlaceholder || 'Search vouchers...',

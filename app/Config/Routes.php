@@ -52,7 +52,9 @@ $routes->group('admin', ['filter' => 'role:admin'], function ($routes) {
     $routes->get('vouchers/pdf-download/(:num)',  'Admin\Voucher::downloadPdf/$1');
     $routes->post('vouchers/archive',             'Admin\Voucher::archive');
     $routes->post('vouchers/archive-all',         'Admin\Voucher::archiveAll');
+    $routes->post('vouchers/archive-by-filter',   'Admin\Voucher::archiveByFilter');
     $routes->get('vouchers/count-matching',       'Admin\Voucher::countMatching');
+    $routes->get('vouchers/archive-preview',      'Admin\Voucher::archivePreview');
     $routes->post('vouchers/activate-multiple',          'Admin\Voucher::activateMultiple');
     $routes->post('vouchers/deactivate-multiple',        'Admin\Voucher::deactivateMultiple');
     $routes->post('vouchers/activate-all',               'Admin\Voucher::activateAll');
@@ -105,7 +107,9 @@ $routes->group('user', ['filter' => 'auth'], function ($routes) {
     $routes->get('vouchers/pdf-download/(:num)',  'User\Voucher::downloadPdf/$1');
     $routes->post('vouchers/archive',             'User\Voucher::archive');
     $routes->post('vouchers/archive-all',         'User\Voucher::archiveAll');
+    $routes->post('vouchers/archive-by-filter',   'User\Voucher::archiveByFilter');
     $routes->get('vouchers/count-matching',       'User\Voucher::countMatching');
+    $routes->get('vouchers/archive-preview',      'User\Voucher::archivePreview');
     $routes->post('vouchers/activate-multiple',          'User\Voucher::activateMultiple');
     $routes->post('vouchers/deactivate-multiple',        'User\Voucher::deactivateMultiple');
     $routes->post('vouchers/activate-all',               'User\Voucher::activateAll');
