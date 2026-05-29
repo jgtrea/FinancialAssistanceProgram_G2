@@ -1,0 +1,295 @@
+/* ============================================================
+   LAYOUT — vs-app shell, sidebar, topbar, main content area.
+   Used if/when the app migrates away from SB Admin HTML.
+   Current active layout uses SB Admin classes (sb-nav-fixed,
+   layoutSidenav) styled via app.css overrides.
+   ============================================================ */
+
+.vs-app {
+  background:
+    linear-gradient(180deg, rgba(255, 246, 221, 0.65), rgba(238, 248, 251, 0.95) 14rem),
+    var(--surface);
+  min-height: 100vh;
+}
+
+.vs-layout {
+  display: flex;
+  min-height: 100vh;
+}
+
+/* ── Sidebar ── */
+.vs-sidebar {
+  width: var(--sidebar-w);
+  background:
+    linear-gradient(180deg, #042b61 0%, var(--navy) 44%, var(--teal-dark) 100%);
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  z-index: 200;
+  transition: transform 0.25s ease;
+  overflow-y: auto;
+  scrollbar-width: none;
+}
+.vs-sidebar::-webkit-scrollbar {
+  display: none;
+}
+
+.vs-sidebar-brand {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  padding: 1.25rem 1.1rem 1rem;
+  border-bottom: 1px solid rgba(255, 232, 138, 0.22);
+  flex-shrink: 0;
+}
+.vs-sidebar-logo {
+  width: 34px;
+  height: 34px;
+  background: linear-gradient(135deg, var(--accent), var(--accent-lt));
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.vs-sidebar-logo svg {
+  width: 18px;
+  height: 18px;
+  fill: var(--navy);
+}
+.vs-sidebar-brand-name {
+  display: block;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #fff;
+  line-height: 1.15;
+}
+.vs-sidebar-brand-sub {
+  display: block;
+  font-size: 0.68rem;
+  color: rgba(255, 232, 138, 0.75);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+/* Nav */
+.vs-nav {
+  flex: 1;
+  padding: 0.75rem 0.65rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+}
+
+.vs-nav-section {
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: rgba(255, 232, 138, 0.55);
+  text-transform: uppercase;
+  padding: 0.75rem 0.5rem 0.3rem;
+  margin-top: 0.25rem;
+}
+.vs-nav-section:first-child {
+  margin-top: 0;
+}
+
+.vs-nav-item {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.55rem 0.75rem;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: rgba(234, 248, 255, 0.78);
+  text-decoration: none;
+  transition:
+    background 0.15s,
+    color 0.15s;
+  cursor: pointer;
+  border: none;
+  background: none;
+  width: 100%;
+}
+.vs-nav-item:hover {
+  background: rgba(255, 232, 138, 0.12);
+  color: #fff;
+}
+.vs-nav-active {
+  background: rgba(255, 232, 138, 0.18) !important;
+  color: #fff !important;
+}
+.vs-nav-active::before {
+  content: "";
+  display: block;
+  width: 3px;
+  height: 18px;
+  background: var(--accent);
+  border-radius: 2px;
+  margin-left: -3px;
+  margin-right: 3px;
+  flex-shrink: 0;
+}
+
+.vs-nav-logout {
+  color: rgba(255, 100, 100, 0.7);
+}
+.vs-nav-logout:hover {
+  background: rgba(255, 80, 80, 0.12);
+  color: #ff8080;
+}
+
+/* Sidebar footer */
+.vs-sidebar-footer {
+  padding: 0.65rem 0.65rem 1rem;
+  border-top: 1px solid rgba(255, 232, 138, 0.22);
+  flex-shrink: 0;
+}
+
+/* Mobile overlay */
+.vs-sidebar-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  z-index: 199;
+}
+
+/* ── Main area ── */
+.vs-main {
+  flex: 1;
+  margin-left: var(--sidebar-w);
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  min-width: 0;
+}
+
+/* ── Top bar ── */
+.vs-topbar {
+  height: var(--topbar-h);
+  background: rgba(255, 255, 255, 0.95);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0 1.5rem;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+.vs-sidebar-toggle {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--muted);
+  padding: 0.35rem;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  transition:
+    background 0.15s,
+    color 0.15s;
+}
+.vs-sidebar-toggle:hover {
+  background: var(--surface-md);
+  color: var(--navy);
+}
+
+.vs-topbar-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--navy);
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.vs-topbar-right {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-left: auto;
+}
+
+.vs-topbar-user {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+.vs-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--navy-md), var(--teal));
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8rem;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+.vs-topbar-info {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.2;
+}
+.vs-topbar-name {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--navy);
+}
+.vs-topbar-role {
+  font-size: 0.7rem;
+  color: var(--muted);
+}
+
+.vs-topbar-logout {
+  width: 32px;
+  height: 32px;
+  border-radius: 7px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--muted);
+  text-decoration: none;
+  transition:
+    background 0.15s,
+    color 0.15s;
+}
+.vs-topbar-logout:hover {
+  background: #fff2ee;
+  color: var(--danger);
+}
+
+/* ── Content ── */
+.vs-content {
+  flex: 1;
+  padding: 1.5rem;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .vs-sidebar {
+    transform: translateX(calc(-1 * var(--sidebar-w)));
+  }
+  .vs-sidebar.vs-sidebar-open {
+    transform: translateX(0);
+  }
+  .vs-sidebar-overlay.vs-overlay-open {
+    display: block;
+  }
+  .vs-main {
+    margin-left: 0;
+  }
+  .vs-content {
+    padding: 1rem;
+  }
+}

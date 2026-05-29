@@ -43,6 +43,7 @@ class ArchiveModel extends Model
             ->select("
                 a.*,
                 CONCAT_WS(' ', NULLIF(a.first_name,''), NULLIF(a.middle_name,''), NULLIF(a.last_name,''), NULLIF(a.suffix,'')) AS full_name,
+                TRIM(CONCAT_WS(' ', NULLIF(a.last_name,''), NULLIF(a.first_name,''), NULLIF(a.middle_name,''))) AS name_sort,
                 u.username AS archived_by_name
             ")
             ->join('users u', 'u.user_id = a.archived_by', 'left');

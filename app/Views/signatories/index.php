@@ -54,11 +54,11 @@
 
     <div class="vs-card">
         <div class="vs-card-body">
-            <div class="d-flex align-items-center gap-2 mb-3 flex-wrap">
-                <input type="text" id="customSigSearch" class="vs-input vs-page-search" placeholder="Search this page..." style="max-width:260px">
-                <label class="vs-length-label ms-auto">Show <input type="number" id="sigLengthInput" class="vs-length-input" value="10" min="1" max="500"> entries</label>
-            </div>
-            <table id="signatoriesTable" class="vs-datatable js-data-table" data-search-placeholder="Search signatories..." style="width:100%">
+            <table id="signatoriesTable" class="vs-datatable js-data-table"
+                   data-search-placeholder="Search signatories..."
+                   data-order='[[6,"asc"]]'
+                   data-col-defs='[{"orderData":[6],"targets":[1]},{"visible":false,"targets":[6]}]'
+                   style="width:100%">
             <thead>
                 <tr>
                     <th class="vs-th-check"><input type="checkbox" class="vs-check" id="sigCheckAll" aria-label="Select all"></th>
@@ -67,27 +67,26 @@
                     <th data-orderable="false">Signature</th>
                     <th data-orderable="false">Selected</th>
                     <th class="actions-column actions-column--sm">Actions</th>
+                    <th></th>
                 </tr>
             </thead>
 
             <tbody>
                 <?php foreach ($signatories as $signatory): ?>
                     <?php
-                        $parts = array_filter([
-                            $signatory['prefix'] ?? '',
-                            $signatory['first_name'],
-                            $signatory['middle_name'] ?? '',
-                            $signatory['last_name'],
-                            $signatory['suffix'] ?? '',
-                        ]);
-                        $fullName = trim(implode(' ', $parts));
+                        $sLn = trim((string) ($signatory['last_name']   ?? ''));
+                        $sFn = trim((string) ($signatory['first_name']  ?? ''));
+                        $sMn = trim((string) ($signatory['middle_name'] ?? ''));
+                        $sFm = implode(' ', array_filter([$sFn, $sMn]));
+                        $fullName  = $sLn !== '' ? $sLn . ($sFm !== '' ? ', ' . $sFm : '') : $sFm;
                         $sigDegree = trim((string) ($signatory['degree'] ?? ''));
                         if ($sigDegree !== '' && strcasecmp($sigDegree, 'None') !== 0) {
                             $fullName .= ', ' . $sigDegree;
                         }
-                        $isSelected = !empty($signatory['is_selected']);
-                        $isArchived = empty($signatory['is_active']);
-                        $sid = (int) $signatory['signatory_id'];
+                        $isSelected  = !empty($signatory['is_selected']);
+                        $isArchived  = empty($signatory['is_active']);
+                        $sid         = (int) $signatory['signatory_id'];
+                        $nameSortKey = trim(implode(' ', array_filter([$sLn, $sFn, $sMn])));
                     ?>
 
                     <tr id="sig-row-<?= $sid ?>" data-archived="<?= $isArchived ? '1' : '0' ?>"<?= $isArchived ? ' class="vs-row-archived"' : '' ?>>
@@ -149,6 +148,7 @@
                                 </ul>
                             </div>
                         </td>
+                        <td><?= esc($nameSortKey) ?></td>
                     </tr>
                 <?php endforeach; ?>
             </tbody>
@@ -762,35 +762,13 @@
     });
 }());
 
-// ── Custom search + filter for signatories table ──────────────────────
+// ── Filter modal + column search for signatories table ───────────────────────
 (function initSigSearch() {
     var table = document.getElementById('signatoriesTable');
     if (!table || !window.jQuery || !$.fn.DataTable || !$.fn.DataTable.isDataTable(table)) {
         return setTimeout(initSigSearch, 50);
     }
     var dt = $(table).DataTable();
-    var dtWrap = table.closest('.dataTables_wrapper');
-
-    var dtSearch = dtWrap ? dtWrap.querySelector('.dataTables_filter') : null;
-    if (dtSearch) dtSearch.style.display = 'none';
-
-    var dtLength = dtWrap ? dtWrap.querySelector('.dataTables_length') : null;
-    if (dtLength) dtLength.style.display = 'none';
-
-    var lenInput = document.getElementById('sigLengthInput');
-    if (lenInput) {
-        function applySigLen() {
-            var v = parseInt(lenInput.value, 10);
-            if (!isNaN(v) && v > 0) dt.page.len(v).draw();
-        }
-        lenInput.addEventListener('change', applySigLen);
-        lenInput.addEventListener('keydown', function (e) { if (e.key === 'Enter') applySigLen(); });
-    }
-
-    var searchInput = document.getElementById('customSigSearch');
-    if (window.VS && window.VS.bindCurrentPageSearch) {
-        window.VS.bindCurrentPageSearch(dt, searchInput);
-    }
 
     var filterModal = document.getElementById('sigFilterModal');
     var filterBadge = document.getElementById('sigFilterBadge');

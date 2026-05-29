@@ -254,9 +254,11 @@ class VoucherModel extends Model
         $orderColumn = $columnMap[(int) $orderCol] ?? null;
         if ($orderColumn !== null) {
             $builder->orderBy($orderColumn, $orderDir);
+        } else {
+            $builder->orderBy('last_name', 'ASC')->orderBy('first_name', 'ASC');
         }
-        // Always tiebreak by student_id so pagination is stable.
-        $builder->orderBy('student_id', 'DESC');
+        // Tiebreak for stable pagination.
+        $builder->orderBy('student_id', 'ASC');
 
         if ($length > 0) {
             $builder->limit($length, $start);

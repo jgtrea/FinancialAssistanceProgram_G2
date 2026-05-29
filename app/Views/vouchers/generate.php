@@ -65,8 +65,13 @@
               data-eligibility="<?= esc((string) ($v['eligibility_status'] ?? ''), 'attr') ?>">
             <td><input type="checkbox" class="vs-check vs-row-check" value="<?= esc($v['student_id'], 'attr') ?>"<?= $notEligible ? ' disabled title="Not eligible — cannot be selected"' : '' ?>></td>
             <td class="js-voucher-no"><?= esc($v['voucher_no'] ?: '-') ?></td>
-            <td><?= esc($v['full_name']) ?></td>
-            <td style="display:none"><?= esc(trim(($v['last_name'] ?? '') . ' ' . ($v['first_name'] ?? '') . ' ' . ($v['middle_name'] ?? ''))) ?></td>
+            <?php
+                $gLn = trim((string) ($v['last_name']   ?? ''));
+                $gFm = implode(' ', array_filter([trim((string) ($v['first_name'] ?? '')), trim((string) ($v['middle_name'] ?? ''))]));
+                $gDn = $gLn !== '' ? $gLn . ($gFm !== '' ? ', ' . $gFm : '') : $gFm;
+            ?>
+            <td><?= esc($gDn) ?></td>
+            <td style="display:none"><?= esc(trim($gLn . ' ' . $gFm)) ?></td>
             <td><?= esc($v['preferred_senior_high_school']) ?></td>
             <td><?= esc($v['school_year']) ?></td>
             <td>

@@ -182,12 +182,11 @@
   voucherModalCancel && voucherModalCancel.addEventListener('click', vmClose);
   voucherModal       && voucherModal.addEventListener('click',       function (e) { if (e.target === voucherModal) vmClose(); });
 
-  document.querySelectorAll('.js-voucher-action').forEach(function (btn) {
-    if (btn.dataset.voucherActionBound === '1') return;
-    btn.dataset.voucherActionBound = '1';
-    btn.addEventListener('click', function () {
-      vmOpen(btn.getAttribute('data-mode'), btn.getAttribute('data-id'));
-    });
+  // Event delegation — works for AJAX-rendered rows (server-side DataTables)
+  document.addEventListener('click', function (e) {
+    var btn = e.target.closest('.js-voucher-action');
+    if (!btn) return;
+    vmOpen(btn.getAttribute('data-mode'), btn.getAttribute('data-id'));
   });
 
   window.vmOpen = vmOpen;

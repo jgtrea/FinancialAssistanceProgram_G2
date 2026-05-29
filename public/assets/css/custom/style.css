@@ -1,0 +1,11 @@
+/* Styles from this file have been reorganized:
+ *   Shared vs-* components  → public/assets/css/shared.css
+ *   DataTable overrides     → custom/datatable.css
+ *   App shell / layout      → custom/layout.css
+ *   Admin dashboard         → custom/dashboard.css
+ *   User form               → custom/form.css
+ *   Login page              → custom/login.css
+ *   Audit logs              → custom/audit-logs.css
+ *   Voucher print           → custom/voucher-print.css
+ *   SB Admin overrides      → custom/app.css
+ */

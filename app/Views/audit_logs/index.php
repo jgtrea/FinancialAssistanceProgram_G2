@@ -33,10 +33,6 @@
 
     <div class="vs-card">
         <div class="vs-card-body">
-            <div class="d-flex align-items-center gap-2 mb-3 flex-wrap">
-                <input type="text" id="auditCustomSearch" class="vs-input vs-page-search" placeholder="Search this page..." style="max-width:260px">
-                <label class="vs-length-label ms-auto">Show <input type="number" id="auditLengthInput" class="vs-length-input" value="10" min="1" max="500"> entries</label>
-            </div>
             <table id="auditLogsTable" class="vs-datatable js-data-table" data-search-placeholder="Search audit logs..." style="width:100%">
                 <thead>
                     <tr>
@@ -119,49 +115,19 @@
 
 <script>
 (function () {
-    function initAuditFilters() {
-        var table = document.getElementById('auditLogsTable');
-        if (!table || !window.jQuery || !$.fn.DataTable || !$.fn.DataTable.isDataTable(table)) {
-            return setTimeout(initAuditFilters, 50);
-        }
+    var filterForm = document.getElementById('auditFilterForm');
+    var fields = {
+        action:   document.getElementById('auditFilterAction'),
+        dateFrom: document.getElementById('auditFilterDateFrom'),
+        dateTo:   document.getElementById('auditFilterDateTo'),
+    };
+    var filterFieldToParam = {
+        action:   'action',
+        dateFrom: 'date_from',
+        dateTo:   'date_to',
+    };
 
-        var dt = $(table).DataTable();
-        var filterForm = document.getElementById('auditFilterForm');
-        var fields = {
-            action:   document.getElementById('auditFilterAction'),
-            dateFrom: document.getElementById('auditFilterDateFrom'),
-            dateTo:   document.getElementById('auditFilterDateTo'),
-        };
-        var filterFieldToParam = {
-            action:   'action',
-            dateFrom: 'date_from',
-            dateTo:   'date_to',
-        };
-
-        var wrap = table.closest('.dataTables_wrapper');
-        var dtSearch = wrap ? wrap.querySelector('.dataTables_filter') : null;
-        var dtLength = wrap ? wrap.querySelector('.dataTables_length') : null;
-        if (dtSearch) dtSearch.style.display = 'none';
-        if (dtLength) dtLength.style.display = 'none';
-
-        var lenInput = document.getElementById('auditLengthInput');
-        if (lenInput) {
-            function applyAuditLen() {
-                var v = parseInt(lenInput.value, 10);
-                if (!isNaN(v) && v > 0) dt.page.len(v).draw();
-            }
-            lenInput.addEventListener('change', applyAuditLen);
-            lenInput.addEventListener('keydown', function (e) { if (e.key === 'Enter') applyAuditLen(); });
-        }
-
-        // In-page search filters across ALL loaded rows (server caps the load at
-        // ~1000 most-recent; see AuditLogController::LISTING_DEFAULT_LIMIT).
-        var customSearch = document.getElementById('auditCustomSearch');
-        if (window.VS && window.VS.bindFullTableSearch) {
-            window.VS.bindFullTableSearch(dt, customSearch);
-        }
-
-        var modal = document.getElementById('auditFilterModal');
+    var modal = document.getElementById('auditFilterModal');
         function openFilter() { if (modal) modal.style.display = 'flex'; }
         function closeFilter() { if (modal) modal.style.display = 'none'; }
 
@@ -207,9 +173,6 @@
                 filterForm.submit();
             }
         });
-    }
-
-    initAuditFilters();
 }());
 </script>
 

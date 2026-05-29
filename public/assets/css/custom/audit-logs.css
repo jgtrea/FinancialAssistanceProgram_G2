@@ -1,0 +1,86 @@
+/* ============================================================
+   AUDIT LOGS PAGE
+   ============================================================ */
+
+.vs-log-action {
+  display: inline-block;
+  font-size: 0.72rem;
+  font-weight: 700;
+  font-family: var(--font-mono);
+  border-radius: 6px;
+  padding: 0.2rem 0.55rem;
+  white-space: nowrap;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.vs-log-login {
+  background: #dff5fb;
+  color: var(--navy-md);
+}
+.vs-log-logout {
+  background: #edf3f6;
+  color: #506173;
+}
+.vs-log-create {
+  background: #d9f7ee;
+  color: #075c49;
+}
+.vs-log-update {
+  background: var(--parchment);
+  color: #7a5200;
+}
+.vs-log-delete {
+  background: #fff2ee;
+  color: #9f2323;
+}
+.vs-log-archive {
+  background: #e5f7f3;
+  color: var(--teal-dark);
+}
+.vs-log-generate {
+  background: #dff5fb;
+  color: var(--navy);
+}
+.vs-log-activate {
+  background: #d9f7ee;
+  color: #075c49;
+}
+.vs-log-deactivate {
+  background: #edf3f6;
+  color: #506173;
+}
+
+.vs-log-user {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.3;
+}
+.vs-log-fullname {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--navy);
+}
+.vs-log-username {
+  font-size: 0.72rem;
+  color: var(--muted);
+}
+
+.vs-log-desc {
+  font-size: 0.8rem;
+  color: var(--muted);
+  max-width: 240px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.vs-ip {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: var(--navy-md);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 0.1rem 0.4rem;
+}

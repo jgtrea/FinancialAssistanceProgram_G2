@@ -1,0 +1,195 @@
+/* ============================================================
+   VOUCHER PRINT STYLES
+   ============================================================ */
+
+.vouchers-page {
+  width: 210mm;
+  height: 297mm;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  page-break-after: always;
+  background-size: cover;
+  background-position: top center;
+  background-repeat: no-repeat;
+}
+
+.vouchers-page:last-child {
+  page-break-after: auto;
+}
+
+.voucher-slot {
+  position: absolute;
+  left: 0;
+  width: 100%;
+  height: 33.3333%;
+}
+
+.voucher-slot:nth-child(1) {
+  top: 0;
+}
+.voucher-slot:nth-child(2) {
+  top: 33.3333%;
+}
+.voucher-slot:nth-child(3) {
+  top: 66.6667%;
+}
+
+.voucher-content {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+  padding: 9mm 10mm 5mm 10mm;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+}
+
+/* Header */
+.v-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 4mm;
+  margin-bottom: 2.5mm;
+}
+
+.v-logos {
+  display: flex;
+  gap: 1.5mm;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.v-logos img {
+  width: 11mm;
+  height: 11mm;
+  object-fit: contain;
+}
+
+.v-header-text {
+  flex: 1;
+  text-align: center;
+  padding-top: 0.5mm;
+}
+
+.v-header-text .v-agency {
+  font-size: 6pt;
+  font-weight: bold;
+  color: #1a3a5c;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  line-height: 1.2;
+}
+
+.v-header-text .v-title {
+  font-size: 11pt;
+  font-weight: 900;
+  color: #8b4513;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  line-height: 1.1;
+  margin: 0.5mm 0;
+}
+
+.v-header-text .v-ordinance {
+  font-size: 5.5pt;
+  color: #333;
+  letter-spacing: 0.05em;
+}
+
+/* Fields */
+.v-fields {
+  margin-top: 1.5mm;
+  flex: 1;
+}
+
+.v-row {
+  display: flex;
+  align-items: flex-end;
+  margin-bottom: 2.5mm;
+  gap: 1.5mm;
+}
+
+.v-row.two-col {
+  gap: 6mm;
+}
+
+.v-field-label {
+  font-size: 7pt;
+  font-weight: bold;
+  color: #222;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.v-field-line {
+  flex: 1;
+  border-bottom: 0.8px solid #444;
+  min-width: 15mm;
+  padding-bottom: 0.5mm;
+}
+
+.v-field-value {
+  font-size: 7pt;
+  color: #111;
+  padding: 0 1.5mm;
+  font-weight: 500;
+}
+
+.v-amount-box {
+  background: #f5c842;
+  border: 1px solid #c8a000;
+  padding: 1.5mm 3mm;
+  font-size: 8pt;
+  font-weight: bold;
+  color: #111;
+  white-space: nowrap;
+  flex-shrink: 0;
+  min-width: 30mm;
+  text-align: center;
+}
+
+/* Signatories */
+.v-signatories {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 2.5mm;
+  gap: 2mm;
+}
+
+.v-signatory {
+  flex: 1;
+  text-align: center;
+}
+
+.v-sig-img {
+  height: 8mm;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  margin-bottom: 0.5mm;
+}
+
+.v-sig-img img {
+  max-height: 8mm;
+  max-width: 25mm;
+  object-fit: contain;
+}
+
+.v-sig-name {
+  font-size: 6.5pt;
+  font-weight: bold;
+  color: #111;
+  border-top: 0.8px solid #444;
+  padding-top: 0.5mm;
+  text-transform: uppercase;
+}
+
+.v-sig-title {
+  font-size: 5.5pt;
+  color: #444;
+  margin-top: 0.3mm;
+}

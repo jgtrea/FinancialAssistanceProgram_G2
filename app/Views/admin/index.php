@@ -56,11 +56,7 @@
 
     <div class="vs-card">
         <div class="vs-card-body">
-            <div class="d-flex align-items-center gap-2 mb-3 flex-wrap">
-                <input type="text" id="customUserSearch" class="vs-input vs-page-search" placeholder="Search this page..." style="max-width:260px">
-                <label class="vs-length-label ms-auto">Show <input type="number" id="userLengthInput" class="vs-length-input" value="10" min="1" max="500"> entries</label>
-            </div>
-            <table id="userManagementTable" class="vs-datatable js-data-table" data-search-placeholder="Search users..." style="width:100%">
+            <table id="userManagementTable" class="vs-datatable js-data-table" data-search-placeholder="Search users..." data-order='[[1,"asc"]]' style="width:100%">
             <thead>
                 <tr>
                     <th class="vs-th-check"><input type="checkbox" class="vs-check" id="userCheckAll" aria-label="Select all"></th>
@@ -542,35 +538,13 @@
 
 }());
 
-// ── Custom search + filter for users table ────────────────────────────
+// ── Filter modal + date-range custom filter for users table ──────────────────
 (function initUserSearch() {
     var table = document.getElementById('userManagementTable');
     if (!table || !window.jQuery || !$.fn.DataTable || !$.fn.DataTable.isDataTable(table)) {
         return setTimeout(initUserSearch, 50);
     }
     var dt = $(table).DataTable();
-    var dtWrap = table.closest('.dataTables_wrapper');
-
-    var dtSearch = dtWrap ? dtWrap.querySelector('.dataTables_filter') : null;
-    if (dtSearch) dtSearch.style.display = 'none';
-
-    var dtLength = dtWrap ? dtWrap.querySelector('.dataTables_length') : null;
-    if (dtLength) dtLength.style.display = 'none';
-
-    var lenInput = document.getElementById('userLengthInput');
-    if (lenInput) {
-        function applyUserLen() {
-            var v = parseInt(lenInput.value, 10);
-            if (!isNaN(v) && v > 0) dt.page.len(v).draw();
-        }
-        lenInput.addEventListener('change', applyUserLen);
-        lenInput.addEventListener('keydown', function (e) { if (e.key === 'Enter') applyUserLen(); });
-    }
-
-    var searchInput = document.getElementById('customUserSearch');
-    if (window.VS && window.VS.bindCurrentPageSearch) {
-        window.VS.bindCurrentPageSearch(dt, searchInput);
-    }
 
     var filterModal = document.getElementById('userFilterModal');
     var filterBadge = document.getElementById('userFilterBadge');
