@@ -168,22 +168,170 @@ class Voucher extends Controller
     // ── List all students / vouchers ───────────────────────────────────────────
     public function index()
     {
-        $keyword  = trim((string) $this->request->getGet('q'));
-        $filters  = $this->getListingFilters();
-        $students = $this->voucherModel->getVouchersForListing(
-            $keyword,
-            VoucherModel::LISTING_DEFAULT_LIMIT,
-            $filters
-        );
+        $keyword = trim((string) $this->request->getGet('q'));
+        $filters = $this->getListingFilters();
 
+        // The listing now uses server-side DataTables (see vouchers/index.php's
+        // data-datatable-url + the studentsDatatable() endpoint). The initial
+        // table renders empty and rows arrive via AJAX, so we skip the upfront
+        // 1000-row query that the old client-side mode relied on.
         return view('vouchers/index', [
             'title'         => 'Vouchers',
-            'vouchers'      => $students,
+            'vouchers'      => [],
             'role'          => session()->get('role') ?: 'admin',
             'keyword'       => $keyword,
             'filters'       => $filters,
             'filterOptions' => $this->voucherModel->getListingFilterOptions(),
         ] + $this->getSchoolDropdownData());
+    }
+
+    /**
+     * Returns every student_id matching the current search + advanced filters.
+     * Used by the "Select all N matching across all pages" link in the
+     * server-side DataTables UI so the user can act on every match, not just
+     * the visible page slice.
+     */
+    public function studentsMatchingIds()
+    {
+        $req     = $this->request;
+        $keyword = (string) ($req->getGet('search')['value'] ?? $req->getGet('q') ?? '');
+        $filters = [];
+        foreach (VoucherModel::LISTING_FILTER_KEYS as $k) {
+            $filters[$k] = trim((string) $req->getGet($k));
+        }
+
+        $ids = $this->voucherModel->getMatchingStudentIds($keyword, $filters);
+
+        return $this->response->setJSON([
+            'count' => count($ids),
+            'ids'   => array_values(array_map('intval', $ids)),
+        ]);
+    }
+
+    /**
+     * Server-side DataTables endpoint for the students listing. Returns
+     * DataTables-shaped JSON: { draw, recordsTotal, recordsFiltered, data }.
+     * Each row in `data` is an array of pre-rendered HTML cell strings, in the
+     * same order as the <th>s in vouchers/index.php.
+     */
+    public function studentsDatatable()
+    {
+        helper(['asset_icon']);
+
+        $req     = $this->request;
+        $draw    = (int) $req->getGet('draw');
+        $start   = (int) $req->getGet('start');
+        $length  = (int) ($req->getGet('length') ?? 25);
+        $search  = (string) ($req->getGet('search')['value'] ?? '');
+        $orderC  = $req->getGet('order')[0]['column'] ?? null;
+        $orderD  = $req->getGet('order')[0]['dir']    ?? 'asc';
+
+        // Advanced filters arrive as flat top-level GET params (same names the
+        // listing page uses — see VoucherModel::LISTING_FILTER_KEYS).
+        $filters = [];
+        foreach (VoucherModel::LISTING_FILTER_KEYS as $k) {
+            $filters[$k] = trim((string) $req->getGet($k));
+        }
+
+        $slice = $this->voucherModel->getDatatableSlice([
+            'start'     => $start,
+            'length'    => $length,
+            'search'    => $search,
+            'order_col' => $orderC,
+            'order_dir' => $orderD,
+            'filters'   => $filters,
+        ]);
+
+        $data = [];
+        foreach ($slice['rows'] as $v) {
+            $data[] = $this->renderStudentRowForDatatable($v);
+        }
+
+        return $this->response->setJSON([
+            'draw'            => $draw,
+            'recordsTotal'    => $slice['recordsTotal'],
+            'recordsFiltered' => $slice['recordsFiltered'],
+            'data'            => $data,
+        ]);
+    }
+
+    /**
+     * Mirror of the per-row HTML emitted by vouchers/index.php's PHP foreach,
+     * but built as an associative array of cell strings keyed by DataTables
+     * `data` column names. Keeps row markup in one place (here) instead of
+     * duplicated in JS column renderers.
+     */
+    protected function renderStudentRowForDatatable(array $v): array
+    {
+        $studentId   = (int) ($v['student_id'] ?? 0);
+        $notEligible = ($v['eligibility_status'] ?? '') === 'not_eligible';
+        $isActive    = !isset($v['is_active']) || !empty($v['is_active']);
+        $elig        = (string) ($v['eligibility_status'] ?? '');
+
+        $checkbox = '<input type="checkbox" class="vs-check vs-row-check" value="'
+            . esc($studentId, 'attr') . '"'
+            . ($notEligible ? ' disabled title="Not eligible — cannot be selected"' : '')
+            . '>';
+
+        $voucherNo  = '<span class="js-voucher-no">' . esc($v['voucher_no'] ?: '-') . '</span>';
+        $name       = esc($v['full_name'] ?? '');
+        $jhs        = esc($v['junior_high_school'] ?: '-');
+        $shs        = esc($v['preferred_senior_high_school'] ?? '');
+        $schoolYear = esc($v['school_year'] ?? '');
+
+        if ($elig === 'eligible' || $elig === 'not_eligible') {
+            $color    = $elig === 'eligible' ? '#16a34a' : '#9ca3af';
+            $label    = $elig === 'eligible' ? 'Eligible' : 'Not eligible';
+            $icon     = asset_icon($elig === 'eligible' ? 'circle_check' : 'circle_x', ['width' => '18', 'height' => '18']);
+            $eligCell = '<span class="js-elig-icon" style="color:' . $color . ';display:inline-flex" title="' . esc($label, 'attr') . '" aria-label="' . esc($label, 'attr') . '">' . $icon . '</span>';
+        } else {
+            $eligCell = '<span aria-label="Unknown">—</span>';
+        }
+
+        $statusColor = $isActive ? '#16a34a' : '#9ca3af';
+        $statusLabel = $isActive ? 'Active' : 'Inactive';
+        $statusIcon  = asset_icon($isActive ? 'circle_check' : 'circle_x', ['width' => '18', 'height' => '18']);
+        $statusCell  = '<span class="js-status-icon" style="color:' . $statusColor . ';display:inline-flex" title="' . $statusLabel . '" aria-label="' . $statusLabel . '">' . $statusIcon . '</span>';
+
+        $genCount  = '<span class="js-generate-count">' . esc((string) ($v['generate_count'] ?? 0)) . '</span>';
+        $lastGen   = !empty($v['generated_at']) ? date('M d, Y', strtotime($v['generated_at'])) : '-';
+        $lastGenCell = '<span class="js-last-generated">' . esc($lastGen) . '</span>';
+
+        $eligAttr   = esc($elig, 'attr');
+        $toggleText = $elig === 'not_eligible' ? 'Mark Eligible' : 'Mark Not Eligible';
+        $actCell = '<div class="js-actions-cell"><div class="dropdown">'
+            . '<button type="button" class="vs-tbl-btn vs-tbl-btn-actions dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">Actions</button>'
+            . '<ul class="dropdown-menu dropdown-menu-end">'
+            . '<li><button class="dropdown-item js-voucher-action" type="button" data-mode="view" data-id="' . $studentId . '">View</button></li>'
+            . '<li><button class="dropdown-item js-voucher-action" type="button" data-mode="edit" data-id="' . $studentId . '">Edit</button></li>'
+            . '<li><button class="dropdown-item js-toggle-eligibility" type="button" data-id="' . $studentId . '" data-eligibility="' . $eligAttr . '">' . $toggleText . '</button></li>'
+            . '<li><hr class="dropdown-divider"></li>'
+            . '<li><button class="dropdown-item text-danger js-toggle-active" type="button" data-id="' . $studentId . '" data-active="' . ($isActive ? '1' : '0') . '">' . ($isActive ? 'Deactivate' : 'Activate') . '</button></li>'
+            . '</ul></div></div>';
+
+        return [
+            'DT_RowId'   => 'row-' . $studentId,
+            'DT_RowAttr' => [
+                'data-gender'         => (string) ($v['gender'] ?? ''),
+                'data-remarks'        => (string) ($v['remarks_status'] ?? ''),
+                'data-voucher-date'   => (string) ($v['voucher_date'] ?? ''),
+                'data-voucher-status' => (string) ($v['voucher_status'] ?? ''),
+                'data-eligibility'    => $elig,
+                'data-active'         => $isActive ? '1' : '0',
+                'data-gwa'            => (string) ($v['gwa'] ?? ''),
+            ],
+            'checkbox'      => $checkbox,
+            'voucher_no'    => $voucherNo,
+            'name'          => $name,
+            'jhs'           => $jhs,
+            'shs'           => $shs,
+            'school_year'   => $schoolYear,
+            'eligibility'   => $eligCell,
+            'status'        => $statusCell,
+            'generate_count'=> $genCount,
+            'last_generated'=> $lastGenCell,
+            'actions'       => $actCell,
+        ];
     }
 
     public function generate()
@@ -474,6 +622,139 @@ class Voucher extends Controller
             ->setHeader('Content-Type', $contentType)
             ->setHeader('Content-Disposition', 'attachment; filename="' . basename($filePath) . '"')
             ->setBody(file_get_contents($filePath));
+    }
+
+    // ── JSON-FILE QUEUE FLOW ──────────────────────────────────────────────────
+    // Parallel pipeline to the DB-backed pdf_jobs flow. Jobs are queued into
+    // writable/pdf_queue/queue.json, drained by `spark run:json-pdf-queue`,
+    // and surface in finished.json when done. See App\Libraries\JsonPdfQueue
+    // and App\Libraries\JsonPdfRunner for the storage + render logic.
+
+    public function generateJsonPdf()
+    {
+        $ids = $this->parseVoucherIds($this->request->getPost('voucher_ids'));
+
+        if (empty($ids)) {
+            return $this->response->setJSON(['success' => false, 'message' => 'No students selected.']);
+        }
+
+        $students = $this->prepareStudentsForGeneration($ids);
+
+        if (empty($students)) {
+            return $this->response->setJSON(['success' => false, 'message' => 'Selected students not found.']);
+        }
+
+        $userId = $this->getCurrentUserId();
+        $prefix = session()->get('role') === 'admin' ? 'admin' : 'user';
+        $jobId  = \App\Libraries\JsonPdfQueue::enqueueJob($ids, $userId, self::CHUNK_SIZE);
+
+        log_action($userId, 'QUEUE_PDF_JSON', 'Queued JSON-PDF for ' . \count($ids) . ' student(s) (job #' . $jobId . ')');
+
+        return $this->response->setJSON([
+            'success'    => true,
+            'queued'     => true,
+            'job_id'     => $jobId,
+            'status_url' => site_url("{$prefix}/vouchers/json-pdf-status/{$jobId}"),
+            'vouchers'   => array_column($students, 'voucher_no', 'student_id'),
+        ]);
+    }
+
+    public function jsonPdfStatus(int $jobId)
+    {
+        $snapshot = \App\Libraries\JsonPdfQueue::snapshot($jobId);
+
+        if (!$snapshot) {
+            return $this->response->setJSON(['status' => 'not_found']);
+        }
+
+        $userId = $this->getCurrentUserId();
+        $parent = $snapshot['parent'];
+
+        if (session()->get('role') !== 'admin' && (int) ($parent['created_by'] ?? 0) !== $userId) {
+            return $this->response->setJSON(['status' => 'forbidden']);
+        }
+
+        $status = $parent['status'] ?? 'pending';
+
+        // Refine "pending" into queued vs processing for UI clarity.
+        if ($status === 'pending') {
+            if ($snapshot['processing'] > 0) {
+                $status = 'processing';
+            } elseif ($snapshot['done'] > 0 && $snapshot['done'] < $snapshot['total']) {
+                $status = 'processing';
+            } else {
+                $status = 'queued';
+            }
+        }
+
+        $prefix = session()->get('role') === 'admin' ? 'admin' : 'user';
+        $downloadUrl = ($parent['status'] ?? '') === 'done'
+            ? site_url("{$prefix}/vouchers/json-pdf-download/{$jobId}")
+            : null;
+
+        return $this->response->setJSON([
+            'status'       => $status,
+            'download_url' => $downloadUrl,
+            'error'        => $parent['error_message'] ?? null,
+            'progress'     => [
+                'done'       => $snapshot['done'],
+                'failed'     => $snapshot['failed'],
+                'processing' => $snapshot['processing'],
+                'queued'     => $snapshot['queued'],
+                'total'      => $snapshot['total'],
+            ],
+        ]);
+    }
+
+    public function jsonPdfDownload(int $jobId)
+    {
+        $found = \App\Libraries\JsonPdfQueue::findJob($jobId);
+
+        // Only parent records are downloadable; chunks have parent_job_id != null.
+        if (!$found || !empty($found['job']['parent_job_id'])) {
+            return redirect()->back()->with('error', 'PDF not found.');
+        }
+
+        $job    = $found['job'];
+        $userId = $this->getCurrentUserId();
+
+        if (session()->get('role') !== 'admin' && (int) ($job['created_by'] ?? 0) !== $userId) {
+            return redirect()->back()->with('error', 'Access denied.');
+        }
+
+        if (($job['status'] ?? '') !== 'done' || empty($job['file_path'])) {
+            return redirect()->back()->with('error', 'PDF is not ready yet.');
+        }
+
+        $filePath = WRITEPATH . 'pdfs' . DIRECTORY_SEPARATOR . $job['file_path'];
+
+        if (!file_exists($filePath)) {
+            return redirect()->back()->with('error', 'PDF file is missing from storage.');
+        }
+
+        log_action($userId, 'DOWNLOAD_PDF_JSON', "Downloaded JSON-PDF for job #{$jobId}");
+
+        $isZip       = strtolower(pathinfo($filePath, PATHINFO_EXTENSION)) === 'zip';
+        $contentType = $isZip ? 'application/zip' : 'application/pdf';
+        $body        = file_get_contents($filePath);
+        $basename    = basename($filePath);
+
+        // One-shot delivery — wipe the file + the finished-job record so the
+        // writable/ directory stays small over time. The user has the bytes;
+        // the server doesn't keep a copy. (Re-download would require re-queueing.)
+        @unlink($filePath);
+        \App\Libraries\JsonPdfQueue::mutate(\App\Libraries\JsonPdfQueue::FILE_FINISHED, function (array $finished) use ($jobId) {
+            $finished['jobs'] = array_values(array_filter(
+                $finished['jobs'] ?? [],
+                static fn($j) => (int) ($j['job_id'] ?? 0) !== $jobId
+            ));
+            return $finished;
+        });
+
+        return $this->response
+            ->setHeader('Content-Type', $contentType)
+            ->setHeader('Content-Disposition', 'attachment; filename="' . $basename . '"')
+            ->setBody($body);
     }
 
     // ── Archive selected students (hard — copies to student_archive, deletes from students) ─

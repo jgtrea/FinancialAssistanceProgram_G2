@@ -29,6 +29,31 @@
         </div>
     </div>
 
+    <!-- Global PDF status modal — used by the toast Status button so it works
+         from any page after the user navigates away from the voucher listing. -->
+    <div class="vs-modal-overlay" id="pdfStatusModal" style="display:none">
+      <div class="vs-modal">
+        <div class="vs-modal-header">
+          <h5>Voucher Generation Status</h5>
+          <button class="vs-modal-close" id="pdfStatusModalClose">&times;</button>
+        </div>
+        <div class="vs-modal-body">
+          <p id="pdfStatusEmpty" style="display:none">No recent generation job for this session.</p>
+          <div id="pdfStatusContent" style="display:none">
+            <p><strong>Job #:</strong> <span id="pdfStatusJobId">-</span></p>
+            <p><strong>Status:</strong> <span id="pdfStatusBadge" class="vs-badge">-</span></p>
+            <p id="pdfStatusProgressLine"><strong>Progress:</strong> <span id="pdfStatusProgress">0 / 0</span></p>
+            <p id="pdfStatusErrorLine" style="display:none; color:#b00020"><strong>Error:</strong> <span id="pdfStatusError"></span></p>
+            <div class="mt-3" id="pdfStatusDownloadWrap" style="display:none">
+              <a id="pdfStatusDownload" class="vs-btn vs-btn-blue" href="#">
+                Download Voucher
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <?php pre_script('app'); ?>
     <?= $this->renderSection('scripts') ?>
 </body>

@@ -23,7 +23,10 @@
     <span class="vs-action-bar-count"><span id="selectedCount">0</span> selected</span>
     <button class="vs-btn vs-btn-blue" id="btnGeneratePdf">
       <?= asset_icon('voucher-add') ?>
-      Generate Vouchers
+      Generate
+    </button>
+    <button type="button" class="vs-btn vs-btn-outline" id="btnOpenStatus">
+      Status
     </button>
     <button type="button" class="vs-btn vs-btn-outline" id="btnOpenExport">
       <?= asset_icon('export') ?>
@@ -89,9 +92,11 @@
     </div>
   </div>
 
-<form id="pdfForm" method="POST" action="<?= site_url($prefix . '/vouchers/generate-pdf') ?>" style="display:none">
+<form id="pdfForm" method="POST" action="<?= site_url($prefix . '/vouchers/json-generate-pdf') ?>" style="display:none">
   <?= csrf_field() ?>
 </form>
+
+<!-- Status modal now lives in layouts/main.php so the toast Status button works on every page. -->
 
 <!-- Export modal -->
 <div class="vs-modal-overlay" id="exportModal" style="display:none">

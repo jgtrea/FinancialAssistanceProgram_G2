@@ -22,17 +22,13 @@ class Voucher extends AdminVoucher
 {
     public function index()
     {
-        $keyword  = trim((string) $this->request->getGet('q'));
-        $filters  = $this->getListingFilters();
-        $students = $this->voucherModel->getVouchersForListing(
-            $keyword,
-            \App\Models\VoucherModel::LISTING_DEFAULT_LIMIT,
-            $filters
-        );
+        $keyword = trim((string) $this->request->getGet('q'));
+        $filters = $this->getListingFilters();
 
+        // Server-side DataTables — see Admin\Voucher::index for the same note.
         return view('vouchers/index', [
             'title'         => 'Vouchers',
-            'vouchers'      => $students,
+            'vouchers'      => [],
             'role'          => 'user',
             'keyword'       => $keyword,
             'filters'       => $filters,
@@ -161,6 +157,36 @@ class Voucher extends AdminVoucher
             'status_url' => site_url("user/vouchers/pdf-status/{$jobId}"),
             // student_id → voucher_no map so the UI can render new numbers
             // without an extra round-trip.
+            'vouchers'   => array_column($students, 'voucher_no', 'student_id'),
+        ]);
+    }
+
+    /**
+     * User-side JSON-queue enqueue. Forces the status URL through the user/
+     * prefix regardless of session role.
+     */
+    public function generateJsonPdf()
+    {
+        $ids    = $this->parseVoucherIds($this->request->getPost('voucher_ids'));
+        $userId = session()->get('user_id');
+
+        if (empty($ids)) {
+            return $this->response->setJSON(['success' => false, 'message' => 'No students selected.']);
+        }
+
+        $students = $this->prepareStudentsForGeneration($ids);
+        if (empty($students)) {
+            return $this->response->setJSON(['success' => false, 'message' => 'No valid students found.']);
+        }
+
+        $jobId = \App\Libraries\JsonPdfQueue::enqueueJob($ids, (int) $userId, AdminVoucher::CHUNK_SIZE);
+        log_action($userId, 'QUEUE_PDF_JSON', 'Queued JSON-PDF for ' . \count($ids) . ' student(s) (job #' . $jobId . ')');
+
+        return $this->response->setJSON([
+            'success'    => true,
+            'queued'     => true,
+            'job_id'     => $jobId,
+            'status_url' => site_url("user/vouchers/json-pdf-status/{$jobId}"),
             'vouchers'   => array_column($students, 'voucher_no', 'student_id'),
         ]);
     }

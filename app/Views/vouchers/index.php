@@ -57,6 +57,9 @@
         <?= asset_icon('voucher-add') ?>
         Generate Voucher
       </button>
+      <button type="button" class="vs-btn vs-btn-outline" id="btnOpenStatus">
+        Status
+      </button>
       <button type="button" class="vs-btn vs-btn-success" id="btnOpenExport">
         <?= asset_icon('export') ?>
         Export
@@ -83,7 +86,20 @@
         <input type="text" id="customStudentsSearch" class="vs-input vs-page-search" placeholder="Search this page..." style="max-width:260px">
         <label class="vs-length-label ms-auto">Show <input type="number" id="vouchersLengthInput" class="vs-length-input" value="10" min="1" max="500"> entries</label>
       </div>
-      <table id="studentsTable" class="vs-datatable" data-search-placeholder="Search students..." style="width:100%">
+      <!-- Cross-page select banner — appears when user checks the page header
+           checkbox in server-side mode so they can extend the selection to
+           every matching row across all pages, not just the visible page. -->
+      <div id="selectAllBanner" style="display:none; margin-bottom:8px; padding:8px 12px; background:#fef3c7; border:1px solid #fcd34d; border-radius:6px">
+        <span id="selectAllBannerText"></span>
+        <a href="#" id="selectAllMatchingLink" style="font-weight:600; margin-left:8px">Select all matching</a>
+        <a href="#" id="selectAllClearLink" style="margin-left:8px; display:none">Clear</a>
+      </div>
+      <table id="studentsTable" class="vs-datatable"
+             data-search-placeholder="Search students..."
+             data-datatable-url="<?= site_url($prefix . '/students/datatable') ?>"
+             data-matching-ids-url="<?= site_url($prefix . '/students/matching-ids') ?>"
+             data-filter-params='<?= json_encode($filters ?? []) ?>'
+             style="width:100%">
         <thead>
           <tr>
             <th class="vs-th-check"><input type="checkbox" class="vs-check vs-check-all" aria-label="Select all students"></th>
@@ -100,74 +116,7 @@
           </tr>
         </thead>
         <tbody>
-          <?php foreach ($vouchers as $v): ?>
-          <?php $notEligible = ($v['eligibility_status'] ?? '') === 'not_eligible' ?>
-          <?php $isActive    = !isset($v['is_active']) || !empty($v['is_active']) ?>
-          <tr id="row-<?= esc($v['student_id'], 'attr') ?>"
-              data-gender="<?= esc((string) ($v['gender'] ?? ''), 'attr') ?>"
-              data-remarks="<?= esc((string) ($v['remarks_status'] ?? ''), 'attr') ?>"
-              data-voucher-date="<?= esc((string) ($v['voucher_date'] ?? ''), 'attr') ?>"
-              data-voucher-status="<?= esc((string) ($v['voucher_status'] ?? ''), 'attr') ?>"
-              data-eligibility="<?= esc((string) ($v['eligibility_status'] ?? ''), 'attr') ?>"
-              data-active="<?= $isActive ? '1' : '0' ?>"
-              data-gwa="<?= esc((string) ($v['gwa'] ?? ''), 'attr') ?>">
-            <td><input type="checkbox" class="vs-check vs-row-check" value="<?= esc($v['student_id'], 'attr') ?>"<?= $notEligible ? ' disabled title="Not eligible — cannot be selected"' : '' ?>></td>
-            <td class="js-voucher-no"><?= esc($v['voucher_no'] ?: '-') ?></td>
-            <td><?= esc($v['full_name']) ?></td>
-            <td><?= esc($v['junior_high_school'] ?: '-') ?></td>
-            <td><?= esc($v['preferred_senior_high_school']) ?></td>
-            <td><?= esc($v['school_year']) ?></td>
-            <td>
-              <?php $elig = (string) ($v['eligibility_status'] ?? '') ?>
-              <?php $eligLabel = $elig === 'eligible' ? 'Eligible' : ($elig === 'not_eligible' ? 'Not eligible' : '—') ?>
-              <?php if ($elig === 'eligible' || $elig === 'not_eligible'): ?>
-                <span class="js-elig-icon" style="color:<?= $elig === 'eligible' ? '#16a34a' : '#9ca3af' ?>;display:inline-flex"
-                      title="<?= esc($eligLabel, 'attr') ?>" aria-label="<?= esc($eligLabel, 'attr') ?>">
-                  <?= asset_icon($elig === 'eligible' ? 'circle_check' : 'circle_x', ['width' => '18', 'height' => '18']) ?>
-                </span>
-              <?php else: ?>
-                <span aria-label="Unknown">—</span>
-              <?php endif ?>
-            </td>
-            <td>
-              <span class="js-status-icon" style="color:<?= $isActive ? '#16a34a' : '#9ca3af' ?>;display:inline-flex"
-                    title="<?= $isActive ? 'Active' : 'Inactive' ?>" aria-label="<?= $isActive ? 'Active' : 'Inactive' ?>">
-                <?= asset_icon($isActive ? 'circle_check' : 'circle_x', ['width' => '18', 'height' => '18']) ?>
-              </span>
-            </td>
-            <td>
-              <span class="js-generate-count"><?= esc((string) ($v['generate_count'] ?? 0)) ?></span>
-            </td>
-            <td class="js-last-generated"><?= !empty($v['generated_at']) ? date('M d, Y', strtotime($v['generated_at'])) : '-' ?></td>
-            <td>
-              <div class="js-actions-cell">
-                <div class="dropdown">
-                  <button type="button" class="vs-tbl-btn vs-tbl-btn-actions dropdown-toggle"
-                          data-bs-toggle="dropdown" aria-expanded="false">Actions</button>
-                  <ul class="dropdown-menu dropdown-menu-end">
-                    <li><button class="dropdown-item js-voucher-action" type="button" data-mode="view" data-id="<?= esc($v['student_id'], 'attr') ?>">View</button></li>
-                    <li><button class="dropdown-item js-voucher-action" type="button" data-mode="edit" data-id="<?= esc($v['student_id'], 'attr') ?>">Edit</button></li>
-                    <li>
-                      <button class="dropdown-item js-toggle-eligibility" type="button"
-                              data-id="<?= esc($v['student_id'], 'attr') ?>"
-                              data-eligibility="<?= esc($v['eligibility_status'] ?? '', 'attr') ?>">
-                        <?= ($v['eligibility_status'] ?? '') === 'not_eligible' ? 'Mark Eligible' : 'Mark Not Eligible' ?>
-                      </button>
-                    </li>
-                    <li><hr class="dropdown-divider"></li>
-                    <li>
-                      <button class="dropdown-item text-danger js-toggle-active" type="button"
-                              data-id="<?= esc($v['student_id'], 'attr') ?>"
-                              data-active="<?= $isActive ? '1' : '0' ?>">
-                        <?= $isActive ? 'Deactivate' : 'Activate' ?>
-                      </button>
-                    </li>
-                  </ul>
-                </div>
-              </div>
-            </td>
-          </tr>
-          <?php endforeach ?>
+          <!-- Rows loaded by DataTables via AJAX from the data-datatable-url endpoint. -->
         </tbody>
       </table>
     </div>
@@ -195,9 +144,11 @@
   </div>
 </div>
 
-<form id="pdfForm" method="POST" action="<?= site_url($prefix . '/vouchers/generate-pdf') ?>" style="display:none">
+<form id="pdfForm" method="POST" action="<?= site_url($prefix . '/vouchers/json-generate-pdf') ?>" style="display:none">
   <?= csrf_field() ?>
 </form>
+
+<!-- Status modal now lives in layouts/main.php so the toast Status button works on every page. -->
 
 <form id="archiveForm" action="<?= site_url($prefix . '/vouchers/archive') ?>" style="display:none">
   <?= csrf_field() ?>

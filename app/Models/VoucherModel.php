@@ -152,7 +152,11 @@ class VoucherModel extends Model
             ->orderBy('is_active', 'DESC')
             ->orderBy('student_id', 'DESC');
 
-        if ($keyword === '' && !$hasFilter && $limit > 0) {
+        // Always cap the result set, even with keyword/filter applied. Without
+        // this guard, a filter like eligibility=eligible can return tens of
+        // thousands of rows on large databases and hang the browser. Users
+        // refine further via the in-page search if they need a tighter slice.
+        if ($limit > 0) {
             $builder->limit($limit);
         }
 
@@ -169,6 +173,102 @@ class VoucherModel extends Model
         unset($row);
 
         return $rows;
+    }
+
+    /**
+     * Server-side DataTables slice. Returns the page-sized rows plus the
+     * filtered/total counts needed for DataTables' draw response.
+     *
+     * $params expects:
+     *   start, length, search (string), order_col (int|null), order_dir (asc|desc),
+     *   filters (array — same shape as getVouchersForListing)
+     */
+    public function getDatatableSlice(array $params): array
+    {
+        $start    = max(0, (int) ($params['start']    ?? 0));
+        $length   = (int) ($params['length']   ?? 25);
+        $search   = trim((string) ($params['search'] ?? ''));
+        $orderCol = $params['order_col'] ?? null;
+        $orderDir = (strtolower((string) ($params['order_dir'] ?? 'asc')) === 'desc') ? 'DESC' : 'ASC';
+        $filters  = $params['filters'] ?? [];
+
+        $columnMap = [
+            1 => 'voucher_no',
+            2 => 'last_name',
+            3 => 'junior_high_school',
+            4 => 'preferred_senior_high_school',
+            5 => 'school_year',
+            6 => 'eligibility_status',
+            7 => 'is_active',
+            8 => 'generate_count',
+            9 => 'generated_at',
+        ];
+
+        // Total (unfiltered).
+        $recordsTotal = (int) $this->db->table('students')->countAllResults();
+
+        // Build the filtered query once. We need two passes: one for the count
+        // (without LIMIT/ORDER) and one for the rows.
+        $applyWhere = function ($builder) use ($search, $filters) {
+            if ($search !== '') {
+                $builder
+                    ->groupStart()
+                    ->like('voucher_no', $search)
+                    ->orLike('first_name', $search)
+                    ->orLike('middle_name', $search)
+                    ->orLike('last_name', $search)
+                    ->orLike('suffix', $search)
+                    ->orLike('junior_high_school', $search)
+                    ->orLike('preferred_senior_high_school', $search)
+                    ->orLike('school_year', $search)
+                    ->orLike('gender', $search)
+                    ->orLike('remarks_status', $search)
+                    ->orLike('voucher_status', $search)
+                    ->orLike('contact_number', $search)
+                    ->groupEnd();
+            }
+            $this->applyListingFilters($builder, $filters);
+        };
+
+        $countBuilder = $this->db->table('students');
+        $applyWhere($countBuilder);
+        $recordsFiltered = (int) $countBuilder->countAllResults();
+
+        $builder = $this->db->table('students')
+            ->select("
+                student_id, voucher_no, voucher_date,
+                first_name, middle_name, last_name, suffix,
+                CONCAT_WS(' ', NULLIF(first_name,''), NULLIF(middle_name,''), NULLIF(last_name,''), NULLIF(suffix,'')) AS full_name,
+                preferred_senior_high_school, school_year,
+                eligibility_status, voucher_status, is_active,
+                gwa, rank_no, gender, junior_high_school,
+                contact_number, remarks_status, created_at, generated_at,
+                generate_count
+            ");
+        $applyWhere($builder);
+
+        $orderColumn = $columnMap[(int) $orderCol] ?? null;
+        if ($orderColumn !== null) {
+            $builder->orderBy($orderColumn, $orderDir);
+        }
+        // Always tiebreak by student_id so pagination is stable.
+        $builder->orderBy('student_id', 'DESC');
+
+        if ($length > 0) {
+            $builder->limit($length, $start);
+        } else {
+            // DataTables sends length=-1 for "All" — clamp so we don't return
+            // 30k rows in a single page.
+            $builder->limit(5000, $start);
+        }
+
+        $rows = array_map(fn ($r) => $this->uppercaseRow($r), $builder->get()->getResultArray());
+
+        return [
+            'rows'            => $rows,
+            'recordsTotal'    => $recordsTotal,
+            'recordsFiltered' => $recordsFiltered,
+        ];
     }
 
     // Returns the distinct, non-empty values that exist in the students table
@@ -390,27 +490,18 @@ class VoucherModel extends Model
             return [];
         }
 
-        $counts = array_fill_keys($studentIds, 0);
-        $jobs = $this->db->table('pdf_jobs')
-            ->select('voucher_ids')
-            ->where('status', 'done')
+        // generate_count column is maintained by JsonPdfRunner on each render
+        // and backfilled from pdf_jobs by migration. O(1) per student now.
+        $rows = $this->db->table('students')
+            ->select('student_id, generate_count')
+            ->whereIn('student_id', $studentIds)
             ->get()
             ->getResultArray();
 
-        foreach ($jobs as $job) {
-            $ids = json_decode((string) ($job['voucher_ids'] ?? ''), true);
-            if (!is_array($ids)) {
-                continue;
-            }
-
-            foreach ($ids as $id) {
-                $id = (int) $id;
-                if (array_key_exists($id, $counts)) {
-                    $counts[$id]++;
-                }
-            }
+        $counts = array_fill_keys($studentIds, 0);
+        foreach ($rows as $r) {
+            $counts[(int) $r['student_id']] = (int) ($r['generate_count'] ?? 0);
         }
-
         return $counts;
     }
 }

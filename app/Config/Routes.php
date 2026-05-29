@@ -36,6 +36,8 @@ $routes->group('admin', ['filter' => 'role:admin'], function ($routes) {
 
     // Students
     $routes->get('students',                      'Admin\Voucher::index');
+    $routes->get('students/datatable',            'Admin\Voucher::studentsDatatable');
+    $routes->get('students/matching-ids',         'Admin\Voucher::studentsMatchingIds');
     $routes->get('students/create',               'Admin\Voucher::create');
     $routes->get('students/view/(:num)',          'Admin\Voucher::view/$1');
     $routes->get('students/edit/(:num)',          'Admin\Voucher::edit/$1');
@@ -47,9 +49,14 @@ $routes->group('admin', ['filter' => 'role:admin'], function ($routes) {
     $routes->get('vouchers/view/(:num)',          'Admin\Voucher::view/$1');
     $routes->get('vouchers/edit/(:num)',          'Admin\Voucher::edit/$1');
     $routes->post('vouchers/update/(:num)',       'Admin\Voucher::update/$1');
-    $routes->post('vouchers/generate-pdf',        'Admin\Voucher::generatePdf');
-    $routes->get('vouchers/pdf-status/(:num)',    'Admin\Voucher::checkPdfJob/$1');
-    $routes->get('vouchers/pdf-download/(:num)',  'Admin\Voucher::downloadPdf/$1');
+    // DISABLED — old DB-backed pdf_jobs flow. Replaced by JSON-file queue below.
+    // $routes->post('vouchers/generate-pdf',        'Admin\Voucher::generatePdf');
+    // $routes->get('vouchers/pdf-status/(:num)',    'Admin\Voucher::checkPdfJob/$1');
+    // $routes->get('vouchers/pdf-download/(:num)',  'Admin\Voucher::downloadPdf/$1');
+    // JSON-file queue parallel flow
+    $routes->post('vouchers/json-generate-pdf',       'Admin\Voucher::generateJsonPdf');
+    $routes->get('vouchers/json-pdf-status/(:num)',   'Admin\Voucher::jsonPdfStatus/$1');
+    $routes->get('vouchers/json-pdf-download/(:num)', 'Admin\Voucher::jsonPdfDownload/$1');
     $routes->post('vouchers/archive',             'Admin\Voucher::archive');
     $routes->post('vouchers/archive-all',         'Admin\Voucher::archiveAll');
     $routes->get('vouchers/count-matching',       'Admin\Voucher::countMatching');
@@ -89,6 +96,8 @@ $routes->group('user', ['filter' => 'auth'], function ($routes) {
 
     // Students
     $routes->get('students',                      'User\Voucher::index');
+    $routes->get('students/datatable',            'User\Voucher::studentsDatatable');
+    $routes->get('students/matching-ids',         'User\Voucher::studentsMatchingIds');
     $routes->get('students/create',               'User\Voucher::create');
     $routes->get('students/view/(:num)',          'User\Voucher::view/$1');
     $routes->get('students/edit/(:num)',          'User\Voucher::edit/$1');
@@ -100,9 +109,14 @@ $routes->group('user', ['filter' => 'auth'], function ($routes) {
     $routes->get('vouchers/view/(:num)',          'User\Voucher::view/$1');
     $routes->get('vouchers/edit/(:num)',          'User\Voucher::edit/$1');
     $routes->post('vouchers/update/(:num)',       'User\Voucher::update/$1');
-    $routes->post('vouchers/generate-pdf',        'User\Voucher::generatePdf');
-    $routes->get('vouchers/pdf-status/(:num)',    'User\Voucher::checkPdfJob/$1');
-    $routes->get('vouchers/pdf-download/(:num)',  'User\Voucher::downloadPdf/$1');
+    // DISABLED — old DB-backed pdf_jobs flow. Replaced by JSON-file queue below.
+    // $routes->post('vouchers/generate-pdf',        'User\Voucher::generatePdf');
+    // $routes->get('vouchers/pdf-status/(:num)',    'User\Voucher::checkPdfJob/$1');
+    // $routes->get('vouchers/pdf-download/(:num)',  'User\Voucher::downloadPdf/$1');
+    // JSON-file queue parallel flow
+    $routes->post('vouchers/json-generate-pdf',       'User\Voucher::generateJsonPdf');
+    $routes->get('vouchers/json-pdf-status/(:num)',   'User\Voucher::jsonPdfStatus/$1');
+    $routes->get('vouchers/json-pdf-download/(:num)', 'User\Voucher::jsonPdfDownload/$1');
     $routes->post('vouchers/archive',             'User\Voucher::archive');
     $routes->post('vouchers/archive-all',         'User\Voucher::archiveAll');
     $routes->get('vouchers/count-matching',       'User\Voucher::countMatching');
