@@ -12,23 +12,30 @@
     $hasSchoolYear     = $f('school_year') !== '';
 ?>
 
-<div class="vs-page-header mb-4">
+<div class="vs-page-header mb-3">
         <div>
             <h4 class="vs-page-title">Archive</h4>
-            <p class="vs-page-sub">Pick a school year from <strong>Filters</strong> to load archived records.</p>
+            <p class="vs-page-sub">View archived student records. Use <strong>Filters</strong> to narrow by school year.</p>
         </div>
     </div>
 
-    <form method="get" id="archiveFilterForm" class="vs-advanced-search vs-advanced-search-outside mb-3">
-        <input type="text" name="q" class="vs-input vs-advanced-search-input" placeholder="Advanced search all archived vouchers..." value="<?= esc((string) ($keyword ?? ''), 'attr') ?>">
-        <button type="button" class="vs-btn vs-btn-outline" id="btnOpenArchiveFilter">
-            Filters
-            <span id="archiveFilterBadge" class="badge bg-primary" style="display:<?= $activeFilterCount > 0 ? 'inline-block' : 'none' ?>;margin-left:.35rem"><?= $activeFilterCount > 0 ? esc($activeFilterCount) : '' ?></span>
-        </button>
-        <?php foreach ($filterKeys as $k): ?>
-          <input type="hidden" name="<?= esc($k, 'attr') ?>" value="<?= esc($f($k), 'attr') ?>">
-        <?php endforeach ?>
-    </form>
+    <div class="d-flex align-items-center gap-2 flex-wrap mb-3">
+        <form method="get" id="archiveFilterForm" class="vs-advanced-search vs-advanced-search-outside">
+            <input type="text" name="q" class="vs-input vs-advanced-search-input" placeholder="Enter keyword to search archived vouchers (name, school)" value="<?= esc((string) ($keyword ?? ''), 'attr') ?>">
+            <button type="button" class="vs-btn vs-btn-outline" id="btnOpenArchiveFilter">
+                Filters
+                <span id="archiveFilterBadge" class="badge bg-primary" style="display:<?= $activeFilterCount > 0 ? 'inline-block' : 'none' ?>;margin-left:.35rem"><?= $activeFilterCount > 0 ? esc($activeFilterCount) : '' ?></span>
+            </button>
+            <?php foreach ($filterKeys as $k): ?>
+              <input type="hidden" name="<?= esc($k, 'attr') ?>" value="<?= esc($f($k), 'attr') ?>">
+            <?php endforeach ?>
+        </form>
+        <div class="ms-auto d-flex gap-2">
+            <button type="button" class="vs-btn vs-btn-danger" id="btnArchiveCurrentData">
+                Archive Current Data
+            </button>
+        </div>
+    </div>
 
     <div class="vs-card">
         <div class="vs-card-body">
@@ -63,6 +70,30 @@
         </div>
     </div>
 
+<!-- Archive Current Data confirmation modal -->
+<div class="vs-modal-overlay" id="archiveCurrentModal" style="display:none">
+  <div class="vs-modal" style="max-width:500px">
+    <div class="vs-modal-header">
+      <h5 id="archiveCurrentModalTitle">Archive Current Data</h5>
+      <button class="vs-modal-close" id="archiveCurrentModalClose">&times;</button>
+    </div>
+    <div class="vs-modal-body">
+      <div id="archiveCurrentModalBody"></div>
+      <div class="mt-3">
+        <label class="vs-label" for="archiveCurrentReason">Reason (optional)</label>
+        <input type="text" id="archiveCurrentReason" class="vs-input" placeholder="e.g. End of school year">
+      </div>
+    </div>
+    <div class="vs-modal-footer">
+      <button class="vs-btn vs-btn-outline" id="archiveCurrentModalCancel">Cancel</button>
+      <button class="vs-btn vs-btn-danger" id="archiveCurrentModalConfirm">
+        <span id="archiveCurrentBtnText">Confirm Archive</span>
+        <span id="archiveCurrentBtnSpinner" class="vs-spinner" style="display:none"></span>
+      </button>
+    </div>
+  </div>
+</div>
+
 <div class="vs-modal-overlay" id="archiveFilterModal" style="display:none">
   <div class="vs-modal" style="max-width:680px">
     <div class="vs-modal-header">
@@ -73,40 +104,40 @@
       <div class="vs-form-grid vs-form-grid-4">
         <div class="vs-span-2">
           <label class="vs-label required" for="afSchoolYear">School Year</label>
-          <select id="afSchoolYear" class="vs-input">
-            <option value="">— Select a school year —</option>
+          <input list="afSchoolYear-list" id="afSchoolYear" class="vs-input" placeholder="— Select a school year —" value="<?= esc($f('school_year'), 'attr') ?>">
+          <datalist id="afSchoolYear-list">
             <?php foreach ($schoolYears as $sy): ?>
-              <option value="<?= esc($sy) ?>" <?= $f('school_year') === $sy ? 'selected' : '' ?>><?= esc($sy) ?></option>
+              <option value="<?= esc($sy) ?>">
             <?php endforeach ?>
             <?php if ($f('school_year') !== '' && !in_array($f('school_year'), $schoolYears, true)): ?>
-              <option value="<?= esc($f('school_year')) ?>" selected><?= esc($f('school_year')) ?></option>
+              <option value="<?= esc($f('school_year')) ?>">
             <?php endif ?>
-          </select>
+          </datalist>
         </div>
         <div class="vs-span-2">
-          <label class="vs-label" for="afGender">Gender</label>
-          <select id="afGender" class="vs-input">
-            <option value="">All</option>
-            <option value="MALE" <?= $f('gender') === 'MALE' ? 'selected' : '' ?>>Male</option>
-            <option value="FEMALE" <?= $f('gender') === 'FEMALE' ? 'selected' : '' ?>>Female</option>
-          </select>
+          <label class="vs-label" for="afGender">Sex</label>
+          <input list="afGender-list" id="afGender" class="vs-input" placeholder="All" value="<?= esc($f('gender'), 'attr') ?>">
+          <datalist id="afGender-list">
+            <option value="MALE">
+            <option value="FEMALE">
+          </datalist>
         </div>
         <div class="vs-span-2">
           <label class="vs-label" for="afRemarks">Remarks</label>
-          <select id="afRemarks" class="vs-input">
-            <option value="">All</option>
-            <option value="PASSED" <?= $f('remarks') === 'PASSED' ? 'selected' : '' ?>>Passed</option>
-            <option value="FOR REVIEW" <?= $f('remarks') === 'FOR REVIEW' ? 'selected' : '' ?>>For Review</option>
-            <option value="FAILED" <?= $f('remarks') === 'FAILED' ? 'selected' : '' ?>>Failed</option>
-          </select>
+          <input list="afRemarks-list" id="afRemarks" class="vs-input" placeholder="All" value="<?= esc($f('remarks'), 'attr') ?>">
+          <datalist id="afRemarks-list">
+            <option value="PASSED">
+            <option value="FOR REVIEW">
+            <option value="FAILED">
+          </datalist>
         </div>
         <div class="vs-span-2">
           <label class="vs-label" for="afVoucherStatus">Voucher Status</label>
-          <select id="afVoucherStatus" class="vs-input">
-            <option value="">All</option>
-            <option value="generated" <?= $f('voucher_status') === 'generated' ? 'selected' : '' ?>>Generated</option>
-            <option value="not_generated" <?= $f('voucher_status') === 'not_generated' ? 'selected' : '' ?>>Pending</option>
-          </select>
+          <input list="afVoucherStatus-list" id="afVoucherStatus" class="vs-input" placeholder="All" value="<?= esc($f('voucher_status'), 'attr') ?>">
+          <datalist id="afVoucherStatus-list">
+            <option value="generated">
+            <option value="not_generated">
+          </datalist>
         </div>
         <div class="vs-span-2">
           <label class="vs-label" for="afDateFrom">Voucher Date From</label>
@@ -118,23 +149,23 @@
         </div>
         <div class="vs-span-2">
           <label class="vs-label" for="afJuniorHs">Junior High School</label>
-          <select id="afJuniorHs" class="vs-input">
-            <option value="">All</option>
+          <input list="afJuniorHs-list" id="afJuniorHs" class="vs-input" placeholder="All" value="<?= esc($f('junior_hs'), 'attr') ?>">
+          <datalist id="afJuniorHs-list">
             <?php foreach ($juniorHighSchools as $school): ?>
               <?php $schoolName = $school['school_name'] ?? '' ?>
-              <option value="<?= esc($schoolName) ?>" <?= $f('junior_hs') === $schoolName ? 'selected' : '' ?>><?= esc($schoolName) ?></option>
+              <option value="<?= esc($schoolName) ?>">
             <?php endforeach ?>
-          </select>
+          </datalist>
         </div>
         <div class="vs-span-2">
           <label class="vs-label" for="afPreferredHs">Preferred Senior HS</label>
-          <select id="afPreferredHs" class="vs-input">
-            <option value="">All</option>
+          <input list="afPreferredHs-list" id="afPreferredHs" class="vs-input" placeholder="All" value="<?= esc($f('preferred_hs'), 'attr') ?>">
+          <datalist id="afPreferredHs-list">
             <?php foreach ($seniorHighSchools as $school): ?>
               <?php $schoolName = $school['school_name'] ?? '' ?>
-              <option value="<?= esc($schoolName) ?>" <?= $f('preferred_hs') === $schoolName ? 'selected' : '' ?>><?= esc($schoolName) ?></option>
+              <option value="<?= esc($schoolName) ?>">
             <?php endforeach ?>
-          </select>
+          </datalist>
         </div>
         <div class="vs-span-2">
           <label class="vs-label" for="afGwaMin">GWA Min</label>
@@ -260,6 +291,117 @@
             filterForm.submit();
         });
     }
+    // ── Archive Current Data button ───────────────────────────────────────────
+    var btnArchiveCurrent  = document.getElementById('btnArchiveCurrentData');
+    var archCurrentModal   = document.getElementById('archiveCurrentModal');
+    var archCurrentTitle   = document.getElementById('archiveCurrentModalTitle');
+    var archCurrentBody    = document.getElementById('archiveCurrentModalBody');
+    var archCurrentReason  = document.getElementById('archiveCurrentReason');
+    var archCurrentClose   = document.getElementById('archiveCurrentModalClose');
+    var archCurrentCancel  = document.getElementById('archiveCurrentModalCancel');
+    var archCurrentConfirm = document.getElementById('archiveCurrentModalConfirm');
+    var archCurrentBtnText = document.getElementById('archiveCurrentBtnText');
+    var archCurrentSpinner = document.getElementById('archiveCurrentBtnSpinner');
+
+    var previewUrl       = '<?= site_url(session()->get('role') === 'admin' ? 'admin' : 'user') ?>/vouchers/archive-preview';
+    var archByFilterBase = '<?= site_url(session()->get('role') === 'admin' ? 'admin' : 'user') ?>/vouchers/archive-by-filter';
+    var csrfName         = '<?= csrf_token() ?>';
+
+    function getCsrfValue() {
+        var meta = document.querySelector('meta[name="csrf-token-value"]');
+        return meta ? meta.getAttribute('content') : '<?= csrf_hash() ?>';
+    }
+
+    function closeArchCurrentModal() {
+        if (archCurrentModal)  archCurrentModal.style.display = 'none';
+        if (archCurrentReason) archCurrentReason.value = '';
+    }
+
+    archCurrentClose  && archCurrentClose.addEventListener('click', closeArchCurrentModal);
+    archCurrentCancel && archCurrentCancel.addEventListener('click', closeArchCurrentModal);
+    archCurrentModal  && archCurrentModal.addEventListener('click', function (e) {
+        if (e.target === archCurrentModal) closeArchCurrentModal();
+    });
+
+    btnArchiveCurrent && btnArchiveCurrent.addEventListener('click', function () {
+        var form = document.getElementById('archiveFilterForm');
+        var params = form ? new URLSearchParams(new FormData(form)).toString() : '';
+
+        btnArchiveCurrent.disabled = true;
+
+        fetch(previewUrl + '?' + params, {
+            headers: { 'X-Requested-With': 'XMLHttpRequest' },
+            credentials: 'same-origin',
+        })
+        .then(function (r) { return r.json(); })
+        .then(function (data) {
+            btnArchiveCurrent.disabled = false;
+            if (!data.success) {
+                alert(data.message || 'Could not load preview.');
+                return;
+            }
+            if (!data.count) {
+                alert('No active students match the current filters — nothing to archive.');
+                return;
+            }
+
+            var sys = data.schoolYears || [];
+            if (sys.length <= 1) {
+                var syLabel = sys.length === 1 ? ' from school year <strong>' + sys[0] + '</strong>' : '';
+                archCurrentBody.innerHTML =
+                    '<p>You are about to archive <strong>' + data.count + '</strong> student(s)' + syLabel + '. This will move them to the archive.</p>';
+            } else {
+                archCurrentBody.innerHTML =
+                    '<div class="vs-alert vs-alert-warning mb-3" style="background:#fff8e1;border-left:4px solid #f6c633;padding:.75rem 1rem;border-radius:6px">' +
+                    '<strong>Multiple school years detected:</strong> ' + sys.join(', ') + '.<br>' +
+                    'All ' + data.count + ' matching students will be archived together. You may want to filter by a specific school year first.' +
+                    '</div>' +
+                    '<p>Do you want to proceed or cancel and filter first?</p>';
+            }
+
+            if (archCurrentModal) archCurrentModal.style.display = 'flex';
+        })
+        .catch(function () {
+            btnArchiveCurrent.disabled = false;
+            alert('An error occurred while loading preview.');
+        });
+    });
+
+    archCurrentConfirm && archCurrentConfirm.addEventListener('click', function () {
+        var form = document.getElementById('archiveFilterForm');
+        var params = form ? new URLSearchParams(new FormData(form)).toString() : '';
+        var reason = archCurrentReason ? archCurrentReason.value.trim() : '';
+
+        archCurrentConfirm.disabled = true;
+        if (archCurrentBtnText) archCurrentBtnText.style.display = 'none';
+        if (archCurrentSpinner) archCurrentSpinner.style.display = 'inline-block';
+
+        fetch(archByFilterBase + '?' + params, {
+            method:  'POST',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            credentials: 'same-origin',
+            body: csrfName + '=' + encodeURIComponent(getCsrfValue())
+                + (reason ? '&archive_reason=' + encodeURIComponent(reason) : ''),
+        })
+        .then(function (r) { return r.json(); })
+        .then(function (data) {
+            closeArchCurrentModal();
+            if (data.success) {
+                location.reload();
+            } else {
+                alert(data.message || 'Archive failed.');
+            }
+        })
+        .catch(function () { alert('An error occurred.'); })
+        .finally(function () {
+            archCurrentConfirm.disabled = false;
+            if (archCurrentBtnText) archCurrentBtnText.style.display = 'inline';
+            if (archCurrentSpinner) archCurrentSpinner.style.display = 'none';
+        });
+    });
 }());
 </script>
 

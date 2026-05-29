@@ -275,9 +275,13 @@ class Voucher extends Controller
 
         $voucherNo  = '<span class="js-voucher-no">' . esc($v['voucher_no'] ?: '-') . '</span>';
         $name       = esc($v['full_name'] ?? '');
+        // Hidden column used by DataTables to sort the visible Name column by
+        // last-name-first, matching the old PHP-rendered listing.
+        $nameSort   = esc(trim(($v['last_name'] ?? '') . ' ' . ($v['first_name'] ?? '') . ' ' . ($v['middle_name'] ?? '')));
         $jhs        = esc($v['junior_high_school'] ?: '-');
         $shs        = esc($v['preferred_senior_high_school'] ?? '');
         $schoolYear = esc($v['school_year'] ?? '');
+        $remarks    = esc($v['remarks_status'] ?: '-');
 
         if ($elig === 'eligible' || $elig === 'not_eligible') {
             $color    = $elig === 'eligible' ? '#16a34a' : '#9ca3af';
@@ -323,11 +327,13 @@ class Voucher extends Controller
             'checkbox'      => $checkbox,
             'voucher_no'    => $voucherNo,
             'name'          => $name,
+            'name_sort'     => $nameSort,
             'jhs'           => $jhs,
             'shs'           => $shs,
             'school_year'   => $schoolYear,
             'eligibility'   => $eligCell,
             'status'        => $statusCell,
+            'remarks'       => $remarks,
             'generate_count'=> $genCount,
             'last_generated'=> $lastGenCell,
             'actions'       => $actCell,
@@ -384,8 +390,8 @@ class Voucher extends Controller
         $studentId = (int) $this->voucherModel->insert($data);
 
         $name = trim($data['first_name'] . ' ' . $data['last_name']);
-        log_action($this->getCurrentUserId(), 'CREATE_STUDENT',
-            "Created student {$name}", $studentId);
+        log_action($this->getCurrentUserId(), 'CREATE_VOUCHER',
+            "Created voucher for {$name}", $studentId);
 
         return redirect()->to(site_url('admin/students'))->with('message', 'Student voucher created successfully.');
     }
@@ -804,6 +810,33 @@ class Voucher extends Controller
         ]);
     }
 
+    // ── Archive all students matching the archive-page filter (GET params) ───
+    public function archiveByFilter()
+    {
+        $keyword = trim((string) $this->request->getGet('q'));
+        $filters = [];
+        foreach (VoucherModel::LISTING_FILTER_KEYS as $key) {
+            $filters[$key] = trim((string) $this->request->getGet($key));
+        }
+        $reason = trim((string) ($this->request->getPost('archive_reason') ?: '')) ?: 'Archive current data';
+
+        $ids = $this->voucherModel->getMatchingStudentIds($keyword, $filters);
+
+        if (empty($ids)) {
+            return $this->response->setJSON([
+                'success' => false,
+                'message' => 'No students match the current filters — nothing to archive.',
+            ]);
+        }
+
+        $archived = $this->archiveStudentsByIds($ids, $reason, true);
+
+        return $this->response->setJSON([
+            'success' => true,
+            'message' => "{$archived} student(s) archived successfully.",
+        ]);
+    }
+
     // ── Bulk activate everything matching the current search + filter scope ───
     public function activateAll()
     {
@@ -1161,5 +1194,40 @@ class Voucher extends Controller
         }
 
         return $this->voucherModel->getVouchersByIds($ids);
+    }
+
+    // ── Preview archive scope: count + distinct school years ─────────────────
+    public function archivePreview()
+    {
+        $keyword = trim((string) $this->request->getGet('q'));
+        $filters = [];
+        foreach (VoucherModel::LISTING_FILTER_KEYS as $key) {
+            $filters[$key] = trim((string) $this->request->getGet($key));
+        }
+
+        $ids = $this->voucherModel->getMatchingStudentIds($keyword, $filters);
+
+        if (empty($ids)) {
+            return $this->response->setJSON([
+                'success'     => true,
+                'count'       => 0,
+                'schoolYears' => [],
+            ]);
+        }
+
+        $rows = \Config\Database::connect()
+            ->table('students')
+            ->select('school_year')
+            ->distinct()
+            ->whereIn('student_id', $ids)
+            ->where('school_year !=', '')
+            ->orderBy('school_year', 'ASC')
+            ->get()->getResultArray();
+
+        return $this->response->setJSON([
+            'success'     => true,
+            'count'       => count($ids),
+            'schoolYears' => array_column($rows, 'school_year'),
+        ]);
     }
 }

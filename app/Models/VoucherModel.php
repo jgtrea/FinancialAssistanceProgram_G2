@@ -192,16 +192,20 @@ class VoucherModel extends Model
         $orderDir = (strtolower((string) ($params['order_dir'] ?? 'asc')) === 'desc') ? 'DESC' : 'ASC';
         $filters  = $params['filters'] ?? [];
 
+        // Column indices match the <th> order in vouchers/index.php (including
+        // the hidden name_sort column at index 3 that drives Name sorting).
         $columnMap = [
-            1 => 'voucher_no',
-            2 => 'last_name',
-            3 => 'junior_high_school',
-            4 => 'preferred_senior_high_school',
-            5 => 'school_year',
-            6 => 'eligibility_status',
-            7 => 'is_active',
-            8 => 'generate_count',
-            9 => 'generated_at',
+            1  => 'voucher_no',
+            2  => 'last_name',          // visible Name column
+            3  => 'last_name',          // hidden name_sort column (DataTables uses this to sort col 2)
+            4  => 'junior_high_school',
+            5  => 'preferred_senior_high_school',
+            6  => 'school_year',
+            7  => 'eligibility_status',
+            8  => 'is_active',
+            9  => 'remarks_status',
+            10 => 'generate_count',
+            11 => 'generated_at',
         ];
 
         // Total (unfiltered).

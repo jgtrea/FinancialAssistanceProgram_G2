@@ -2,16 +2,11 @@
 
 <?= $this->section('content') ?>
 <?php
-    // Dropdown source lists come from the controller (full DB, not the loaded slice).
     $actionOptions = $actionOptions ?? [];
-    $userOptions   = $userOptions   ?? [];
-    $ipOptions     = $ipOptions     ?? [];
 
-    $filterKeys = ['action', 'user', 'ip', 'date_from', 'date_to'];
+    $filterKeys = ['action', 'date_from', 'date_to'];
     $filterValues = [
         'action'    => $selectedAction ?? '',
-        'user'      => $selectedUser   ?? '',
-        'ip'        => $selectedIp     ?? '',
         'date_from' => $dateFrom       ?? '',
         'date_to'   => $dateTo         ?? '',
     ];
@@ -26,7 +21,7 @@
     </div>
 
     <form method="get" id="auditFilterForm" class="vs-advanced-search vs-advanced-search-outside mb-3">
-        <input type="text" name="q" class="vs-input vs-advanced-search-input" placeholder="Advanced search all audit logs..." value="<?= esc((string) ($keyword ?? ''), 'attr') ?>">
+        <input type="text" name="q" class="vs-input vs-advanced-search-input" placeholder="Enter keyword to search (action, description)" value="<?= esc((string) ($keyword ?? ''), 'attr') ?>">
         <button type="button" class="vs-btn vs-btn-outline" id="auditBtnOpenFilter">
             Filters
             <span id="auditFilterBadge" class="badge bg-primary" style="display:<?= $activeFilterCount > 0 ? 'inline-block' : 'none' ?>;margin-left:.35rem"><?= $activeFilterCount > 0 ? esc($activeFilterCount) : '' ?></span>
@@ -48,7 +43,6 @@
                         <th style="width: 170px;">Date/Time</th>
                         <th style="width: 170px;">Action</th>
                         <th>Description</th>
-                        <th style="width: 150px;">IP Address</th>
                         <th>User Agent</th>
                         <th style="width: 180px;">User</th>
                     </tr>
@@ -60,9 +54,7 @@
                             $userLabel = trim((string) ($log['full_name'] ?? $log['username'] ?? ''));
                         ?>
                         <tr data-action="<?= esc((string) ($log['action'] ?? ''), 'attr') ?>"
-                            data-created-date="<?= esc($createdDate, 'attr') ?>"
-                            data-ip="<?= esc((string) ($log['ip_address'] ?? ''), 'attr') ?>"
-                            data-user="<?= esc($userLabel, 'attr') ?>">
+                            data-created-date="<?= esc($createdDate, 'attr') ?>">
                             <td><?= !empty($log['created_at']) ? esc(date('M d, Y h:i A', strtotime($log['created_at']))) : '-' ?></td>
                             <td><span class="badge text-bg-dark"><?= esc($log['action']) ?></span></td>
                             <td>
@@ -75,7 +67,6 @@
                                     </div>
                                 <?php endif; ?>
                             </td>
-                            <td><?= esc($log['ip_address']) ?></td>
                             <td class="small"><?= esc($log['user_agent']) ?></td>
                             <td>
                                 <?= esc($log['full_name'] ?? $log['username'] ?? '-') ?>
@@ -98,24 +89,15 @@
         </div>
         <div class="vs-modal-body">
             <div class="vs-form-grid vs-form-grid-4">
-                <div class="vs-span-2">
+                <div class="vs-span-4">
                     <label class="vs-label" for="auditFilterAction">Action</label>
-                    <select id="auditFilterAction" class="vs-input">
-                        <option value="">All</option>
+                    <input list="auditFilterAction-list" id="auditFilterAction" class="vs-input" placeholder="All" value="<?= esc((string) $filterValues['action'], 'attr') ?>">
+                    <datalist id="auditFilterAction-list">
                         <?php foreach ($actionOptions as $option): ?>
                             <?php $val = is_array($option) ? ($option['action'] ?? '') : $option ?>
-                            <option value="<?= esc($val) ?>" <?= $filterValues['action'] === $val ? 'selected' : '' ?>><?= esc($val) ?></option>
+                            <option value="<?= esc($val) ?>">
                         <?php endforeach ?>
-                    </select>
-                </div>
-                <div class="vs-span-2">
-                    <label class="vs-label" for="auditFilterUser">User</label>
-                    <select id="auditFilterUser" class="vs-input">
-                        <option value="">All</option>
-                        <?php foreach ($userOptions as $user): ?>
-                            <option value="<?= esc($user) ?>" <?= $filterValues['user'] === $user ? 'selected' : '' ?>><?= esc($user) ?></option>
-                        <?php endforeach ?>
-                    </select>
+                    </datalist>
                 </div>
                 <div class="vs-span-2">
                     <label class="vs-label" for="auditFilterDateFrom">Date From</label>
@@ -124,15 +106,6 @@
                 <div class="vs-span-2">
                     <label class="vs-label" for="auditFilterDateTo">Date To</label>
                     <input type="date" id="auditFilterDateTo" class="vs-input" value="<?= esc((string) $filterValues['date_to'], 'attr') ?>">
-                </div>
-                <div class="vs-span-2">
-                    <label class="vs-label" for="auditFilterIp">IP Address</label>
-                    <select id="auditFilterIp" class="vs-input">
-                        <option value="">All</option>
-                        <?php foreach ($ipOptions as $ip): ?>
-                            <option value="<?= esc($ip) ?>" <?= $filterValues['ip'] === $ip ? 'selected' : '' ?>><?= esc($ip) ?></option>
-                        <?php endforeach ?>
-                    </select>
                 </div>
             </div>
         </div>
@@ -156,15 +129,11 @@
         var filterForm = document.getElementById('auditFilterForm');
         var fields = {
             action:   document.getElementById('auditFilterAction'),
-            user:     document.getElementById('auditFilterUser'),
             dateFrom: document.getElementById('auditFilterDateFrom'),
             dateTo:   document.getElementById('auditFilterDateTo'),
-            ip:       document.getElementById('auditFilterIp'),
         };
         var filterFieldToParam = {
             action:   'action',
-            user:     'user',
-            ip:       'ip',
             dateFrom: 'date_from',
             dateTo:   'date_to',
         };

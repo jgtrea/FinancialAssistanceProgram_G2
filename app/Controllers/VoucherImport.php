@@ -18,7 +18,7 @@ class VoucherImport extends BaseController
         'full name',
         'rank no.',
         'gwa',
-        'gender',
+        'sex',
         'junior high school',
         'preferred senior high school',
         'contact number',
@@ -173,7 +173,7 @@ class VoucherImport extends BaseController
 
             // Validate gender
             if ($gender !== '' && !in_array($gender, ['MALE', 'FEMALE'])) {
-                return $this->importRowError($i, 'Gender must be MALE, FEMALE, or blank.');
+                return $this->importRowError($i, 'Sex must be MALE, FEMALE, or blank.');
             }
 
             // Validate remarks
@@ -268,7 +268,7 @@ class VoucherImport extends BaseController
 
         $headers = [
             'Voucher No.', 'Voucher Date', 'Full Name', 'Rank No.', 'GWA',
-            'Gender', 'Junior High School', 'Preferred Senior High School',
+            'Sex', 'Junior High School', 'Preferred Senior High School',
             'Contact Number', 'Remarks', 'School Year', 'Eligibility', 'Voucher Status',
         ];
 

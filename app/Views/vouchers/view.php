@@ -46,7 +46,7 @@
       </div>
 
       <div>
-        <label class="vs-label">Gender</label>
+        <label class="vs-label">Sex</label>
         <div class="vs-readonly-field"><?= esc($voucher['gender'] ?: '-') ?></div>
       </div>
 

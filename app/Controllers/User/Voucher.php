@@ -84,8 +84,8 @@ class Voucher extends AdminVoucher
         $studentId = (int) $this->voucherModel->insert($data);
 
         $name = trim($data['first_name'] . ' ' . $data['last_name']);
-        log_action(session()->get('user_id'), 'CREATE_STUDENT',
-            "Created student {$name}", $studentId);
+        log_action(session()->get('user_id'), 'CREATE_VOUCHER',
+            "Created voucher for {$name}", $studentId);
 
         return redirect()->to(site_url('user/students'))->with('message', 'Student added successfully.');
     }
@@ -243,6 +243,41 @@ class Voucher extends AdminVoucher
         return $this->response->setJSON([
             'success' => true,
             'message' => "{$archived} student(s) archived successfully.",
+        ]);
+    }
+
+    // ── Preview archive scope: count + distinct school years ─────────────────
+    public function archivePreview()
+    {
+        $keyword = trim((string) $this->request->getGet('q'));
+        $filters = [];
+        foreach (\App\Models\VoucherModel::LISTING_FILTER_KEYS as $key) {
+            $filters[$key] = trim((string) $this->request->getGet($key));
+        }
+
+        $ids = $this->voucherModel->getMatchingStudentIds($keyword, $filters);
+
+        if (empty($ids)) {
+            return $this->response->setJSON([
+                'success'     => true,
+                'count'       => 0,
+                'schoolYears' => [],
+            ]);
+        }
+
+        $rows = \Config\Database::connect()
+            ->table('students')
+            ->select('school_year')
+            ->distinct()
+            ->whereIn('student_id', $ids)
+            ->where('school_year !=', '')
+            ->orderBy('school_year', 'ASC')
+            ->get()->getResultArray();
+
+        return $this->response->setJSON([
+            'success'     => true,
+            'count'       => count($ids),
+            'schoolYears' => array_column($rows, 'school_year'),
         ]);
     }
 }

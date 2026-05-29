@@ -522,18 +522,26 @@ document.addEventListener('DOMContentLoaded', function () {
           Object.assign(d, filterParams);
         },
       },
+      // Column order must match the <th>s in vouchers/index.php exactly,
+      // including the hidden name_sort column (3) used so "Name" can sort
+      // by last name instead of by the rendered full-name string.
       columns: [
         { data: 'checkbox',       orderable: false },
         { data: 'voucher_no' },
         { data: 'name' },
+        { data: 'name_sort',      visible: false },
         { data: 'jhs' },
         { data: 'shs' },
         { data: 'school_year' },
         { data: 'eligibility' },
         { data: 'status' },
+        { data: 'remarks' },
         { data: 'generate_count' },
         { data: 'last_generated' },
         { data: 'actions',        orderable: false },
+      ],
+      columnDefs: [
+        { orderData: [3], targets: [2] },
       ],
       dom:
         "<'row align-items-center mb-3'<'col-sm-12 col-md-6'f><'col-sm-12 col-md-6 text-md-end'l>>" +

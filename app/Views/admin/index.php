@@ -2,16 +2,10 @@
 
 <?= $this->section('content') ?>
 
-<div class="vs-page-header mb-4">
+<div class="vs-page-header mb-3">
         <div>
             <h4 class="vs-page-title">User Management</h4>
             <p class="vs-page-sub">Manage staff accounts and system access.</p>
-        </div>
-        <div class="d-flex gap-2">
-            <button type="button" class="vs-btn vs-btn-primary" id="btnAddUser">
-                <?= asset_icon('add', ['stroke-width' => '2.5']) ?>
-                Add User
-            </button>
         </div>
     </div>
 
@@ -44,13 +38,21 @@
         </div>
     </div>
 
-    <form method="get" class="vs-advanced-search vs-advanced-search-outside mb-3">
-        <input type="text" name="q" class="vs-input vs-advanced-search-input" placeholder="Advanced search all users..." value="<?= esc((string) ($keyword ?? ''), 'attr') ?>">
-        <button type="button" class="vs-btn vs-btn-outline" id="btnOpenUserFilter">
-            Filters
-            <span id="userFilterBadge" class="badge bg-primary" style="display:none;margin-left:.35rem"></span>
-        </button>
-    </form>
+    <div class="d-flex align-items-center gap-2 flex-wrap mb-3">
+        <form method="get" class="vs-advanced-search vs-advanced-search-outside">
+            <input type="text" name="q" class="vs-input vs-advanced-search-input" placeholder="Enter keyword to search (username, email)" value="<?= esc((string) ($keyword ?? ''), 'attr') ?>">
+            <button type="button" class="vs-btn vs-btn-outline" id="btnOpenUserFilter">
+                Filters
+                <span id="userFilterBadge" class="badge bg-primary" style="display:none;margin-left:.35rem"></span>
+            </button>
+        </form>
+        <div class="ms-auto d-flex gap-2">
+            <button type="button" class="vs-btn vs-btn-primary" id="btnAddUser">
+                <?= asset_icon('add', ['stroke-width' => '2.5']) ?>
+                Add User
+            </button>
+        </div>
+    </div>
 
     <div class="vs-card">
         <div class="vs-card-body">
@@ -139,19 +141,19 @@
       <div class="vs-form-grid vs-form-grid-2">
         <div class="vs-span-2">
           <label class="vs-label" for="ufRole">Role</label>
-          <select id="ufRole" class="vs-input">
-            <option value="">All</option>
-            <option value="admin">Admin</option>
-            <option value="user">User</option>
-          </select>
+          <input list="ufRole-list" id="ufRole" class="vs-input" placeholder="All">
+          <datalist id="ufRole-list">
+            <option value="admin">
+            <option value="user">
+          </datalist>
         </div>
         <div class="vs-span-2">
           <label class="vs-label" for="ufStatus">Status</label>
-          <select id="ufStatus" class="vs-input">
-            <option value="">All</option>
-            <option value="active">Active</option>
-            <option value="inactive">Inactive</option>
-          </select>
+          <input list="ufStatus-list" id="ufStatus" class="vs-input" placeholder="All">
+          <datalist id="ufStatus-list">
+            <option value="active">
+            <option value="inactive">
+          </datalist>
         </div>
         <div>
           <label class="vs-label" for="ufLoginFrom">Last Login From</label>
@@ -203,10 +205,11 @@
 
           <div class="vs-span-2">
             <label class="vs-label required" for="umRole">Role</label>
-            <select id="umRole" name="role" class="vs-input" required>
-              <option value="admin">Admin</option>
-              <option value="user">User</option>
-            </select>
+            <input list="umRole-list" id="umRole" name="role" class="vs-input" placeholder="-- Select --" required>
+            <datalist id="umRole-list">
+              <option value="admin">
+              <option value="user">
+            </datalist>
           </div>
         </div>
       </div>
