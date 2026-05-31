@@ -56,7 +56,7 @@
 
     <div class="vs-card">
         <div class="vs-card-body">
-            <table id="userManagementTable" class="vs-datatable js-data-table" data-search-placeholder="Search users..." data-order='[[1,"asc"]]' style="width:100%">
+            <table id="userManagementTable" class="vs-datatable js-data-table" data-page-search="customUsersSearch" data-search-placeholder="Search users..." data-order='[[1,"asc"]]' style="width:100%">
             <thead>
                 <tr>
                     <th class="vs-th-check"><input type="checkbox" class="vs-check" id="userCheckAll" aria-label="Select all"></th>

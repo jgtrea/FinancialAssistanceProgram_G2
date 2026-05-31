@@ -54,7 +54,7 @@ document.addEventListener('DOMContentLoaded', function () {
       ],
       order: [[3, 'asc']],
       dom:
-        "<'row align-items-center mb-3'<'col-sm-12 col-md-6'f><'col-sm-12 col-md-6 text-md-end'l>>" +
+        "<'row align-items-center mb-3'<'col-sm-12 text-end'l>>" +
         "<'row'<'col-sm-12'tr>>" +
         "<'row align-items-center mt-3'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7'p>>",
       pageLength: 25,
@@ -73,26 +73,15 @@ document.addEventListener('DOMContentLoaded', function () {
 
     const currentPageSearch = document.getElementById('customStudentsSearch')
                            || document.getElementById('customVouchersSearch');
-    if (currentPageSearch) {
-      const dtWrap = vouchersTable.closest('.dataTables_wrapper');
-      const dtSearch = dtWrap ? dtWrap.querySelector('.dataTables_filter') : null;
-      if (dtSearch) dtSearch.style.display = 'none';
-
-      let searchTimer;
-      currentPageSearch.addEventListener('input', function () {
-        clearTimeout(searchTimer);
-        const val = currentPageSearch.value;
-        searchTimer = setTimeout(function () {
-          dt.search(val).draw();
-        }, 250);
-      });
+    if (currentPageSearch && window.VS && window.VS.bindCurrentPageSearch) {
+      window.VS.bindCurrentPageSearch(dt, currentPageSearch);
     }
   } else {
     // Client-side mode for pages that still server-render rows.
     dt = $(vouchersTable).DataTable({
       destroy: true,
       dom:
-        "<'row align-items-center mb-3'<'col-sm-12 col-md-6'f><'col-sm-12 col-md-6 text-md-end'l>>" +
+        "<'row align-items-center mb-3'<'col-sm-12 text-end'l>>" +
         "<'row'<'col-sm-12'tr>>" +
         "<'row align-items-center mt-3'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7'p>>",
       pageLength: 10,
@@ -112,11 +101,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
     const currentPageSearch = document.getElementById('customStudentsSearch')
                            || document.getElementById('customVouchersSearch');
-    if (currentPageSearch && window.VS && window.VS.bindFullTableSearch) {
-      const dtWrap = vouchersTable.closest('.dataTables_wrapper');
-      const dtSearch = dtWrap ? dtWrap.querySelector('.dataTables_filter') : null;
-      if (dtSearch) dtSearch.style.display = 'none';
-      window.VS.bindFullTableSearch(dt, currentPageSearch);
+    if (currentPageSearch && window.VS && window.VS.bindCurrentPageSearch) {
+      window.VS.bindCurrentPageSearch(dt, currentPageSearch);
     }
   }
 

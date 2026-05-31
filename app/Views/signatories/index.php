@@ -55,6 +55,7 @@
     <div class="vs-card">
         <div class="vs-card-body">
             <table id="signatoriesTable" class="vs-datatable js-data-table"
+                   data-page-search="customSignatoriesSearch"
                    data-search-placeholder="Search signatories..."
                    data-order='[[6,"asc"]]'
                    data-col-defs='[{"orderData":[6],"targets":[1]},{"visible":false,"targets":[6]}]'

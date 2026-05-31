@@ -41,7 +41,7 @@
   <div class="vs-card">
     <div class="vs-card-body">
       <div class="d-flex align-items-center gap-2 mb-3 flex-wrap">
-        <input type="text" id="customVouchersSearch" class="vs-input vs-page-search" placeholder="Search this page..." style="max-width:260px">
+        <input type="text" id="customVouchersSearch" class="vs-input vs-page-search" placeholder="Enter keyword to search this page" style="max-width:260px">
       </div>
       <table id="vouchersTable" class="vs-datatable" data-search-placeholder="Search vouchers..." style="width:100%">
         <thead>

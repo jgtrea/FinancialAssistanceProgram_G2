@@ -72,7 +72,7 @@
   <div class="vs-card">
     <div class="vs-card-body">
       <div class="d-flex align-items-center gap-2 mb-3 flex-wrap">
-        <input type="text" id="customStudentsSearch" class="vs-input vs-page-search" placeholder="Search this page..." style="max-width:260px">
+        <input type="text" id="customStudentsSearch" class="vs-input vs-page-search" placeholder="Enter keyword to search this page" style="max-width:260px">
         <label class="vs-length-label ms-auto">Show <input type="number" id="vouchersLengthInput" class="vs-length-input" value="10" min="1" max="500"> entries</label>
       </div>
       <!-- Cross-page select banner — appears when user checks the page header
@@ -474,14 +474,9 @@ window.VM_CONFIG = {
   // School Year / JHS / SHS dropdowns are fully populated server-side from
   // DISTINCT values in the students table (see VoucherModel::getListingFilterOptions).
 
-  // Hide DataTables' built-in search bar — we use a custom input above the table.
+  // Hide the entire DT header row (length control) — replaced by custom row above.
   var dtWrap = studentsTable.closest('.dataTables_wrapper');
-  var dtSearch = dtWrap ? dtWrap.querySelector('.dataTables_filter') : null;
-  if (dtSearch) dtSearch.style.display = 'none';
-
-  // Hide DataTables' built-in length control — we use a custom input above the table.
-  var dtLength = dtWrap ? dtWrap.querySelector('.dataTables_length') : null;
-  if (dtLength) dtLength.style.display = 'none';
+  if (dtWrap && dtWrap.firstElementChild) dtWrap.firstElementChild.style.display = 'none';
 
   // Wire custom length input.
   var lenInput = document.getElementById('vouchersLengthInput');
@@ -494,13 +489,9 @@ window.VM_CONFIG = {
     lenInput.addEventListener('keydown', function (e) { if (e.key === 'Enter') applyVoucherLen(); });
   }
 
-  // Wire the custom search input across ALL loaded rows (server caps the load
-  // at ~1000 most-recent records — see VoucherModel::LISTING_DEFAULT_LIMIT).
-  // The "advanced search" form above the table reloads the page against the
-  // full DB.
   var customSearch = document.getElementById('customStudentsSearch');
-  if (window.VS && window.VS.bindFullTableSearch) {
-    window.VS.bindFullTableSearch(dt, customSearch);
+  if (customSearch && window.VS && window.VS.bindCurrentPageSearch) {
+    window.VS.bindCurrentPageSearch(dt, customSearch);
   }
 
   var filterBtn         = document.getElementById('btnOpenFilter');

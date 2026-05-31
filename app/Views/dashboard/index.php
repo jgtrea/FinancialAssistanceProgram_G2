@@ -83,9 +83,7 @@
                         <?php $voucherPrefix = session()->get('role') === 'admin' ? 'admin' : 'user'; ?>
                         <a href="<?= site_url($voucherPrefix . '/students') ?>" class="vs-btn vs-btn-outline">See All</a>
                     </div>
-                    <table id="recentVouchersTable" class="vs-datatable js-data-table"
-                           data-order='[[5,"asc"]]'
-                           data-col-defs='[{"orderData":[5],"targets":[1]},{"visible":false,"targets":[5]}]'
+                    <table id="recentVouchersTable" class="vs-datatable"
                            width="100%" cellspacing="0">
                         <thead>
                             <tr>
@@ -119,5 +117,23 @@
             </div>
         </div>
     </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    var table = document.getElementById('recentVouchersTable');
+    if (!table || !window.jQuery || !$.fn.DataTable) return;
+    $(table).DataTable({
+        dom:       "<'row'<'col-sm-12'tr>>",
+        paging:    false,
+        searching: false,
+        info:      false,
+        ordering:  true,
+        responsive: true,
+        autoWidth: false,
+        order:     [[4, 'desc']],
+        columnDefs: [{ visible: false, targets: [5] }],
+    });
+});
+</script>
 
 <?= $this->endSection() ?>

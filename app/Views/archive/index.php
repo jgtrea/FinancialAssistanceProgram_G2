@@ -45,6 +45,7 @@
                 </div>
             <?php else: ?>
             <table id="archivedVouchersTable" class="vs-datatable js-data-table"
+                   data-page-search="customArchiveSearch"
                    data-search-placeholder="Search archived vouchers..."
                    data-order='[[3,"asc"]]'
                    data-col-defs='[{"orderData":[3],"targets":[0]},{"visible":false,"targets":[3]}]'

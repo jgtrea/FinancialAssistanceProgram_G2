@@ -24,7 +24,6 @@ document.addEventListener('DOMContentLoaded', function () {
 
   initPasswordToggles();
   initAlertDismiss();
-  initGenericDataTables();
 
 });
 

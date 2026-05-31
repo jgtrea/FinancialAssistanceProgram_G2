@@ -37,8 +37,15 @@ function initGenericDataTables() {
       ? [{ orderable: false, targets: nonOrderableTargets }, ...extraColDefs]
       : extraColDefs;
 
-    $(table).DataTable({
-      dom: controlsDom,
+    const hasPageSearch = !!table.dataset.pageSearch;
+    const headerDom = hasPageSearch
+      ? "<'d-flex align-items-center gap-2 mb-3 flex-wrap'<'vs-dt-search-slot'><'ms-auto'l>>"
+      : "<'row align-items-center mb-3'<'col-sm-12 text-end'l>>";
+
+    const dt = $(table).DataTable({
+      dom: headerDom +
+        "<'row'<'col-sm-12'tr>>" +
+        "<'row align-items-center mt-3'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7'p>>",
       pageLength: 10,
       lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, 'All']],
       responsive: true,
@@ -55,6 +62,24 @@ function initGenericDataTables() {
         processing: 'Loading...',
       },
     });
+
+    if (hasPageSearch) {
+      const slot = dt.table().container().querySelector('.vs-dt-search-slot');
+      if (slot) {
+        const pageInput = document.createElement('input');
+        pageInput.type = 'text';
+        pageInput.id = table.dataset.pageSearch;
+        pageInput.className = 'vs-input vs-page-search';
+        pageInput.placeholder = 'Enter keyword to search this page';
+        pageInput.style.maxWidth = '260px';
+        slot.parentElement.insertBefore(pageInput, slot);
+        slot.remove();
+        window.VS.bindCurrentPageSearch(dt, pageInput);
+      }
+    }
+
+    const advInput = document.querySelector('.vs-advanced-search-input');
+    if (advInput) window.VS.bindFullTableSearch(dt, advInput);
   });
 }
 
@@ -97,3 +122,5 @@ window.VS.bindFullTableSearch = function bindFullTableSearch(dt, input) {
     dt.search(input.value).draw();
   });
 };
+
+document.addEventListener('DOMContentLoaded', initGenericDataTables);

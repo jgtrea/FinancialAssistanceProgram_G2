@@ -61,7 +61,7 @@
 
 <div class="vs-card">
     <div class="vs-card-body">
-        <table id="schoolsTable" class="vs-datatable js-data-table" data-order='[[1,"asc"]]' style="width:100%">
+        <table id="schoolsTable" class="vs-datatable js-data-table" data-page-search="customSchoolsSearch" data-order='[[1,"asc"]]' style="width:100%">
             <thead>
                 <tr>
                     <th class="vs-th-check">
