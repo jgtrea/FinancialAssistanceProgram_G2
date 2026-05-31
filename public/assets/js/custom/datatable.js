@@ -5,12 +5,6 @@
 function initGenericDataTables() {
   if (!window.jQuery || !$.fn.DataTable) return;
 
-  // No 'f' — built-in search replaced by the injected external input below.
-  const controlsDom =
-    "<'row align-items-center mb-3'<'col-sm-12 text-end'l>>" +
-    "<'row'<'col-sm-12'tr>>" +
-    "<'row align-items-center mt-3'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7'p>>";
-
   document.querySelectorAll('table.js-data-table').forEach(table => {
     if ($.fn.DataTable.isDataTable(table)) return;
 

@@ -474,9 +474,10 @@ window.VM_CONFIG = {
   // School Year / JHS / SHS dropdowns are fully populated server-side from
   // DISTINCT values in the students table (see VoucherModel::getListingFilterOptions).
 
-  // Hide the entire DT header row (length control) — replaced by custom row above.
+  // Hide the DT header row (length control) — replaced by custom row above.
   var dtWrap = studentsTable.closest('.dataTables_wrapper');
-  if (dtWrap && dtWrap.firstElementChild) dtWrap.firstElementChild.style.display = 'none';
+  var dtLengthEl = dtWrap ? dtWrap.querySelector('.dataTables_length') : null;
+  if (dtLengthEl && dtLengthEl.parentElement) dtLengthEl.parentElement.style.display = 'none';
 
   // Wire custom length input.
   var lenInput = document.getElementById('vouchersLengthInput');
