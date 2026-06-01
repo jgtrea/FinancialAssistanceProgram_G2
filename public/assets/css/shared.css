@@ -1,0 +1,768 @@
+/* ============================================================
+   SHARED — CSS variables, reset, and vs-* reusable components
+   used across all pages. Page-specific styles live in custom/.
+   ============================================================ */
+
+:root {
+  --navy: #073b78;
+  --navy-md: #075da8;
+  --navy-lt: #138fbd;
+  --accent: #f6c633;
+  --accent-lt: #ffe88a;
+  --teal: #0aa6c8;
+  --teal-dark: #07789a;
+  --surface: #eef8fb;
+  --surface-md: #d9edf5;
+  --parchment: #fff6dd;
+  --card-bg: #ffffff;
+  --muted: #5f7185;
+  --border: #c8e4ee;
+  --danger: #c93131;
+  --success: #16956f;
+  --sidebar-w: 240px;
+  --topbar-h: 56px;
+  --font: "DM Sans", sans-serif;
+  --font-mono: "DM Mono", monospace;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  font-family: var(--font);
+  background:
+    linear-gradient(180deg, rgba(255, 246, 221, 0.65), rgba(238, 248, 251, 0.95) 14rem),
+    var(--surface);
+  color: var(--navy);
+  margin: 0;
+  padding: 0;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+/* ── Shared alerts ── */
+.vs-alert {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  border-radius: 8px;
+  padding: 0.75rem 1rem;
+  font-size: 0.85rem;
+}
+.vs-alert-error {
+  background: #fff2ee;
+  border: 1px solid #f4b0a4;
+  border-left: 4px solid var(--danger);
+  color: #8b1d1d;
+}
+.vs-alert-success {
+  background: #e9fbf4;
+  border: 1px solid #8fdcc6;
+  border-left: 4px solid var(--success);
+  color: #075c49;
+}
+.vs-alert-warning {
+  background: var(--parchment);
+  border: 1px solid var(--accent-lt);
+  border-left: 4px solid var(--accent);
+  color: #7a5200;
+}
+
+/* ── Shared brand icon ── */
+.vs-brand-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  background: linear-gradient(135deg, var(--accent), var(--accent-lt));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.vs-brand-icon svg {
+  width: 18px;
+  height: 18px;
+  fill: var(--navy);
+}
+
+/* ── Spinner ── */
+.vs-spinner {
+  display: inline-block;
+  width: 15px;
+  height: 15px;
+  border: 2px solid rgba(255, 255, 255, 0.35);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: vs-spin 0.7s linear infinite;
+  vertical-align: middle;
+}
+@keyframes vs-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ── Buttons ── */
+.vs-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-family: var(--font);
+  font-size: 0.85rem;
+  font-weight: 500;
+  border-radius: 8px;
+  padding: 0.5rem 1rem;
+  border: none;
+  cursor: pointer;
+  transition:
+    background 0.15s,
+    opacity 0.15s,
+    transform 0.1s;
+  text-decoration: none;
+  white-space: nowrap;
+}
+.vs-btn:active {
+  transform: scale(0.98);
+}
+.vs-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+.vs-btn-primary {
+  background: linear-gradient(135deg, var(--navy-md), var(--teal));
+  color: #fff;
+}
+.vs-btn-primary:hover {
+  background: linear-gradient(135deg, var(--navy), var(--navy-md));
+  color: #fff;
+}
+.vs-btn-blue {
+  background: var(--navy-md);
+  color: #fff;
+}
+.vs-btn-blue:hover {
+  background: var(--navy);
+  color: #fff;
+}
+.vs-btn-danger {
+  background: var(--danger);
+  color: #fff;
+}
+.vs-btn-danger:hover {
+  background: #9f2323;
+  color: #fff;
+}
+.vs-btn-outline {
+  background: transparent;
+  color: var(--navy);
+  border: 1.5px solid var(--border);
+}
+.vs-btn-outline:hover {
+  background: var(--surface-md);
+  color: var(--navy);
+}
+.vs-btn-success {
+  background: var(--success);
+  color: #fff;
+}
+.vs-btn-success:hover {
+  background: #0f7458;
+  color: #fff;
+}
+.vs-btn-dark-green {
+  background: #166534;
+  color: #fff;
+}
+.vs-btn-dark-green:hover {
+  background: #14532d;
+  color: #fff;
+}
+
+/* ── Inputs ── */
+.vs-label {
+  display: block;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--muted);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  margin-bottom: 0.4rem;
+}
+.vs-label-hint {
+  font-size: 0.72rem;
+  font-weight: 400;
+  text-transform: none;
+  color: var(--muted);
+  margin-left: 0.3rem;
+}
+.vs-label.required::after {
+  content: " *";
+  color: var(--danger);
+  font-weight: 700;
+  margin-left: 0.15rem;
+}
+.vs-input {
+  width: 100%;
+  font-family: var(--font);
+  font-size: 0.9rem;
+  border: 1.5px solid var(--border);
+  border-radius: 8px;
+  padding: 0.6rem 0.85rem;
+  color: var(--navy);
+  background: #fff;
+  transition:
+    border-color 0.15s,
+    background 0.15s;
+  outline: none;
+  appearance: none;
+}
+.vs-input:focus {
+  border-color: var(--navy-md);
+  background: #fff;
+  box-shadow: 0 0 0 3px rgba(10, 166, 200, 0.14);
+}
+.vs-input::placeholder {
+  color: #91a6b6;
+}
+.vs-input-error {
+  border-color: var(--danger) !important;
+}
+.vs-uppercase {
+  text-transform: uppercase;
+}
+.vs-page-search {
+  flex: 0 1 260px;
+}
+.vs-advanced-search {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex: 1 1 420px;
+  min-width: 280px;
+}
+.vs-advanced-search-outside {
+  max-width: 760px;
+}
+.vs-advanced-search-input {
+  min-width: 240px;
+}
+.vs-input-wrap {
+  position: relative;
+}
+.vs-input-wrap .vs-input {
+  padding-right: 2.5rem;
+}
+.vs-input-icon {
+  position: absolute;
+  left: 0.85rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #91a6b6;
+  pointer-events: none;
+  display: flex;
+  align-items: center;
+}
+.vs-input-wrap .vs-input {
+  padding-left: 2.5rem;
+}
+.vs-pw-toggle {
+  position: absolute;
+  right: 0.75rem;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #91a6b6;
+  display: flex;
+  align-items: center;
+  padding: 0;
+  transition: color 0.15s;
+}
+.vs-pw-toggle:hover {
+  color: var(--navy);
+}
+.vs-field-error {
+  font-size: 0.78rem;
+  color: var(--danger);
+  margin-top: 0.3rem;
+}
+
+/* ── Modal ── */
+.vs-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  z-index: 1050;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  animation: vs-fade-in 0.15s ease;
+}
+@keyframes vs-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+.vs-modal {
+  background: var(--card-bg);
+  border-radius: 14px;
+  width: 100%;
+  max-width: 460px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.18);
+  overflow: hidden;
+  animation: vs-slide-up 0.2s ease;
+}
+@keyframes vs-slide-up {
+  from {
+    transform: translateY(12px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+.vs-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.1rem 1.5rem;
+  border-bottom: 1px solid var(--border);
+}
+.vs-modal-header h5 {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--navy);
+  margin: 0;
+}
+.vs-modal-close {
+  background: none;
+  border: none;
+  font-size: 1.4rem;
+  color: var(--muted);
+  cursor: pointer;
+  line-height: 1;
+  padding: 0;
+}
+.vs-modal-close:hover {
+  color: var(--navy);
+}
+.vs-modal-body {
+  padding: 1.25rem 1.5rem;
+  font-size: 0.9rem;
+  color: var(--navy);
+}
+.vs-modal-body p {
+  margin-bottom: 0.85rem;
+}
+.vs-modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  padding: 1rem 1.5rem;
+  border-top: 1px solid var(--border);
+}
+.vm-generation-summary {
+  flex: 1 1 auto;
+  min-width: 0;
+  max-width: calc(100% - 110px);
+  font-size: 0.8rem;
+  color: #6b7280;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+.vm-generated-at {
+  white-space: nowrap;
+}
+.vm-generation-history {
+  margin-top: 0.25rem;
+}
+.vm-generation-history summary {
+  cursor: pointer;
+  color: var(--navy-md);
+  font-weight: 600;
+  width: fit-content;
+}
+.vm-generation-history-list {
+  margin-top: 0.4rem;
+  max-height: 120px;
+  overflow: auto;
+  padding-right: 0.35rem;
+}
+.vm-generation-history-item {
+  display: grid;
+  grid-template-columns: minmax(72px, 0.45fr) minmax(0, 1fr);
+  gap: 0.5rem;
+  padding: 0.25rem 0;
+  border-top: 1px solid #eef2f7;
+}
+.vm-generation-history-item span {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.vm-generation-history-empty {
+  color: #91a6b6;
+}
+
+@media (max-width: 640px) {
+  .vs-modal-footer {
+    align-items: stretch;
+    flex-wrap: wrap;
+  }
+  .vm-generation-summary {
+    flex-basis: 100%;
+    max-width: 100%;
+  }
+}
+
+/* ── Card ── */
+.vs-card {
+  background: var(--card-bg);
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  overflow: hidden;
+  box-shadow: 0 8px 24px rgba(7, 59, 120, 0.06);
+}
+.vs-card-body {
+  padding: 1.25rem;
+}
+
+.vs-form-grid {
+  display: grid;
+  gap: 1rem;
+  align-items: start;
+}
+.vs-form-grid-4 {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+.vs-span-2 {
+  grid-column: span 2;
+}
+
+@media (max-width: 1100px) {
+  .vs-form-grid-4 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 640px) {
+  .vs-form-grid-4 {
+    grid-template-columns: 1fr;
+  }
+  .vs-span-2 {
+    grid-column: span 1;
+  }
+}
+
+/* ── ID badge ── */
+.vs-id-badge {
+  font-size: 0.72rem;
+  font-weight: 600;
+  font-family: var(--font-mono);
+  color: var(--navy-md);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  padding: 0.15rem 0.5rem;
+  white-space: nowrap;
+}
+
+/* ── Amount ── */
+.vs-amount {
+  font-weight: 600;
+  color: var(--navy);
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── Status badges ── */
+.vs-status-badge {
+  display: inline-block;
+  font-size: 0.72rem;
+  font-weight: 600;
+  border-radius: 20px;
+  padding: 0.2rem 0.65rem;
+  text-transform: capitalize;
+  white-space: nowrap;
+}
+.vs-status-generated {
+  background: #d9f7ee;
+  color: #075c49;
+}
+.vs-status-not_generated {
+  background: var(--parchment);
+  color: #7a5200;
+}
+
+/* ── vs-badge (PDF status modal) ── */
+.vs-badge {
+  display: inline-block;
+  font-size: 0.72rem;
+  font-weight: 600;
+  border-radius: 20px;
+  padding: 0.2rem 0.65rem;
+  text-transform: capitalize;
+  white-space: nowrap;
+  background: var(--surface-md);
+  color: var(--navy);
+}
+.vs-badge-done       { background: #d9f7ee; color: #075c49; }
+.vs-badge-failed     { background: #fff2ee; color: #9f2323; }
+.vs-badge-processing { background: var(--parchment); color: #7a5200; }
+.vs-badge-queued     { background: #dff5fb; color: var(--navy-md); }
+.vs-badge-not_found,
+.vs-badge-forbidden  { background: #edf3f6; color: #506173; }
+
+/* ── Eligibility icon ── */
+.vs-eligibility-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: 50%;
+}
+.vs-eligibility-icon svg {
+  width: 1rem;
+  height: 1rem;
+  stroke-width: 3;
+}
+.vs-eligibility-icon-eligible {
+  background: #d9f7ee;
+  color: #075c49;
+}
+.vs-eligibility-icon-not_eligible {
+  background: #fde2e1;
+  color: #a02622;
+}
+
+/* ── Role badges ── */
+.vs-role-badge {
+  display: inline-block;
+  font-size: 0.72rem;
+  font-weight: 600;
+  border-radius: 20px;
+  padding: 0.2rem 0.65rem;
+  white-space: nowrap;
+}
+.vs-role-admin {
+  background: #dff5fb;
+  color: var(--navy);
+}
+.vs-role-user {
+  background: var(--parchment);
+  color: #7a5200;
+}
+
+/* ── Table action buttons ── */
+.vs-tbl-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font);
+  font-size: 0.75rem;
+  font-weight: 500;
+  line-height: 1.25;
+  border-radius: 6px;
+  padding: 0.25rem 0.6rem;
+  text-decoration: none;
+  border: 1px solid transparent;
+  transition: background 0.12s;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.vs-tbl-btn-view {
+  background: #e1f6fb;
+  color: var(--navy-md);
+  border-color: #a9ddeb;
+}
+.vs-tbl-btn-view:hover {
+  background: #c9edf6;
+}
+.vs-tbl-btn-edit {
+  background: #fff5cf;
+  color: #7a5200;
+  border-color: var(--accent-lt);
+}
+.vs-tbl-btn-edit:hover {
+  background: #ffedaa;
+}
+.vs-tbl-btn-delete {
+  background: #fff2ee;
+  color: #9f2323;
+  border-color: #f4b0a4;
+}
+.vs-tbl-btn-delete:hover {
+  background: #ffe0d8;
+}
+.vs-tbl-btn-actions {
+  background: #f1f5f9;
+  color: #334155;
+  border-color: #cbd5e1;
+}
+.vs-tbl-btn-actions:hover {
+  background: #e2e8f0;
+}
+
+/* ── Page header ── */
+.vs-page-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+.vs-page-title {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: var(--navy);
+  margin: 0 0 0.2rem;
+}
+.vs-page-sub {
+  font-size: 0.825rem;
+  color: var(--muted);
+  margin: 0;
+}
+
+.vs-readonly-field {
+  min-height: 41px;
+  display: flex;
+  align-items: center;
+  width: 100%;
+  font-family: var(--font);
+  font-size: 0.9rem;
+  border: 1.5px solid var(--border);
+  border-radius: 8px;
+  padding: 0.6rem 0.85rem;
+  color: var(--navy);
+  background: var(--surface);
+  overflow-wrap: anywhere;
+}
+
+/* ── Checkboxes ── */
+.vs-check {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 15px;
+  height: 15px;
+  border: 1.5px solid #94a3b8;
+  border-radius: 3px;
+  background: #fff;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background .12s, border-color .12s;
+}
+.vs-check:checked {
+  background: var(--teal);
+  border-color: var(--teal);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 10'%3E%3Cpolyline points='1.5,5 4,7.5 8.5,2.5' fill='none' stroke='%23fff' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: center;
+}
+.vs-check:indeterminate {
+  background: var(--teal);
+  border-color: var(--teal);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 4'%3E%3Cline x1='1' y1='2' x2='9' y2='2' stroke='%23fff' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: center;
+}
+.vs-check:disabled {
+  opacity: .45;
+  cursor: not-allowed;
+}
+.vs-th-check {
+  width: 38px;
+}
+.vs-sidebar-icon {
+  width: 18px;
+  height: 18px;
+  display: block;
+}
+
+/* ── Action bar ── */
+.vs-action-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: linear-gradient(135deg, var(--navy), var(--teal-dark));
+  color: #fff;
+  border-radius: 10px;
+  padding: 0.75rem 1.25rem;
+  margin-bottom: 1rem;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+.vs-action-bar-count {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.8);
+}
+.vs-action-bar .vs-btn-outline {
+  background: transparent;
+  color: #fff;
+  border-color: rgba(255, 255, 255, 0.45);
+}
+.vs-action-bar .vs-btn-outline:hover {
+  background: rgba(255, 255, 255, 0.12);
+  color: #fff;
+  border-color: rgba(255, 255, 255, 0.7);
+}
+
+/* ── Toggle status button ── */
+.vs-toggle-status {
+  font-size: 0.72rem;
+  font-weight: 600;
+  border-radius: 20px;
+  padding: 0.2rem 0.65rem;
+  border: none;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.vs-toggle-active {
+  background: #d9f7ee;
+  color: #075c49;
+}
+.vs-toggle-active:hover {
+  background: #bfeedd;
+}
+.vs-toggle-inactive {
+  background: #edf3f6;
+  color: #6b7280;
+}
+.vs-toggle-inactive:hover {
+  background: #dbe8ee;
+}
+
+/* ── Empty state ── */
+.vs-empty {
+  font-size: 0.875rem;
+  color: var(--muted);
+  text-align: center;
+  padding: 2rem;
+  margin: 0;
+}
+
+/* ── Print ── */
+@media print {
+  .vs-sidebar,
+  .vs-topbar,
+  .vs-action-bar,
+  .vs-btn,
+  .no-print {
+    display: none !important;
+  }
+  .vs-main {
+    margin-left: 0 !important;
+  }
+  body {
+    background: #fff;
+  }
+}

@@ -12,7 +12,7 @@ A web-based system for managing educational financial assistance vouchers for se
 - **Signatory Management** — manage signatories with uploaded signature images used on generated PDFs
 - **Archive** — soft-archive students and signatories with restore capability
 - **Audit Logs** — track user actions system-wide; admins see all logs, staff see their own
-- **User Management** *(Admin only)* — create, archive, and restore staff accounts
+- **User Management** _(Admin only)_ — create, archive, and restore staff accounts
 - **Excel Import** — bulk-import student/voucher data via `.xlsx` files
 - **Async PDF Queue** — PDF generation runs as a background job queue (JSON-file backed) processed by a Windows service, so the web request returns instantly and large batches never time out
 
@@ -20,14 +20,14 @@ A web-based system for managing educational financial assistance vouchers for se
 
 ## Tech Stack
 
-| Layer | Technology |
-|---|---|
-| Framework | CodeIgniter 4 (PHP 8.2+) |
-| PDF Generation | mPDF 8.x |
-| Spreadsheet Import | PhpSpreadsheet 5.x |
-| Database | MySQL (via CodeIgniter's Query Builder) |
-| Frontend | Bootstrap + vanilla JS |
-| Testing | PHPUnit 10 |
+| Layer              | Technology                              |
+| ------------------ | --------------------------------------- |
+| Framework          | CodeIgniter 4 (PHP 8.2+)                |
+| PDF Generation     | mPDF 8.x                                |
+| Spreadsheet Import | PhpSpreadsheet 5.x                      |
+| Database           | MySQL (via CodeIgniter's Query Builder) |
+| Frontend           | Bootstrap + vanilla JS                  |
+| Testing            | PHPUnit 10                              |
 
 ---
 
@@ -216,7 +216,6 @@ Client PCs need nothing installed. Only the server PC runs the deployment steps 
    ```
 
    The script:
-
    - Grants the `SYSTEM` account full access to `writable/` so the service can write logs and PDFs
    - Registers `JsonPdfQueue` as a Windows Service (auto-start on boot, auto-restart on crash)
    - Configures stdout/stderr → `writable\logs\json-pdf-worker.log`
@@ -264,23 +263,23 @@ nssm restart JsonPdfQueue
 
 ### Troubleshooting
 
-| Symptom | Cause / Fix |
-|---|---|
-| Service stuck `Paused` | NSSM throttled it after fast crashes. `sc.exe stop JsonPdfQueue`, then check the log. |
+| Symptom                                    | Cause / Fix                                                                                                           |
+| ------------------------------------------ | --------------------------------------------------------------------------------------------------------------------- |
+| Service stuck `Paused`                     | NSSM throttled it after fast crashes. `sc.exe stop JsonPdfQueue`, then check the log.                                 |
 | Log full of "file used by another process" | An old `php.exe` is still holding the file. `Get-Process php \| Stop-Process -Force`, then `nssm start JsonPdfQueue`. |
-| Worker starts then exits immediately | Usually MySQL not yet up at boot, or `php.exe` path wrong. Check log; restart MySQL if needed. |
-| Jobs queue but never process | Service not running. `Get-Service JsonPdfQueue`. |
-| Status modal shows `queued` forever | Same as above — worker is down. |
-| Permission denied writing PDFs | Re-run `icacls "C:\xampp\htdocs\FinancialAssistanceProgram_G2\writable" /grant "SYSTEM:(OI)(CI)F" /T` |
+| Worker starts then exits immediately       | Usually MySQL not yet up at boot, or `php.exe` path wrong. Check log; restart MySQL if needed.                        |
+| Jobs queue but never process               | Service not running. `Get-Service JsonPdfQueue`.                                                                      |
+| Status modal shows `queued` forever        | Same as above — worker is down.                                                                                       |
+| Permission denied writing PDFs             | Re-run `icacls "C:\xampp\htdocs\FinancialAssistanceProgram_G2\writable" /grant "SYSTEM:(OI)(CI)F" /T`                 |
 
 ### Logs and queue files
 
-| Path | Contents |
-|---|---|
-| `writable/logs/json-pdf-worker.log` | Service stdout/stderr |
-| `writable/pdf_queue/queue.json` | Pending jobs (parent + chunks) |
-| `writable/pdf_queue/processing.json` | Jobs currently being rendered |
-| `writable/pdf_queue/finished.json` | Done + failed jobs (with final `file_path`) |
-| `writable/pdfs/` | Generated PDF and ZIP files |
+| Path                                 | Contents                                    |
+| ------------------------------------ | ------------------------------------------- |
+| `writable/logs/json-pdf-worker.log`  | Service stdout/stderr                       |
+| `writable/pdf_queue/queue.json`      | Pending jobs (parent + chunks)              |
+| `writable/pdf_queue/processing.json` | Jobs currently being rendered               |
+| `writable/pdf_queue/finished.json`   | Done + failed jobs (with final `file_path`) |
+| `writable/pdfs/`                     | Generated PDF and ZIP files                 |
 
 The three JSON files are append-rotated by the worker; you can safely back them up but don't edit them while the service is running.

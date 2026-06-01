@@ -6,6 +6,7 @@ use App\Models\StudentModel;
 use App\Models\StudentArchiveModel;
 use App\Models\SchoolOptionModel;
 use App\Models\SignatoryModel;
+use App\Models\GenerationHistoryModel;
 
 class StudentController extends BaseController
 {
@@ -50,18 +51,18 @@ class StudentController extends BaseController
             ]);
         }
 
-        $db  = \Config\Database::connect();
-        $job = $db->table('pdf_jobs')
-            ->select('u.username')
-            ->join('users u', 'u.user_id = pdf_jobs.created_by', 'left')
-            ->where('pdf_jobs.status', 'done')
-            ->where("JSON_CONTAINS(pdf_jobs.voucher_ids, '" . (int) $id . "')", null, false)
-            ->orderBy('pdf_jobs.created_at', 'DESC')
-            ->limit(1)
-            ->get()
-            ->getRow();
+        $history = (new GenerationHistoryModel())->getRecentForStudent((int) $id);
+        $latest  = $history[0] ?? null;
 
-        $student['last_generated_by'] = $job->username ?? null;
+        $student['last_generated_by'] = $latest['username'] ?? null;
+        $student['last_generated_at'] = $latest['generated_at'] ?? ($student['generated_at'] ?? null);
+        $student['generation_history'] = array_map(static function (array $row): array {
+            return [
+                'generated_by' => $row['username'] ?? null,
+                'generated_at' => $row['generated_at'] ?? null,
+                'source'       => $row['generation_source'] ?? null,
+            ];
+        }, $history);
 
         return $this->response->setJSON([
             'status'  => 'success',
@@ -119,11 +120,11 @@ class StudentController extends BaseController
 
         if ($studentId) {
             $studentModel->update($studentId, $data);
-            $this->writeAuditLog('student_updated', 'Updated student ' . $this->formatStudentName($data) . ' (ID #' . $studentId . ').', null, (int) $studentId);
+            $this->writeAuditLog('VOUCHER_UPDATED', 'Updated student ' . $this->formatStudentName($data) . ' (ID #' . $studentId . ').', null, (int) $studentId);
             $message = 'Student updated successfully.';
         } else {
             $newStudentId = $studentModel->insert($data);
-            $this->writeAuditLog('CREATE_VOUCHER', 'Created voucher for ' . $this->formatStudentName($data) . ' (ID #' . $newStudentId . ').', null, $newStudentId ? (int) $newStudentId : null);
+            $this->writeAuditLog('VOUCHER_CREATED', 'Created voucher for ' . $this->formatStudentName($data) . ' (ID #' . $newStudentId . ').', null, $newStudentId ? (int) $newStudentId : null);
             $message = 'Student added successfully.';
         }
 
@@ -233,13 +234,27 @@ class StudentController extends BaseController
             $voucherNo = generate_voucher_no($jhs, $year);
         }
 
+        $generatedAt = date('Y-m-d H:i:s');
+
         $studentModel->update($id, [
             'voucher_no'     => $voucherNo,
             'voucher_status' => 'generated',
-            'generated_at'   => date('Y-m-d H:i:s'),
+            'generated_at'   => $generatedAt,
         ]);
 
+        $db = \Config\Database::connect();
+        if ($db->fieldExists('generate_count', 'students')) {
+            $db->query('UPDATE students SET generate_count = generate_count + 1 WHERE student_id = ?', [(int) $id]);
+        }
+
         $student = $studentModel->find($id);
+        (new GenerationHistoryModel())->recordMany(
+            [$student],
+            (int) (session()->get('user_id') ?? 1),
+            null,
+            'manual',
+            $generatedAt
+        );
         $this->writeAuditLog(
             'voucher_marked_generated',
             'Marked voucher ' . ($student['voucher_no'] ?? 'for student ID #' . $id) . ' as generated for ' . ($student ? $this->formatStudentName($student) : 'student ID #' . $id) . '.',

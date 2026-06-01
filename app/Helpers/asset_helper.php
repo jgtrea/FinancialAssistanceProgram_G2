@@ -7,20 +7,26 @@ function pre_style($mode = 'default_lay')
     if ($mode === 'default_lay') {
         $styles = [
             'https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css',
-            base_url('css/font.css'),
-            base_url('css/style.css'),
-            base_url('css/layout.css'),
-            base_url('css/app.css'),
+            base_url('assets/css/custom/font.css'),
+            base_url('assets/css/shared.css'),
+            base_url('assets/css/custom/login.css'),
+            base_url('assets/css/custom/app.css'),
         ];
     } elseif ($mode === 'admin' || $mode === 'app') {
         $styles = [
-            base_url('template/css/styles.css'),
+            base_url('assets/css/styles.css'),
             'https://cdn.datatables.net/1.13.8/css/dataTables.bootstrap5.min.css',
             'https://cdn.datatables.net/responsive/2.5.0/css/responsive.bootstrap5.min.css',
-            base_url('css/font.css'),
-            base_url('css/style.css'),
-            base_url('css/layout.css'),
-            base_url('css/app.css'),
+            base_url('assets/css/custom/font.css'),
+            base_url('assets/css/shared.css'),
+            base_url('assets/css/custom/datatable.css'),
+            base_url('assets/css/custom/layout.css'),
+            base_url('assets/css/custom/dashboard.css'),
+            base_url('assets/css/custom/form.css'),
+            base_url('assets/css/custom/login.css'),
+            base_url('assets/css/custom/audit-logs.css'),
+            base_url('assets/css/custom/voucher-print.css'),
+            base_url('assets/css/custom/app.css'),
         ];
     } elseif ($mode === 'sbadmin2') {
         $styles = [];
@@ -48,10 +54,16 @@ function pre_script($mode = 'default_lay')
             'https://cdn.datatables.net/1.13.8/js/dataTables.bootstrap5.min.js',
             'https://cdn.datatables.net/responsive/2.5.0/js/dataTables.responsive.min.js',
             'https://cdn.datatables.net/responsive/2.5.0/js/responsive.bootstrap5.min.js',
-            base_url('template/js/scripts.js'),
-            base_url('js/script.js'),
-            base_url('js/users_m.js'),
-            base_url('js/students.js'),
+            base_url('assets/js/scripts.js'),
+            base_url('assets/js/custom/global.js'),
+            base_url('assets/js/custom/datatable.js'),
+            base_url('assets/js/custom/pdf-tracking.js'),
+            base_url('assets/js/custom/layout.js'),
+            base_url('assets/js/custom/users-page.js'),
+            base_url('assets/js/custom/voucher.js'),
+            base_url('assets/js/custom/pdf-status.js'),
+            base_url('assets/js/custom/users.js'),
+            base_url('assets/js/custom/students.js'),
         ];
     }
 

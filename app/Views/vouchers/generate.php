@@ -35,13 +35,13 @@
   </div>
 
   <form method="get" class="vs-advanced-search vs-advanced-search-outside mb-3">
-    <input type="text" name="q" class="vs-input vs-advanced-search-input" placeholder="Advanced search all vouchers..." value="<?= esc((string) ($keyword ?? ''), 'attr') ?>">
+    <input type="text" name="q" class="vs-input vs-advanced-search-input" placeholder="Enter keyword to search (voucher no, name, etc.)" value="<?= esc((string) ($keyword ?? ''), 'attr') ?>">
   </form>
 
   <div class="vs-card">
     <div class="vs-card-body">
       <div class="d-flex align-items-center gap-2 mb-3 flex-wrap">
-        <input type="text" id="customVouchersSearch" class="vs-input vs-page-search" placeholder="Search this page..." style="max-width:260px">
+        <input type="text" id="customVouchersSearch" class="vs-input vs-page-search" placeholder="Enter keyword to search this page" style="max-width:260px">
       </div>
       <table id="vouchersTable" class="vs-datatable" data-search-placeholder="Search vouchers..." style="width:100%">
         <thead>
@@ -65,8 +65,13 @@
               data-eligibility="<?= esc((string) ($v['eligibility_status'] ?? ''), 'attr') ?>">
             <td><input type="checkbox" class="vs-check vs-row-check" value="<?= esc($v['student_id'], 'attr') ?>"<?= $notEligible ? ' disabled title="Not eligible — cannot be selected"' : '' ?>></td>
             <td class="js-voucher-no"><?= esc($v['voucher_no'] ?: '-') ?></td>
-            <td><?= esc($v['full_name']) ?></td>
-            <td style="display:none"><?= esc(trim(($v['last_name'] ?? '') . ' ' . ($v['first_name'] ?? '') . ' ' . ($v['middle_name'] ?? ''))) ?></td>
+            <?php
+                $gLn = trim((string) ($v['last_name']   ?? ''));
+                $gFm = implode(' ', array_filter([trim((string) ($v['first_name'] ?? '')), trim((string) ($v['middle_name'] ?? ''))]));
+                $gDn = $gLn !== '' ? $gLn . ($gFm !== '' ? ', ' . $gFm : '') : $gFm;
+            ?>
+            <td><?= esc($gDn) ?></td>
+            <td style="display:none"><?= esc(trim($gLn . ' ' . $gFm)) ?></td>
             <td><?= esc($v['preferred_senior_high_school']) ?></td>
             <td><?= esc($v['school_year']) ?></td>
             <td>

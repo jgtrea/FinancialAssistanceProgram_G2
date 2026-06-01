@@ -47,7 +47,7 @@
 
   <div class="d-flex align-items-center gap-2 flex-wrap mb-3">
     <form method="get" id="vouchersFilterForm" class="vs-advanced-search vs-advanced-search-outside">
-      <input type="text" name="q" class="vs-input vs-advanced-search-input" placeholder="Enter keyword to search (voucher no, name)" value="<?= esc((string) ($keyword ?? ''), 'attr') ?>">
+      <input type="text" name="q" class="vs-input vs-advanced-search-input" placeholder="Enter keyword to search (voucher no, name, etc.)" value="<?= esc((string) ($keyword ?? ''), 'attr') ?>">
       <button type="button" class="vs-btn vs-btn-outline" id="btnOpenFilter">
         Filters
         <span id="filterBadge" class="badge bg-primary" style="display:<?= $activeFilterCount > 0 ? 'inline-block' : 'none' ?>;margin-left:.35rem"><?= $activeFilterCount > 0 ? esc($activeFilterCount) : '' ?></span>
@@ -72,7 +72,7 @@
   <div class="vs-card">
     <div class="vs-card-body">
       <div class="d-flex align-items-center gap-2 mb-3 flex-wrap">
-        <input type="text" id="customStudentsSearch" class="vs-input vs-page-search" placeholder="Search this page..." style="max-width:260px">
+        <input type="text" id="customStudentsSearch" class="vs-input vs-page-search" placeholder="Enter keyword to search this page" style="max-width:260px">
         <label class="vs-length-label ms-auto">Show <input type="number" id="vouchersLengthInput" class="vs-length-input" value="10" min="1" max="500"> entries</label>
       </div>
       <!-- Cross-page select banner — appears when user checks the page header
@@ -474,14 +474,10 @@ window.VM_CONFIG = {
   // School Year / JHS / SHS dropdowns are fully populated server-side from
   // DISTINCT values in the students table (see VoucherModel::getListingFilterOptions).
 
-  // Hide DataTables' built-in search bar — we use a custom input above the table.
+  // Hide the DT header row (length control) — replaced by custom row above.
   var dtWrap = studentsTable.closest('.dataTables_wrapper');
-  var dtSearch = dtWrap ? dtWrap.querySelector('.dataTables_filter') : null;
-  if (dtSearch) dtSearch.style.display = 'none';
-
-  // Hide DataTables' built-in length control — we use a custom input above the table.
-  var dtLength = dtWrap ? dtWrap.querySelector('.dataTables_length') : null;
-  if (dtLength) dtLength.style.display = 'none';
+  var dtLengthEl = dtWrap ? dtWrap.querySelector('.dataTables_length') : null;
+  if (dtLengthEl) (dtLengthEl.closest('.row') || dtLengthEl.parentElement).style.display = 'none';
 
   // Wire custom length input.
   var lenInput = document.getElementById('vouchersLengthInput');
@@ -494,13 +490,9 @@ window.VM_CONFIG = {
     lenInput.addEventListener('keydown', function (e) { if (e.key === 'Enter') applyVoucherLen(); });
   }
 
-  // Wire the custom search input across ALL loaded rows (server caps the load
-  // at ~1000 most-recent records — see VoucherModel::LISTING_DEFAULT_LIMIT).
-  // The "advanced search" form above the table reloads the page against the
-  // full DB.
   var customSearch = document.getElementById('customStudentsSearch');
-  if (window.VS && window.VS.bindFullTableSearch) {
-    window.VS.bindFullTableSearch(dt, customSearch);
+  if (customSearch && window.VS && window.VS.bindCurrentPageSearch) {
+    window.VS.bindCurrentPageSearch(dt, customSearch);
   }
 
   var filterBtn         = document.getElementById('btnOpenFilter');
@@ -602,107 +594,97 @@ window.VM_CONFIG = {
     setTimeout(function () { el.remove(); }, 5000);
   }
 
-  function wireToggleActiveButton(btn) {
-    if (btn.dataset.toggleActiveBound === '1') return;
-    btn.dataset.toggleActiveBound = '1';
-    btn.addEventListener('click', function () {
-      var id = btn.getAttribute('data-id');
-      if (!id) return;
-      btn.disabled = true;
+  function handleToggleActive(btn) {
+    if (!btn || btn.disabled) return;
+    var id = btn.getAttribute('data-id');
+    if (!id) return;
+    btn.disabled = true;
 
-      var fd = new FormData();
-      fd.append(csrfName, csrfHash);
+    var fd = new FormData();
+    fd.append(csrfName, csrfHash);
 
-      fetch(toggleActiveUrlBase + '/' + id, {
-        method:      'POST',
-        headers:     { 'X-Requested-With': 'XMLHttpRequest' },
-        credentials: 'same-origin',
-        body:        fd,
-      })
-        .then(function (r) { return r.json(); })
-        .then(function (data) {
-          btn.disabled = false;
-          if (!data.success) { alert(data.message || 'Toggle failed.'); return; }
-          if (data.csrf_token) csrfHash = data.csrf_token;
-          var isActive = data.is_active === 1 || data.is_active === '1';
-          var rowEl = document.getElementById('row-' + id);
-          if (rowEl) {
-            rowEl.setAttribute('data-active', isActive ? '1' : '0');
-            var iconSpan = rowEl.querySelector('.js-status-icon');
-            if (iconSpan) {
-              iconSpan.innerHTML   = isActive ? statusIcons.active : statusIcons.inactive;
-              iconSpan.style.color = isActive ? '#16a34a' : '#9ca3af';
-              iconSpan.title       = isActive ? 'Active' : 'Inactive';
-              iconSpan.setAttribute('aria-label', isActive ? 'Active' : 'Inactive');
-            }
+    fetch(toggleActiveUrlBase + '/' + id, {
+      method:      'POST',
+      headers:     { 'X-Requested-With': 'XMLHttpRequest' },
+      credentials: 'same-origin',
+      body:        fd,
+    })
+      .then(function (r) { return r.json(); })
+      .then(function (data) {
+        btn.disabled = false;
+        if (!data.success) { alert(data.message || 'Toggle failed.'); return; }
+        if (data.csrf_token) csrfHash = data.csrf_token;
+        var isActive = data.is_active === 1 || data.is_active === '1';
+        var rowEl = document.getElementById('row-' + id);
+        if (rowEl) {
+          rowEl.setAttribute('data-active', isActive ? '1' : '0');
+          var iconSpan = rowEl.querySelector('.js-status-icon');
+          if (iconSpan) {
+            iconSpan.innerHTML   = isActive ? statusIcons.active : statusIcons.inactive;
+            iconSpan.style.color = isActive ? '#16a34a' : '#9ca3af';
+            iconSpan.title       = isActive ? 'Active' : 'Inactive';
+            iconSpan.setAttribute('aria-label', isActive ? 'Active' : 'Inactive');
           }
-          btn.textContent = isActive ? 'Deactivate' : 'Activate';
-          btn.setAttribute('data-active', isActive ? '1' : '0');
-          flashSuccess(data.message || 'Student ' + (isActive ? 'activated' : 'deactivated') + '.');
-        })
-        .catch(function () { btn.disabled = false; alert('An error occurred. Please try again.'); });
-    });
-  }
-
-  function wireEligibilityButton(btn) {
-    if (btn.dataset.eligibilityBound === '1') return;
-    btn.dataset.eligibilityBound = '1';
-    btn.addEventListener('click', function () {
-      var id = btn.getAttribute('data-id');
-      if (!id) return;
-      btn.disabled = true;
-
-      var fd = new FormData();
-      fd.append(csrfName, csrfHash);
-
-      fetch(toggleEligibilityUrlBase + '/' + id, {
-        method:      'POST',
-        headers:     { 'X-Requested-With': 'XMLHttpRequest' },
-        credentials: 'same-origin',
-        body:        fd,
+        }
+        btn.textContent = isActive ? 'Deactivate' : 'Activate';
+        btn.setAttribute('data-active', isActive ? '1' : '0');
+        flashSuccess(data.message || 'Student ' + (isActive ? 'activated' : 'deactivated') + '.');
       })
-        .then(function (r) { return r.json(); })
-        .then(function (data) {
-          btn.disabled = false;
-          if (!data.success) { alert(data.message || 'Toggle failed.'); return; }
-          if (data.csrf_token) csrfHash = data.csrf_token;
-          var newElig = data.eligibility_status;
-          var rowEl = document.getElementById('row-' + id);
-          if (rowEl) {
-            rowEl.setAttribute('data-eligibility', newElig);
-            var iconSpan = rowEl.querySelector('.js-elig-icon');
-            if (iconSpan) {
-              iconSpan.innerHTML   = newElig === 'eligible' ? eligIcons.eligible : eligIcons.ineligible;
-              iconSpan.style.color = newElig === 'eligible' ? '#16a34a' : '#9ca3af';
-              iconSpan.title       = newElig === 'eligible' ? 'Eligible' : 'Not eligible';
-              iconSpan.setAttribute('aria-label', newElig === 'eligible' ? 'Eligible' : 'Not eligible');
-            }
-            var cb = rowEl.querySelector('.vs-row-check');
-            if (cb) {
-              cb.disabled = newElig === 'not_eligible';
-              if (newElig === 'not_eligible') { cb.checked = false; }
-              cb.title = newElig === 'not_eligible' ? 'Not eligible — cannot be selected' : '';
-            }
-          }
-          btn.textContent = newElig === 'not_eligible' ? 'Mark Eligible' : 'Mark Not Eligible';
-          btn.setAttribute('data-eligibility', newElig);
-          flashSuccess(data.message || 'Eligibility updated.');
-        })
-        .catch(function () { btn.disabled = false; alert('An error occurred. Please try again.'); });
-    });
+      .catch(function () { btn.disabled = false; alert('An error occurred. Please try again.'); });
   }
 
-  function wireRowActionButtons(scope) {
-    var root = scope || document;
-    root.querySelectorAll('.js-toggle-active').forEach(wireToggleActiveButton);
-    root.querySelectorAll('.js-toggle-eligibility').forEach(wireEligibilityButton);
-    root.querySelectorAll('.js-voucher-action').forEach(function (b) {
-      if (b.dataset.voucherActionBound === '1') return;
-      b.dataset.voucherActionBound = '1';
-      b.addEventListener('click', function () { window.vmOpen(b.getAttribute('data-mode'), b.getAttribute('data-id')); });
-    });
+  function handleToggleEligibility(btn) {
+    if (!btn || btn.disabled) return;
+    var id = btn.getAttribute('data-id');
+    if (!id) return;
+    btn.disabled = true;
+
+    var fd = new FormData();
+    fd.append(csrfName, csrfHash);
+
+    fetch(toggleEligibilityUrlBase + '/' + id, {
+      method:      'POST',
+      headers:     { 'X-Requested-With': 'XMLHttpRequest' },
+      credentials: 'same-origin',
+      body:        fd,
+    })
+      .then(function (r) { return r.json(); })
+      .then(function (data) {
+        btn.disabled = false;
+        if (!data.success) { alert(data.message || 'Toggle failed.'); return; }
+        if (data.csrf_token) csrfHash = data.csrf_token;
+        var newElig = data.eligibility_status;
+        var rowEl = document.getElementById('row-' + id);
+        if (rowEl) {
+          rowEl.setAttribute('data-eligibility', newElig);
+          var iconSpan = rowEl.querySelector('.js-elig-icon');
+          if (iconSpan) {
+            iconSpan.innerHTML   = newElig === 'eligible' ? eligIcons.eligible : eligIcons.ineligible;
+            iconSpan.style.color = newElig === 'eligible' ? '#16a34a' : '#9ca3af';
+            iconSpan.title       = newElig === 'eligible' ? 'Eligible' : 'Not eligible';
+            iconSpan.setAttribute('aria-label', newElig === 'eligible' ? 'Eligible' : 'Not eligible');
+          }
+          var cb = rowEl.querySelector('.vs-row-check');
+          if (cb) {
+            cb.disabled = newElig === 'not_eligible';
+            if (newElig === 'not_eligible') { cb.checked = false; }
+            cb.title = newElig === 'not_eligible' ? 'Not eligible — cannot be selected' : '';
+          }
+        }
+        btn.textContent = newElig === 'not_eligible' ? 'Mark Eligible' : 'Mark Not Eligible';
+        btn.setAttribute('data-eligibility', newElig);
+        flashSuccess(data.message || 'Eligibility updated.');
+      })
+      .catch(function () { btn.disabled = false; alert('An error occurred. Please try again.'); });
   }
-  wireRowActionButtons();
+
+  // Event delegation — covers both static rows and AJAX-rendered DataTable rows
+  document.addEventListener('click', function (e) {
+    var btn = e.target.closest('.js-toggle-active');
+    if (btn) { handleToggleActive(btn); return; }
+    var btn2 = e.target.closest('.js-toggle-eligibility');
+    if (btn2) { handleToggleEligibility(btn2); return; }
+  });
 
   // ── Bulk Activate / Deactivate ─────────────────────────────────────────────
   function getSelectedIds() {
@@ -939,5 +921,5 @@ window.VM_CONFIG = {
 <?= $this->endSection() ?>
 
 <?= $this->section('scripts') ?>
-<script src="<?= base_url('js/voucher-modal.js') ?>"></script>
+<script src="<?= base_url('assets/js/custom/voucher-modal.js') ?>"></script>
 <?= $this->endSection() ?>

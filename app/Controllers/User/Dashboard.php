@@ -18,7 +18,8 @@ class Dashboard extends Controller
         $recentVouchers = $db->table('students')
             ->select("
                 voucher_no,
-                CONCAT_WS(' ', NULLIF(first_name,''), NULLIF(middle_name,''), NULLIF(last_name,''), NULLIF(suffix,'')) AS full_name,
+                first_name, middle_name, last_name,
+                TRIM(CONCAT_WS(' ', NULLIF(last_name,''), NULLIF(first_name,''), NULLIF(middle_name,''))) AS name_sort,
                 junior_high_school,
                 voucher_status,
                 generated_at

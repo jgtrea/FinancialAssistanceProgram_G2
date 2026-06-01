@@ -21,7 +21,7 @@
 
     <div class="d-flex align-items-center gap-2 flex-wrap mb-3">
         <form method="get" id="archiveFilterForm" class="vs-advanced-search vs-advanced-search-outside">
-            <input type="text" name="q" class="vs-input vs-advanced-search-input" placeholder="Enter keyword to search archived vouchers (name, school)" value="<?= esc((string) ($keyword ?? ''), 'attr') ?>">
+            <input type="text" name="q" class="vs-input vs-advanced-search-input" placeholder="Enter keyword to search archived vouchers (name, school, etc.)" value="<?= esc((string) ($keyword ?? ''), 'attr') ?>">
             <button type="button" class="vs-btn vs-btn-outline" id="btnOpenArchiveFilter">
                 Filters
                 <span id="archiveFilterBadge" class="badge bg-primary" style="display:<?= $activeFilterCount > 0 ? 'inline-block' : 'none' ?>;margin-left:.35rem"><?= $activeFilterCount > 0 ? esc($activeFilterCount) : '' ?></span>
@@ -44,24 +44,32 @@
                     Open <strong>Filters</strong> and choose a <strong>School Year</strong> to load archived records.
                 </div>
             <?php else: ?>
-            <div class="d-flex align-items-center gap-2 mb-3 flex-wrap">
-                <input type="text" id="customArchiveSearch" class="vs-input vs-page-search" placeholder="Search this page..." style="max-width:260px">
-                <label class="vs-length-label ms-auto">Show <input type="number" id="archiveLengthInput" class="vs-length-input" value="10" min="1" max="500"> entries</label>
-            </div>
-            <table id="archivedVouchersTable" class="vs-datatable js-data-table" data-search-placeholder="Search archived vouchers..." style="width:100%">
+            <table id="archivedVouchersTable" class="vs-datatable js-data-table"
+                   data-page-search="customArchiveSearch"
+                   data-search-placeholder="Search archived vouchers..."
+                   data-order='[[3,"asc"]]'
+                   data-col-defs='[{"orderData":[3],"targets":[0]},{"visible":false,"targets":[3]}]'
+                   style="width:100%">
                 <thead>
                     <tr>
                         <th>Student Name</th>
                         <th>School</th>
                         <th>Archived At</th>
+                        <th></th>
                     </tr>
                 </thead>
                 <tbody>
                     <?php foreach ($vouchers as $voucher): ?>
+                        <?php
+                            $aLn = trim((string) ($voucher['last_name']   ?? ''));
+                            $aFm = implode(' ', array_filter([trim((string) ($voucher['first_name'] ?? '')), trim((string) ($voucher['middle_name'] ?? ''))]));
+                            $aDn = $aLn !== '' ? $aLn . ($aFm !== '' ? ', ' . $aFm : '') : $aFm;
+                        ?>
                         <tr data-archived-date="<?= !empty($voucher['archived_at']) ? esc(date('Y-m-d', strtotime($voucher['archived_at']))) : '' ?>">
-                            <td><?= esc($voucher['full_name']) ?></td>
+                            <td><?= esc($aDn) ?></td>
                             <td><?= esc($voucher['preferred_senior_high_school']) ?></td>
                             <td><?= !empty($voucher['archived_at']) ? esc(date('M d, Y h:i A', strtotime($voucher['archived_at']))) : '-' ?></td>
+                            <td><?= esc($voucher['name_sort'] ?? '') ?></td>
                         </tr>
                     <?php endforeach; ?>
                 </tbody>
@@ -191,49 +199,6 @@
     // state (no school year selected) where the table isn't rendered at all,
     // but the user still needs to open Filters to pick a year.
     wireFilterModal();
-
-    // DataTable-dependent wiring runs only when the table exists, and only
-    // once both jQuery and the DataTables plugin are loaded AND script.js has
-    // initialized this table.
-    var table = document.getElementById('archivedVouchersTable');
-    if (table) {
-        initArchiveDataTable(table);
-    }
-
-    function initArchiveDataTable(table) {
-        if (!window.jQuery
-            || !$.fn.DataTable
-            || !$.fn.DataTable.isDataTable(table)
-        ) {
-            return setTimeout(function () { initArchiveDataTable(table); }, 50);
-        }
-        var dt = $(table).DataTable();
-        var dtWrap = table.closest('.dataTables_wrapper');
-
-        var dtSearch = dtWrap ? dtWrap.querySelector('.dataTables_filter') : null;
-        if (dtSearch) dtSearch.style.display = 'none';
-
-        var dtLength = dtWrap ? dtWrap.querySelector('.dataTables_length') : null;
-        if (dtLength) dtLength.style.display = 'none';
-
-        var lenInput = document.getElementById('archiveLengthInput');
-        if (lenInput) {
-            var applyArchiveLen = function () {
-                var v = parseInt(lenInput.value, 10);
-                if (!isNaN(v) && v > 0) dt.page.len(v).draw();
-            };
-            lenInput.addEventListener('change', applyArchiveLen);
-            lenInput.addEventListener('keydown', function (e) { if (e.key === 'Enter') applyArchiveLen(); });
-        }
-
-        // In-table search filters across ALL loaded rows (server caps the load
-        // at ~1000 — see ArchiveModel::LISTING_DEFAULT_LIMIT). The
-        // advanced-search + filters above reload the page against the full DB.
-        var searchInput = document.getElementById('customArchiveSearch');
-        if (window.VS && window.VS.bindFullTableSearch) {
-            window.VS.bindFullTableSearch(dt, searchInput);
-        }
-    }
 
     function wireFilterModal() {
         var filterModal = document.getElementById('archiveFilterModal');

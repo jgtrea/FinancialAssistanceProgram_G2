@@ -22,6 +22,9 @@
   var vmSchoolYearWrap      = document.getElementById('vmSchoolYearWrap');
   var vmLastGeneratedByWrap = document.getElementById('vmLastGeneratedByWrap');
   var vmLastGeneratedByEl   = document.getElementById('vmLastGeneratedBy');
+  var vmLastGeneratedAtEl   = document.getElementById('vmLastGeneratedAt');
+  var vmGenerationHistoryDetails = document.getElementById('vmGenerationHistoryDetails');
+  var vmGenerationHistoryList = document.getElementById('vmGenerationHistoryList');
 
   var vmFieldIds = [
     'vmVoucherDate', 'vmFirstName', 'vmMiddleName', 'vmLastName',
@@ -51,6 +54,48 @@
     });
   }
 
+  function vmFormatDateTime(value) {
+    if (!value) return '';
+    var normalized = String(value).replace(' ', 'T');
+    var d = new Date(normalized);
+    if (Number.isNaN(d.getTime())) return String(value);
+    return d.toLocaleString(undefined, {
+      year: 'numeric',
+      month: 'short',
+      day: '2-digit',
+      hour: 'numeric',
+      minute: '2-digit'
+    });
+  }
+
+  function vmRenderGenerationHistory(student) {
+    var history = Array.isArray(student.generation_history) ? student.generation_history : [];
+    var latestAt = student.last_generated_at || student.generated_at || '';
+
+    if (vmLastGeneratedByEl) vmLastGeneratedByEl.textContent = student.last_generated_by || '-';
+    if (vmLastGeneratedAtEl) vmLastGeneratedAtEl.textContent = latestAt ? ' | ' + vmFormatDateTime(latestAt) : '';
+
+    if (!vmGenerationHistoryDetails || !vmGenerationHistoryList) return;
+
+    vmGenerationHistoryDetails.style.display = history.length > 1 ? '' : 'none';
+    vmGenerationHistoryDetails.open = false;
+
+    if (!history.length) {
+      vmGenerationHistoryList.innerHTML = '<div class="vm-generation-history-empty">No generation history yet.</div>';
+      return;
+    }
+
+    vmGenerationHistoryList.innerHTML = history.map(function (item) {
+      var by = item.generated_by || '-';
+      var at = vmFormatDateTime(item.generated_at);
+      var source = item.source ? String(item.source).replace(/_/g, ' ') : '';
+      return '<div class="vm-generation-history-item">'
+        + '<strong>' + escapeHtml(by) + '</strong>'
+        + '<span>' + escapeHtml(at) + (source ? ' - ' + escapeHtml(source) : '') + '</span>'
+        + '</div>';
+    }).join('');
+  }
+
   function vmShowAlert(msg, type, errors) {
     var html = '<div class="vs-alert vs-alert-' + (type || 'error') + ' mb-3">' + escapeHtml(msg);
     if (errors && Object.keys(errors).length) {
@@ -72,6 +117,10 @@
       if (el) el.value = '';
     });
     document.getElementById('vmEligibility').value = 'eligible';
+    if (vmLastGeneratedByEl) vmLastGeneratedByEl.textContent = '-';
+    if (vmLastGeneratedAtEl) vmLastGeneratedAtEl.textContent = '';
+    if (vmGenerationHistoryDetails) vmGenerationHistoryDetails.open = false;
+    if (vmGenerationHistoryList) vmGenerationHistoryList.innerHTML = '';
   }
 
   function vmPopulateFields(student) {
@@ -160,7 +209,7 @@
         vmPopulateFields(data.student);
         if (mode === 'view') {
           if (vmVoucherNoDisplay) vmVoucherNoDisplay.textContent = data.student.voucher_no || '—';
-          if (vmLastGeneratedByEl) vmLastGeneratedByEl.textContent = data.student.last_generated_by || '—';
+          vmRenderGenerationHistory(data.student);
         }
         if (mode !== 'view') {
           loadSchoolOptions(
@@ -182,12 +231,11 @@
   voucherModalCancel && voucherModalCancel.addEventListener('click', vmClose);
   voucherModal       && voucherModal.addEventListener('click',       function (e) { if (e.target === voucherModal) vmClose(); });
 
-  document.querySelectorAll('.js-voucher-action').forEach(function (btn) {
-    if (btn.dataset.voucherActionBound === '1') return;
-    btn.dataset.voucherActionBound = '1';
-    btn.addEventListener('click', function () {
-      vmOpen(btn.getAttribute('data-mode'), btn.getAttribute('data-id'));
-    });
+  // Event delegation — works for AJAX-rendered rows (server-side DataTables)
+  document.addEventListener('click', function (e) {
+    var btn = e.target.closest('.js-voucher-action');
+    if (!btn) return;
+    vmOpen(btn.getAttribute('data-mode'), btn.getAttribute('data-id'));
   });
 
   window.vmOpen = vmOpen;

@@ -1,0 +1,37 @@
+/* ============================================================
+   USER FORM — create / edit
+   ============================================================ */
+
+.vs-form-card {
+  background: var(--card-bg);
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  padding: 1.75rem;
+  max-width: 720px;
+}
+
+.vs-form-card .vs-form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.1rem 1.5rem;
+}
+@media (max-width: 600px) {
+  .vs-form-card .vs-form-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.vs-form-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.vs-form-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.65rem;
+  margin-top: 1.5rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--border);
+}

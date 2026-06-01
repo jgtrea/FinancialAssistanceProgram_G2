@@ -60,11 +60,6 @@ $icon = static fn (string $name): string => asset_icon($name, ['class' => 'vs-si
                     <div class="sb-nav-link-icon"><?= $icon('voucher') ?></div>
                     Vouchers
                 </a>
-                <a class="nav-link <?= $isActive('signatories') ?>" href="<?= site_url('signatories') ?>">
-                    <div class="sb-nav-link-icon"><?= $icon('sign') ?></div>
-                    Signatories
-                </a>
-
                 <div class="sb-sidenav-menu-heading">Manage</div>
                 <a class="nav-link <?= $isActive('user/schools') ?>" href="<?= site_url('user/schools') ?>">
                     <div class="sb-nav-link-icon"><?= $icon('school') ?></div>

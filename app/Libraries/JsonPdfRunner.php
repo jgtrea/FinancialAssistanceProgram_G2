@@ -3,6 +3,7 @@
 namespace App\Libraries;
 
 use App\Models\VoucherModel;
+use App\Models\GenerationHistoryModel;
 
 /**
  * JsonPdfRunner — render one chunk job from the JSON-file queue.
@@ -88,14 +89,22 @@ class JsonPdfRunner
             // generate_count so the listing can show running totals without
             // re-scanning pdf_jobs JSON.
             $db = \Config\Database::connect();
+            $generatedAt = date('Y-m-d H:i:s');
             $db->table('students')
                 ->whereIn('student_id', $ids)
                 ->update([
                     'voucher_status' => 'generated',
-                    'generated_at'   => date('Y-m-d H:i:s'),
+                    'generated_at'   => $generatedAt,
                 ]);
             $db->query(
                 'UPDATE students SET generate_count = generate_count + 1 WHERE student_id IN (' . implode(',', array_map('intval', $ids)) . ')'
+            );
+            (new GenerationHistoryModel())->recordMany(
+                $students,
+                isset($job['created_by']) ? (int) $job['created_by'] : null,
+                $jobId,
+                'json_queue',
+                $generatedAt
             );
 
             JsonPdfQueue::mutateAll(function (array $queue, array $processing, array $finished) use ($jobId, $filename) {

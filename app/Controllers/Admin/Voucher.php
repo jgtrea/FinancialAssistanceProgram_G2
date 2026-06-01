@@ -274,10 +274,12 @@ class Voucher extends Controller
             . '>';
 
         $voucherNo  = '<span class="js-voucher-no">' . esc($v['voucher_no'] ?: '-') . '</span>';
-        $name       = esc($v['full_name'] ?? '');
-        // Hidden column used by DataTables to sort the visible Name column by
-        // last-name-first, matching the old PHP-rendered listing.
-        $nameSort   = esc(trim(($v['last_name'] ?? '') . ' ' . ($v['first_name'] ?? '') . ' ' . ($v['middle_name'] ?? '')));
+        $lastName   = trim((string) ($v['last_name']   ?? ''));
+        $firstName  = trim((string) ($v['first_name']  ?? ''));
+        $middleName = trim((string) ($v['middle_name'] ?? ''));
+        $firstMid   = implode(' ', array_filter([$firstName, $middleName]));
+        $name       = esc($lastName !== '' ? $lastName . ($firstMid !== '' ? ', ' . $firstMid : '') : $firstMid);
+        $nameSort   = esc(trim($lastName . ' ' . $firstName . ' ' . $middleName));
         $jhs        = esc($v['junior_high_school'] ?: '-');
         $shs        = esc($v['preferred_senior_high_school'] ?? '');
         $schoolYear = esc($v['school_year'] ?? '');

@@ -1,0 +1,176 @@
+/* ============================================================
+   ADMIN DASHBOARD
+   ============================================================ */
+
+.vs-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(175px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.vs-stat-card {
+  background: var(--card-bg);
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  padding: 1.1rem 1.25rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  transition:
+    transform 0.15s,
+    box-shadow 0.15s;
+}
+.vs-stat-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(7, 59, 120, 0.1);
+}
+
+.vs-stat-icon {
+  width: 42px;
+  height: 42px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.vs-stat-blue .vs-stat-icon {
+  background: #dff5fb;
+  color: var(--navy-md);
+}
+.vs-stat-green .vs-stat-icon {
+  background: #d9f7ee;
+  color: var(--success);
+}
+.vs-stat-amber .vs-stat-icon {
+  background: var(--parchment);
+  color: #b07600;
+}
+.vs-stat-purple .vs-stat-icon {
+  background: #e5f7f3;
+  color: var(--teal-dark);
+}
+.vs-stat-gray .vs-stat-icon {
+  background: #edf3f6;
+  color: #506173;
+}
+
+.vs-stat-value {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--navy);
+  line-height: 1.1;
+}
+.vs-stat-label {
+  font-size: 0.75rem;
+  color: var(--muted);
+  margin-top: 0.15rem;
+}
+
+/* Panels */
+.vs-dashboard-panels {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.25rem;
+}
+@media (max-width: 900px) {
+  .vs-dashboard-panels {
+    grid-template-columns: 1fr;
+  }
+}
+
+.vs-panel {
+  background: var(--card-bg);
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  overflow: hidden;
+}
+.vs-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.9rem 1.1rem;
+  border-bottom: 1px solid var(--border);
+}
+.vs-panel-title {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--navy);
+  margin: 0;
+}
+.vs-panel-link {
+  font-size: 0.78rem;
+  color: var(--navy-md);
+  text-decoration: none;
+  font-weight: 500;
+}
+.vs-panel-link:hover {
+  text-decoration: underline;
+}
+.vs-panel-body {
+  padding: 0.5rem;
+}
+
+/* Mini table */
+.vs-mini-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.825rem;
+}
+.vs-mini-table th {
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--muted);
+  padding: 0.5rem 0.65rem;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+}
+.vs-mini-table td {
+  padding: 0.55rem 0.65rem;
+  border-bottom: 1px solid var(--border);
+  color: var(--navy);
+  vertical-align: middle;
+}
+.vs-mini-table tbody tr:last-child td {
+  border-bottom: none;
+}
+.vs-mini-table tbody tr:hover td {
+  background: #f4fbfd;
+}
+
+/* Activity list */
+.vs-activity-list {
+  padding: 0.25rem 0.5rem;
+}
+.vs-activity-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 0.55rem 0;
+  border-bottom: 1px solid var(--border);
+}
+.vs-activity-item:last-child {
+  border-bottom: none;
+}
+.vs-activity-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--accent);
+  flex-shrink: 0;
+  margin-top: 0.35rem;
+}
+.vs-activity-action {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--navy);
+  font-family: var(--font-mono);
+}
+.vs-activity-meta {
+  font-size: 0.75rem;
+  color: var(--muted);
+  margin-top: 0.1rem;
+}

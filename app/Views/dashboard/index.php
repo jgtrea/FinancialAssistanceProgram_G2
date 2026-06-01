@@ -83,31 +83,57 @@
                         <?php $voucherPrefix = session()->get('role') === 'admin' ? 'admin' : 'user'; ?>
                         <a href="<?= site_url($voucherPrefix . '/students') ?>" class="vs-btn vs-btn-outline">See All</a>
                     </div>
-                        <table id="recentVouchersTable" class="vs-datatable" width="100%" cellspacing="0">
-                            <thead>
+                    <table id="recentVouchersTable" class="vs-datatable"
+                           width="100%" cellspacing="0">
+                        <thead>
+                            <tr>
+                                <th>Voucher No</th>
+                                <th>Student Name</th>
+                                <th>Junior High School</th>
+                                <th>Status</th>
+                                <th>Last Generated</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php foreach ($recentVouchers as $voucher): ?>
+                                <?php
+                                    $dLn = trim((string) ($voucher['last_name']   ?? ''));
+                                    $dFm = implode(' ', array_filter([trim((string) ($voucher['first_name'] ?? '')), trim((string) ($voucher['middle_name'] ?? ''))]));
+                                    $dDn = $dLn !== '' ? $dLn . ($dFm !== '' ? ', ' . $dFm : '') : $dFm;
+                                ?>
                                 <tr>
-                                    <th>Voucher No</th>
-                                    <th>Student Name</th>
-                                    <th>Junior High School</th>
-                                    <th>Status</th>
-                                    <th>Last Generated</th>
+                                    <td><?= esc($voucher['voucher_no']) ?></td>
+                                    <td><?= esc($dDn) ?></td>
+                                    <td><?= esc($voucher['junior_high_school'] ?: '-') ?></td>
+                                    <td><span class="badge bg-<?= $voucher['voucher_status'] === 'generated' ? 'success' : 'warning' ?>"><?= esc(ucwords(str_replace('_', ' ', $voucher['voucher_status']))) ?></span></td>
+                                    <td><?= !empty($voucher['generated_at']) ? date('M d, Y', strtotime($voucher['generated_at'])) : '-' ?></td>
+                                    <td><?= esc($voucher['name_sort'] ?? '') ?></td>
                                 </tr>
-                            </thead>
-                            <tbody>
-                                <?php foreach ($recentVouchers as $voucher): ?>
-                                    <tr>
-                                        <td><?= esc($voucher['voucher_no']) ?></td>
-                                        <td><?= esc($voucher['full_name']) ?></td>
-                                        <td><?= esc($voucher['junior_high_school'] ?: '-') ?></td>
-                                        <td><span class="badge bg-<?= $voucher['voucher_status'] === 'generated' ? 'success' : 'warning' ?>"><?= esc(ucwords(str_replace('_', ' ', $voucher['voucher_status']))) ?></span></td>
-                                        <td><?= !empty($voucher['generated_at']) ? date('M d, Y', strtotime($voucher['generated_at'])) : '-' ?></td>
-                                    </tr>
-                                <?php endforeach; ?>
-                            </tbody>
-                        </table>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>
     </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    var table = document.getElementById('recentVouchersTable');
+    if (!table || !window.jQuery || !$.fn.DataTable) return;
+    $(table).DataTable({
+        dom:       "<'row'<'col-sm-12'tr>>",
+        paging:    false,
+        searching: false,
+        info:      false,
+        ordering:  true,
+        responsive: true,
+        autoWidth: false,
+        order:     [[4, 'desc']],
+        columnDefs: [{ visible: false, targets: [5] }],
+    });
+});
+</script>
 
 <?= $this->endSection() ?>

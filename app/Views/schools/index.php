@@ -36,7 +36,7 @@
 <div class="d-flex align-items-center gap-2 flex-wrap mb-3">
     <form method="get" class="vs-advanced-search vs-advanced-search-outside" id="schoolSearchForm">
         <input type="text" name="q" class="vs-input vs-advanced-search-input"
-               placeholder="Enter keyword to search schools (name, level)"
+               placeholder="Enter keyword to search schools (name, level, etc.)"
                value="<?= esc($keyword, 'attr') ?>">
         <?php if ($filterLevel !== ''): ?>
             <input type="hidden" name="level" value="<?= esc($filterLevel, 'attr') ?>">
@@ -61,15 +61,7 @@
 
 <div class="vs-card">
     <div class="vs-card-body">
-        <div class="d-flex align-items-center gap-2 mb-3 flex-wrap">
-            <input type="text" id="customSchoolSearch" class="vs-input vs-page-search"
-                   placeholder="Search this page..." style="max-width:260px">
-            <label class="vs-length-label ms-auto">Show
-                <input type="number" id="schoolLengthInput" class="vs-length-input" value="10" min="1" max="500">
-            entries</label>
-        </div>
-
-        <table id="schoolsTable" class="vs-datatable js-data-table" style="width:100%">
+        <table id="schoolsTable" class="vs-datatable js-data-table" data-page-search="customSchoolsSearch" data-order='[[1,"asc"]]' style="width:100%">
             <thead>
                 <tr>
                     <th class="vs-th-check">
@@ -651,67 +643,18 @@
 
 }());
 
-// ── DataTable init ────────────────────────────────────────────────────────────
-(function initSchoolTable() {
-    function init() {
+// Apply initial level filter once initGenericDataTables has initialized the table
+(function () {
+    var initialLevel = '<?= esc($filterLevel, 'js') ?>';
+    if (!initialLevel) return;
+    function applyInitialLevel() {
         var table = document.getElementById('schoolsTable');
-        if (!table || !window.jQuery || !$.fn.DataTable || $.fn.DataTable.isDataTable(table)) {
-            if (!table || (window.jQuery && $.fn.DataTable && $.fn.DataTable.isDataTable(table))) return;
-            return setTimeout(init, 50);
+        if (!table || !window.jQuery || !$.fn.DataTable || !$.fn.DataTable.isDataTable(table)) {
+            return setTimeout(applyInitialLevel, 50);
         }
-
-        var dt = $(table).DataTable({
-            dom:
-                "<'row align-items-center mb-3'<'col-sm-12 col-md-6'f><'col-sm-12 col-md-6 text-md-end'l>>" +
-                "<'row'<'col-sm-12'tr>>" +
-                "<'row align-items-center mt-3'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7'p>>",
-            pageLength: 10,
-            lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, 'All']],
-            responsive: true,
-            autoWidth: false,
-            order: [[1, 'asc']],
-            columnDefs: [{ orderable: false, targets: [0, -1] }],
-            language: {
-                search: '',
-                searchPlaceholder: 'Search schools...',
-                lengthMenu: 'Show _MENU_ entries',
-                info: 'Showing _START_ to _END_ of _TOTAL_',
-                paginate: { previous: '&#8249;', next: '&#8250;' },
-            },
-        });
-
-        var dtWrap   = table.closest('.dataTables_wrapper');
-        var dtSearch = dtWrap ? dtWrap.querySelector('.dataTables_filter') : null;
-        var dtLength = dtWrap ? dtWrap.querySelector('.dataTables_length') : null;
-        if (dtSearch) dtSearch.style.display = 'none';
-        if (dtLength) dtLength.style.display = 'none';
-
-        var lenInput = document.getElementById('schoolLengthInput');
-        if (lenInput) {
-            function applyLen() {
-                var v = parseInt(lenInput.value, 10);
-                if (!isNaN(v) && v > 0) dt.page.len(v).draw();
-            }
-            lenInput.addEventListener('change', applyLen);
-            lenInput.addEventListener('keydown', function (e) { if (e.key === 'Enter') applyLen(); });
-        }
-
-        var searchInput = document.getElementById('customSchoolSearch');
-        if (window.VS && window.VS.bindFullTableSearch) {
-            window.VS.bindFullTableSearch(dt, searchInput);
-        }
-
-        var initialLevel = '<?= esc($filterLevel, 'js') ?>';
-        if (initialLevel) {
-            dt.column(2).search(initialLevel, false, false).draw();
-        }
+        $(table).DataTable().column(2).search(initialLevel, false, false).draw();
     }
-
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', init);
-    } else {
-        init();
-    }
+    applyInitialLevel();
 }());
 </script>
 
