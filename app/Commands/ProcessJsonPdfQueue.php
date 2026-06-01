@@ -117,10 +117,57 @@ class ProcessJsonPdfQueue extends BaseCommand
             }
         }
 
-        if ($processed > 0 || $failed > 0) {
-            CLI::write('[' . date('H:i:s') . "] Drained: {$processed} done, {$failed} failed.");
+        // Sweep stale finished records every drain so finished.json + the
+        // writable/pdfs/ dir don't grow without bound.
+        $swept = $this->sweepStaleFinished(self::FINISHED_TTL_SECONDS);
+
+        if ($processed > 0 || $failed > 0 || $swept > 0) {
+            CLI::write('[' . date('H:i:s') . "] Drained: {$processed} done, {$failed} failed, {$swept} swept.");
         }
 
         return $failed === 0;
+    }
+
+    /**
+     * How long a finished record + its on-disk file linger before the worker
+     * sweeps them out. Generous enough to let the browser download once.
+     */
+    private const FINISHED_TTL_SECONDS = 86400; // 24 hours
+
+    /**
+     * Drop finished-job records older than $ttl seconds. Also unlinks the
+     * referenced PDF/ZIP file if it still exists on disk. Returns the count
+     * of records removed.
+     */
+    protected function sweepStaleFinished(int $ttl): int
+    {
+        $cutoff   = time() - max(60, $ttl);
+        $pdfsDir  = WRITEPATH . 'pdfs' . DIRECTORY_SEPARATOR;
+        $removed  = 0;
+        $unlinked = [];
+
+        JsonPdfQueue::mutate(JsonPdfQueue::FILE_FINISHED, function (array $finished) use ($cutoff, $pdfsDir, &$removed, &$unlinked) {
+            $kept = [];
+            foreach (($finished['jobs'] ?? []) as $job) {
+                $completedAt = $job['completed_at'] ?? null;
+                $ts          = $completedAt ? strtotime($completedAt) : false;
+
+                if ($ts !== false && $ts <= $cutoff) {
+                    if (!empty($job['file_path'])) {
+                        $path = $pdfsDir . $job['file_path'];
+                        if (is_file($path) && @unlink($path)) {
+                            $unlinked[] = $job['file_path'];
+                        }
+                    }
+                    $removed++;
+                    continue;
+                }
+                $kept[] = $job;
+            }
+            $finished['jobs'] = $kept;
+            return $finished;
+        });
+
+        return $removed;
     }
 }
