@@ -370,6 +370,58 @@ body {
   padding: 1rem 1.5rem;
   border-top: 1px solid var(--border);
 }
+.vm-generation-summary {
+  flex: 1 1 auto;
+  min-width: 0;
+  max-width: calc(100% - 110px);
+  font-size: 0.8rem;
+  color: #6b7280;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+.vm-generated-at {
+  white-space: nowrap;
+}
+.vm-generation-history {
+  margin-top: 0.25rem;
+}
+.vm-generation-history summary {
+  cursor: pointer;
+  color: var(--navy-md);
+  font-weight: 600;
+  width: fit-content;
+}
+.vm-generation-history-list {
+  margin-top: 0.4rem;
+  max-height: 120px;
+  overflow: auto;
+  padding-right: 0.35rem;
+}
+.vm-generation-history-item {
+  display: grid;
+  grid-template-columns: minmax(72px, 0.45fr) minmax(0, 1fr);
+  gap: 0.5rem;
+  padding: 0.25rem 0;
+  border-top: 1px solid #eef2f7;
+}
+.vm-generation-history-item span {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.vm-generation-history-empty {
+  color: #91a6b6;
+}
+
+@media (max-width: 640px) {
+  .vs-modal-footer {
+    align-items: stretch;
+    flex-wrap: wrap;
+  }
+  .vm-generation-summary {
+    flex-basis: 100%;
+    max-width: 100%;
+  }
+}
 
 /* ── Card ── */
 .vs-card {

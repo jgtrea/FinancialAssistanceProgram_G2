@@ -3,6 +3,7 @@
 namespace App\Libraries;
 
 use App\Models\VoucherModel;
+use App\Models\GenerationHistoryModel;
 
 /**
  * PdfJobRunner — background orchestrator for voucher PDF generation.
@@ -91,12 +92,25 @@ class PdfJobRunner
 
             // Flip the UI badge from "Pending" → "Generated" for every student
             // in this chunk, stamping the moment of generation.
+            $generatedAt = date('Y-m-d H:i:s');
             $db->table('students')
                 ->whereIn('student_id', $ids)
                 ->update([
                     'voucher_status' => 'generated',
-                    'generated_at'   => date('Y-m-d H:i:s'),
+                    'generated_at'   => $generatedAt,
                 ]);
+            if ($db->fieldExists('generate_count', 'students')) {
+                $db->query(
+                    'UPDATE students SET generate_count = generate_count + 1 WHERE student_id IN (' . implode(',', array_map('intval', $ids)) . ')'
+                );
+            }
+            (new GenerationHistoryModel())->recordMany(
+                $students,
+                isset($job->created_by) ? (int) $job->created_by : null,
+                $jobId,
+                'db_queue',
+                $generatedAt
+            );
 
             $db->table('pdf_jobs')->where('job_id', $jobId)->update([
                 'status'       => 'done',
