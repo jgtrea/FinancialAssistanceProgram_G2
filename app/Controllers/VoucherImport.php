@@ -11,11 +11,14 @@ use PhpOffice\PhpSpreadsheet\Writer\Csv as CsvWriter;
 
 class VoucherImport extends BaseController
 {
-    // Expected header row (lowercase, trimmed) for format validation
-    private const EXPECTED_HEADERS = [
+    // Required columns in order (lowercase, trimmed). Suffix is optional and
+    // may appear at position 5 (between last name and rank no.).
+    private const REQUIRED_HEADERS = [
         'voucher no.',
         'voucher date',
-        'full name',
+        'first name',
+        'middle name',
+        'last name',
         'rank no.',
         'gwa',
         'sex',
@@ -64,6 +67,11 @@ class VoucherImport extends BaseController
             return $this->response->setJSON(['success' => false, 'message' => $headerError]);
         }
 
+        $headers   = array_map(fn($h) => strtolower(trim((string) $h)), $sheetData[0]);
+        $hasSuffix = isset($headers[5]) && $headers[5] === 'suffix';
+        // Column offsets shift by 1 after last name when suffix column is present.
+        $off = $hasSuffix ? 1 : 0;
+
         $voucherModel = new VoucherModel();
         $schoolOptions = new SchoolOptionModel();
         $count        = 0;
@@ -75,7 +83,10 @@ class VoucherImport extends BaseController
         $seenNames = [];
         for ($i = 1; $i < count($sheetData); $i++) {
             $vno = trim((string) ($sheetData[$i][0] ?? ''));
-            $fullName = trim((string) ($sheetData[$i][2] ?? ''));
+            $fn  = strtoupper(trim((string) ($sheetData[$i][2] ?? '')));
+            $mn  = strtoupper(trim((string) ($sheetData[$i][3] ?? '')));
+            $ln  = strtoupper(trim((string) ($sheetData[$i][4] ?? '')));
+            $fullName = trim($fn . ($mn !== '' ? ' ' . $mn : '') . ($ln !== '' ? ' ' . $ln : ''));
             if ($vno !== '') {
                 $key = strtoupper($vno);
                 if (isset($seenVoucherNos[$key])) {
@@ -148,9 +159,12 @@ class VoucherImport extends BaseController
 
             $voucherNo   = trim((string) ($row[0] ?? ''));
             $voucherDate = trim((string) ($row[1] ?? ''));
-            $fullName    = trim((string) ($row[2] ?? ''));
+            $firstName   = strtoupper(trim((string) ($row[2] ?? '')));
+            $middleName  = strtoupper(trim((string) ($row[3] ?? '')));
+            $lastName    = strtoupper(trim((string) ($row[4] ?? '')));
+            $suffix      = $hasSuffix ? strtoupper(trim((string) ($row[5] ?? ''))) : '';
 
-            if ($voucherDate === '' || $fullName === '') {
+            if ($voucherDate === '' || $firstName === '' || $lastName === '') {
                 continue;
             }
 
@@ -159,16 +173,29 @@ class VoucherImport extends BaseController
                 return $this->importRowError($i, 'Voucher date must be a valid date.');
             }
 
-            $rankNo  = trim((string) ($row[3] ?? ''));
-            $gwa     = trim((string) ($row[4] ?? ''));
-            $gender  = strtoupper(trim((string) ($row[5] ?? '')));
-            $jhsSchool = trim((string) ($row[6] ?? ''));
-            $shsSchool = trim((string) ($row[7] ?? ''));
-            $contact   = trim((string) ($row[8] ?? ''));
-            $remarks   = strtoupper(trim((string) ($row[9] ?? '')));
+            $rankNo    = trim((string) ($row[5 + $off] ?? ''));
+            $gwa       = trim((string) ($row[6 + $off] ?? ''));
+            $gender    = strtoupper(trim((string) ($row[7 + $off] ?? '')));
+            $jhsSchool = trim((string) ($row[8 + $off] ?? ''));
+            $shsSchool = trim((string) ($row[9 + $off] ?? ''));
+            $contact   = trim((string) ($row[10 + $off] ?? ''));
+            $remarks   = strtoupper(trim((string) ($row[11 + $off] ?? '')));
 
             if ($voucherNo !== '' && strlen($voucherNo) > 50) {
                 return $this->importRowError($i, 'Voucher number must be 50 characters or fewer.');
+            }
+
+            if ($firstName === '' || $lastName === '') {
+                return $this->importRowError($i, 'First Name and Last Name are required.');
+            }
+
+            if (strlen($firstName) > 100 || strlen($middleName) > 100 || strlen($lastName) > 100) {
+                return $this->importRowError($i, 'Student name parts must be 100 characters or fewer.');
+            }
+
+            $allowedSuffixes = ['JR.', 'SR.', 'II', 'III', 'IV'];
+            if ($suffix !== '' && !in_array($suffix, $allowedSuffixes, true)) {
+                return $this->importRowError($i, 'Suffix must be one of: ' . implode(', ', $allowedSuffixes) . ', or blank.');
             }
 
             // Validate gender
@@ -193,34 +220,21 @@ class VoucherImport extends BaseController
                 return $this->importRowError($i, 'Contact number has invalid characters or is too long.');
             }
 
-            if (!$schoolOptions->juniorHighSchoolExists($jhsSchool) || !$schoolOptions->seniorHighSchoolExists($shsSchool)) {
-                return $this->importRowError($i, 'School names must exist in the school dropdown tables.');
-            }
-
-            $nameParts  = explode(' ', $fullName);
-            $firstName  = array_shift($nameParts) ?? '';
-            $lastName   = !empty($nameParts) ? array_pop($nameParts) : '';
-            $middleName = implode(' ', $nameParts);
-
-            if ($firstName === '' || $lastName === '') {
-                return $this->importRowError($i, 'Full Name must include at least first and last name.');
-            }
-
-            if (strlen($firstName) > 100 || strlen($middleName) > 100 || strlen($lastName) > 100) {
-                return $this->importRowError($i, 'Student name parts must be 100 characters or fewer.');
-            }
-
             if (strlen($jhsSchool) > 200 || strlen($shsSchool) > 200) {
                 return $this->importRowError($i, 'School names must be 200 characters or fewer.');
+            }
+
+            if (!$schoolOptions->juniorHighSchoolExists($jhsSchool) || !$schoolOptions->seniorHighSchoolExists($shsSchool)) {
+                return $this->importRowError($i, 'School names must exist in the school dropdown tables.');
             }
 
             $voucherModel->insert([
                 'voucher_no'                   => $voucherNo !== '' ? $voucherNo : null,
                 'voucher_date'                 => date('Y-m-d', strtotime($voucherDate)),
-                'first_name'                   => strtoupper($firstName),
-                'middle_name'                  => strtoupper($middleName),
-                'last_name'                    => strtoupper($lastName),
-                'suffix'                       => '',
+                'first_name'                   => $firstName,
+                'middle_name'                  => $middleName,
+                'last_name'                    => $lastName,
+                'suffix'                       => $suffix,
                 'rank_no'                      => is_numeric($rankNo) ? (int) $rankNo : null,
                 'gwa'                          => is_numeric($gwa) ? (float) $gwa : null,
                 'gender'                       => $gender,
@@ -267,8 +281,10 @@ class VoucherImport extends BaseController
         $sheet       = $spreadsheet->getActiveSheet();
 
         $headers = [
-            'Voucher No.', 'Voucher Date', 'Full Name', 'Rank No.', 'GWA',
-            'Sex', 'Junior High School', 'Preferred Senior High School',
+            'Voucher No.', 'Voucher Date',
+            'First Name', 'Middle Name', 'Last Name', 'Suffix',
+            'Rank No.', 'GWA', 'Sex',
+            'Junior High School', 'Preferred Senior High School',
             'Contact Number', 'Remarks', 'School Year', 'Eligibility', 'Voucher Status',
         ];
 
@@ -280,17 +296,20 @@ class VoucherImport extends BaseController
             $row = $ri + 2;
             $sheet->getCell([1,  $row])->setValue($r['voucher_no'] ?? '');
             $sheet->getCell([2,  $row])->setValue($r['voucher_date'] ?? '');
-            $sheet->getCell([3,  $row])->setValue($r['full_name'] ?? '');
-            $sheet->getCell([4,  $row])->setValue($r['rank_no'] ?? '');
-            $sheet->getCell([5,  $row])->setValue($r['gwa'] ?? '');
-            $sheet->getCell([6,  $row])->setValue($r['gender'] ?? '');
-            $sheet->getCell([7,  $row])->setValue($r['junior_high_school'] ?? '');
-            $sheet->getCell([8,  $row])->setValue($r['preferred_senior_high_school'] ?? '');
-            $sheet->getCell([9,  $row])->setValue($r['contact_number'] ?? '');
-            $sheet->getCell([10, $row])->setValue($r['remarks_status'] ?? '');
-            $sheet->getCell([11, $row])->setValue($r['school_year'] ?? '');
-            $sheet->getCell([12, $row])->setValue($r['eligibility_status'] ?? '');
-            $sheet->getCell([13, $row])->setValue($r['voucher_status'] ?? '');
+            $sheet->getCell([3,  $row])->setValue($r['first_name'] ?? '');
+            $sheet->getCell([4,  $row])->setValue($r['middle_name'] ?? '');
+            $sheet->getCell([5,  $row])->setValue($r['last_name'] ?? '');
+            $sheet->getCell([6,  $row])->setValue($r['suffix'] ?? '');
+            $sheet->getCell([7,  $row])->setValue($r['rank_no'] ?? '');
+            $sheet->getCell([8,  $row])->setValue($r['gwa'] ?? '');
+            $sheet->getCell([9,  $row])->setValue($r['gender'] ?? '');
+            $sheet->getCell([10, $row])->setValue($r['junior_high_school'] ?? '');
+            $sheet->getCell([11, $row])->setValue($r['preferred_senior_high_school'] ?? '');
+            $sheet->getCell([12, $row])->setValue($r['contact_number'] ?? '');
+            $sheet->getCell([13, $row])->setValue($r['remarks_status'] ?? '');
+            $sheet->getCell([14, $row])->setValue($r['school_year'] ?? '');
+            $sheet->getCell([15, $row])->setValue($r['eligibility_status'] ?? '');
+            $sheet->getCell([16, $row])->setValue($r['voucher_status'] ?? '');
         }
 
         $filename = 'students_export_' . date('Ymd_His');
@@ -334,14 +353,20 @@ class VoucherImport extends BaseController
     private function validateHeaders(array $headerRow): ?string
     {
         $actual = array_map(fn($h) => strtolower(trim((string) $h)), $headerRow);
+        $hasSuffix = isset($actual[5]) && $actual[5] === 'suffix';
 
-        // Pad/slice to expected count for comparison
-        $actual = array_slice($actual, 0, count(self::EXPECTED_HEADERS));
+        // Build the expected sequence: insert 'suffix' at position 5 if present.
+        $expected = self::REQUIRED_HEADERS;
+        if ($hasSuffix) {
+            array_splice($expected, 5, 0, ['suffix']);
+        }
 
-        if ($actual !== self::EXPECTED_HEADERS) {
-            $expected = implode(', ', array_map(fn($h) => '"' . $h . '"', self::EXPECTED_HEADERS));
+        $check = array_slice($actual, 0, count($expected));
+        if ($check !== $expected) {
+            $req = implode(', ', array_map(fn($h) => '"' . $h . '"', self::REQUIRED_HEADERS));
             return "File format does not match the expected template. "
-                 . "Required columns (in order): {$expected}.";
+                 . "Required columns (in order): {$req}. "
+                 . '"Suffix" is optional and may appear between "Last Name" and "Rank No.".';
         }
 
         return null;

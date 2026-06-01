@@ -112,3 +112,11 @@ function initAlertDismiss() {
     setTimeout(() => el.remove(), 4000);
   });
 }
+
+// Allow Bootstrap dropdowns to overflow .vs-card (overflow:hidden) while open.
+document.addEventListener('show.bs.dropdown', function (e) {
+  e.target.closest('.vs-card')?.classList.add('vs-card--dropdown-open');
+});
+document.addEventListener('hidden.bs.dropdown', function (e) {
+  e.target.closest('.vs-card')?.classList.remove('vs-card--dropdown-open');
+});

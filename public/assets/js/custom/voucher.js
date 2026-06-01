@@ -20,11 +20,11 @@ document.addEventListener('DOMContentLoaded', function () {
     let filterParams = {};
     try { filterParams = JSON.parse(vouchersTable.dataset.filterParams || '{}'); } catch (e) {}
 
-    // Outer advanced-search keyword (?q=X) lives on data-initial-search.
-    // It WIDENS the scope — passed as a separate `q` AJAX param, not as
-    // DataTables' built-in search (which the inner box uses for narrowing
-    // within the current scope).
     const initialSearch = vouchersTable.dataset.initialSearch || '';
+
+    // Sync initial page length from the custom input so DT and the UI agree.
+    const lenInputEl = document.getElementById('vouchersLengthInput');
+    const initialPageLen = lenInputEl ? (parseInt(lenInputEl.value, 10) || 10) : 10;
 
     dt = $(vouchersTable).DataTable({
       destroy: true,
@@ -60,22 +60,15 @@ document.addEventListener('DOMContentLoaded', function () {
         { orderData: [3], targets: [2] },
       ],
       order: [[3, 'asc']],
-      dom:
-        "<'row align-items-center mb-3'<'col-sm-12 text-end'l>>" +
-        "<'row'<'col-sm-12'tr>>" +
-        "<'row align-items-center mt-3'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7'p>>",
-      pageLength: 25,
-      lengthMenu: [[10, 25, 50, 100, 250], [10, 25, 50, 100, 250]],
+      dom:        window.VS.dtHeaderDom(false) + window.VS.dtBodyDom,
+      pageLength: initialPageLen,
+      lengthMenu: window.VS.dtLengthMenuSS,
       responsive: true,
-      autoWidth: false,
-      language: {
-        search: '',
+      autoWidth:  false,
+      language:   window.VS.dtLanguage({
         searchPlaceholder: vouchersTable.dataset.searchPlaceholder || 'Search students...',
-        lengthMenu: 'Show _MENU_ entries',
-        info:       'Showing _START_ to _END_ of _TOTAL_ matching',
-        paginate:   { previous: '&#8249;', next: '&#8250;' },
-        processing: 'Loading...',
-      },
+        info:              'Showing _START_ to _END_ of _TOTAL_ matching',
+      }),
     });
 
     // Inner search box narrows WITHIN the current scope (1000-row slice OR
@@ -96,23 +89,16 @@ document.addEventListener('DOMContentLoaded', function () {
     // Client-side mode for pages that still server-render rows.
     dt = $(vouchersTable).DataTable({
       destroy: true,
-      dom:
-        "<'row align-items-center mb-3'<'col-sm-12 text-end'l>>" +
-        "<'row'<'col-sm-12'tr>>" +
-        "<'row align-items-center mt-3'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7'p>>",
+      dom:        window.VS.dtHeaderDom(false) + window.VS.dtBodyDom,
       pageLength: 10,
-      lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, 'All']],
+      lengthMenu: window.VS.dtLengthMenu,
       responsive: true,
-      autoWidth: false,
+      autoWidth:  false,
       order: [],
       columnDefs: [{ orderable: false, targets: [0, -1] }],
-      language: {
-        search: '',
+      language:   window.VS.dtLanguage({
         searchPlaceholder: vouchersTable.dataset.searchPlaceholder || 'Search vouchers...',
-        lengthMenu: 'Show _MENU_ entries',
-        info:       'Showing _START_ to _END_ of _TOTAL_',
-        paginate:   { previous: '&#8249;', next: '&#8250;' },
-      },
+      }),
     });
 
     const currentPageSearch = document.getElementById('customStudentsSearch')
@@ -158,44 +144,53 @@ document.addEventListener('DOMContentLoaded', function () {
     if (countLabel) countLabel.textContent = count;
     if (actionBar) actionBar.style.display = count > 0 ? 'flex' : 'none';
     updateExportLinks();
-    getCheckAllBoxes().forEach(checkAll => {
-      checkAll.checked = false;
-      checkAll.indeterminate = count > 0;
-    });
     if (typeof updateSelectAllBanner === 'function') {
       updateSelectAllBanner();
     }
   }
 
   function syncPageCheckboxes() {
-    dt.rows({ page: 'current' }).nodes().each(function (row) {
+    const pageNodes = dt.rows({ page: 'current' }).nodes().toArray();
+    const pageIds = [];
+    pageNodes.forEach(function (row) {
       const cb = row.querySelector('.vs-row-check');
-      if (cb) {
-        cb.checked = selectedIds.has(cb.value);
-        row.classList.toggle('vs-row-selected', cb.checked);
-      }
+      if (!cb) return;
+      cb.checked = selectedIds.has(cb.value);
+      row.classList.toggle('vs-row-selected', cb.checked);
+      if (!cb.disabled) pageIds.push(cb.value);
+    });
+    const pageSelectedCount = pageIds.filter(id => selectedIds.has(id)).length;
+    getCheckAllBoxes().forEach(checkAll => {
+      checkAll.checked       = false;
+      checkAll.indeterminate = pageSelectedCount > 0;
     });
     updateActionBar();
   }
 
-  dt.on('page.dt search.dt order.dt', syncPageCheckboxes);
+  // draw.dt fires AFTER AJAX rows are rendered — use it (not page.dt) to
+  // re-sync checkboxes so selected rows are highlighted on every page load.
+  dt.on('draw.dt page.dt search.dt order.dt', syncPageCheckboxes);
 
   document.addEventListener('change', function (e) {
     if (!e.target.classList.contains('vs-check-all')) return;
 
-    const filteredIds = [];
-    dt.rows({ search: 'applied' }).every(function () {
-      const node = this.node();
-      if (!node) return;
+    // Collect eligible row IDs on the CURRENT PAGE only.
+    const currentNodes = dt.rows({ page: 'current' }).nodes().toArray();
+    const pageIds = [];
+    currentNodes.forEach(function (node) {
       if (node.getAttribute('data-eligibility') === 'not_eligible') return;
       const cb = node.querySelector('.vs-row-check');
-      if (cb && !cb.disabled) filteredIds.push(cb.value);
+      if (cb && !cb.disabled) pageIds.push(cb.value);
     });
-    const shouldCheck = selectedIds.size === 0;
-    if (shouldCheck) {
-      filteredIds.forEach(function (id) { selectedIds.add(id); });
+
+    // Check current page if not all on this page are selected; uncheck if all are.
+    const allOnPageSelected = pageIds.length > 0 && pageIds.every(function (id) {
+      return selectedIds.has(id);
+    });
+    if (allOnPageSelected) {
+      pageIds.forEach(function (id) { selectedIds.delete(id); });
     } else {
-      filteredIds.forEach(function (id) { selectedIds.delete(id); });
+      pageIds.forEach(function (id) { selectedIds.add(id); });
     }
     syncPageCheckboxes();
   });
@@ -205,6 +200,19 @@ document.addEventListener('DOMContentLoaded', function () {
     if (e.target.checked) selectedIds.add(e.target.value);
     else                   selectedIds.delete(e.target.value);
     e.target.closest('tr').classList.toggle('vs-row-selected', e.target.checked);
+    // Re-compute current-page ids and update check-all header state.
+    const pageNodes = dt.rows({ page: 'current' }).nodes().toArray();
+    const pageIds = pageNodes.reduce(function (acc, row) {
+      const cb = row.querySelector('.vs-row-check');
+      if (cb && !cb.disabled) acc.push(cb.value);
+      return acc;
+    }, []);
+    const n = pageIds.filter(id => selectedIds.has(id)).length;
+    getCheckAllBoxes().forEach(function (checkAll) {
+      if (n === 0)                   { checkAll.checked = false; checkAll.indeterminate = false; }
+      else if (n === pageIds.length) { checkAll.checked = true;  checkAll.indeterminate = false; }
+      else                           { checkAll.checked = false; checkAll.indeterminate = true; }
+    });
     updateActionBar();
     updateSelectAllBanner();
   });
