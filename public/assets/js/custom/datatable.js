@@ -32,29 +32,20 @@ function initGenericDataTables() {
       : extraColDefs;
 
     const hasPageSearch = !!table.dataset.pageSearch;
-    const headerDom = hasPageSearch
-      ? "<'d-flex align-items-center gap-2 mb-3 flex-wrap'<'vs-dt-search-slot'><'ms-auto'l>>"
-      : "<'row align-items-center mb-3'<'col-sm-12 text-end'l>>";
 
     const dt = $(table).DataTable({
-      dom: headerDom +
-        "<'row'<'col-sm-12'tr>>" +
-        "<'row align-items-center mt-3'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7'p>>",
+      dom:        window.VS.dtHeaderDom(hasPageSearch) + window.VS.dtBodyDom,
       pageLength: 10,
-      lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, 'All']],
+      lengthMenu: window.VS.dtLengthMenu,
       responsive: true,
-      autoWidth: false,
+      autoWidth:  false,
       processing: true,
       order,
       columnDefs: mergedColDefs,
-      language: {
-        search: '',
+      language:   window.VS.dtLanguage({
         searchPlaceholder: table.dataset.searchPlaceholder || 'Search...',
-        emptyTable: table.dataset.emptyText || 'No records found.',
-        lengthMenu: 'Show _MENU_ entries',
-        info: 'Showing _START_ to _END_ of _TOTAL_',
-        processing: 'Loading...',
-      },
+        emptyTable:        table.dataset.emptyText || 'No records found.',
+      }),
     });
 
     if (hasPageSearch) {
@@ -74,10 +65,41 @@ function initGenericDataTables() {
 
     const advInput = document.querySelector('.vs-advanced-search-input');
     if (advInput) window.VS.bindFullTableSearch(dt, advInput);
+
   });
 }
 
 window.VS = window.VS || {};
+
+// ── Shared DataTable config — consume in voucher.js and any future table ──────
+
+// Body + footer DOM (table rows + info/pagination). Same for all tables.
+window.VS.dtBodyDom =
+  "<'row'<'col-sm-12'tr>>" +
+  "<'row align-items-center mt-3'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7'p>>";
+
+// Header DOM: with page-search slot (left) + show-entries (right),
+// or show-entries only (right-aligned).
+window.VS.dtHeaderDom = function (hasPageSearch) {
+  return hasPageSearch
+    ? "<'d-flex align-items-center gap-2 mb-3 flex-wrap'<'vs-dt-search-slot'><'ms-auto'l>>"
+    : "<'row align-items-center mb-3'<'col-sm-12 text-end'l>>";
+};
+
+// Base language object. Override individual keys when needed.
+window.VS.dtLanguage = function (overrides) {
+  return Object.assign({
+    search:      '',
+    lengthMenu:  'Show _MENU_ entries',
+    info:        'Showing _START_ to _END_ of _TOTAL_',
+    paginate:    { previous: '&#8249;', next: '&#8250;' },
+    processing:  'Loading...',
+  }, overrides || {});
+};
+
+// Standard length menus.
+window.VS.dtLengthMenu    = [[10, 25, 50, 100, -1],  [10, 25, 50, 100, 'All']];
+window.VS.dtLengthMenuSS  = [[10, 25, 50, 100, 250], [10, 25, 50, 100, 250]]; // server-side
 
 // Filters only the currently visible page of a DataTable.
 window.VS.bindCurrentPageSearch = function bindCurrentPageSearch(dt, input) {

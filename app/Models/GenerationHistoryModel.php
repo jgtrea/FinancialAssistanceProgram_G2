@@ -56,9 +56,17 @@ class GenerationHistoryModel extends Model
             return [];
         }
 
-        return $this->db->table($this->table . ' gh')
-            ->select('gh.*, u.username')
-            ->join('users u', 'u.user_id = gh.generated_by', 'left')
+        $hasGeneratedBy = $this->db->fieldExists('generated_by', $this->table);
+
+        $builder = $this->db->table($this->table . ' gh');
+        if ($hasGeneratedBy) {
+            $builder->select('gh.*, u.username')
+                    ->join('users u', 'u.user_id = gh.generated_by', 'left');
+        } else {
+            $builder->select('gh.*');
+        }
+
+        return $builder
             ->where('gh.student_id', $studentId)
             ->orderBy('gh.generated_at', 'DESC')
             ->orderBy('gh.generation_history_id', 'DESC')

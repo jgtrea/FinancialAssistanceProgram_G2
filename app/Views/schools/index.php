@@ -61,6 +61,11 @@
 
 <div class="vs-card">
     <div class="vs-card-body">
+        <div id="schoolSelectAllBanner" style="display:none;margin-bottom:8px;padding:8px 12px;background:#fef3c7;border:1px solid #fcd34d;border-radius:6px;font-size:.875rem">
+            <span id="schoolSelectAllBannerText"></span>
+            <a href="#" id="schoolSelectAllMatchingLink" style="font-weight:600;margin-left:.5rem;display:none"></a>
+            <a href="#" id="schoolClearLink" style="margin-left:.5rem;display:none">Clear</a>
+        </div>
         <table id="schoolsTable" class="vs-datatable js-data-table" data-page-search="customSchoolsSearch" data-order='[[1,"asc"]]' style="width:100%">
             <thead>
                 <tr>
@@ -278,26 +283,105 @@
     function updateBar() {
         if (countLabel) countLabel.textContent = schoolSelected.size;
         if (actionBar)  actionBar.style.display = schoolSelected.size > 0 ? 'flex' : 'none';
+        updateSchoolSelectAllBanner();
+    }
+
+    function updateSchoolSelectAllBanner() {
+        var banner     = document.getElementById('schoolSelectAllBanner');
+        var bannerText = document.getElementById('schoolSelectAllBannerText');
+        var selectLink = document.getElementById('schoolSelectAllMatchingLink');
+        var clearLink  = document.getElementById('schoolClearLink');
+        if (!banner) return;
+
+        var selSize = schoolSelected.size;
+        if (selSize === 0) { banner.style.display = 'none'; return; }
+        banner.style.display = '';
+
+        var totalFiltered = 0;
+        var allFilteredIds = [];
+        if (window.jQuery && $.fn.DataTable) {
+            var tbl = document.getElementById('schoolsTable');
+            if (tbl && $.fn.DataTable.isDataTable(tbl)) {
+                var dt = $(tbl).DataTable();
+                totalFiltered = dt.rows({ search: 'applied' }).count();
+                dt.rows({ search: 'applied' }).every(function () {
+                    var node = this.node();
+                    var cb = node ? node.querySelector('.school-row-check') : null;
+                    if (cb && !cb.disabled) allFilteredIds.push(cb.value);
+                });
+            }
+        }
+
+        if (bannerText) bannerText.textContent = selSize + ' selected. ' + totalFiltered + ' total matching.';
+        var allSelected = allFilteredIds.length > 0 && allFilteredIds.every(function (id) { return schoolSelected.has(id); });
+        if (selectLink) {
+            selectLink.textContent = 'Select all ' + allFilteredIds.length + ' matching across all pages';
+            selectLink.style.display = allSelected ? 'none' : '';
+        }
+        if (clearLink) clearLink.style.display = '';
     }
 
     function updateCheckAll() {
+        var tbl = document.getElementById('schoolsTable');
+        var pageIds = [];
+        if (window.jQuery && tbl && $.fn.DataTable && $.fn.DataTable.isDataTable(tbl)) {
+            $(tbl).DataTable().rows({ page: 'current' }).nodes().each(function (row) {
+                var cb = row.querySelector('.school-row-check');
+                if (cb && !cb.disabled) pageIds.push(cb.value);
+            });
+        } else {
+            document.querySelectorAll('.school-row-check:not(:disabled)').forEach(function (cb) {
+                pageIds.push(cb.value);
+            });
+        }
         var all = document.getElementById('schoolCheckAll');
         if (!all) return;
+        var n = pageIds.filter(function (id) { return schoolSelected.has(id); }).length;
         all.checked       = false;
-        all.indeterminate = schoolSelected.size > 0;
+        all.indeterminate = n > 0;
     }
+
+    function syncSchoolPageCheckboxes() {
+        if (!window.jQuery || !$.fn.DataTable) return;
+        var tbl = document.getElementById('schoolsTable');
+        if (!tbl || !$.fn.DataTable.isDataTable(tbl)) return;
+        var pageNodes = $(tbl).DataTable().rows({ page: 'current' }).nodes().toArray();
+        var pageIds = [];
+        pageNodes.forEach(function (row) {
+            var cb = row.querySelector('.school-row-check');
+            if (!cb) return;
+            cb.checked = schoolSelected.has(cb.value);
+            row.classList.toggle('vs-row-selected', cb.checked);
+            if (!cb.disabled) pageIds.push(cb.value);
+        });
+        updateCheckAll();
+        updateBar();
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        var _schoolTbl = document.getElementById('schoolsTable');
+        if (_schoolTbl && window.jQuery) $(_schoolTbl).on('draw.dt', syncSchoolPageCheckboxes);
+    });
 
     var checkAll = document.getElementById('schoolCheckAll');
     checkAll && checkAll.addEventListener('change', function () {
-        var toCheck = schoolSelected.size === 0;
-        document.querySelectorAll('.school-row-check:not(:disabled)').forEach(function (cb) {
-            cb.checked = toCheck;
-            if (toCheck) schoolSelected.add(cb.value);
-            else         schoolSelected.delete(cb.value);
-            cb.closest('tr').classList.toggle('vs-row-selected', toCheck);
+        var tbl = document.getElementById('schoolsTable');
+        var currentNodes = (window.jQuery && tbl && $.fn.DataTable && $.fn.DataTable.isDataTable(tbl))
+            ? $(tbl).DataTable().rows({ page: 'current' }).nodes().toArray()
+            : Array.from(document.querySelectorAll('.school-row-check:not(:disabled)')).map(function (cb) { return cb.closest('tr'); });
+
+        var pageIds = [];
+        currentNodes.forEach(function (row) {
+            var cb = row.querySelector('.school-row-check');
+            if (cb && !cb.disabled) pageIds.push(cb.value);
         });
-        updateBar();
-        updateCheckAll();
+
+        var allOnPageSelected = pageIds.length > 0 && pageIds.every(function (id) { return schoolSelected.has(id); });
+        pageIds.forEach(function (id) {
+            if (allOnPageSelected) schoolSelected.delete(id);
+            else schoolSelected.add(id);
+        });
+        syncSchoolPageCheckboxes();
     });
 
     document.querySelectorAll('.school-row-check').forEach(function (cb) {
@@ -308,6 +392,31 @@
             updateBar();
             updateCheckAll();
         });
+    });
+
+    // ── Select-all-matching + Clear links ────────────────────────────────────
+    var _schoolSelectAllLink = document.getElementById('schoolSelectAllMatchingLink');
+    var _schoolClearLink     = document.getElementById('schoolClearLink');
+
+    _schoolSelectAllLink && _schoolSelectAllLink.addEventListener('click', function (e) {
+        e.preventDefault();
+        if (!window.jQuery || !$.fn.DataTable) return;
+        var tbl = document.getElementById('schoolsTable');
+        if (!tbl || !$.fn.DataTable.isDataTable(tbl)) return;
+        $(tbl).DataTable().rows({ search: 'applied' }).every(function () {
+            var node = this.node();
+            var cb = node ? node.querySelector('.school-row-check') : null;
+            if (cb && !cb.disabled) schoolSelected.add(cb.value);
+        });
+        syncSchoolPageCheckboxes();
+        updateBar();
+    });
+
+    _schoolClearLink && _schoolClearLink.addEventListener('click', function (e) {
+        e.preventDefault();
+        schoolSelected.clear();
+        syncSchoolPageCheckboxes();
+        updateBar();
     });
 
     // ── Level quick-filter (client-side DataTable column filter) ──────────────

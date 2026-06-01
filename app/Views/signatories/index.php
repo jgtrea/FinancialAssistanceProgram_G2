@@ -54,6 +54,11 @@
 
     <div class="vs-card">
         <div class="vs-card-body">
+            <div id="sigSelectAllBanner" style="display:none;margin-bottom:8px;padding:8px 12px;background:#fef3c7;border:1px solid #fcd34d;border-radius:6px;font-size:.875rem">
+                <span id="sigSelectAllBannerText"></span>
+                <a href="#" id="sigSelectAllMatchingLink" style="font-weight:600;margin-left:.5rem;display:none"></a>
+                <a href="#" id="sigClearLink" style="margin-left:.5rem;display:none">Clear</a>
+            </div>
             <table id="signatoriesTable" class="vs-datatable js-data-table"
                    data-page-search="customSignatoriesSearch"
                    data-search-placeholder="Search signatories..."
@@ -546,23 +551,106 @@
     function updateActionBar() {
         if (countLabel) countLabel.textContent = selectedIds.size;
         if (actionBar)  actionBar.style.display = selectedIds.size > 0 ? 'flex' : 'none';
-
-        var checkAll = document.getElementById('sigCheckAll');
-        if (checkAll) {
-            checkAll.checked = false;
-            checkAll.indeterminate = selectedIds.size > 0;
-        }
+        updateSelectAllBanner();
     }
+
+    function updateSelectAllBanner() {
+        var banner       = document.getElementById('sigSelectAllBanner');
+        var bannerText   = document.getElementById('sigSelectAllBannerText');
+        var selectLink   = document.getElementById('sigSelectAllMatchingLink');
+        var clearLink    = document.getElementById('sigClearLink');
+        if (!banner) return;
+
+        var selSize = selectedIds.size;
+        if (selSize === 0) { banner.style.display = 'none'; return; }
+        banner.style.display = '';
+
+        var totalFiltered = 0;
+        var allFilteredIds = [];
+        if (window.jQuery && $.fn.DataTable) {
+            var tbl = document.getElementById('signatoriesTable');
+            if (tbl && $.fn.DataTable.isDataTable(tbl)) {
+                var dt = $(tbl).DataTable();
+                totalFiltered = dt.rows({ search: 'applied' }).count();
+                dt.rows({ search: 'applied' }).every(function () {
+                    var node = this.node();
+                    var cb = node ? node.querySelector('.sig-row-check') : null;
+                    if (cb && !cb.disabled) allFilteredIds.push(cb.value);
+                });
+            }
+        }
+
+        if (bannerText) bannerText.textContent = selSize + ' selected. ' + totalFiltered + ' total matching.';
+        var allSelected = allFilteredIds.length > 0 && allFilteredIds.every(function (id) { return selectedIds.has(id); });
+        if (selectLink) {
+            selectLink.textContent = 'Select all ' + allFilteredIds.length + ' matching across all pages';
+            selectLink.style.display = allSelected ? 'none' : '';
+        }
+        if (clearLink) clearLink.style.display = '';
+    }
+
+    function updateCheckAllState(pageIds) {
+        var checkAll = document.getElementById('sigCheckAll');
+        if (!checkAll) return;
+        var n = pageIds.filter(function (id) { return selectedIds.has(id); }).length;
+        checkAll.checked       = false;
+        checkAll.indeterminate = n > 0;
+    }
+
+    function getPageIds() {
+        if (!window.jQuery || !$.fn.DataTable) return [];
+        var tbl = document.getElementById('signatoriesTable');
+        if (!tbl || !$.fn.DataTable.isDataTable(tbl)) return [];
+        var ids = [];
+        $(tbl).DataTable().rows({ page: 'current' }).nodes().each(function (row) {
+            var cb = row.querySelector('.sig-row-check');
+            if (cb && !cb.disabled) ids.push(cb.value);
+        });
+        return ids;
+    }
+
+    function syncPageCheckboxes() {
+        if (!window.jQuery || !$.fn.DataTable) return;
+        var tbl = document.getElementById('signatoriesTable');
+        if (!tbl || !$.fn.DataTable.isDataTable(tbl)) return;
+        var pageIds = [];
+        $(tbl).DataTable().rows({ page: 'current' }).nodes().each(function (row) {
+            var cb = row.querySelector('.sig-row-check');
+            if (!cb) return;
+            cb.checked = selectedIds.has(cb.value);
+            row.classList.toggle('vs-row-selected', cb.checked);
+            if (!cb.disabled) pageIds.push(cb.value);
+        });
+        updateCheckAllState(pageIds);
+        updateActionBar();
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        var tbl = document.getElementById('signatoriesTable');
+        if (tbl && window.jQuery) $(tbl).on('draw.dt', syncPageCheckboxes);
+    });
 
     var checkAll = document.getElementById('sigCheckAll');
     checkAll && checkAll.addEventListener('change', function () {
-        var shouldCheck = selectedIds.size === 0;
-        getSelectableCheckboxes().forEach(function (cb) {
-            cb.checked = shouldCheck;
-            if (shouldCheck) selectedIds.add(cb.value);
-            else selectedIds.delete(cb.value);
-            cb.closest('tr').classList.toggle('vs-row-selected', shouldCheck);
+        var tbl = document.getElementById('signatoriesTable');
+        var currentNodes = (window.jQuery && tbl && $.fn.DataTable.isDataTable(tbl))
+            ? $(tbl).DataTable().rows({ page: 'current' }).nodes().toArray()
+            : getSelectableCheckboxes().map(function (cb) { return cb.closest('tr'); });
+
+        var pageIds = [];
+        currentNodes.forEach(function (row) {
+            var cb = row.querySelector('.sig-row-check');
+            if (cb && !cb.disabled) pageIds.push(cb.value);
         });
+
+        var allOnPageSelected = pageIds.length > 0 && pageIds.every(function (id) {
+            return selectedIds.has(id);
+        });
+        pageIds.forEach(function (id) {
+            if (allOnPageSelected) selectedIds.delete(id);
+            else selectedIds.add(id);
+        });
+        syncPageCheckboxes();
         updateActionBar();
     });
 
@@ -571,8 +659,34 @@
             if (cb.checked) selectedIds.add(cb.value);
             else selectedIds.delete(cb.value);
             cb.closest('tr').classList.toggle('vs-row-selected', cb.checked);
+            updateCheckAllState(getPageIds());
             updateActionBar();
         });
+    });
+
+    // ── Select-all-matching + Clear links ────────────────────────────────────
+    var sigSelectAllLink = document.getElementById('sigSelectAllMatchingLink');
+    var sigClearLink     = document.getElementById('sigClearLink');
+
+    sigSelectAllLink && sigSelectAllLink.addEventListener('click', function (e) {
+        e.preventDefault();
+        if (!window.jQuery || !$.fn.DataTable) return;
+        var tbl = document.getElementById('signatoriesTable');
+        if (!tbl || !$.fn.DataTable.isDataTable(tbl)) return;
+        $(tbl).DataTable().rows({ search: 'applied' }).every(function () {
+            var node = this.node();
+            var cb = node ? node.querySelector('.sig-row-check') : null;
+            if (cb && !cb.disabled) selectedIds.add(cb.value);
+        });
+        syncPageCheckboxes();
+        updateActionBar();
+    });
+
+    sigClearLink && sigClearLink.addEventListener('click', function (e) {
+        e.preventDefault();
+        selectedIds.clear();
+        syncPageCheckboxes();
+        updateActionBar();
     });
 
     // ── Select / Unselect toggle ──────────────────────────────────────────────

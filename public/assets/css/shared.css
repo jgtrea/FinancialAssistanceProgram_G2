@@ -431,6 +431,9 @@ body {
   overflow: hidden;
   box-shadow: 0 8px 24px rgba(7, 59, 120, 0.06);
 }
+.vs-card--dropdown-open {
+  overflow: visible;
+}
 .vs-card-body {
   padding: 1.25rem;
 }

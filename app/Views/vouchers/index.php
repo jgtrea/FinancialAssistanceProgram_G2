@@ -33,12 +33,12 @@
         <?= asset_icon('voucher-add') ?>
         Generate Voucher
       </button>
-      <button type="button" class="vs-btn vs-btn-outline" id="btnOpenStatus">
-        Status
-      </button>
       <button type="button" class="vs-btn vs-btn-success" id="btnOpenExport">
         <?= asset_icon('export') ?>
         Export
+      </button>
+      <button type="button" class="vs-btn vs-btn-outline" id="btnOpenStatus">
+        Status
       </button>
     </div>
   </div>
@@ -72,7 +72,7 @@
   <div class="vs-card">
     <div class="vs-card-body">
       <div class="d-flex align-items-center gap-2 mb-3 flex-wrap">
-        <input type="text" id="customStudentsSearch" class="vs-input vs-page-search" placeholder="Search all matching students..." style="max-width:260px">
+        <input type="text" id="customStudentsSearch" class="vs-input vs-page-search" placeholder="Enter keyword to search this page" style="max-width:260px">
         <label class="vs-length-label ms-auto">Show <input type="number" id="vouchersLengthInput" class="vs-length-input" value="10" min="1" max="500"> entries</label>
       </div>
       <!-- Cross-page select banner — appears when user checks the page header
@@ -629,6 +629,7 @@ window.VM_CONFIG = {
         }
         btn.textContent = isActive ? 'Deactivate' : 'Activate';
         btn.setAttribute('data-active', isActive ? '1' : '0');
+        btn.classList.toggle('text-danger', isActive);
         flashSuccess(data.message || 'Student ' + (isActive ? 'activated' : 'deactivated') + '.');
       })
       .catch(function () { btn.disabled = false; alert('An error occurred. Please try again.'); });

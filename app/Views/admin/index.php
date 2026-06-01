@@ -23,22 +23,7 @@
 
     <div id="userAlertBox"></div>
 
-    <!-- Action bar — appears when rows are checked -->
-    <div class="vs-action-bar" id="userActionBar" style="display:none">
-        <span class="vs-action-bar-count"><span id="userSelectedCount">0</span> selected</span>
-        <div class="ms-auto d-flex gap-2">
-            <button class="vs-btn vs-btn-success" id="btnActivateUsers">
-                <?= asset_icon('circle_check', ['width' => '18', 'height' => '18']) ?>
-                Activate
-            </button>
-            <button class="vs-btn vs-btn-danger" id="btnDeactivateUsers">
-                <?= asset_icon('circle_x', ['width' => '18', 'height' => '18']) ?>
-                Deactivate
-            </button>
-        </div>
-    </div>
-
-    <div class="d-flex align-items-center gap-2 flex-wrap mb-3">
+<div class="d-flex align-items-center gap-2 flex-wrap mb-3">
         <form method="get" class="vs-advanced-search vs-advanced-search-outside">
             <input type="text" name="q" class="vs-input vs-advanced-search-input" placeholder="Enter keyword to search (username, email, etc.)" value="<?= esc((string) ($keyword ?? ''), 'attr') ?>">
             <button type="button" class="vs-btn vs-btn-outline" id="btnOpenUserFilter">
@@ -59,7 +44,6 @@
             <table id="userManagementTable" class="vs-datatable js-data-table" data-page-search="customUsersSearch" data-search-placeholder="Search users..." data-order='[[1,"asc"]]' style="width:100%">
             <thead>
                 <tr>
-                    <th class="vs-th-check"><input type="checkbox" class="vs-check" id="userCheckAll" aria-label="Select all"></th>
                     <th>Username</th>
                     <th>Email</th>
                     <th>Role</th>
@@ -79,7 +63,6 @@
                         data-active="<?= $isActive ? '1' : '0' ?>"
                         data-last-login="<?= !empty($user['last_login']) ? esc(date('Y-m-d', strtotime($user['last_login']))) : '' ?>"
                         <?= !$isActive ? 'class="vs-row-archived"' : '' ?>>
-                        <td><input type="checkbox" class="vs-check user-row-check" value="<?= $uid ?>"<?= $isSelf ? ' disabled title="You cannot modify your own account"' : '' ?>></td>
                         <td><?= esc($user['username']) ?></td>
                         <td><?= esc($user['email']) ?></td>
                         <td>
@@ -107,9 +90,10 @@
                                         <button type="button" class="dropdown-item js-user-edit"
                                                 data-id="<?= $uid ?>">Edit</button>
                                     </li>
+                                    <li><hr class="dropdown-divider"></li>
                                     <li>
                                         <button type="button"
-                                                class="dropdown-item js-user-toggle"
+                                                class="dropdown-item js-user-toggle<?= $isActive ? ' text-danger' : '' ?>"
                                                 data-id="<?= $uid ?>"
                                                 data-active="<?= $isActive ? '1' : '0' ?>"
                                                 id="user-toggle-<?= $uid ?>">
@@ -387,106 +371,6 @@
             });
     });
 
-    // ── Checkbox selection + action bar ──────────────────────────────────
-    var selectedIds = new Set();
-    var actionBar   = document.getElementById('userActionBar');
-    var countLabel  = document.getElementById('userSelectedCount');
-
-    function getSelectableChecks() {
-        return Array.from(document.querySelectorAll('.user-row-check:not([disabled])'));
-    }
-
-    function updateBar() {
-        if (countLabel) countLabel.textContent = selectedIds.size;
-        if (actionBar)  actionBar.style.display = selectedIds.size > 0 ? 'flex' : 'none';
-        var checkAll = document.getElementById('userCheckAll');
-        if (checkAll) {
-            checkAll.checked       = false;
-            checkAll.indeterminate = selectedIds.size > 0;
-        }
-    }
-
-    var checkAll = document.getElementById('userCheckAll');
-    checkAll && checkAll.addEventListener('change', function () {
-        var shouldCheck = selectedIds.size === 0;
-        getSelectableChecks().forEach(function (cb) {
-            cb.checked = shouldCheck;
-            if (shouldCheck) selectedIds.add(cb.value);
-            else selectedIds.delete(cb.value);
-            cb.closest('tr').classList.toggle('vs-row-selected', shouldCheck);
-        });
-        updateBar();
-    });
-
-    document.querySelectorAll('.user-row-check').forEach(function (cb) {
-        cb.addEventListener('change', function () {
-            if (cb.disabled) return;
-            if (cb.checked) selectedIds.add(cb.value);
-            else selectedIds.delete(cb.value);
-            cb.closest('tr').classList.toggle('vs-row-selected', cb.checked);
-            updateBar();
-        });
-    });
-
-    // ── Bulk activate / deactivate ────────────────────────────────────────
-    var activateUrl   = '<?= base_url('admin/user_management/activate-multiple') ?>';
-    var deactivateUrl = '<?= base_url('admin/user_management/deactivate-multiple') ?>';
-
-    function bulkStatusRequest(url, newActiveState) {
-        if (!selectedIds.size) return;
-        var csrf = getCsrf();
-        var body = csrf.name + '=' + csrf.token;
-        selectedIds.forEach(function (id) { body += '&ids[]=' + id; });
-
-        fetch(url, {
-            method:  'POST',
-            headers: { 'X-Requested-With': 'XMLHttpRequest', 'Content-Type': 'application/x-www-form-urlencoded' },
-            body:    body,
-        })
-        .then(function (r) { return r.json(); })
-        .then(function (data) {
-            if (data.status !== 'success') {
-                showAlert(data.message || 'Action failed.', 'error');
-                return;
-            }
-            var nowActive = newActiveState === 1;
-            selectedIds.forEach(function (id) {
-                var row = document.getElementById('user-row-' + id);
-                if (!row) return;
-                row.setAttribute('data-active', nowActive ? '1' : '0');
-                if (nowActive) row.classList.remove('vs-row-archived');
-                else           row.classList.add('vs-row-archived');
-
-                var badge = document.getElementById('user-status-badge-' + id);
-                if (badge) {
-                    badge.innerHTML   = nowActive ? userStatusIcons.active : userStatusIcons.inactive;
-                    badge.style.color = nowActive ? '#16a34a' : '#9ca3af';
-                    badge.title       = nowActive ? 'Active' : 'Inactive';
-                    badge.setAttribute('aria-label', nowActive ? 'Active' : 'Inactive');
-                }
-
-                var toggleBtn = document.getElementById('user-toggle-' + id);
-                if (toggleBtn) {
-                    toggleBtn.textContent = nowActive ? 'Deactivate' : 'Activate';
-                    toggleBtn.setAttribute('data-active', nowActive ? '1' : '0');
-                }
-            });
-            selectedIds.clear();
-            updateBar();
-            if (window.jQuery && $.fn.DataTable) {
-                var tbl = document.getElementById('userManagementTable');
-                if (tbl && $.fn.DataTable.isDataTable(tbl)) $(tbl).DataTable().draw(false);
-            }
-            showAlert(data.message, 'success');
-        })
-        .catch(function () { showAlert('An error occurred.', 'error'); });
-    }
-
-    var btnActivate   = document.getElementById('btnActivateUsers');
-    var btnDeactivate = document.getElementById('btnDeactivateUsers');
-    btnActivate   && btnActivate.addEventListener('click',   function () { bulkStatusRequest(activateUrl, 1); });
-    btnDeactivate && btnDeactivate.addEventListener('click', function () { bulkStatusRequest(deactivateUrl, 0); });
-
     // ── Activate / Deactivate toggle ──────────────────────────────────────
     var toggleUrl = '<?= base_url('admin/user_management/toggle') ?>';
 
@@ -513,9 +397,17 @@
 
                 var nowActive = data.is_active === 1 || data.is_active === true;
                 var badge = document.getElementById('user-status-badge-' + id);
+                var row   = document.getElementById('user-row-' + id);
 
                 btn.setAttribute('data-active', nowActive ? '1' : '0');
                 btn.textContent = nowActive ? 'Deactivate' : 'Activate';
+                btn.classList.toggle('text-danger', nowActive);
+
+                if (row) {
+                    row.setAttribute('data-active', nowActive ? '1' : '0');
+                    if (nowActive) row.classList.remove('vs-row-archived');
+                    else           row.classList.add('vs-row-archived');
+                }
 
                 if (badge) {
                     badge.innerHTML   = nowActive ? userStatusIcons.active : userStatusIcons.inactive;

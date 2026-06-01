@@ -253,7 +253,6 @@
                 if (modalEl) modalEl.value = '';
                 if (hidden) hidden.value = '';
             });
-            filterForm.submit();
         });
     }
     // ── Archive Current Data button ───────────────────────────────────────────

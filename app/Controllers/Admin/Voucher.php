@@ -372,7 +372,7 @@ class Voucher extends Controller
             . '<li><button class="dropdown-item js-voucher-action" type="button" data-mode="edit" data-id="' . $studentId . '">Edit</button></li>'
             . '<li><button class="dropdown-item js-toggle-eligibility" type="button" data-id="' . $studentId . '" data-eligibility="' . $eligAttr . '">' . $toggleText . '</button></li>'
             . '<li><hr class="dropdown-divider"></li>'
-            . '<li><button class="dropdown-item text-danger js-toggle-active" type="button" data-id="' . $studentId . '" data-active="' . ($isActive ? '1' : '0') . '">' . ($isActive ? 'Deactivate' : 'Activate') . '</button></li>'
+            . '<li><button class="dropdown-item ' . ($isActive ? 'text-danger' : '') . ' js-toggle-active" type="button" data-id="' . $studentId . '" data-active="' . ($isActive ? '1' : '0') . '">' . ($isActive ? 'Deactivate' : 'Activate') . '</button></li>'
             . '</ul></div></div>';
 
         return [
