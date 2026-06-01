@@ -187,7 +187,11 @@ class VoucherModel extends Model
     {
         $start    = max(0, (int) ($params['start']    ?? 0));
         $length   = (int) ($params['length']   ?? 25);
-        $search   = trim((string) ($params['search'] ?? ''));
+        // Two distinct search inputs (see Admin\Voucher::studentsDatatable):
+        //   $keyword = outer ?q= input — WIDENS scope to the full DB
+        //   $search  = inner DataTables search box — NARROWS within scope
+        $keyword  = trim((string) ($params['keyword'] ?? ''));
+        $search   = trim((string) ($params['search']  ?? ''));
         $orderCol = $params['order_col'] ?? null;
         $orderDir = (strtolower((string) ($params['order_dir'] ?? 'asc')) === 'desc') ? 'DESC' : 'ASC';
         $filters  = $params['filters'] ?? [];
@@ -211,36 +215,71 @@ class VoucherModel extends Model
         // Total (unfiltered).
         $recordsTotal = (int) $this->db->table('students')->countAllResults();
 
-        // Build the filtered query once. We need two passes: one for the count
-        // (without LIMIT/ORDER) and one for the rows.
-        $applyWhere = function ($builder) use ($search, $filters) {
-            if ($search !== '') {
-                $escaped = $this->db->escape('%' . $search . '%');
-                $builder
-                    ->groupStart()
-                    ->like('voucher_no', $search)
-                    ->orLike('first_name', $search)
-                    ->orLike('middle_name', $search)
-                    ->orLike('last_name', $search)
-                    ->orLike('suffix', $search)
-                    ->orLike('junior_high_school', $search)
-                    ->orLike('preferred_senior_high_school', $search)
-                    ->orLike('school_year', $search)
-                    ->orLike('gender', $search)
-                    ->orLike('remarks_status', $search)
-                    ->orLike('voucher_status', $search)
-                    ->orLike('contact_number', $search)
-                    ->orWhere("CONCAT_WS(' ', `first_name`, `middle_name`, `last_name`) LIKE {$escaped}")
-                    ->orWhere("CONCAT_WS(' ', `first_name`, `middle_name`, `suffix`, `last_name`) LIKE {$escaped}")
-                    ->orWhere("CONCAT_WS(' ', `first_name`, `last_name`) LIKE {$escaped}")
-                    ->orWhere("CONCAT_WS(', ', `last_name`, `first_name`) LIKE {$escaped}")
-                    ->orWhere("CONCAT_WS(', ', `last_name`, CONCAT_WS(' ', `first_name`, `middle_name`, `suffix`)) LIKE {$escaped}")
-                    ->groupEnd();
-            }
+        // Both keyword (outer) and search (inner) become independent LIKE
+        // groups when present. Caller chains them with AND so they narrow
+        // together. Only $keyword + advanced filters decide whether the
+        // 1000-row "recent scope" cap applies (see $noScope below).
+        $likeGroup = function ($builder, string $needle): void {
+            $escaped = $this->db->escape('%' . $needle . '%');
+            $builder
+                ->groupStart()
+                ->like('voucher_no', $needle)
+                ->orLike('first_name', $needle)
+                ->orLike('middle_name', $needle)
+                ->orLike('last_name', $needle)
+                ->orLike('suffix', $needle)
+                ->orLike('junior_high_school', $needle)
+                ->orLike('preferred_senior_high_school', $needle)
+                ->orLike('school_year', $needle)
+                ->orLike('gender', $needle)
+                ->orLike('remarks_status', $needle)
+                ->orLike('voucher_status', $needle)
+                ->orLike('contact_number', $needle)
+                ->orWhere("CONCAT_WS(' ', `first_name`, `middle_name`, `last_name`) LIKE {$escaped}")
+                ->orWhere("CONCAT_WS(' ', `first_name`, `middle_name`, `suffix`, `last_name`) LIKE {$escaped}")
+                ->orWhere("CONCAT_WS(' ', `first_name`, `last_name`) LIKE {$escaped}")
+                ->orWhere("CONCAT_WS(', ', `last_name`, `first_name`) LIKE {$escaped}")
+                ->orWhere("CONCAT_WS(', ', `last_name`, CONCAT_WS(' ', `first_name`, `middle_name`, `suffix`)) LIKE {$escaped}")
+                ->groupEnd();
+        };
+
+        $applyWhere = function ($builder) use ($keyword, $search, $filters, $likeGroup): void {
+            if ($keyword !== '') $likeGroup($builder, $keyword);
+            if ($search  !== '') $likeGroup($builder, $search);
             $this->applyListingFilters($builder, $filters);
         };
 
+        // No-filter base scope is the 1000 most-recent students. Inner search
+        // alone does NOT widen — it narrows within the 1000. Only the outer
+        // keyword (?q=) and advanced filters widen the scope to the full DB.
+        $hasUserFilter = false;
+        foreach ($filters as $v) {
+            if (trim((string) $v) !== '') {
+                $hasUserFilter = true;
+                break;
+            }
+        }
+        $noScope = ($keyword === '' && !$hasUserFilter);
+
+        // When noScope is true we cap both the count and the row query to the
+        // 1000 most-recent students so the inner search narrows *within* the
+        // visible scope instead of widening to the full DB.
+        $scopeIds = null;
+        if ($noScope) {
+            $rows = $this->db->table('students')
+                ->select('student_id')
+                ->orderBy('created_at', 'DESC')
+                ->orderBy('student_id', 'DESC')
+                ->limit(self::LISTING_DEFAULT_LIMIT)
+                ->get()
+                ->getResultArray();
+            $scopeIds = array_map(static fn($r) => (int) $r['student_id'], $rows);
+        }
+
         $countBuilder = $this->db->table('students');
+        if ($scopeIds !== null && !empty($scopeIds)) {
+            $countBuilder->whereIn('student_id', $scopeIds);
+        }
         $applyWhere($countBuilder);
         $recordsFiltered = (int) $countBuilder->countAllResults();
 
@@ -255,6 +294,9 @@ class VoucherModel extends Model
                 contact_number, remarks_status, created_at, generated_at,
                 generate_count
             ");
+        if ($scopeIds !== null && !empty($scopeIds)) {
+            $builder->whereIn('student_id', $scopeIds);
+        }
         $applyWhere($builder);
 
         $orderColumn = $columnMap[(int) $orderCol] ?? null;

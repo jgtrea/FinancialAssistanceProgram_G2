@@ -20,6 +20,12 @@ document.addEventListener('DOMContentLoaded', function () {
     let filterParams = {};
     try { filterParams = JSON.parse(vouchersTable.dataset.filterParams || '{}'); } catch (e) {}
 
+    // Outer advanced-search keyword (?q=X) lives on data-initial-search.
+    // It WIDENS the scope — passed as a separate `q` AJAX param, not as
+    // DataTables' built-in search (which the inner box uses for narrowing
+    // within the current scope).
+    const initialSearch = vouchersTable.dataset.initialSearch || '';
+
     dt = $(vouchersTable).DataTable({
       destroy: true,
       serverSide: true,
@@ -29,6 +35,7 @@ document.addEventListener('DOMContentLoaded', function () {
         type: 'GET',
         data: function (d) {
           Object.assign(d, filterParams);
+          if (initialSearch) d.q = initialSearch;
         },
       },
       // Column order must match the <th>s in vouchers/index.php exactly,
@@ -71,16 +78,20 @@ document.addEventListener('DOMContentLoaded', function () {
       },
     });
 
+    // Inner search box narrows WITHIN the current scope (1000-row slice OR
+    // outer-filtered set). Hits the server via DataTables' built-in search
+    // string — backend treats `search[value]` as a narrowing LIKE, not a
+    // scope widener.
     const currentPageSearch = document.getElementById('customStudentsSearch')
                            || document.getElementById('customVouchersSearch');
-    if (currentPageSearch && window.VS && window.VS.bindCurrentPageSearch) {
-      window.VS.bindCurrentPageSearch(dt, currentPageSearch);
+    if (currentPageSearch && window.VS && window.VS.bindFullTableSearch) {
+      window.VS.bindFullTableSearch(dt, currentPageSearch);
     }
 
-    const advInput = document.querySelector('.vs-advanced-search-input');
-    if (advInput && window.VS && window.VS.bindFullTableSearch) {
-      window.VS.bindFullTableSearch(dt, advInput);
-    }
+    // The outer advanced-search form is a `<form method="get">` that page-
+    // reloads with ?q=X. The reloaded view re-renders with data-initial-search
+    // already set, so we don't need a JS-side binding for it — leave the
+    // submit/reload flow alone.
   } else {
     // Client-side mode for pages that still server-render rows.
     dt = $(vouchersTable).DataTable({

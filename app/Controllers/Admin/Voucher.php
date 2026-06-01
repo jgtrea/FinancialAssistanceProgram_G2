@@ -194,17 +194,69 @@ class Voucher extends Controller
     public function studentsMatchingIds()
     {
         $req     = $this->request;
-        $keyword = (string) ($req->getGet('search')['value'] ?? $req->getGet('q') ?? '');
+        // Outer keyword (?q=) widens scope. Inner DT search (`search[value]`)
+        // narrows within scope. Either acts as a LIKE for matching IDs.
+        $keyword = (string) ($req->getGet('q') ?? '');
+        $search  = (string) ($req->getGet('search')['value'] ?? '');
         $filters = [];
         foreach (VoucherModel::LISTING_FILTER_KEYS as $k) {
             $filters[$k] = trim((string) $req->getGet($k));
         }
 
-        $ids = $this->voucherModel->getMatchingStudentIds($keyword, $filters);
+        // Reuse the model's listing logic so the same scope cap (1000 most-
+        // recent) and narrow/widen semantics apply here. We pass length=0 then
+        // override below with a much higher cap, since "matching IDs" can
+        // legitimately need every row.
+        $hasFilter = false;
+        foreach ($filters as $v) {
+            if (trim((string) $v) !== '') { $hasFilter = true; break; }
+        }
+        $noScope = ($keyword === '' && !$hasFilter);
+
+        $combinedKeyword = trim($keyword . ' ' . $search);
+        $ids = $this->voucherModel->getMatchingStudentIds(trim($keyword), $filters);
+        if ($search !== '') {
+            // Narrow further by the inner search using the same model helper
+            // (it already does a wide multi-column LIKE).
+            $innerIds = $this->voucherModel->getMatchingStudentIds($search, $filters);
+            $ids = array_values(array_intersect($ids, $innerIds));
+        }
+
+        // Cap to the 1000-row scope when nothing widens, so "Select all
+        // matching" mirrors the count DataTables shows.
+        if ($noScope) {
+            $db = \Config\Database::connect();
+            $scopeRows = $db->table('students')
+                ->select('student_id')
+                ->orderBy('created_at', 'DESC')
+                ->orderBy('student_id', 'DESC')
+                ->limit(VoucherModel::LISTING_DEFAULT_LIMIT)
+                ->get()
+                ->getResultArray();
+            $scopeIds = array_map(static fn($r) => (int) $r['student_id'], $scopeRows);
+            $ids = array_values(array_intersect($ids, $scopeIds));
+        }
+
+        // Exclude rows the user can't actually check (disabled checkboxes for
+        // not-eligible / inactive rows).
+        if (!empty($ids)) {
+            $db  = \Config\Database::connect();
+            $ids = $db->table('students')
+                ->select('student_id')
+                ->whereIn('student_id', $ids)
+                ->where('eligibility_status', 'eligible')
+                ->groupStart()
+                    ->where('is_active', 1)
+                    ->orWhere('is_active IS NULL', null, false)
+                ->groupEnd()
+                ->get()
+                ->getResultArray();
+            $ids = array_map(static fn($r) => (int) $r['student_id'], $ids);
+        }
 
         return $this->response->setJSON([
             'count' => count($ids),
-            'ids'   => array_values(array_map('intval', $ids)),
+            'ids'   => array_values($ids),
         ]);
     }
 
@@ -222,6 +274,13 @@ class Voucher extends Controller
         $draw    = (int) $req->getGet('draw');
         $start   = (int) $req->getGet('start');
         $length  = (int) ($req->getGet('length') ?? 25);
+        // Two distinct search inputs:
+        //   - $keyword (`q`) = outer advanced-search box. WIDENS the scope to
+        //     the full DB and applies a LIKE filter across student fields.
+        //   - $search (`search[value]`) = DataTables' built-in box, used by
+        //     the inner per-card input. NARROWS within whatever scope the
+        //     outer keyword + advanced filters produced (does NOT widen).
+        $keyword = (string) ($req->getGet('q') ?? '');
         $search  = (string) ($req->getGet('search')['value'] ?? '');
         $orderC  = $req->getGet('order')[0]['column'] ?? null;
         $orderD  = $req->getGet('order')[0]['dir']    ?? 'asc';
@@ -236,6 +295,7 @@ class Voucher extends Controller
         $slice = $this->voucherModel->getDatatableSlice([
             'start'     => $start,
             'length'    => $length,
+            'keyword'   => $keyword,
             'search'    => $search,
             'order_col' => $orderC,
             'order_dir' => $orderD,

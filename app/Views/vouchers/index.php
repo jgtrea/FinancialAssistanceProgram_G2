@@ -72,7 +72,7 @@
   <div class="vs-card">
     <div class="vs-card-body">
       <div class="d-flex align-items-center gap-2 mb-3 flex-wrap">
-        <input type="text" id="customStudentsSearch" class="vs-input vs-page-search" placeholder="Enter keyword to search this page" style="max-width:260px">
+        <input type="text" id="customStudentsSearch" class="vs-input vs-page-search" placeholder="Search all matching students..." style="max-width:260px">
         <label class="vs-length-label ms-auto">Show <input type="number" id="vouchersLengthInput" class="vs-length-input" value="10" min="1" max="500"> entries</label>
       </div>
       <!-- Cross-page select banner — appears when user checks the page header
@@ -88,6 +88,7 @@
              data-datatable-url="<?= site_url($prefix . '/students/datatable') ?>"
              data-matching-ids-url="<?= site_url($prefix . '/students/matching-ids') ?>"
              data-filter-params='<?= json_encode($filters ?? []) ?>'
+             data-initial-search="<?= esc((string) ($keyword ?? ''), 'attr') ?>"
              style="width:100%">
         <thead>
           <tr>
