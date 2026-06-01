@@ -35,7 +35,7 @@
   </div>
 
   <form method="get" class="vs-advanced-search vs-advanced-search-outside mb-3">
-    <input type="text" name="q" class="vs-input vs-advanced-search-input" placeholder="Advanced search all vouchers..." value="<?= esc((string) ($keyword ?? ''), 'attr') ?>">
+    <input type="text" name="q" class="vs-input vs-advanced-search-input" placeholder="Enter keyword to search (voucher no, name, etc.)" value="<?= esc((string) ($keyword ?? ''), 'attr') ?>">
   </form>
 
   <div class="vs-card">

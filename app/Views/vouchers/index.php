@@ -47,7 +47,7 @@
 
   <div class="d-flex align-items-center gap-2 flex-wrap mb-3">
     <form method="get" id="vouchersFilterForm" class="vs-advanced-search vs-advanced-search-outside">
-      <input type="text" name="q" class="vs-input vs-advanced-search-input" placeholder="Enter keyword to search (voucher no, name)" value="<?= esc((string) ($keyword ?? ''), 'attr') ?>">
+      <input type="text" name="q" class="vs-input vs-advanced-search-input" placeholder="Enter keyword to search (voucher no, name, etc.)" value="<?= esc((string) ($keyword ?? ''), 'attr') ?>">
       <button type="button" class="vs-btn vs-btn-outline" id="btnOpenFilter">
         Filters
         <span id="filterBadge" class="badge bg-primary" style="display:<?= $activeFilterCount > 0 ? 'inline-block' : 'none' ?>;margin-left:.35rem"><?= $activeFilterCount > 0 ? esc($activeFilterCount) : '' ?></span>
@@ -477,7 +477,7 @@ window.VM_CONFIG = {
   // Hide the DT header row (length control) — replaced by custom row above.
   var dtWrap = studentsTable.closest('.dataTables_wrapper');
   var dtLengthEl = dtWrap ? dtWrap.querySelector('.dataTables_length') : null;
-  if (dtLengthEl && dtLengthEl.parentElement) dtLengthEl.parentElement.style.display = 'none';
+  if (dtLengthEl) (dtLengthEl.closest('.row') || dtLengthEl.parentElement).style.display = 'none';
 
   // Wire custom length input.
   var lenInput = document.getElementById('vouchersLengthInput');

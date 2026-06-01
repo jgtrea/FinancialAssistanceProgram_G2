@@ -21,7 +21,7 @@
     </div>
 
     <form method="get" id="auditFilterForm" class="vs-advanced-search vs-advanced-search-outside mb-3">
-        <input type="text" name="q" class="vs-input vs-advanced-search-input" placeholder="Enter keyword to search (action, description)" value="<?= esc((string) ($keyword ?? ''), 'attr') ?>">
+        <input type="text" name="q" class="vs-input vs-advanced-search-input" placeholder="Enter keyword to search (action, description, etc.)" value="<?= esc((string) ($keyword ?? ''), 'attr') ?>">
         <button type="button" class="vs-btn vs-btn-outline" id="auditBtnOpenFilter">
             Filters
             <span id="auditFilterBadge" class="badge bg-primary" style="display:<?= $activeFilterCount > 0 ? 'inline-block' : 'none' ?>;margin-left:.35rem"><?= $activeFilterCount > 0 ? esc($activeFilterCount) : '' ?></span>

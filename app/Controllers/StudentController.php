@@ -119,11 +119,11 @@ class StudentController extends BaseController
 
         if ($studentId) {
             $studentModel->update($studentId, $data);
-            $this->writeAuditLog('student_updated', 'Updated student ' . $this->formatStudentName($data) . ' (ID #' . $studentId . ').', null, (int) $studentId);
+            $this->writeAuditLog('VOUCHER_UPDATED', 'Updated student ' . $this->formatStudentName($data) . ' (ID #' . $studentId . ').', null, (int) $studentId);
             $message = 'Student updated successfully.';
         } else {
             $newStudentId = $studentModel->insert($data);
-            $this->writeAuditLog('CREATE_VOUCHER', 'Created voucher for ' . $this->formatStudentName($data) . ' (ID #' . $newStudentId . ').', null, $newStudentId ? (int) $newStudentId : null);
+            $this->writeAuditLog('VOUCHER_CREATED', 'Created voucher for ' . $this->formatStudentName($data) . ' (ID #' . $newStudentId . ').', null, $newStudentId ? (int) $newStudentId : null);
             $message = 'Student added successfully.';
         }
 

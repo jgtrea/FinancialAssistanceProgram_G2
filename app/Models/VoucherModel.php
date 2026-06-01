@@ -215,6 +215,7 @@ class VoucherModel extends Model
         // (without LIMIT/ORDER) and one for the rows.
         $applyWhere = function ($builder) use ($search, $filters) {
             if ($search !== '') {
+                $escaped = $this->db->escape('%' . $search . '%');
                 $builder
                     ->groupStart()
                     ->like('voucher_no', $search)
@@ -229,6 +230,11 @@ class VoucherModel extends Model
                     ->orLike('remarks_status', $search)
                     ->orLike('voucher_status', $search)
                     ->orLike('contact_number', $search)
+                    ->orWhere("CONCAT_WS(' ', `first_name`, `middle_name`, `last_name`) LIKE {$escaped}")
+                    ->orWhere("CONCAT_WS(' ', `first_name`, `middle_name`, `suffix`, `last_name`) LIKE {$escaped}")
+                    ->orWhere("CONCAT_WS(' ', `first_name`, `last_name`) LIKE {$escaped}")
+                    ->orWhere("CONCAT_WS(', ', `last_name`, `first_name`) LIKE {$escaped}")
+                    ->orWhere("CONCAT_WS(', ', `last_name`, CONCAT_WS(' ', `first_name`, `middle_name`, `suffix`)) LIKE {$escaped}")
                     ->groupEnd();
             }
             $this->applyListingFilters($builder, $filters);

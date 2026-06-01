@@ -40,7 +40,7 @@
 
     <div class="d-flex align-items-center gap-2 flex-wrap mb-3">
         <form method="get" class="vs-advanced-search vs-advanced-search-outside">
-            <input type="text" name="q" class="vs-input vs-advanced-search-input" placeholder="Enter keyword to search (username, email)" value="<?= esc((string) ($keyword ?? ''), 'attr') ?>">
+            <input type="text" name="q" class="vs-input vs-advanced-search-input" placeholder="Enter keyword to search (username, email, etc.)" value="<?= esc((string) ($keyword ?? ''), 'attr') ?>">
             <button type="button" class="vs-btn vs-btn-outline" id="btnOpenUserFilter">
                 Filters
                 <span id="userFilterBadge" class="badge bg-primary" style="display:none;margin-left:.35rem"></span>

@@ -21,7 +21,7 @@
 
     <div class="d-flex align-items-center gap-2 flex-wrap mb-3">
         <form method="get" id="archiveFilterForm" class="vs-advanced-search vs-advanced-search-outside">
-            <input type="text" name="q" class="vs-input vs-advanced-search-input" placeholder="Enter keyword to search archived vouchers (name, school)" value="<?= esc((string) ($keyword ?? ''), 'attr') ?>">
+            <input type="text" name="q" class="vs-input vs-advanced-search-input" placeholder="Enter keyword to search archived vouchers (name, school, etc.)" value="<?= esc((string) ($keyword ?? ''), 'attr') ?>">
             <button type="button" class="vs-btn vs-btn-outline" id="btnOpenArchiveFilter">
                 Filters
                 <span id="archiveFilterBadge" class="badge bg-primary" style="display:<?= $activeFilterCount > 0 ? 'inline-block' : 'none' ?>;margin-left:.35rem"><?= $activeFilterCount > 0 ? esc($activeFilterCount) : '' ?></span>

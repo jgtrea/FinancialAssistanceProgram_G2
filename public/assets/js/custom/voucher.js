@@ -76,6 +76,11 @@ document.addEventListener('DOMContentLoaded', function () {
     if (currentPageSearch && window.VS && window.VS.bindCurrentPageSearch) {
       window.VS.bindCurrentPageSearch(dt, currentPageSearch);
     }
+
+    const advInput = document.querySelector('.vs-advanced-search-input');
+    if (advInput && window.VS && window.VS.bindFullTableSearch) {
+      window.VS.bindFullTableSearch(dt, advInput);
+    }
   } else {
     // Client-side mode for pages that still server-render rows.
     dt = $(vouchersTable).DataTable({
@@ -103,6 +108,11 @@ document.addEventListener('DOMContentLoaded', function () {
                            || document.getElementById('customVouchersSearch');
     if (currentPageSearch && window.VS && window.VS.bindCurrentPageSearch) {
       window.VS.bindCurrentPageSearch(dt, currentPageSearch);
+    }
+
+    const advInput = document.querySelector('.vs-advanced-search-input');
+    if (advInput && window.VS && window.VS.bindFullTableSearch) {
+      window.VS.bindFullTableSearch(dt, advInput);
     }
   }
 

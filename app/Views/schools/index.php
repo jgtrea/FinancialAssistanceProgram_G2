@@ -36,7 +36,7 @@
 <div class="d-flex align-items-center gap-2 flex-wrap mb-3">
     <form method="get" class="vs-advanced-search vs-advanced-search-outside" id="schoolSearchForm">
         <input type="text" name="q" class="vs-input vs-advanced-search-input"
-               placeholder="Enter keyword to search schools (name, level)"
+               placeholder="Enter keyword to search schools (name, level, etc.)"
                value="<?= esc($keyword, 'attr') ?>">
         <?php if ($filterLevel !== ''): ?>
             <input type="hidden" name="level" value="<?= esc($filterLevel, 'attr') ?>">
