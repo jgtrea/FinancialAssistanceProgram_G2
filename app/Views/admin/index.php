@@ -28,15 +28,15 @@
     <form method="get" class="d-flex align-items-center gap-2 flex-wrap">
         <input type="text" name="q" class="vs-input" placeholder="Enter keyword (username, email, etc.)" value="<?= esc((string) ($keyword ?? ''), 'attr') ?>" style="width:380px; max-width:100%">
         <div style="width:160px">
-            <select id="ufRole" class="js-filter-select" data-placeholder="All roles" data-no-search="1" style="width:100%">
-                <option value="">All roles</option>
+            <select id="ufRole" class="js-filter-select" data-placeholder="Account type" data-no-search="1" style="width:100%">
+                <option value=""></option>
                 <option value="admin">Admin</option>
                 <option value="user">User</option>
             </select>
         </div>
         <div style="width:160px">
-            <select id="ufStatus" class="js-filter-select" data-placeholder="All status" data-no-search="1" style="width:100%">
-                <option value="">All status</option>
+            <select id="ufStatus" class="js-filter-select" data-placeholder="Status" data-no-search="1" style="width:100%">
+                <option value=""></option>
                 <option value="active">Active</option>
                 <option value="inactive">Inactive</option>
             </select>

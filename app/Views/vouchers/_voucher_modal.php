@@ -120,10 +120,10 @@
 
           <div>
             <label class="vs-label" for="vmEligibility">Eligibility</label>
-            <select id="vmEligibility" name="eligibility_status" class="vs-input js-school-select" data-placeholder="eligible / not_eligible" data-no-search="1">
+            <select id="vmEligibility" name="eligibility_status" class="vs-input js-school-select" data-placeholder="ELIGIBLE / NOT ELIGIBLE" data-no-search="1">
               <option></option>
-              <option value="eligible">eligible</option>
-              <option value="not_eligible">not_eligible</option>
+              <option value="eligible">ELIGIBLE</option>
+              <option value="not_eligible">NOT ELIGIBLE</option>
             </select>
           </div>
         </div>

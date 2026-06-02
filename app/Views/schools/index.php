@@ -36,11 +36,11 @@
 <div class="d-flex align-items-center gap-2 flex-wrap mb-3">
     <form method="get" class="vs-advanced-search vs-advanced-search-outside" id="schoolSearchForm">
         <input type="text" name="q" class="vs-input vs-advanced-search-input"
-               placeholder="Enter keyword to search schools (name, level, etc.)"
+               placeholder="Enter keyword to search schools (school name, level, etc.   )"
                value="<?= esc($keyword, 'attr') ?>">
         <div style="width:160px">
-            <select id="schoolLevelFilter" name="level" class="js-filter-select" data-placeholder="All" data-no-search="1" style="width:100%">
-                <option value="" <?= $filterLevel === ''    ? 'selected' : '' ?>>All</option>
+            <select id="schoolLevelFilter" name="level" class="js-filter-select" data-placeholder="Select type" data-no-search="1" style="width:100%">
+                <option value="" <?= $filterLevel === ''    ? 'selected' : '' ?>></option>
                 <option value="JHS" <?= $filterLevel === 'JHS' ? 'selected' : '' ?>>JHS</option>
                 <option value="SHS" <?= $filterLevel === 'SHS' ? 'selected' : '' ?>>SHS</option>
             </select>

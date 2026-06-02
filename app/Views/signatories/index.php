@@ -43,14 +43,14 @@
         <form method="get" class="d-flex align-items-center gap-2 flex-wrap">
             <input type="text" name="q" class="vs-input" placeholder="Enter keyword (name, position, etc.)" value="<?= esc((string) ($keyword ?? ''), 'attr') ?>" style="width:340px; max-width:100%">
             <div style="width:180px">
-                <select id="sfStatus" class="js-filter-select" data-placeholder="All status" data-no-search="1" style="width:100%">
+                <select id="sfStatus" class="js-filter-select" data-placeholder="Status" data-no-search="1" style="width:100%">
                     <option></option>
                     <option value="selected">Selected</option>
                     <option value="unselected">Unselected</option>
                 </select>
             </div>
             <div style="width:220px">
-                <select id="sfPosition" class="js-filter-select" data-placeholder="All positions" style="width:100%">
+                <select id="sfPosition" class="js-filter-select" data-placeholder="Position title" style="width:100%">
                     <option></option>
                 </select>
             </div>
