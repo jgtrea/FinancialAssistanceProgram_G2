@@ -31,7 +31,7 @@
             <select id="ufRole" class="js-filter-select" data-placeholder="All roles" data-no-search="1" style="width:100%">
                 <option value="">All roles</option>
                 <option value="admin">Admin</option>
-                <option value="user">Staff</option>
+                <option value="user">User</option>
             </select>
         </div>
         <div style="width:160px">

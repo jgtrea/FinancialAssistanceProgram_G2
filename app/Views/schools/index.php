@@ -418,15 +418,24 @@
         updateBar();
     });
 
-    // ── Level dropdown filter — submits the form so the controller re-runs
-    //    the server-side listing with the new ?level=… param.
+    // ── Level dropdown filter — narrows the DataTable's Level column client-side.
+    //    Avoids a page reload and works whether or not the server pre-filtered.
     var schoolLevelEl = document.getElementById('schoolLevelFilter');
-    var schoolSearchForm = document.getElementById('schoolSearchForm');
-    if (schoolLevelEl && schoolSearchForm && window.jQuery) {
+    // This inline script parses before pre_script('app') loads jQuery/Select2,
+    // so defer binding until jQuery exists (Select2 dispatches its change event
+    // through jQuery, so a native addEventListener would never fire).
+    (function bindLevelFilter() {
+        if (!schoolLevelEl) return;
+        if (!window.jQuery) { return setTimeout(bindLevelFilter, 50); }
         $(schoolLevelEl).on('change', function () {
-            schoolSearchForm.submit();
+            var v = schoolLevelEl.value || '';
+            var tbl = document.getElementById('schoolsTable');
+            if (!tbl || !$.fn.DataTable || !$.fn.DataTable.isDataTable(tbl)) return;
+            // exact-match regex so "SHS" does not also match "JHS" substrings
+            var rx = v === '' ? '' : '^' + v.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '$';
+            $(tbl).DataTable().column(2).search(rx, true, false).draw();
         });
-    }
+    }());
 
     // ── Export modal ──────────────────────────────────────────────────────────
     var exportModal = document.getElementById('schoolExportModal');
@@ -751,7 +760,8 @@
         if (!table || !window.jQuery || !$.fn.DataTable || !$.fn.DataTable.isDataTable(table)) {
             return setTimeout(applyInitialLevel, 50);
         }
-        $(table).DataTable().column(2).search(initialLevel, false, false).draw();
+        var rx = '^' + initialLevel.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '$';
+        $(table).DataTable().column(2).search(rx, true, false).draw();
     }
     applyInitialLevel();
 }());
