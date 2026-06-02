@@ -45,18 +45,26 @@ class ProcessJsonPdfQueue extends BaseCommand
             $loopInterval = max(1, (int) $candidate);
         }
 
+        // --throttle=N → pause N milliseconds between chunks so a big batch
+        // doesn't monopolise MySQL/CPU and starve interactive LAN users.
+        $throttleOpt = CLI::getOption('throttle');
+        $throttleMs  = ($throttleOpt !== null && $throttleOpt !== false && $throttleOpt !== true)
+            ? max(0, (int) $throttleOpt)
+            : 0;
+
         JsonPdfQueue::ensureFiles();
         CLI::write('Args parsed → loop=' . var_export($loopOpt, true)
             . ', l=' . var_export($loopShort, true)
             . ', params=' . json_encode($params)
-            . ', interval=' . $loopInterval . 's');
+            . ', interval=' . $loopInterval . 's'
+            . ', throttle=' . $throttleMs . 'ms');
         $this->printDiagnostics();
 
         if ($loopInterval > 0) {
-            CLI::write("JSON worker running. Polling every {$loopInterval}s. Ctrl+C to stop.");
+            CLI::write("JSON worker running. Polling every {$loopInterval}s, {$throttleMs}ms between chunks. Ctrl+C to stop.");
             $tick = 0;
             while (true) {
-                $this->drain();
+                $this->drain($throttleMs);
                 $tick++;
                 if ($tick % 12 === 0) {
                     CLI::write('[' . date('H:i:s') . '] heartbeat — still polling JSON queue');
@@ -65,7 +73,7 @@ class ProcessJsonPdfQueue extends BaseCommand
             }
         }
 
-        return $this->drain() ? EXIT_SUCCESS : EXIT_ERROR;
+        return $this->drain($throttleMs) ? EXIT_SUCCESS : EXIT_ERROR;
     }
 
     protected function printDiagnostics(): void
@@ -91,7 +99,7 @@ class ProcessJsonPdfQueue extends BaseCommand
      * Drain pass: claim + process chunks until queue is empty, then attempt
      * to finalize any parents whose chunks are all done.
      */
-    protected function drain(): bool
+    protected function drain(int $throttleMs = 0): bool
     {
         $processed = 0;
         $failed    = 0;
@@ -105,6 +113,10 @@ class ProcessJsonPdfQueue extends BaseCommand
                 $processed++;
             } else {
                 $failed++;
+            }
+            // Breathe between chunks so other LAN users' queries get a turn.
+            if ($throttleMs > 0) {
+                usleep($throttleMs * 1000);
             }
         }
 
