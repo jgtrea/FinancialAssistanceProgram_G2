@@ -14,7 +14,9 @@ class UsersController extends BaseController
         if ($keyword !== '') {
             $model
                 ->groupStart()
-                ->like('username', $keyword)
+                ->like('first_name', $keyword)
+                ->orLike('middle_name', $keyword)
+                ->orLike('last_name', $keyword)
                 ->orLike('email', $keyword)
                 ->orLike('role', $keyword)
                 ->groupEnd();
@@ -45,7 +47,8 @@ class UsersController extends BaseController
         $model->update($id, ['is_active' => $newStatus]);
 
         $action = $newStatus ? 'ACTIVATE_USER' : 'DEACTIVATE_USER';
-        log_action($adminId, $action, ($newStatus ? 'Activated' : 'Deactivated') . " user #{$id} ({$user['username']})");
+        $uName = trim(($user['first_name'] ?? '') . ' ' . ($user['last_name'] ?? ''));
+        log_action($adminId, $action, ($newStatus ? 'Activated' : 'Deactivated') . " user #{$id} ({$uName})");
 
         return $this->response->setJSON([
             'status'    => 'success',
@@ -89,10 +92,11 @@ class UsersController extends BaseController
 
         $validation = \Config\Services::validation();
         $validation->setRules([
-            'full_name' => 'required|max_length[100]',
-            'username'  => 'required|valid_email|max_length[150]',
-            'password'  => ($id ? 'permit_empty' : 'required') . '|min_length[8]|max_length[255]',
-            'role'      => 'required|in_list[admin,user]',
+            'first_name' => 'required|max_length[100]',
+            'last_name'  => 'required|max_length[100]',
+            'email'      => 'required|valid_email|max_length[150]',
+            'password'   => ($id ? 'permit_empty' : 'required') . '|min_length[8]|max_length[255]',
+            'role'       => 'required|in_list[admin,user]',
         ]);
 
         if (!$validation->withRequest($this->request)->run()) {
@@ -119,17 +123,12 @@ class UsersController extends BaseController
         }
 
         $data = [
-            'username'  => trim((string) $this->request->getPost('full_name')),
-            'email'     => strtolower(trim((string) $this->request->getPost('username'))),
-            'role'      => $role,
+            'first_name'  => strtoupper(trim((string) $this->request->getPost('first_name'))),
+            'middle_name' => strtoupper(trim((string) $this->request->getPost('middle_name'))),
+            'last_name'   => strtoupper(trim((string) $this->request->getPost('last_name'))),
+            'email'       => strtolower(trim((string) $this->request->getPost('email'))),
+            'role'        => $role,
         ];
-
-        if ($this->userFieldTaken('username', $data['username'], $id)) {
-            return $this->response->setJSON([
-                'status' => 'error',
-                'message' => 'Username is already in use.',
-            ]);
-        }
 
         if ($this->userFieldTaken('email', $data['email'], $id)) {
             return $this->response->setJSON([
@@ -150,11 +149,11 @@ class UsersController extends BaseController
 
         if ($id) {
             $model->update($id, $data);
-            log_action($adminId, 'UPDATE_USER', "Updated user #{$id} ({$data['username']})");
+            log_action($adminId, 'UPDATE_USER', "Updated user #{$id} ({$data['first_name']} {$data['last_name']})");
             $message = 'User updated successfully.';
         } else {
             $model->insert($data);
-            log_action($adminId, 'CREATE_USER', "Created user {$data['username']}");
+            log_action($adminId, 'CREATE_USER', "Created user {$data['first_name']} {$data['last_name']}");
             $message = 'User created successfully.';
         }
 
@@ -189,7 +188,8 @@ class UsersController extends BaseController
             if (!$user) continue;
             $model->update($id, ['is_active' => $status]);
             $action = $status ? 'ACTIVATE_USER' : 'DEACTIVATE_USER';
-            log_action($adminId, $action, ($status ? 'Activated' : 'Deactivated') . " user #{$id} ({$user['username']})");
+            $uName = trim(($user['first_name'] ?? '') . ' ' . ($user['last_name'] ?? ''));
+            log_action($adminId, $action, ($status ? 'Activated' : 'Deactivated') . " user #{$id} ({$uName})");
             $changed++;
         }
 

@@ -8,7 +8,7 @@
     </button>
 
     <div class="ms-auto me-3 d-flex align-items-center gap-3 text-white-50 small">
-        <span><?= esc(session('full_name') ?? session('username') ?? 'User') ?></span>
+        <span><?= esc(session('full_name') ?? 'User') ?></span>
         <a class="btn btn-outline-light btn-sm" href="<?= site_url('logout') ?>">Logout</a>
     </div>
 </nav>

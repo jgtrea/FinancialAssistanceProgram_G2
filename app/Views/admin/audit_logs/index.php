@@ -76,7 +76,7 @@
                             </td>
                             <td class="small"><?= esc($log['user_agent']) ?></td>
                             <td>
-                                <?= esc($log['full_name'] ?? $log['username'] ?? '-') ?>
+                                <?= esc($log['full_name'] ?? $log['email'] ?? '-') ?>
                                 <?php if (!empty($log['user_id'])): ?>
                                     <span class="text-muted small">#<?= esc($log['user_id']) ?></span>
                                 <?php endif; ?>

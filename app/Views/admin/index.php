@@ -56,11 +56,10 @@
             <table id="userManagementTable" class="vs-datatable js-data-table" data-page-search="customUsersSearch" data-search-placeholder="Search users..." data-order='[[1,"asc"]]' style="width:100%">
             <thead>
                 <tr>
-                    <th>Username</th>
+                    <th>Name</th>
                     <th>Email</th>
                     <th>Role</th>
                     <th>Status</th>
-                    <th>Last Login</th>
                     <th class="actions-column">Actions</th>
                 </tr>
             </thead>
@@ -75,7 +74,7 @@
                         data-active="<?= $isActive ? '1' : '0' ?>"
                         data-last-login="<?= !empty($user['last_login']) ? esc(date('Y-m-d', strtotime($user['last_login']))) : '' ?>"
                         <?= !$isActive ? 'class="vs-row-archived"' : '' ?>>
-                        <td><?= esc($user['username']) ?></td>
+                        <td><?= esc(trim(implode(' ', array_filter([$user['first_name'] ?? '', $user['middle_name'] ?? '', $user['last_name'] ?? ''])))) ?></td>
                         <td><?= esc($user['email']) ?></td>
                         <td>
                             <?php
@@ -92,7 +91,6 @@
                                 <?= asset_icon($isActive ? 'circle_check' : 'circle_x', ['width' => '18', 'height' => '18']) ?>
                             </span>
                         </td>
-                        <td><?= !empty($user['last_login']) ? esc(date('M d, Y h:i A', strtotime($user['last_login']))) : 'Never' ?></td>
                         <td class="actions-cell">
                             <div class="dropdown">
                                 <button type="button" class="vs-tbl-btn vs-tbl-btn-actions dropdown-toggle"
@@ -139,13 +137,23 @@
 
         <div class="vs-form-grid vs-form-grid-4">
           <div class="vs-span-2">
-            <label class="vs-label required" for="umUsername">Username</label>
-            <input type="text" id="umUsername" name="full_name" class="vs-input" required autocomplete="username" autocapitalize="none" spellcheck="false">
+            <label class="vs-label required" for="umFirstName">First Name</label>
+            <input type="text" id="umFirstName" name="first_name" class="vs-input" required autocapitalize="words" spellcheck="false">
+          </div>
+
+          <div class="vs-span-2">
+            <label class="vs-label" for="umMiddleName">Middle Name</label>
+            <input type="text" id="umMiddleName" name="middle_name" class="vs-input" autocapitalize="words" spellcheck="false">
+          </div>
+
+          <div class="vs-span-2">
+            <label class="vs-label required" for="umLastName">Last Name</label>
+            <input type="text" id="umLastName" name="last_name" class="vs-input" required autocapitalize="words" spellcheck="false">
           </div>
 
           <div class="vs-span-2">
             <label class="vs-label required" for="umEmail">Email</label>
-            <input type="email" id="umEmail" name="username" class="vs-input" required autocomplete="email" autocapitalize="none" spellcheck="false">
+            <input type="email" id="umEmail" name="email" class="vs-input" required autocomplete="email" autocapitalize="none" spellcheck="false">
           </div>
 
           <div class="vs-span-2">
@@ -238,10 +246,12 @@
     }
 
     function umPopulate(user) {
-        document.getElementById('umUserId').value = user.user_id || '';
-        document.getElementById('umUsername').value = user.username || '';
-        document.getElementById('umEmail').value = user.email || '';
-        document.getElementById('umRole').value = user.role || 'user';
+        document.getElementById('umUserId').value    = user.user_id    || '';
+        document.getElementById('umFirstName').value = user.first_name || '';
+        document.getElementById('umMiddleName').value = user.middle_name || '';
+        document.getElementById('umLastName').value  = user.last_name  || '';
+        document.getElementById('umEmail').value     = user.email      || '';
+        document.getElementById('umRole').value      = user.role       || 'user';
         umPassword.value = '';
     }
 

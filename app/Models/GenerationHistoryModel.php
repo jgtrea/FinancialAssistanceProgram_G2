@@ -60,7 +60,7 @@ class GenerationHistoryModel extends Model
 
         $builder = $this->db->table($this->table . ' gh');
         if ($hasGeneratedBy) {
-            $builder->select('gh.*, u.username')
+            $builder->select("gh.*, TRIM(CONCAT_WS(' ', NULLIF(u.first_name,''), NULLIF(u.middle_name,''), NULLIF(u.last_name,''))) AS full_name")
                     ->join('users u', 'u.user_id = gh.generated_by', 'left');
         } else {
             $builder->select('gh.*');

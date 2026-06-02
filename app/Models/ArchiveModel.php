@@ -44,7 +44,7 @@ class ArchiveModel extends Model
                 a.*,
                 CONCAT_WS(' ', NULLIF(a.first_name,''), NULLIF(a.middle_name,''), NULLIF(a.last_name,''), NULLIF(a.suffix,'')) AS full_name,
                 TRIM(CONCAT_WS(' ', NULLIF(a.last_name,''), NULLIF(a.first_name,''), NULLIF(a.middle_name,''))) AS name_sort,
-                u.username AS archived_by_name
+                TRIM(CONCAT_WS(' ', NULLIF(u.first_name,''), NULLIF(u.middle_name,''), NULLIF(u.last_name,''))) AS archived_by_name
             ")
             ->join('users u', 'u.user_id = a.archived_by', 'left');
 
@@ -61,7 +61,8 @@ class ArchiveModel extends Model
                 ->orLike('a.preferred_senior_high_school', $keyword)
                 ->orLike('a.school_year', $keyword)
                 ->orLike('a.archive_reason', $keyword)
-                ->orLike('u.username', $keyword)
+                ->orLike('u.first_name', $keyword)
+                ->orLike('u.last_name', $keyword)
                 ->groupEnd();
         }
 

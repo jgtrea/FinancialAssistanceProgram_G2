@@ -23,9 +23,7 @@ class Authentication extends BaseController
         $input    = strtolower(trim((string) $this->request->getPost('username')));
         $password = $this->request->getPost('password');
 
-        // Allow login with either email or username
-        $user = $model->where('email', $input)->first()
-             ?? $model->where('username', $input)->first();
+        $user = $model->where('email', $input)->first();
 
         if (!$user || $user['is_active'] == 0) {
             log_action(null, 'LOGIN_FAILED', "Failed login attempt for \"{$input}\"");
@@ -34,15 +32,20 @@ class Authentication extends BaseController
 
         if (!password_verify($password, $user['password'])) {
             log_action($user['user_id'], 'LOGIN_FAILED', "Bad password for \"{$input}\"");
-            return redirect()->to('/')->with('error', 'Invalid username or password.');
+            return redirect()->to('/')->with('error', 'Invalid credentials.');
         }
+
+        $fullName = trim(implode(' ', array_filter([
+            $user['first_name'] ?? '',
+            $user['middle_name'] ?? '',
+            $user['last_name'] ?? '',
+        ])));
 
         session()->set([
             'user_id'    => $user['user_id'],
-            'username'   => $user['username'],
-            'full_name'  => $user['username'],
+            'full_name'  => $fullName ?: $user['email'],
             'role'       => $user['role'],
-            'isLoggedIn' => true
+            'isLoggedIn' => true,
         ]);
 
         $model->update($user['user_id'], [
@@ -61,8 +64,8 @@ class Authentication extends BaseController
     public function logout()
     {
         $userId   = session()->get('user_id');
-        $username = session()->get('username');
-        log_action($userId, 'LOGOUT', "User {$username} logged out");
+        $fullName = session()->get('full_name') ?? 'unknown';
+        log_action($userId, 'LOGOUT', "User {$fullName} logged out");
         session()->destroy();
         return redirect()->to('/');
     }
