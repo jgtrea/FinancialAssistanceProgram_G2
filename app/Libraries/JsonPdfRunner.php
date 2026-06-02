@@ -332,21 +332,43 @@ class JsonPdfRunner
             } else {
                 $finalName = 'vouchers_json_job' . $parentId . '_' . $stamp . '.zip';
                 $zipPath   = $dir . $finalName;
-                $zip       = new \ZipArchive();
-                if ($zip->open($zipPath, \ZipArchive::CREATE | \ZipArchive::OVERWRITE) !== true) {
-                    throw new \RuntimeException('Failed to open ZIP for writing.');
+
+                // Build the ZIP in batches. ZipArchive::addFile() defers opening
+                // each source file until close(), so adding all chunks at once
+                // makes close() open every chunk PDF simultaneously — which blows
+                // past the OS open-file-handle limit on large batches (e.g. 100
+                // chunks) and fails with "Can't open file". Adding/closing in
+                // bounded batches keeps the number of concurrently-open handles
+                // capped while still appending to the same archive.
+                $batchSize = 50;
+
+                // Start from a clean file; first open() below uses CREATE (append),
+                // so wipe any stale archive at this path before the first batch.
+                if (is_file($zipPath)) {
+                    @unlink($zipPath);
                 }
-                foreach ($chunks as $chunk) {
-                    $sourcePath = $dir . $chunk['file_path'];
-                    if (!is_file($sourcePath)) {
-                        $zip->close();
-                        @unlink($zipPath);
-                        throw new \RuntimeException('Missing chunk file: ' . $chunk['file_path']);
+
+                foreach (array_chunk($chunks, $batchSize) as $batch) {
+                    $zip = new \ZipArchive();
+                    if ($zip->open($zipPath, \ZipArchive::CREATE) !== true) {
+                        throw new \RuntimeException('Failed to open ZIP for writing.');
                     }
-                    $entry = 'vouchers_chunk_' . str_pad((string) $chunk['chunk_index'], 3, '0', STR_PAD_LEFT) . '.pdf';
-                    $zip->addFile($sourcePath, $entry);
+                    foreach ($batch as $chunk) {
+                        $sourcePath = $dir . $chunk['file_path'];
+                        if (!is_file($sourcePath)) {
+                            $zip->close();
+                            @unlink($zipPath);
+                            throw new \RuntimeException('Missing chunk file: ' . $chunk['file_path']);
+                        }
+                        $entry = 'vouchers_chunk_' . str_pad((string) $chunk['chunk_index'], 3, '0', STR_PAD_LEFT) . '.pdf';
+                        $zip->addFile($sourcePath, $entry);
+                    }
+                    if ($zip->close() !== true) {
+                        $status = $zip->getStatusString();
+                        @unlink($zipPath);
+                        throw new \RuntimeException('ZIP close failed: ' . $status);
+                    }
                 }
-                $zip->close();
             }
 
             // Final file is built — chunk PDFs are no longer needed on disk.
