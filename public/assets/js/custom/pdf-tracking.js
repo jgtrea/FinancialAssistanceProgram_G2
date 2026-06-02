@@ -51,7 +51,9 @@ function pollPdfJob(jobId, statusUrl, toast, onDone) {
 
       if (data.status === 'done' && data.download_url) {
         removePendingPdfJob(jobId);
-        if (toast) toast.update('PDF ready! Downloading...', true);
+        // Reveal a manual Download link and keep the toast ~5 min, so the user
+        // can grab the file if the automatic download below is blocked/fails.
+        if (toast) toast.update('PDF #' + jobId + ' ready — downloading…', true, data.download_url);
         if (typeof onDone === 'function') onDone(data.download_url);
         else window.location.href = data.download_url;
         return;
@@ -98,7 +100,10 @@ function pollPdfJob(jobId, statusUrl, toast, onDone) {
 document.addEventListener('DOMContentLoaded', function () {
   const jobs = getPendingPdfJobs();
   jobs.forEach(function (job) {
-    const toast = showPdfToast('Generating PDF #' + job.jobId + '...');
+    const toast = showPdfToast('Generating PDF #' + job.jobId + '...', 'job-' + job.jobId, {
+      jobId:     job.jobId,
+      statusUrl: job.statusUrl,
+    });
     pollPdfJob(job.jobId, job.statusUrl, toast);
   });
 });

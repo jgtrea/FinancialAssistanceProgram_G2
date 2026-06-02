@@ -806,18 +806,10 @@ class Voucher extends Controller
         $body        = file_get_contents($filePath);
         $basename    = basename($filePath);
 
-        // One-shot delivery — wipe the file + the finished-job record so the
-        // writable/ directory stays small over time. The user has the bytes;
-        // the server doesn't keep a copy. (Re-download would require re-queueing.)
-        @unlink($filePath);
-        \App\Libraries\JsonPdfQueue::mutate(\App\Libraries\JsonPdfQueue::FILE_FINISHED, function (array $finished) use ($jobId) {
-            $finished['jobs'] = array_values(array_filter(
-                $finished['jobs'] ?? [],
-                static fn($j) => (int) ($j['job_id'] ?? 0) !== $jobId
-            ));
-            return $finished;
-        });
-
+        // Keep the file + record after download so the manual Download link in
+        // the toast keeps working (e.g. when the automatic download is blocked
+        // or interrupted). The worker's sweepStaleFinished() unlinks both ~10
+        // min after completion, so writable/ still stays clean on its own.
         return $this->response
             ->setHeader('Content-Type', $contentType)
             ->setHeader('Content-Disposition', 'attachment; filename="' . $basename . '"')

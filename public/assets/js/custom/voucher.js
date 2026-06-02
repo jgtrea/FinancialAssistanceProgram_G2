@@ -324,7 +324,9 @@ document.addEventListener('DOMContentLoaded', function () {
       }
 
       btnGeneratePdf.disabled = true;
-      const toast = showPdfToast('Generating PDF...');
+      // Unique key so this generation's toast is independent of any other
+      // job's toast already on screen (job_id isn't known until the response).
+      const toast = showPdfToast('Generating PDF...', 'gen-' + Date.now());
 
       const csrf     = getCsrfToken();
       const formData = new FormData();
@@ -384,13 +386,15 @@ document.addEventListener('DOMContentLoaded', function () {
             statusUrl: data.status_url,
             startedAt: Date.now(),
           });
+          // Now that the job_id is known, scope this toast's Status button to it.
+          if (toast.setJob) toast.setJob({ jobId: data.job_id, statusUrl: data.status_url });
           toast.update('Generating PDF (job #' + data.job_id + ')...');
           pollPdfJob(data.job_id, data.status_url, toast);
           return;
         }
 
         if (data.download_url) {
-          toast.update('PDF ready! Downloading...', true);
+          toast.update('PDF ready to Download!', true, data.download_url);
           window.location.href = data.download_url;
         } else {
           toast.remove();
