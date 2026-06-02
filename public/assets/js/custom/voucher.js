@@ -2,12 +2,12 @@
    VOUCHER PAGE — DataTables, checkbox, Generate PDF, Archive
    ============================================================ */
 
-document.addEventListener('DOMContentLoaded', function () {
-
+document.addEventListener("DOMContentLoaded", function () {
   // Handles BOTH the voucher generation page (#vouchersTable) and the
   // students listing page (#studentsTable). Both have the same column shape.
-  const vouchersTable = document.getElementById('vouchersTable')
-                     || document.getElementById('studentsTable');
+  const vouchersTable =
+    document.getElementById("vouchersTable") ||
+    document.getElementById("studentsTable");
   if (!vouchersTable) return;
 
   // Server-side mode kicks in when the table has data-datatable-url. Used by
@@ -18,13 +18,17 @@ document.addEventListener('DOMContentLoaded', function () {
 
   if (datatableUrl) {
     let filterParams = {};
-    try { filterParams = JSON.parse(vouchersTable.dataset.filterParams || '{}'); } catch (e) {}
+    try {
+      filterParams = JSON.parse(vouchersTable.dataset.filterParams || "{}");
+    } catch (e) {}
 
-    const initialSearch = vouchersTable.dataset.initialSearch || '';
+    const initialSearch = vouchersTable.dataset.initialSearch || "";
 
     // Sync initial page length from the custom input so DT and the UI agree.
-    const lenInputEl = document.getElementById('vouchersLengthInput');
-    const initialPageLen = lenInputEl ? (parseInt(lenInputEl.value, 10) || 10) : 10;
+    const lenInputEl = document.getElementById("vouchersLengthInput");
+    const initialPageLen = lenInputEl
+      ? parseInt(lenInputEl.value, 10) || 10
+      : 10;
 
     dt = $(vouchersTable).DataTable({
       destroy: true,
@@ -32,7 +36,7 @@ document.addEventListener('DOMContentLoaded', function () {
       processing: true,
       ajax: {
         url: datatableUrl,
-        type: 'GET',
+        type: "GET",
         data: function (d) {
           Object.assign(d, filterParams);
           if (initialSearch) d.q = initialSearch;
@@ -42,32 +46,31 @@ document.addEventListener('DOMContentLoaded', function () {
       // including the hidden name_sort column (3) used so "Name" can sort
       // by last name instead of by the rendered full-name string.
       columns: [
-        { data: 'checkbox',       orderable: false },
-        { data: 'voucher_no' },
-        { data: 'name' },
-        { data: 'name_sort',      visible: false },
-        { data: 'jhs' },
-        { data: 'shs' },
-        { data: 'school_year' },
-        { data: 'eligibility' },
-        { data: 'status' },
-        { data: 'remarks' },
-        { data: 'generate_count' },
-        { data: 'last_generated' },
-        { data: 'actions',        orderable: false },
+        { data: "checkbox", orderable: false },
+        { data: "voucher_no" },
+        { data: "name" },
+        { data: "name_sort", visible: false },
+        { data: "jhs" },
+        { data: "shs" },
+        { data: "school_year" },
+        { data: "eligibility" },
+        { data: "status" },
+        { data: "remarks" },
+        { data: "generate_count" },
+        { data: "last_generated" },
+        { data: "actions", orderable: false },
       ],
-      columnDefs: [
-        { orderData: [3], targets: [2] },
-      ],
-      order: [[3, 'asc']],
-      dom:        window.VS.dtHeaderDom(false) + window.VS.dtBodyDom,
+      columnDefs: [{ orderData: [3], targets: [2] }],
+      order: [[3, "asc"]],
+      dom: window.VS.dtHeaderDom(false) + window.VS.dtBodyDom,
       pageLength: initialPageLen,
       lengthMenu: window.VS.dtLengthMenuSS,
       responsive: true,
-      autoWidth:  false,
-      language:   window.VS.dtLanguage({
-        searchPlaceholder: vouchersTable.dataset.searchPlaceholder || 'Search students...',
-        info:              'Showing _START_ to _END_ of _TOTAL_ matching',
+      autoWidth: false,
+      language: window.VS.dtLanguage({
+        searchPlaceholder:
+          vouchersTable.dataset.searchPlaceholder || "Search students...",
+        info: "Showing _START_ to _END_ of _TOTAL_ matching",
       }),
     });
 
@@ -75,8 +78,9 @@ document.addEventListener('DOMContentLoaded', function () {
     // outer-filtered set). Hits the server via DataTables' built-in search
     // string — backend treats `search[value]` as a narrowing LIKE, not a
     // scope widener.
-    const currentPageSearch = document.getElementById('customStudentsSearch')
-                           || document.getElementById('customVouchersSearch');
+    const currentPageSearch =
+      document.getElementById("customStudentsSearch") ||
+      document.getElementById("customVouchersSearch");
     if (currentPageSearch && window.VS && window.VS.bindFullTableSearch) {
       window.VS.bindFullTableSearch(dt, currentPageSearch);
     }
@@ -89,25 +93,27 @@ document.addEventListener('DOMContentLoaded', function () {
     // Client-side mode for pages that still server-render rows.
     dt = $(vouchersTable).DataTable({
       destroy: true,
-      dom:        window.VS.dtHeaderDom(false) + window.VS.dtBodyDom,
+      dom: window.VS.dtHeaderDom(false) + window.VS.dtBodyDom,
       pageLength: 10,
       lengthMenu: window.VS.dtLengthMenu,
       responsive: true,
-      autoWidth:  false,
+      autoWidth: false,
       order: [],
       columnDefs: [{ orderable: false, targets: [0, -1] }],
-      language:   window.VS.dtLanguage({
-        searchPlaceholder: vouchersTable.dataset.searchPlaceholder || 'Search vouchers...',
+      language: window.VS.dtLanguage({
+        searchPlaceholder:
+          vouchersTable.dataset.searchPlaceholder || "Search vouchers...",
       }),
     });
 
-    const currentPageSearch = document.getElementById('customStudentsSearch')
-                           || document.getElementById('customVouchersSearch');
+    const currentPageSearch =
+      document.getElementById("customStudentsSearch") ||
+      document.getElementById("customVouchersSearch");
     if (currentPageSearch && window.VS && window.VS.bindCurrentPageSearch) {
       window.VS.bindCurrentPageSearch(dt, currentPageSearch);
     }
 
-    const advInput = document.querySelector('.vs-advanced-search-input');
+    const advInput = document.querySelector(".vs-advanced-search-input");
     if (advInput && window.VS && window.VS.bindFullTableSearch) {
       window.VS.bindFullTableSearch(dt, advInput);
     }
@@ -116,52 +122,58 @@ document.addEventListener('DOMContentLoaded', function () {
   // ── Cross-page selection (Set of string IDs) ──────────────────────────────────
   const selectedIds = new Set();
 
-  const actionBar  = document.getElementById('actionBar');
-  const countLabel = document.getElementById('selectedCount');
-  const btnOpenExport = document.getElementById('btnOpenExport');
-  const exportModal = document.getElementById('exportModal');
-  const exportModalClose = document.getElementById('exportModalClose');
+  const actionBar = document.getElementById("actionBar");
+  const countLabel = document.getElementById("selectedCount");
+  const btnOpenExport = document.getElementById("btnOpenExport");
+  const exportModal = document.getElementById("exportModal");
+  const exportModalClose = document.getElementById("exportModalClose");
 
   function getCheckAllBoxes() {
-    return document.querySelectorAll('.vs-check-all');
+    return document.querySelectorAll(".vs-check-all");
   }
 
   function updateExportLinks() {
-    const ids = Array.from(selectedIds).join(',');
-    document.querySelectorAll('[data-export-format]').forEach(function (link) {
-      const format = link.dataset.exportFormat || 'xlsx';
+    const ids = Array.from(selectedIds).join(",");
+    document.querySelectorAll("[data-export-format]").forEach(function (link) {
+      const format = link.dataset.exportFormat || "xlsx";
       if (!link.dataset.exportBase) {
-        link.dataset.exportBase = link.href.split('?')[0];
+        link.dataset.exportBase = link.href.split("?")[0];
       }
-      link.href = link.dataset.exportBase + '?format=' + encodeURIComponent(format)
-        + '&ids=' + encodeURIComponent(ids);
+      link.href =
+        link.dataset.exportBase +
+        "?format=" +
+        encodeURIComponent(format) +
+        "&ids=" +
+        encodeURIComponent(ids);
     });
   }
 
   function updateActionBar() {
-    const count         = selectedIds.size;
-    const totalFiltered = dt.rows({ search: 'applied' }).count();
+    const count = selectedIds.size;
+    const totalFiltered = dt.rows({ search: "applied" }).count();
     if (countLabel) countLabel.textContent = count;
-    if (actionBar) actionBar.style.display = count > 0 ? 'flex' : 'none';
+    if (actionBar) actionBar.style.display = count > 0 ? "flex" : "none";
     updateExportLinks();
-    if (typeof updateSelectAllBanner === 'function') {
+    if (typeof updateSelectAllBanner === "function") {
       updateSelectAllBanner();
     }
   }
 
   function syncPageCheckboxes() {
-    const pageNodes = dt.rows({ page: 'current' }).nodes().toArray();
+    const pageNodes = dt.rows({ page: "current" }).nodes().toArray();
     const pageIds = [];
     pageNodes.forEach(function (row) {
-      const cb = row.querySelector('.vs-row-check');
+      const cb = row.querySelector(".vs-row-check");
       if (!cb) return;
       cb.checked = selectedIds.has(cb.value);
-      row.classList.toggle('vs-row-selected', cb.checked);
+      row.classList.toggle("vs-row-selected", cb.checked);
       if (!cb.disabled) pageIds.push(cb.value);
     });
-    const pageSelectedCount = pageIds.filter(id => selectedIds.has(id)).length;
-    getCheckAllBoxes().forEach(checkAll => {
-      checkAll.checked       = false;
+    const pageSelectedCount = pageIds.filter((id) =>
+      selectedIds.has(id),
+    ).length;
+    getCheckAllBoxes().forEach((checkAll) => {
+      checkAll.checked = false;
       checkAll.indeterminate = pageSelectedCount > 0;
     });
     updateActionBar();
@@ -169,120 +181,144 @@ document.addEventListener('DOMContentLoaded', function () {
 
   // draw.dt fires AFTER AJAX rows are rendered — use it (not page.dt) to
   // re-sync checkboxes so selected rows are highlighted on every page load.
-  dt.on('draw.dt page.dt search.dt order.dt', syncPageCheckboxes);
+  dt.on("draw.dt page.dt search.dt order.dt", syncPageCheckboxes);
 
-  document.addEventListener('change', function (e) {
-    if (!e.target.classList.contains('vs-check-all')) return;
+  document.addEventListener("change", function (e) {
+    if (!e.target.classList.contains("vs-check-all")) return;
 
     // Collect eligible row IDs on the CURRENT PAGE only.
-    const currentNodes = dt.rows({ page: 'current' }).nodes().toArray();
+    const currentNodes = dt.rows({ page: "current" }).nodes().toArray();
     const pageIds = [];
     currentNodes.forEach(function (node) {
-      if (node.getAttribute('data-eligibility') === 'not_eligible') return;
-      const cb = node.querySelector('.vs-row-check');
+      if (node.getAttribute("data-eligibility") === "not_eligible") return;
+      const cb = node.querySelector(".vs-row-check");
       if (cb && !cb.disabled) pageIds.push(cb.value);
     });
 
     // Check current page if not all on this page are selected; uncheck if all are.
-    const allOnPageSelected = pageIds.length > 0 && pageIds.every(function (id) {
-      return selectedIds.has(id);
-    });
+    const allOnPageSelected =
+      pageIds.length > 0 &&
+      pageIds.every(function (id) {
+        return selectedIds.has(id);
+      });
     if (allOnPageSelected) {
-      pageIds.forEach(function (id) { selectedIds.delete(id); });
+      pageIds.forEach(function (id) {
+        selectedIds.delete(id);
+      });
     } else {
-      pageIds.forEach(function (id) { selectedIds.add(id); });
+      pageIds.forEach(function (id) {
+        selectedIds.add(id);
+      });
     }
     syncPageCheckboxes();
   });
 
-  vouchersTable.addEventListener('change', function (e) {
-    if (!e.target.classList.contains('vs-row-check')) return;
+  vouchersTable.addEventListener("change", function (e) {
+    if (!e.target.classList.contains("vs-row-check")) return;
     if (e.target.checked) selectedIds.add(e.target.value);
-    else                   selectedIds.delete(e.target.value);
-    e.target.closest('tr').classList.toggle('vs-row-selected', e.target.checked);
+    else selectedIds.delete(e.target.value);
+    e.target
+      .closest("tr")
+      .classList.toggle("vs-row-selected", e.target.checked);
     // Re-compute current-page ids and update check-all header state.
-    const pageNodes = dt.rows({ page: 'current' }).nodes().toArray();
+    const pageNodes = dt.rows({ page: "current" }).nodes().toArray();
     const pageIds = pageNodes.reduce(function (acc, row) {
-      const cb = row.querySelector('.vs-row-check');
+      const cb = row.querySelector(".vs-row-check");
       if (cb && !cb.disabled) acc.push(cb.value);
       return acc;
     }, []);
-    const n = pageIds.filter(id => selectedIds.has(id)).length;
+    const n = pageIds.filter((id) => selectedIds.has(id)).length;
     getCheckAllBoxes().forEach(function (checkAll) {
-      if (n === 0)                   { checkAll.checked = false; checkAll.indeterminate = false; }
-      else if (n === pageIds.length) { checkAll.checked = true;  checkAll.indeterminate = false; }
-      else                           { checkAll.checked = false; checkAll.indeterminate = true; }
+      if (n === 0) {
+        checkAll.checked = false;
+        checkAll.indeterminate = false;
+      } else if (n === pageIds.length) {
+        checkAll.checked = true;
+        checkAll.indeterminate = false;
+      } else {
+        checkAll.checked = false;
+        checkAll.indeterminate = true;
+      }
     });
     updateActionBar();
     updateSelectAllBanner();
   });
 
   // ── Cross-page Select All (server-side mode) ──────────────────────────────
-  const matchingIdsUrl       = vouchersTable.dataset.matchingIdsUrl || null;
-  const selectAllBanner      = document.getElementById('selectAllBanner');
-  const selectAllBannerText  = document.getElementById('selectAllBannerText');
-  const selectAllMatchingLink= document.getElementById('selectAllMatchingLink');
-  const selectAllClearLink   = document.getElementById('selectAllClearLink');
+  const matchingIdsUrl = vouchersTable.dataset.matchingIdsUrl || null;
+  const selectAllBanner = document.getElementById("selectAllBanner");
+  const selectAllBannerText = document.getElementById("selectAllBannerText");
+  const selectAllMatchingLink = document.getElementById(
+    "selectAllMatchingLink",
+  );
+  const selectAllClearLink = document.getElementById("selectAllClearLink");
 
   function getFilterQueryString() {
     let filterParams = {};
-    try { filterParams = JSON.parse(vouchersTable.dataset.filterParams || '{}'); } catch (e) {}
-    const search = dt && dt.search ? dt.search() : '';
-    const usp    = new URLSearchParams();
-    Object.entries(filterParams).forEach(([k, v]) => { if (v !== '' && v != null) usp.append(k, v); });
-    if (search) usp.append('q', search);
+    try {
+      filterParams = JSON.parse(vouchersTable.dataset.filterParams || "{}");
+    } catch (e) {}
+    const search = dt && dt.search ? dt.search() : "";
+    const usp = new URLSearchParams();
+    Object.entries(filterParams).forEach(([k, v]) => {
+      if (v !== "" && v != null) usp.append(k, v);
+    });
+    if (search) usp.append("q", search);
     return usp.toString();
   }
 
   function updateSelectAllBanner() {
     if (!selectAllBanner || !matchingIdsUrl) return;
 
-    const info       = dt && dt.page ? dt.page.info() : null;
+    const info = dt && dt.page ? dt.page.info() : null;
     const totalMatch = info ? info.recordsDisplay : 0;
-    const selSize    = selectedIds.size;
+    const selSize = selectedIds.size;
 
     if (selSize === 0 || totalMatch === 0) {
-      selectAllBanner.style.display = 'none';
+      selectAllBanner.style.display = "none";
       return;
     }
 
     if (selSize >= totalMatch) {
-      selectAllBanner.style.display       = 'block';
-      selectAllBannerText.textContent     = 'All ' + totalMatch + ' matching row(s) selected.';
-      selectAllMatchingLink.style.display = 'none';
-      selectAllClearLink.style.display    = 'inline';
+      selectAllBanner.style.display = "block";
+      selectAllBannerText.textContent =
+        "All " + totalMatch + " matching row(s) selected.";
+      selectAllMatchingLink.style.display = "none";
+      selectAllClearLink.style.display = "inline";
       return;
     }
 
-    selectAllBanner.style.display       = 'block';
-    selectAllBannerText.textContent     = selSize + ' selected. ' + totalMatch + ' total matching.';
-    selectAllMatchingLink.textContent   = 'Select all ' + totalMatch + ' matching across all pages';
-    selectAllMatchingLink.style.display = 'inline';
-    selectAllClearLink.style.display    = 'inline';
+    selectAllBanner.style.display = "block";
+    selectAllBannerText.textContent =
+      selSize + " selected. " + totalMatch + " total matching.";
+    selectAllMatchingLink.textContent =
+      "Select all " + totalMatch + " matching across all pages";
+    selectAllMatchingLink.style.display = "inline";
+    selectAllClearLink.style.display = "inline";
   }
 
   if (selectAllMatchingLink) {
-    selectAllMatchingLink.addEventListener('click', async function (e) {
+    selectAllMatchingLink.addEventListener("click", async function (e) {
       e.preventDefault();
       if (!matchingIdsUrl) return;
-      const qs  = getFilterQueryString();
-      const url = matchingIdsUrl + (qs ? ('?' + qs) : '');
-      selectAllMatchingLink.textContent = 'Loading...';
+      const qs = getFilterQueryString();
+      const url = matchingIdsUrl + (qs ? "?" + qs : "");
+      selectAllMatchingLink.textContent = "Loading...";
       try {
-        const res  = await fetch(url, ajaxOptions({ method: 'GET' }));
+        const res = await fetch(url, ajaxOptions({ method: "GET" }));
         const data = await res.json();
-        (data.ids || []).forEach(id => selectedIds.add(String(id)));
+        (data.ids || []).forEach((id) => selectedIds.add(String(id)));
         syncPageCheckboxes();
         updateSelectAllBanner();
       } catch (err) {
         console.error(err);
-        showAlert('Failed to fetch all matching IDs.', 'error');
-        selectAllMatchingLink.textContent = 'Select all matching';
+        showAlert("Failed to fetch all matching IDs.", "error");
+        selectAllMatchingLink.textContent = "Select all matching";
       }
     });
   }
   if (selectAllClearLink) {
-    selectAllClearLink.addEventListener('click', function (e) {
+    selectAllClearLink.addEventListener("click", function (e) {
       e.preventDefault();
       selectedIds.clear();
       syncPageCheckboxes();
@@ -291,48 +327,60 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
   if (dt) {
-    dt.on('draw.dt', updateSelectAllBanner);
+    dt.on("draw.dt", updateSelectAllBanner);
   }
 
   // ── Generate PDF ──────────────────────────────────────────────────────────────
   if (btnOpenExport && exportModal) {
-    btnOpenExport.addEventListener('click', function () {
+    btnOpenExport.addEventListener("click", function () {
       if (!selectedIds.size) return;
       updateExportLinks();
-      exportModal.style.display = 'flex';
+      exportModal.style.display = "flex";
     });
   }
-  exportModalClose && exportModalClose.addEventListener('click', function () {
-    exportModal.style.display = 'none';
-  });
-  exportModal && exportModal.addEventListener('click', function (e) {
-    if (e.target === exportModal) exportModal.style.display = 'none';
-  });
+  exportModalClose &&
+    exportModalClose.addEventListener("click", function () {
+      exportModal.style.display = "none";
+    });
+  exportModal &&
+    exportModal.addEventListener("click", function (e) {
+      if (e.target === exportModal) exportModal.style.display = "none";
+    });
 
-  const btnGeneratePdf = document.getElementById('btnGeneratePdf');
-  const pdfForm        = document.getElementById('pdfForm');
+  const btnGeneratePdf = document.getElementById("btnGeneratePdf");
+  const pdfForm = document.getElementById("pdfForm");
 
   const MAX_BATCH = 50000;
 
   if (btnGeneratePdf && pdfForm) {
-    btnGeneratePdf.addEventListener('click', async function () {
+    btnGeneratePdf.addEventListener("click", async function () {
       if (!selectedIds.size) return;
 
       if (selectedIds.size > MAX_BATCH) {
-        showAlert('You can only generate PDFs for up to ' + MAX_BATCH + ' students at a time. You have ' + selectedIds.size + ' selected.', 'warning');
+        showAlert(
+          "You can only generate PDFs for up to " +
+            MAX_BATCH +
+            " students at a time. You have " +
+            selectedIds.size +
+            " selected.",
+          "warning",
+        );
         return;
       }
 
       btnGeneratePdf.disabled = true;
-      const toast = showPdfToast('Generating PDF...');
+      const toast = showPdfToast("Generating PDF...");
 
-      const csrf     = getCsrfToken();
+      const csrf = getCsrfToken();
       const formData = new FormData();
       formData.append(csrf.name, csrf.token);
-      formData.append('voucher_ids', Array.from(selectedIds).join(','));
+      formData.append("voucher_ids", Array.from(selectedIds).join(","));
 
       try {
-        const res  = await fetch(pdfForm.action, ajaxOptions({ method: 'POST', body: formData }));
+        const res = await fetch(
+          pdfForm.action,
+          ajaxOptions({ method: "POST", body: formData }),
+        );
         const data = await res.json();
 
         refreshCsrfToken();
@@ -340,30 +388,50 @@ document.addEventListener('DOMContentLoaded', function () {
 
         if (!data.success) {
           toast.remove();
-          showAlert(data.message || 'PDF generation failed.', 'error');
+          showAlert(data.message || "PDF generation failed.", "error");
           return;
         }
 
         const idsForUpdate = Array.from(selectedIds);
-        const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+        const months = [
+          "Jan",
+          "Feb",
+          "Mar",
+          "Apr",
+          "May",
+          "Jun",
+          "Jul",
+          "Aug",
+          "Sep",
+          "Oct",
+          "Nov",
+          "Dec",
+        ];
         const now = new Date();
-        const todayFormatted = months[now.getMonth()] + ' ' + String(now.getDate()).padStart(2, '0') + ', ' + now.getFullYear();
+        const todayFormatted =
+          months[now.getMonth()] +
+          " " +
+          String(now.getDate()).padStart(2, "0") +
+          ", " +
+          now.getFullYear();
         idsForUpdate.forEach(function (id) {
-          const cb  = document.querySelector('.vs-row-check[value="' + id + '"]');
-          const row = cb ? cb.closest('tr') : null;
+          const cb = document.querySelector(
+            '.vs-row-check[value="' + id + '"]',
+          );
+          const row = cb ? cb.closest("tr") : null;
           if (row) {
-            const voucherCell = row.querySelector('.js-voucher-no');
+            const voucherCell = row.querySelector(".js-voucher-no");
             if (voucherCell && data.vouchers && data.vouchers[id]) {
               voucherCell.textContent = data.vouchers[id];
             }
 
-            const countCell = row.querySelector('.js-generate-count');
+            const countCell = row.querySelector(".js-generate-count");
             if (countCell) {
               const count = parseInt(countCell.textContent, 10) || 0;
               countCell.textContent = count + 1;
             }
 
-            const lastGeneratedCell = row.querySelector('.js-last-generated');
+            const lastGeneratedCell = row.querySelector(".js-last-generated");
             if (lastGeneratedCell) {
               lastGeneratedCell.textContent = todayFormatted;
             }
@@ -375,31 +443,30 @@ document.addEventListener('DOMContentLoaded', function () {
 
         if (data.queued && data.status_url) {
           savePendingPdfJob({
-            jobId:     data.job_id,
+            jobId: data.job_id,
             statusUrl: data.status_url,
             startedAt: Date.now(),
           });
           saveLastJsonPdfJob({
-            jobId:     data.job_id,
+            jobId: data.job_id,
             statusUrl: data.status_url,
             startedAt: Date.now(),
           });
-          toast.update('Generating PDF (job #' + data.job_id + ')...');
+          toast.update("Generating PDF (job #" + data.job_id + ")...");
           pollPdfJob(data.job_id, data.status_url, toast);
           return;
         }
 
         if (data.download_url) {
-          toast.update('PDF ready! Downloading...', true);
+          toast.update("PDF ready! Downloading...", true);
           window.location.href = data.download_url;
         } else {
           toast.remove();
-          showAlert('PDF generation response was malformed.', 'error');
+          showAlert("PDF generation response was malformed.", "error");
         }
-
       } catch (err) {
         toast.remove();
-        showAlert('Failed to generate PDF.', 'error');
+        showAlert("Failed to generate PDF.", "error");
         console.error(err);
         btnGeneratePdf.disabled = false;
       }
@@ -407,99 +474,119 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
   // ── Archive modal ─────────────────────────────────────────────────────────────
-  const btnArchive        = document.getElementById('btnArchive');
-  const archiveModal      = document.getElementById('archiveModal');
-  const archiveModalClose = document.getElementById('archiveModalClose');
-  const archiveModalCancel= document.getElementById('archiveModalCancel');
-  const archiveConfirm    = document.getElementById('archiveConfirm');
-  const archiveCount      = document.getElementById('archiveCount');
-  const archiveReason     = document.getElementById('archiveReason');
-  const archiveBtnText    = document.getElementById('archiveBtnText');
-  const archiveBtnSpinner = document.getElementById('archiveBtnSpinner');
+  const btnArchive = document.getElementById("btnArchive");
+  const archiveModal = document.getElementById("archiveModal");
+  const archiveModalClose = document.getElementById("archiveModalClose");
+  const archiveModalCancel = document.getElementById("archiveModalCancel");
+  const archiveConfirm = document.getElementById("archiveConfirm");
+  const archiveCount = document.getElementById("archiveCount");
+  const archiveReason = document.getElementById("archiveReason");
+  const archiveBtnText = document.getElementById("archiveBtnText");
+  const archiveBtnSpinner = document.getElementById("archiveBtnSpinner");
 
-  const archiveForm = document.getElementById('archiveForm');
-  const archiveUrl  = archiveForm
+  const archiveForm = document.getElementById("archiveForm");
+  const archiveUrl = archiveForm
     ? archiveForm.action
-    : (pdfForm ? pdfForm.action.replace('/generate-pdf', '/archive') : '');
+    : pdfForm
+      ? pdfForm.action.replace("/generate-pdf", "/archive")
+      : "";
 
   let pendingArchiveSingleId = null;
 
   const closeArchiveModal = () => {
-    if (archiveModal) archiveModal.style.display = 'none';
+    if (archiveModal) archiveModal.style.display = "none";
     pendingArchiveSingleId = null;
   };
 
   function openArchiveModal(ids) {
-    if (archiveCount)  archiveCount.textContent = ids.length;
-    if (archiveReason) archiveReason.value = '';
-    if (archiveModal)  archiveModal.style.display = 'flex';
+    if (archiveCount) archiveCount.textContent = ids.length;
+    if (archiveReason) archiveReason.value = "";
+    if (archiveModal) archiveModal.style.display = "flex";
   }
 
-  btnArchive && btnArchive.addEventListener('click', () => {
-    if (!selectedIds.size) return;
-    pendingArchiveSingleId = null;
-    openArchiveModal(Array.from(selectedIds));
-  });
+  btnArchive &&
+    btnArchive.addEventListener("click", () => {
+      if (!selectedIds.size) return;
+      pendingArchiveSingleId = null;
+      openArchiveModal(Array.from(selectedIds));
+    });
 
-  document.addEventListener('click', function (e) {
-    var btn = e.target.closest('.js-archive-single');
+  document.addEventListener("click", function (e) {
+    var btn = e.target.closest(".js-archive-single");
     if (!btn) return;
-    pendingArchiveSingleId = btn.getAttribute('data-id');
+    pendingArchiveSingleId = btn.getAttribute("data-id");
     openArchiveModal([pendingArchiveSingleId]);
   });
 
-  archiveModalClose  && archiveModalClose.addEventListener('click',  closeArchiveModal);
-  archiveModalCancel && archiveModalCancel.addEventListener('click', closeArchiveModal);
-  archiveModal       && archiveModal.addEventListener('click', e => { if (e.target === archiveModal) closeArchiveModal(); });
+  archiveModalClose &&
+    archiveModalClose.addEventListener("click", closeArchiveModal);
+  archiveModalCancel &&
+    archiveModalCancel.addEventListener("click", closeArchiveModal);
+  archiveModal &&
+    archiveModal.addEventListener("click", (e) => {
+      if (e.target === archiveModal) closeArchiveModal();
+    });
 
   if (archiveConfirm) {
-    archiveConfirm.addEventListener('click', async function () {
+    archiveConfirm.addEventListener("click", async function () {
       const ids = pendingArchiveSingleId
         ? [pendingArchiveSingleId]
         : Array.from(selectedIds);
       if (!ids.length) return;
 
       if (ids.length > MAX_BATCH) {
-        showAlert('You can only archive up to ' + MAX_BATCH + ' students at a time. You have ' + ids.length + ' selected.', 'warning');
+        showAlert(
+          "You can only archive up to " +
+            MAX_BATCH +
+            " students at a time. You have " +
+            ids.length +
+            " selected.",
+          "warning",
+        );
         return;
       }
 
-      archiveBtnText    && (archiveBtnText.style.display    = 'none');
-      archiveBtnSpinner && (archiveBtnSpinner.style.display = 'inline-block');
+      archiveBtnText && (archiveBtnText.style.display = "none");
+      archiveBtnSpinner && (archiveBtnSpinner.style.display = "inline-block");
       archiveConfirm.disabled = true;
 
-      const csrf     = getCsrfToken();
+      const csrf = getCsrfToken();
       const formData = new FormData();
       formData.append(csrf.name, csrf.token);
-      formData.append('archive_reason', archiveReason ? archiveReason.value : '');
-      formData.append('voucher_ids', ids.join(','));
+      formData.append(
+        "archive_reason",
+        archiveReason ? archiveReason.value : "",
+      );
+      formData.append("voucher_ids", ids.join(","));
 
       try {
-        const res  = await fetch(archiveUrl, ajaxOptions({ method: 'POST', body: formData }));
+        const res = await fetch(
+          archiveUrl,
+          ajaxOptions({ method: "POST", body: formData }),
+        );
         const data = await res.json();
         closeArchiveModal();
 
         if (data.success) {
           ids.forEach(function (id) {
-            var row = document.getElementById('row-' + id);
+            var row = document.getElementById("row-" + id);
             if (row) dt.row(row).remove();
             selectedIds.delete(id);
           });
           dt.draw(false);
           syncPageCheckboxes();
-          showAlert(data.message || 'Archived successfully.', 'success');
+          showAlert(data.message || "Archived successfully.", "success");
         } else {
-          showAlert(data.message || 'Archive failed.', 'error');
+          showAlert(data.message || "Archive failed.", "error");
         }
       } catch (err) {
-        showAlert('An error occurred. Please try again.', 'error');
+        showAlert("An error occurred. Please try again.", "error");
         console.error(err);
       } finally {
-        archiveBtnText    && (archiveBtnText.style.display    = 'inline');
-        archiveBtnSpinner && (archiveBtnSpinner.style.display = 'none');
+        archiveBtnText && (archiveBtnText.style.display = "inline");
+        archiveBtnSpinner && (archiveBtnSpinner.style.display = "none");
         archiveConfirm.disabled = false;
       }
     });
   }
-
 });
