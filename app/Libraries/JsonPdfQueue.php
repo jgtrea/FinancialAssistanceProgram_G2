@@ -259,7 +259,7 @@ class JsonPdfQueue
             }
 
             $queue['next_job_id'] = $nextId;
-            return [[$queue, $processing, $finished], $parentId];
+            return [$queue, $parentId];
         });
     }
 
