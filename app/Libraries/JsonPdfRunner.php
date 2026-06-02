@@ -31,12 +31,48 @@ class JsonPdfRunner
         return JsonPdfQueue::mutateAll(function (array $queue, array $processing, array $finished) {
             $jobs = $queue['jobs'] ?? [];
 
-            // Chunks first (parent_job_id != null), sorted by job_id.
+            // Interleaved (fair) scheduling across parents. A pure FIFO pick
+            // would drain all of a 100-chunk job before touching a 1-chunk job
+            // enqueued right after, so the small job waits behind the whole
+            // batch. Instead we pick the pending chunk whose parent has the
+            // FEWEST chunks already in-flight (processing) or finished — i.e.
+            // the parent that's made the least progress so far. This advances
+            // every active parent roughly one chunk at a time. Ties break on
+            // job_id (stable FIFO), so within a parent chunks still go in order
+            // and equal-progress parents keep their enqueue order.
+
+            // served[parentId] = chunks already claimed (processing) or done
+            // (finished). Pending chunks still in queue.json are NOT counted.
+            $served = [];
+            $bump = static function (array $bucket) use (&$served) {
+                foreach (($bucket['jobs'] ?? []) as $job) {
+                    $pid = (int) ($job['parent_job_id'] ?? 0);
+                    if ($pid > 0) {
+                        $served[$pid] = ($served[$pid] ?? 0) + 1;
+                    }
+                }
+            };
+            $bump($processing);
+            $bump($finished);
+
             $candidateIdx = null;
+            $bestServed   = null;
+            $bestJobId    = null;
             foreach ($jobs as $i => $job) {
-                if (!empty($job['parent_job_id']) && ($job['status'] ?? 'pending') === 'pending') {
+                if (empty($job['parent_job_id']) || ($job['status'] ?? 'pending') !== 'pending') {
+                    continue;
+                }
+                $pid     = (int) $job['parent_job_id'];
+                $sCount  = $served[$pid] ?? 0;
+                $jid     = (int) $job['job_id'];
+
+                // Prefer the least-served parent; on a tie, the lower job_id.
+                if ($bestServed === null
+                    || $sCount < $bestServed
+                    || ($sCount === $bestServed && $jid < $bestJobId)) {
                     $candidateIdx = $i;
-                    break;
+                    $bestServed   = $sCount;
+                    $bestJobId    = $jid;
                 }
             }
             if ($candidateIdx === null) {

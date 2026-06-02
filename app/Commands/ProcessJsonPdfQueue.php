@@ -142,9 +142,11 @@ class ProcessJsonPdfQueue extends BaseCommand
 
     /**
      * How long a finished record + its on-disk file linger before the worker
-     * sweeps them out. Generous enough to let the browser download once.
+     * sweeps them out. Downloads no longer delete on first grab (so the toast's
+     * manual Download link keeps working), so this TTL is the sole cleanup path.
+     * 10 min comfortably outlives the toast's 5-min finished-linger window.
      */
-    private const FINISHED_TTL_SECONDS = 86400; // 24 hours
+    private const FINISHED_TTL_SECONDS = 600; // 10 minutes
 
     /**
      * Drop finished-job records older than $ttl seconds. Also unlinks the
