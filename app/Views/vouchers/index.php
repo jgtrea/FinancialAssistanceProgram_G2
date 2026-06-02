@@ -229,37 +229,37 @@
       <div class="vs-form-grid vs-form-grid-4">
         <div class="vs-span-2">
           <label class="vs-label" for="filterSchoolYear">School Year</label>
-          <input id="filterSchoolYear" type="text" list="dl-filter-school-year" class="vs-input" placeholder="All" value="<?= esc($f('school_year'), 'attr') ?>">
-          <datalist id="dl-filter-school-year">
+          <select id="filterSchoolYear" class="vs-input js-filter-select" data-placeholder="All">
+            <option></option>
             <?php foreach (($filterOptions['school_years'] ?? []) as $sy): ?>
-              <option value="<?= esc($sy) ?>">
+              <option value="<?= esc($sy) ?>" <?= $f('school_year') === $sy ? 'selected' : '' ?>><?= esc($sy) ?></option>
             <?php endforeach ?>
-          </datalist>
+          </select>
         </div>
         <div class="vs-span-2">
           <label class="vs-label" for="filterGender">Sex</label>
-          <input list="filterGender-list" id="filterGender" class="vs-input" placeholder="All" value="<?= esc($f('gender'), 'attr') ?>">
-          <datalist id="filterGender-list">
-            <option value="MALE">
-            <option value="FEMALE">
-          </datalist>
+          <select id="filterGender" class="vs-input js-filter-select" data-placeholder="All" data-no-search="1">
+            <option></option>
+            <option value="MALE"   <?= $f('gender') === 'MALE'   ? 'selected' : '' ?>>MALE</option>
+            <option value="FEMALE" <?= $f('gender') === 'FEMALE' ? 'selected' : '' ?>>FEMALE</option>
+          </select>
         </div>
         <div class="vs-span-2">
           <label class="vs-label" for="filterRemarks">Remarks</label>
-          <input list="filterRemarks-list" id="filterRemarks" class="vs-input" placeholder="All" value="<?= esc($f('remarks'), 'attr') ?>">
-          <datalist id="filterRemarks-list">
-            <option value="PASSED">
-            <option value="FOR REVIEW">
-            <option value="FAILED">
-          </datalist>
+          <select id="filterRemarks" class="vs-input js-filter-select" data-placeholder="All" data-no-search="1">
+            <option></option>
+            <option value="PASSED"     <?= $f('remarks') === 'PASSED'     ? 'selected' : '' ?>>PASSED</option>
+            <option value="FOR REVIEW" <?= $f('remarks') === 'FOR REVIEW' ? 'selected' : '' ?>>FOR REVIEW</option>
+            <option value="FAILED"     <?= $f('remarks') === 'FAILED'     ? 'selected' : '' ?>>FAILED</option>
+          </select>
         </div>
         <div class="vs-span-2">
           <label class="vs-label" for="filterVoucherStatus">Voucher Status</label>
-          <input list="filterVoucherStatus-list" id="filterVoucherStatus" class="vs-input" placeholder="All" value="<?= esc($f('voucher_status'), 'attr') ?>">
-          <datalist id="filterVoucherStatus-list">
-            <option value="generated">
-            <option value="not_generated">
-          </datalist>
+          <select id="filterVoucherStatus" class="vs-input js-filter-select" data-placeholder="All" data-no-search="1">
+            <option></option>
+            <option value="generated"     <?= $f('voucher_status') === 'generated'     ? 'selected' : '' ?>>generated</option>
+            <option value="not_generated" <?= $f('voucher_status') === 'not_generated' ? 'selected' : '' ?>>not_generated</option>
+          </select>
         </div>
         <div class="vs-span-2">
           <label class="vs-label" for="filterDateFrom">Voucher Date From</label>
@@ -271,21 +271,27 @@
         </div>
         <div class="vs-span-2">
           <label class="vs-label" for="filterJuniorHs">Junior High School</label>
-          <input list="filterJuniorHs-list" id="filterJuniorHs" class="vs-input" placeholder="All" value="<?= esc($f('junior_hs'), 'attr') ?>">
-          <datalist id="filterJuniorHs-list">
+          <select id="filterJuniorHs" class="vs-input js-filter-select" data-placeholder="All">
+            <option></option>
             <?php foreach (($filterOptions['junior_high_schools'] ?? []) as $schoolName): ?>
-              <option value="<?= esc($schoolName) ?>">
+              <option value="<?= esc($schoolName) ?>" <?= $f('junior_hs') === $schoolName ? 'selected' : '' ?>><?= esc($schoolName) ?></option>
             <?php endforeach ?>
-          </datalist>
+            <?php if ($f('junior_hs') !== '' && !in_array($f('junior_hs'), $filterOptions['junior_high_schools'] ?? [], true)): ?>
+              <option value="<?= esc($f('junior_hs')) ?>" selected><?= esc($f('junior_hs')) ?></option>
+            <?php endif ?>
+          </select>
         </div>
         <div class="vs-span-2">
           <label class="vs-label" for="filterPreferredHs">Preferred Senior HS</label>
-          <input list="filterPreferredHs-list" id="filterPreferredHs" class="vs-input" placeholder="All" value="<?= esc($f('preferred_hs'), 'attr') ?>">
-          <datalist id="filterPreferredHs-list">
+          <select id="filterPreferredHs" class="vs-input js-filter-select" data-placeholder="All">
+            <option></option>
             <?php foreach (($filterOptions['senior_high_schools'] ?? []) as $schoolName): ?>
-              <option value="<?= esc($schoolName) ?>">
+              <option value="<?= esc($schoolName) ?>" <?= $f('preferred_hs') === $schoolName ? 'selected' : '' ?>><?= esc($schoolName) ?></option>
             <?php endforeach ?>
-          </datalist>
+            <?php if ($f('preferred_hs') !== '' && !in_array($f('preferred_hs'), $filterOptions['senior_high_schools'] ?? [], true)): ?>
+              <option value="<?= esc($f('preferred_hs')) ?>" selected><?= esc($f('preferred_hs')) ?></option>
+            <?php endif ?>
+          </select>
         </div>
         <div class="vs-span-2">
           <label class="vs-label" for="filterGwaMin">GWA Min</label>
@@ -297,11 +303,11 @@
         </div>
         <div class="vs-span-2">
           <label class="vs-label" for="filterEligibility">Eligibility Status</label>
-          <input list="filterEligibility-list" id="filterEligibility" class="vs-input" placeholder="All" value="<?= esc($f('eligibility'), 'attr') ?>">
-          <datalist id="filterEligibility-list">
-            <option value="eligible">
-            <option value="not_eligible">
-          </datalist>
+          <select id="filterEligibility" class="vs-input js-filter-select" data-placeholder="All" data-no-search="1">
+            <option></option>
+            <option value="eligible"     <?= $f('eligibility') === 'eligible'     ? 'selected' : '' ?>>eligible</option>
+            <option value="not_eligible" <?= $f('eligibility') === 'not_eligible' ? 'selected' : '' ?>>not_eligible</option>
+          </select>
         </div>
       </div>
     </div>
@@ -503,33 +509,46 @@ window.VM_CONFIG = {
   var filterApply       = document.getElementById('filterApply');
   var filterClear       = document.getElementById('filterClear');
 
+  function rebuildSelectKeepingSelection(select, names) {
+    if (!select) return;
+    var current = select.value;
+    while (select.firstChild) select.removeChild(select.firstChild);
+    select.appendChild(document.createElement('option')); // placeholder
+    var seen = {};
+    names.forEach(function (name) {
+      if (!name || seen[name]) return;
+      seen[name] = true;
+      var opt = document.createElement('option');
+      opt.value = name;
+      opt.textContent = name;
+      if (current === name) opt.selected = true;
+      select.appendChild(opt);
+    });
+    if (current && !seen[current]) {
+      var opt = document.createElement('option');
+      opt.value = current;
+      opt.textContent = current;
+      opt.selected = true;
+      select.appendChild(opt);
+    }
+    if (window.jQuery) $(select).trigger('change.select2');
+  }
+
   function refreshFilterSchoolOptions() {
     fetch(schoolOptionsUrl, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
     .then(function (r) { return r.json(); })
     .then(function (data) {
-      var jhsList = document.getElementById('filterJuniorHs-list');
-      var shsList = document.getElementById('filterPreferredHs-list');
-      if (jhsList && Array.isArray(data.jhs)) {
-        jhsList.innerHTML = '';
-        data.jhs.forEach(function (name) {
-          var opt = document.createElement('option');
-          opt.value = name;
-          jhsList.appendChild(opt);
-        });
-      }
-      if (shsList && Array.isArray(data.shs)) {
-        shsList.innerHTML = '';
-        data.shs.forEach(function (name) {
-          var opt = document.createElement('option');
-          opt.value = name;
-          shsList.appendChild(opt);
-        });
-      }
+      rebuildSelectKeepingSelection(document.getElementById('filterJuniorHs'),    Array.isArray(data.jhs) ? data.jhs : []);
+      rebuildSelectKeepingSelection(document.getElementById('filterPreferredHs'), Array.isArray(data.shs) ? data.shs : []);
     })
     .catch(function () {});
   }
 
-  function openFilter()  { if (filterModal) filterModal.style.display = 'flex'; refreshFilterSchoolOptions(); }
+  function openFilter()  {
+    if (filterModal) filterModal.style.display = 'flex';
+    refreshFilterSchoolOptions();
+    if (typeof window.initVsSelect2 === 'function') window.initVsSelect2(filterModal);
+  }
   function closeFilter() { if (filterModal) filterModal.style.display = 'none'; }
 
   filterBtn         && filterBtn.addEventListener('click', openFilter);
@@ -557,7 +576,12 @@ window.VM_CONFIG = {
 
   filterClear && filterClear.addEventListener('click', function () {
     Object.keys(fields).forEach(function (k) {
-      if (fields[k]) fields[k].value = '';
+      var el = fields[k];
+      if (!el) return;
+      el.value = '';
+      if (window.jQuery && el.classList && el.classList.contains('js-filter-select')) {
+        $(el).val('').trigger('change');
+      }
     });
     if (filterForm) {
       Object.keys(filterFieldToParam).forEach(function (k) {

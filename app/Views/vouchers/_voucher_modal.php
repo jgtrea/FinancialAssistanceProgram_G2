@@ -43,23 +43,23 @@
 
           <div>
             <label class="vs-label" for="vmSuffix">Suffix</label>
-            <input id="vmSuffix" name="suffix" type="text" list="dl-suffix" class="vs-input" placeholder="e.g. JR.">
-            <datalist id="dl-suffix">
-              <option value="JR.">
-              <option value="SR.">
-              <option value="II">
-              <option value="III">
-              <option value="IV">
-            </datalist>
+            <select id="vmSuffix" name="suffix" class="vs-input js-school-select" data-placeholder="e.g. JR." data-no-search="1">
+              <option></option>
+              <option value="JR.">JR.</option>
+              <option value="SR.">SR.</option>
+              <option value="II">II</option>
+              <option value="III">III</option>
+              <option value="IV">IV</option>
+            </select>
           </div>
 
           <div>
             <label class="vs-label" for="vmGender">Sex</label>
-            <input id="vmGender" name="gender" type="text" list="dl-gender" class="vs-input" placeholder="MALE / FEMALE">
-            <datalist id="dl-gender">
-              <option value="MALE">
-              <option value="FEMALE">
-            </datalist>
+            <select id="vmGender" name="gender" class="vs-input js-school-select" data-placeholder="MALE / FEMALE" data-no-search="1">
+              <option></option>
+              <option value="MALE">MALE</option>
+              <option value="FEMALE">FEMALE</option>
+            </select>
           </div>
 
           <div>
@@ -79,52 +79,52 @@
 
           <div class="vs-span-2">
             <label class="vs-label required" for="vmJuniorHs">Junior High School</label>
-            <input id="vmJuniorHs" name="junior_high_school" type="text" list="dl-jhs" class="vs-input" placeholder="Type or select a school" required>
-            <datalist id="dl-jhs">
+            <select id="vmJuniorHs" name="junior_high_school" class="vs-input js-school-select" data-placeholder="Type or select a school" required>
+              <option></option>
               <?php foreach ($juniorHighSchools as $school): ?>
-                <option value="<?= esc($school['school_name'] ?? '') ?>">
+                <option value="<?= esc($school['school_name'] ?? '') ?>"><?= esc($school['school_name'] ?? '') ?></option>
               <?php endforeach ?>
-            </datalist>
+            </select>
           </div>
 
           <div class="vs-span-2">
             <label class="vs-label required" for="vmPreferredHs">Preferred Senior High School</label>
-            <input id="vmPreferredHs" name="preferred_senior_high_school" type="text" list="dl-shs" class="vs-input" placeholder="Type or select a school" required>
-            <datalist id="dl-shs">
+            <select id="vmPreferredHs" name="preferred_senior_high_school" class="vs-input js-school-select" data-placeholder="Type or select a school" required>
+              <option></option>
               <?php foreach ($seniorHighSchools as $school): ?>
-                <option value="<?= esc($school['school_name'] ?? '') ?>">
+                <option value="<?= esc($school['school_name'] ?? '') ?>"><?= esc($school['school_name'] ?? '') ?></option>
               <?php endforeach ?>
-            </datalist>
+            </select>
           </div>
 
           <div>
             <label class="vs-label" for="vmRemarks">Remarks</label>
-            <input id="vmRemarks" name="remarks_status" type="text" list="dl-remarks" class="vs-input" placeholder="PASSED / FOR REVIEW / FAILED">
-            <datalist id="dl-remarks">
-              <option value="PASSED">
-              <option value="FOR REVIEW">
-              <option value="FAILED">
-            </datalist>
+            <select id="vmRemarks" name="remarks_status" class="vs-input js-school-select" data-placeholder="PASSED / FOR REVIEW / FAILED" data-no-search="1">
+              <option></option>
+              <option value="PASSED">PASSED</option>
+              <option value="FOR REVIEW">FOR REVIEW</option>
+              <option value="FAILED">FAILED</option>
+            </select>
           </div>
 
           <!-- Add/Edit mode only: School Year -->
           <div id="vmSchoolYearWrap">
             <label class="vs-label required" for="vmSchoolYear">School Year</label>
-            <input id="vmSchoolYear" name="school_year" type="text" list="dl-school-year" class="vs-input" placeholder="e.g. 2025-2026" required>
-            <datalist id="dl-school-year">
+            <select id="vmSchoolYear" name="school_year" class="vs-input js-school-select" data-placeholder="e.g. 2025-2026" required>
+              <option></option>
               <?php foreach (($filterOptions['school_years'] ?? []) as $sy): ?>
-                <option value="<?= esc($sy) ?>">
+                <option value="<?= esc($sy) ?>"><?= esc($sy) ?></option>
               <?php endforeach ?>
-            </datalist>
+            </select>
           </div>
 
           <div>
             <label class="vs-label" for="vmEligibility">Eligibility</label>
-            <input id="vmEligibility" name="eligibility_status" type="text" list="dl-eligibility" class="vs-input" placeholder="eligible / not_eligible">
-            <datalist id="dl-eligibility">
-              <option value="eligible">
-              <option value="not_eligible">
-            </datalist>
+            <select id="vmEligibility" name="eligibility_status" class="vs-input js-school-select" data-placeholder="eligible / not_eligible" data-no-search="1">
+              <option></option>
+              <option value="eligible">eligible</option>
+              <option value="not_eligible">not_eligible</option>
+            </select>
           </div>
         </div>
       </div>

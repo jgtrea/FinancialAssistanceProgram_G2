@@ -110,11 +110,28 @@
   }
   function vmClearAlert() { voucherModalAlert.innerHTML = ''; }
 
+  function vmSetFieldValue(el, value) {
+    if (!el) return;
+    var v = (value === null || value === undefined) ? '' : value;
+    if (el.tagName === 'SELECT' && el.classList.contains('js-school-select')) {
+      // Select2 needs the option to exist before setting; add it on the fly.
+      if (v && !el.querySelector('option[value="' + (window.CSS && CSS.escape ? CSS.escape(v) : v) + '"]')) {
+        var opt = document.createElement('option');
+        opt.value = v;
+        opt.textContent = v;
+        el.appendChild(opt);
+      }
+      el.value = v;
+      if (window.jQuery) $(el).trigger('change.select2');
+    } else {
+      el.value = v;
+    }
+  }
+
   function vmClearFields() {
     document.getElementById('vmStudentId').value = '';
     vmFieldIds.forEach(function (id) {
-      var el = document.getElementById(id);
-      if (el) el.value = '';
+      vmSetFieldValue(document.getElementById(id), '');
     });
     document.getElementById('vmEligibility').value = 'eligible';
     if (vmLastGeneratedByEl) vmLastGeneratedByEl.textContent = '-';
@@ -128,15 +145,22 @@
     vmFieldIds.forEach(function (id) {
       var el = document.getElementById(id);
       if (!el) return;
-      var val = student[vmFieldToName[id]];
-      el.value = (val === null || val === undefined) ? '' : val;
+      vmSetFieldValue(el, student[vmFieldToName[id]]);
     });
   }
 
   function vmSetReadOnly(readOnly) {
     vmFieldIds.forEach(function (id) {
       var el = document.getElementById(id);
-      if (el) el.readOnly = readOnly;
+      if (!el) return;
+      if (el.tagName === 'SELECT' && el.classList.contains('js-school-select')) {
+        // <select> has no readOnly — disable instead. Form still submits the
+        // value because Select2 keeps the option selected when re-enabled.
+        el.disabled = readOnly;
+        if (window.jQuery) $(el).prop('disabled', readOnly).trigger('change.select2');
+      } else {
+        el.readOnly = readOnly;
+      }
     });
     voucherSubmitBtn.style.display = readOnly ? 'none' : 'inline-flex';
   }
@@ -149,34 +173,75 @@
     if (vmLastGeneratedByWrap) vmLastGeneratedByWrap.style.display = isView ? ''     : 'none';
   }
 
+  function rebuildSelectOptions(select, names, selected) {
+    if (!select) return;
+    while (select.firstChild) select.removeChild(select.firstChild);
+    // Blank option so placeholder shows when nothing selected.
+    select.appendChild(document.createElement('option'));
+    var seen = {};
+    names.forEach(function (name) {
+      if (!name || seen[name]) return;
+      seen[name] = true;
+      var opt = document.createElement('option');
+      opt.value = name;
+      opt.textContent = name;
+      if (selected && name === selected) opt.selected = true;
+      select.appendChild(opt);
+    });
+    // If a selected value isn't in the list, add it as a custom option so
+    // Select2 can display it (and so submit keeps the value).
+    if (selected && !seen[selected]) {
+      var opt = document.createElement('option');
+      opt.value = selected;
+      opt.textContent = selected;
+      opt.selected = true;
+      select.appendChild(opt);
+    }
+  }
+
+  function initOrRefreshSelect2(select) {
+    if (!select || typeof $ === 'undefined' || !$.fn.select2) return;
+    var $sel = $(select);
+    if ($sel.hasClass('select2-hidden-accessible')) {
+      $sel.trigger('change.select2');
+      return;
+    }
+    $sel.select2({
+      tags: true,                  // allow user to type a NEW school
+      placeholder: select.dataset.placeholder || 'Type or select',
+      allowClear: true,
+      width: '100%',
+      dropdownParent: $('#voucherModal'),
+      minimumResultsForSearch: select.dataset.noSearch === '1' ? Infinity : 0,
+    });
+  }
+
   function loadSchoolOptions(selectedJhs, selectedShs) {
+    var jhsSel = document.getElementById('vmJuniorHs');
+    var shsSel = document.getElementById('vmPreferredHs');
+
     fetch(schoolOptionsUrl, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
       .then(function (r) { return r.json(); })
       .then(function (data) {
-        var jhsDl    = document.getElementById('dl-jhs');
-        var shsDl    = document.getElementById('dl-shs');
-        var jhsInput = document.getElementById('vmJuniorHs');
-        var shsInput = document.getElementById('vmPreferredHs');
-        if (jhsDl && Array.isArray(data.jhs)) {
-          jhsDl.innerHTML = '';
-          data.jhs.forEach(function (name) {
-            var opt = document.createElement('option');
-            opt.value = name;
-            jhsDl.appendChild(opt);
-          });
-        }
-        if (shsDl && Array.isArray(data.shs)) {
-          shsDl.innerHTML = '';
-          data.shs.forEach(function (name) {
-            var opt = document.createElement('option');
-            opt.value = name;
-            shsDl.appendChild(opt);
-          });
-        }
-        if (jhsInput) jhsInput.value = selectedJhs || '';
-        if (shsInput) shsInput.value = selectedShs || '';
+        rebuildSelectOptions(jhsSel, Array.isArray(data.jhs) ? data.jhs : [], selectedJhs || '');
+        rebuildSelectOptions(shsSel, Array.isArray(data.shs) ? data.shs : [], selectedShs || '');
+        initOrRefreshSelect2(jhsSel);
+        initOrRefreshSelect2(shsSel);
       })
-      .catch(function () {});
+      .catch(function () {
+        // Even if the AJAX fails, keep Select2 active on whatever the server
+        // pre-rendered so the user can still type a custom value.
+        initOrRefreshSelect2(jhsSel);
+        initOrRefreshSelect2(shsSel);
+      });
+  }
+
+  // Init Select2 for the non-school dropdowns inside the modal (Suffix, Sex,
+  // Remarks, School Year, Eligibility). Idempotent — safe to call every open.
+  function initModalExtraSelects() {
+    if (typeof window.initVsSelect2 === 'function') {
+      window.initVsSelect2(voucherModal);
+    }
   }
 
   function vmOpen(mode, studentId) {
@@ -190,6 +255,7 @@
       vmSetReadOnly(false);
       document.getElementById('vmVoucherDate').value = new Date().toISOString().slice(0, 10);
       loadSchoolOptions('', '');
+      initModalExtraSelects();
       voucherModal.style.display = 'flex';
       return;
     }
@@ -197,6 +263,7 @@
     voucherModalTitle.textContent = mode === 'edit' ? 'Edit Voucher' : 'View Voucher';
     vmSubmitText.textContent      = 'Update Voucher';
     vmSetReadOnly(mode === 'view');
+    initModalExtraSelects();
     voucherModal.style.display = 'flex';
 
     fetch(fetchStudentUrl + '/' + studentId, ajaxOptions({ method: 'GET' }))

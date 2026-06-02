@@ -38,13 +38,12 @@
         <input type="text" name="q" class="vs-input vs-advanced-search-input"
                placeholder="Enter keyword to search schools (name, level, etc.)"
                value="<?= esc($keyword, 'attr') ?>">
-        <?php if ($filterLevel !== ''): ?>
-            <input type="hidden" name="level" value="<?= esc($filterLevel, 'attr') ?>">
-        <?php endif ?>
-        <div id="schoolLevelFilter" class="d-flex gap-1">
-            <button type="button" class="vs-btn vs-btn-outline js-level-filter <?= $filterLevel === '' ? 'active' : '' ?>" data-level="">All</button>
-            <button type="button" class="vs-btn vs-btn-outline js-level-filter <?= $filterLevel === 'JHS' ? 'active' : '' ?>" data-level="JHS">JHS</button>
-            <button type="button" class="vs-btn vs-btn-outline js-level-filter <?= $filterLevel === 'SHS' ? 'active' : '' ?>" data-level="SHS">SHS</button>
+        <div style="width:160px">
+            <select id="schoolLevelFilter" name="level" class="js-filter-select" data-placeholder="All" data-no-search="1" style="width:100%">
+                <option value="" <?= $filterLevel === ''    ? 'selected' : '' ?>>All</option>
+                <option value="JHS" <?= $filterLevel === 'JHS' ? 'selected' : '' ?>>JHS</option>
+                <option value="SHS" <?= $filterLevel === 'SHS' ? 'selected' : '' ?>>SHS</option>
+            </select>
         </div>
     </form>
     <div class="ms-auto d-flex gap-2">
@@ -419,24 +418,15 @@
         updateBar();
     });
 
-    // ── Level quick-filter (client-side DataTable column filter) ──────────────
-    var activeLevelFilter = '<?= esc($filterLevel, 'js') ?>';
-
-    document.querySelectorAll('.js-level-filter').forEach(function (btn) {
-        btn.addEventListener('click', function () {
-            document.querySelectorAll('.js-level-filter').forEach(function (b) { b.classList.remove('active'); });
-            btn.classList.add('active');
-            activeLevelFilter = btn.getAttribute('data-level') || '';
-
-            if (window.jQuery && $.fn.DataTable) {
-                var tbl = document.getElementById('schoolsTable');
-                if (tbl && $.fn.DataTable.isDataTable(tbl)) {
-                    var dt = $(tbl).DataTable();
-                    dt.column(2).search(activeLevelFilter, false, false).draw();
-                }
-            }
+    // ── Level dropdown filter — submits the form so the controller re-runs
+    //    the server-side listing with the new ?level=… param.
+    var schoolLevelEl = document.getElementById('schoolLevelFilter');
+    var schoolSearchForm = document.getElementById('schoolSearchForm');
+    if (schoolLevelEl && schoolSearchForm && window.jQuery) {
+        $(schoolLevelEl).on('change', function () {
+            schoolSearchForm.submit();
         });
-    });
+    }
 
     // ── Export modal ──────────────────────────────────────────────────────────
     var exportModal = document.getElementById('schoolExportModal');
