@@ -102,7 +102,7 @@ class JsonPdfRunner
             (new GenerationHistoryModel())->recordMany(
                 $students,
                 isset($job['created_by']) ? (int) $job['created_by'] : null,
-                $jobId,
+                $parentId > 0 ? $parentId : $jobId,
                 'json_queue',
                 $generatedAt
             );

@@ -213,9 +213,15 @@ class JsonPdfQueue
         $totalChunks = count($chunks);
         $now         = date('Y-m-d H:i:s');
 
-        return self::mutate(self::FILE_QUEUE, function (array $queue) use ($ids, $userId, $now, $chunks, $totalChunks) {
-            $nextId = (int) ($queue['next_job_id'] ?? 1);
-            if ($nextId < 1) $nextId = 1;
+        return self::mutateAll(function (array $queue, array $processing, array $finished) use ($ids, $userId, $now, $chunks, $totalChunks) {
+            $maxJobId = 0;
+            foreach ([$queue, $processing, $finished] as $bucket) {
+                foreach (($bucket['jobs'] ?? []) as $job) {
+                    $maxJobId = max($maxJobId, (int) ($job['job_id'] ?? 0));
+                }
+            }
+
+            $nextId = max((int) ($queue['next_job_id'] ?? 1), $maxJobId + 1, 1);
 
             $parentId       = $nextId++;
             $queue['jobs']  = $queue['jobs'] ?? [];
@@ -250,7 +256,7 @@ class JsonPdfQueue
             }
 
             $queue['next_job_id'] = $nextId;
-            return [$queue, $parentId];
+            return [[$queue, $processing, $finished], $parentId];
         });
     }
 

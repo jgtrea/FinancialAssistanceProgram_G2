@@ -107,7 +107,7 @@ class PdfJobRunner
             (new GenerationHistoryModel())->recordMany(
                 $students,
                 isset($job->created_by) ? (int) $job->created_by : null,
-                $jobId,
+                !empty($job->parent_job_id) ? (int) $job->parent_job_id : $jobId,
                 'db_queue',
                 $generatedAt
             );
