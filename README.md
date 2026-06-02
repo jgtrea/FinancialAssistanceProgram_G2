@@ -251,6 +251,69 @@ nssm status  JsonPdfQueue          # check
 nssm remove  JsonPdfQueue confirm  # uninstall entirely
 ```
 
+### Scaling: running multiple workers
+
+One worker drains chunks one at a time. For faster throughput on large batches, run several workers in parallel. Job claiming is **concurrency-safe** — each chunk is claimed under an exclusive file lock (`flock(LOCK_EX)` in `JsonPdfQueue::mutateAll`), so two workers never render the same chunk. You just need one service per worker, each with a **unique service name** but the same command.
+
+#### Add a worker (NSSM)
+
+From an **Administrator PowerShell** in the project directory. The first worker is named `JsonPdfQueue`; name additional ones `JsonPdfQueue2`, `JsonPdfQueue3`, etc. All write to the same log; give each its own log file if you want to read them apart.
+
+```powershell
+$projectDir = "C:\xampp\htdocs\FinancialAssistanceProgram_G2"
+$phpExe     = "C:\xampp\php\php.exe"
+$name       = "JsonPdfQueue2"                                   # bump the number for each extra worker
+$logFile    = "$projectDir\writable\logs\json-pdf-worker-2.log" # separate log per worker
+
+nssm install $name $phpExe "spark" "run:json-pdf-queue" "5"
+nssm set $name AppDirectory $projectDir
+nssm set $name Start SERVICE_AUTO_START
+nssm set $name AppExit Default Restart
+nssm set $name AppRestartDelay 5000
+nssm set $name AppThrottle 0
+nssm set $name AppStdout $logFile
+nssm set $name AppStderr $logFile
+nssm set $name Description "Background PDF voucher worker (JSON file queue) - #2"
+nssm start $name
+```
+
+Repeat with `JsonPdfQueue3` (and a `-3.log`) for a third, and so on.
+
+#### Add a worker (Scheduled Task fallback)
+
+If you used the Scheduled Task method (no NSSM), register another task with a unique name:
+
+```powershell
+$projectDir = "C:\xampp\htdocs\FinancialAssistanceProgram_G2"
+$action  = New-ScheduledTaskAction -Execute "C:\xampp\php\php.exe" `
+    -Argument "spark run:json-pdf-queue 5" -WorkingDirectory $projectDir
+$trigger   = New-ScheduledTaskTrigger -AtStartup
+$principal = New-ScheduledTaskPrincipal -UserId "SYSTEM" -RunLevel Highest
+$settings  = New-ScheduledTaskSettingsSet -RestartCount 999 `
+    -RestartInterval (New-TimeSpan -Minutes 1) -ExecutionTimeLimit ([TimeSpan]::Zero) `
+    -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries
+
+Register-ScheduledTask -TaskName "JsonPdfQueue2" `
+    -Description "Background PDF voucher worker #2" `
+    -Action $action -Trigger $trigger -Principal $principal -Settings $settings
+Start-ScheduledTask -TaskName "JsonPdfQueue2"
+```
+
+#### How many?
+
+Each worker is its own `php.exe` and mPDF holds a chunk in memory while rendering, so workers cost RAM and CPU. A good starting point is **one worker per CPU core**, leaving headroom for Apache + MySQL. Watch `Get-Process php` and Task Manager memory; back off if the server starts swapping.
+
+#### Manage / remove the extra workers
+
+```powershell
+Get-Service JsonPdfQueue*              # list all workers and their status
+nssm restart JsonPdfQueue2             # bounce one (do this for each after pulling code)
+nssm remove  JsonPdfQueue2 confirm     # remove one worker
+```
+
+> When updating the deployment (below), restart **every** worker, not just the first:
+> `Get-Service JsonPdfQueue* | ForEach-Object { nssm restart $_.Name }`
+
 ### Updating the deployment
 
 ```powershell
