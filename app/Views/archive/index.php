@@ -112,40 +112,40 @@
       <div class="vs-form-grid vs-form-grid-4">
         <div class="vs-span-2">
           <label class="vs-label required" for="afSchoolYear">School Year</label>
-          <input list="afSchoolYear-list" id="afSchoolYear" class="vs-input" placeholder="— Select a school year —" value="<?= esc($f('school_year'), 'attr') ?>">
-          <datalist id="afSchoolYear-list">
+          <select id="afSchoolYear" class="vs-input js-filter-select" data-placeholder="— Select a school year —">
+            <option></option>
             <?php foreach ($schoolYears as $sy): ?>
-              <option value="<?= esc($sy) ?>">
+              <option value="<?= esc($sy) ?>" <?= $f('school_year') === $sy ? 'selected' : '' ?>><?= esc($sy) ?></option>
             <?php endforeach ?>
             <?php if ($f('school_year') !== '' && !in_array($f('school_year'), $schoolYears, true)): ?>
-              <option value="<?= esc($f('school_year')) ?>">
+              <option value="<?= esc($f('school_year')) ?>" selected><?= esc($f('school_year')) ?></option>
             <?php endif ?>
-          </datalist>
+          </select>
         </div>
         <div class="vs-span-2">
           <label class="vs-label" for="afGender">Sex</label>
-          <input list="afGender-list" id="afGender" class="vs-input" placeholder="All" value="<?= esc($f('gender'), 'attr') ?>">
-          <datalist id="afGender-list">
-            <option value="MALE">
-            <option value="FEMALE">
-          </datalist>
+          <select id="afGender" class="vs-input js-filter-select" data-placeholder="All" data-no-search="1">
+            <option></option>
+            <option value="MALE"   <?= $f('gender') === 'MALE'   ? 'selected' : '' ?>>MALE</option>
+            <option value="FEMALE" <?= $f('gender') === 'FEMALE' ? 'selected' : '' ?>>FEMALE</option>
+          </select>
         </div>
         <div class="vs-span-2">
           <label class="vs-label" for="afRemarks">Remarks</label>
-          <input list="afRemarks-list" id="afRemarks" class="vs-input" placeholder="All" value="<?= esc($f('remarks'), 'attr') ?>">
-          <datalist id="afRemarks-list">
-            <option value="PASSED">
-            <option value="FOR REVIEW">
-            <option value="FAILED">
-          </datalist>
+          <select id="afRemarks" class="vs-input js-filter-select" data-placeholder="All" data-no-search="1">
+            <option></option>
+            <option value="PASSED"     <?= $f('remarks') === 'PASSED'     ? 'selected' : '' ?>>PASSED</option>
+            <option value="FOR REVIEW" <?= $f('remarks') === 'FOR REVIEW' ? 'selected' : '' ?>>FOR REVIEW</option>
+            <option value="FAILED"     <?= $f('remarks') === 'FAILED'     ? 'selected' : '' ?>>FAILED</option>
+          </select>
         </div>
         <div class="vs-span-2">
           <label class="vs-label" for="afVoucherStatus">Voucher Status</label>
-          <input list="afVoucherStatus-list" id="afVoucherStatus" class="vs-input" placeholder="All" value="<?= esc($f('voucher_status'), 'attr') ?>">
-          <datalist id="afVoucherStatus-list">
-            <option value="generated">
-            <option value="not_generated">
-          </datalist>
+          <select id="afVoucherStatus" class="vs-input js-filter-select" data-placeholder="All" data-no-search="1">
+            <option></option>
+            <option value="generated"     <?= $f('voucher_status') === 'generated'     ? 'selected' : '' ?>>generated</option>
+            <option value="not_generated" <?= $f('voucher_status') === 'not_generated' ? 'selected' : '' ?>>not_generated</option>
+          </select>
         </div>
         <div class="vs-span-2">
           <label class="vs-label" for="afDateFrom">Voucher Date From</label>
@@ -157,23 +157,29 @@
         </div>
         <div class="vs-span-2">
           <label class="vs-label" for="afJuniorHs">Junior High School</label>
-          <input list="afJuniorHs-list" id="afJuniorHs" class="vs-input" placeholder="All" value="<?= esc($f('junior_hs'), 'attr') ?>">
-          <datalist id="afJuniorHs-list">
-            <?php foreach ($juniorHighSchools as $school): ?>
-              <?php $schoolName = $school['school_name'] ?? '' ?>
-              <option value="<?= esc($schoolName) ?>">
+          <select id="afJuniorHs" class="vs-input js-filter-select" data-placeholder="All">
+            <option></option>
+            <?php $jhsNames = array_map(static fn($s) => $s['school_name'] ?? '', $juniorHighSchools); ?>
+            <?php foreach ($jhsNames as $schoolName): ?>
+              <option value="<?= esc($schoolName) ?>" <?= $f('junior_hs') === $schoolName ? 'selected' : '' ?>><?= esc($schoolName) ?></option>
             <?php endforeach ?>
-          </datalist>
+            <?php if ($f('junior_hs') !== '' && !in_array($f('junior_hs'), $jhsNames, true)): ?>
+              <option value="<?= esc($f('junior_hs')) ?>" selected><?= esc($f('junior_hs')) ?></option>
+            <?php endif ?>
+          </select>
         </div>
         <div class="vs-span-2">
           <label class="vs-label" for="afPreferredHs">Preferred Senior HS</label>
-          <input list="afPreferredHs-list" id="afPreferredHs" class="vs-input" placeholder="All" value="<?= esc($f('preferred_hs'), 'attr') ?>">
-          <datalist id="afPreferredHs-list">
-            <?php foreach ($seniorHighSchools as $school): ?>
-              <?php $schoolName = $school['school_name'] ?? '' ?>
-              <option value="<?= esc($schoolName) ?>">
+          <select id="afPreferredHs" class="vs-input js-filter-select" data-placeholder="All">
+            <option></option>
+            <?php $shsNames = array_map(static fn($s) => $s['school_name'] ?? '', $seniorHighSchools); ?>
+            <?php foreach ($shsNames as $schoolName): ?>
+              <option value="<?= esc($schoolName) ?>" <?= $f('preferred_hs') === $schoolName ? 'selected' : '' ?>><?= esc($schoolName) ?></option>
             <?php endforeach ?>
-          </datalist>
+            <?php if ($f('preferred_hs') !== '' && !in_array($f('preferred_hs'), $shsNames, true)): ?>
+              <option value="<?= esc($f('preferred_hs')) ?>" selected><?= esc($f('preferred_hs')) ?></option>
+            <?php endif ?>
+          </select>
         </div>
         <div class="vs-span-2">
           <label class="vs-label" for="afGwaMin">GWA Min</label>
@@ -204,7 +210,10 @@
         var filterModal = document.getElementById('archiveFilterModal');
         var filterForm  = document.getElementById('archiveFilterForm');
         if (!filterModal || !filterForm) return;
-        function openFilter()  { filterModal.style.display = 'flex'; }
+        function openFilter()  {
+          filterModal.style.display = 'flex';
+          if (typeof window.initVsSelect2 === 'function') window.initVsSelect2(filterModal);
+        }
         function closeFilter() { filterModal.style.display = 'none'; }
 
         var btnOpen   = document.getElementById('btnOpenArchiveFilter');
@@ -250,7 +259,12 @@
             Object.keys(modalFieldToParam).forEach(function (id) {
                 var modalEl = document.getElementById(id);
                 var hidden  = filterForm.elements[modalFieldToParam[id]];
-                if (modalEl) modalEl.value = '';
+                if (modalEl) {
+                    modalEl.value = '';
+                    if (window.jQuery && modalEl.classList.contains('js-filter-select')) {
+                        $(modalEl).val('').trigger('change');
+                    }
+                }
                 if (hidden) hidden.value = '';
             });
         });

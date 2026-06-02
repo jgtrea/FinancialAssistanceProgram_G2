@@ -23,21 +23,33 @@
 
     <div id="userAlertBox"></div>
 
+<!-- Inline filters: search + Role + Status dropdowns + Clear. -->
 <div class="d-flex align-items-center gap-2 flex-wrap mb-3">
-        <form method="get" class="vs-advanced-search vs-advanced-search-outside">
-            <input type="text" name="q" class="vs-input vs-advanced-search-input" placeholder="Enter keyword to search (username, email, etc.)" value="<?= esc((string) ($keyword ?? ''), 'attr') ?>">
-            <button type="button" class="vs-btn vs-btn-outline" id="btnOpenUserFilter">
-                Filters
-                <span id="userFilterBadge" class="badge bg-primary" style="display:none;margin-left:.35rem"></span>
-            </button>
-        </form>
-        <div class="ms-auto d-flex gap-2">
-            <button type="button" class="vs-btn vs-btn-primary" id="btnAddUser">
-                <?= asset_icon('add', ['stroke-width' => '2.5']) ?>
-                Add User
-            </button>
+    <form method="get" class="d-flex align-items-center gap-2 flex-wrap">
+        <input type="text" name="q" class="vs-input" placeholder="Enter keyword (username, email, etc.)" value="<?= esc((string) ($keyword ?? ''), 'attr') ?>" style="width:380px; max-width:100%">
+        <div style="width:160px">
+            <select id="ufRole" class="js-filter-select" data-placeholder="All roles" data-no-search="1" style="width:100%">
+                <option value="">All roles</option>
+                <option value="admin">Admin</option>
+                <option value="user">Staff</option>
+            </select>
         </div>
+        <div style="width:160px">
+            <select id="ufStatus" class="js-filter-select" data-placeholder="All status" data-no-search="1" style="width:100%">
+                <option value="">All status</option>
+                <option value="active">Active</option>
+                <option value="inactive">Inactive</option>
+            </select>
+        </div>
+        <button type="button" class="vs-btn vs-btn-outline" id="userFilterClear">Clear</button>
+    </form>
+    <div class="ms-auto d-flex gap-2">
+        <button type="button" class="vs-btn vs-btn-primary" id="btnAddUser">
+            <?= asset_icon('add', ['stroke-width' => '2.5']) ?>
+            Add User
+        </button>
     </div>
+</div>
 
     <div class="vs-card">
         <div class="vs-card-body">
@@ -111,48 +123,6 @@
     </div>
 
 <!-- Users Filter modal -->
-<div class="vs-modal-overlay" id="userFilterModal" style="display:none">
-  <div class="vs-modal" style="max-width:400px">
-    <div class="vs-modal-header">
-      <h5>Filter Users</h5>
-      <button class="vs-modal-close" id="userFilterClose">&times;</button>
-    </div>
-    <div class="vs-modal-body">
-      <div class="vs-form-grid vs-form-grid-2">
-        <div class="vs-span-2">
-          <label class="vs-label" for="ufRole">Role</label>
-          <input list="ufRole-list" id="ufRole" class="vs-input" placeholder="All">
-          <datalist id="ufRole-list">
-            <option value="admin">
-            <option value="user">
-          </datalist>
-        </div>
-        <div class="vs-span-2">
-          <label class="vs-label" for="ufStatus">Status</label>
-          <input list="ufStatus-list" id="ufStatus" class="vs-input" placeholder="All">
-          <datalist id="ufStatus-list">
-            <option value="active">
-            <option value="inactive">
-          </datalist>
-        </div>
-        <div>
-          <label class="vs-label" for="ufLoginFrom">Last Login From</label>
-          <input type="date" id="ufLoginFrom" class="vs-input">
-        </div>
-        <div>
-          <label class="vs-label" for="ufLoginTo">Last Login To</label>
-          <input type="date" id="ufLoginTo" class="vs-input">
-        </div>
-      </div>
-    </div>
-    <div class="vs-modal-footer">
-      <button type="button" class="vs-btn vs-btn-outline" id="userFilterClear">Clear All</button>
-      <button type="button" class="vs-btn vs-btn-outline" id="userFilterCancel">Cancel</button>
-      <button type="button" class="vs-btn vs-btn-primary" id="userFilterApply">Apply</button>
-    </div>
-  </div>
-</div>
-
 <!-- User Add/Edit modal -->
 <div class="vs-modal-overlay" id="userModal" style="display:none">
   <div class="vs-modal" style="max-width:680px">
@@ -438,71 +408,48 @@
     }
     var dt = $(table).DataTable();
 
-    var filterModal = document.getElementById('userFilterModal');
-    var filterBadge = document.getElementById('userFilterBadge');
-
-    function openFilter()  { if (filterModal) filterModal.style.display = 'flex'; }
-    function closeFilter() { if (filterModal) filterModal.style.display = 'none'; }
-
-    var btnOpen   = document.getElementById('btnOpenUserFilter');
-    var btnClose  = document.getElementById('userFilterClose');
-    var btnCancel = document.getElementById('userFilterCancel');
-    var btnClear  = document.getElementById('userFilterClear');
-    var btnApply  = document.getElementById('userFilterApply');
     var ufRole    = document.getElementById('ufRole');
     var ufStatus  = document.getElementById('ufStatus');
-    var ufLoginFrom = document.getElementById('ufLoginFrom');
-    var ufLoginTo   = document.getElementById('ufLoginTo');
-    var activeUserFilters = {};
+    var clearBtn  = document.getElementById('userFilterClear');
 
-    // Custom date-range filter on the Last Login column
+    var state = { role: '', status: '' };
+
+    // Status column renders as an SVG badge (no text), so column().search()
+    // can't match it. Use a custom row-level filter that reads data-active
+    // from the <tr>. Role uses column().search() since Role is rendered as
+    // plain text ("Admin" / "User").
     $.fn.dataTable.ext.search.push(function (settings, rowData, rowIdx) {
         if (settings.nTable.id !== 'userManagementTable') return true;
+        if (state.status === '') return true;
         var row = settings.aoData[rowIdx].nTr;
         if (!row) return true;
-        var d = row.getAttribute('data-last-login') || '';
-        if (activeUserFilters.loginFrom && d < activeUserFilters.loginFrom) return false;
-        if (activeUserFilters.loginTo   && d > activeUserFilters.loginTo)   return false;
+        var isActive = row.getAttribute('data-active') === '1';
+        if (state.status === 'active'   && !isActive) return false;
+        if (state.status === 'inactive' &&  isActive) return false;
         return true;
     });
 
-    btnOpen   && btnOpen.addEventListener('click', openFilter);
-    btnClose  && btnClose.addEventListener('click', closeFilter);
-    btnCancel && btnCancel.addEventListener('click', closeFilter);
-    filterModal && filterModal.addEventListener('click', function (e) {
-        if (e.target === filterModal) closeFilter();
-    });
+    function applyFilters() {
+        // Column indices: Username=0, Email=1, Role=2, Status=3, LastLogin=4, Actions=5.
+        var roleSearch = state.role === 'admin' ? '^Admin$' : state.role === 'user' ? '^User$' : '';
+        dt.column(2).search(roleSearch, roleSearch !== '', false).draw();
+    }
 
-    btnClear && btnClear.addEventListener('click', function () {
-        if (ufRole)      ufRole.value      = '';
-        if (ufStatus)    ufStatus.value    = '';
-        if (ufLoginFrom) ufLoginFrom.value = '';
-        if (ufLoginTo)   ufLoginTo.value   = '';
-        activeUserFilters = {};
-        if (filterBadge) { filterBadge.textContent = ''; filterBadge.style.display = 'none'; }
-        dt.column(3).search('').column(4).search('').draw();
-    });
+    function bindSelect(el, key) {
+        if (!el) return;
+        $(el).on('change', function () {
+            state[key] = el.value || '';
+            applyFilters();
+        });
+    }
+    bindSelect(ufRole,   'role');
+    bindSelect(ufStatus, 'status');
 
-    btnApply && btnApply.addEventListener('click', function () {
-        var roleVal   = ufRole   ? ufRole.value   : '';
-        var statusVal = ufStatus ? ufStatus.value : '';
-        activeUserFilters = {
-            role:      roleVal,
-            status:    statusVal,
-            loginFrom: ufLoginFrom ? ufLoginFrom.value : '',
-            loginTo:   ufLoginTo   ? ufLoginTo.value   : '',
-        };
-        var count = [roleVal, statusVal, activeUserFilters.loginFrom, activeUserFilters.loginTo].filter(Boolean).length;
-        if (filterBadge) {
-            filterBadge.textContent = count || '';
-            filterBadge.style.display = count ? '' : 'none';
-        }
-        var roleSearch   = roleVal   === 'admin' ? '^Admin$'    : roleVal   === 'user'     ? '^User$'     : '';
-        var statusSearch = statusVal === 'active' ? '^Active$'  : statusVal === 'inactive' ? '^Inactive$' : '';
-        dt.column(3).search(roleSearch,   roleSearch   !== '', false)
-          .column(4).search(statusSearch, statusSearch !== '', false)
-          .draw();
-        closeFilter();
+    clearBtn && clearBtn.addEventListener('click', function () {
+        state = { role: '', status: '' };
+        if (ufRole)   { ufRole.value   = ''; if (window.jQuery) $(ufRole).val('').trigger('change.select2'); }
+        if (ufStatus) { ufStatus.value = ''; if (window.jQuery) $(ufStatus).val('').trigger('change.select2'); }
+        applyFilters();
     });
 }());
 </script>

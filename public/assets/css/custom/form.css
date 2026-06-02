@@ -35,3 +35,102 @@
   padding-top: 1.25rem;
   border-top: 1px solid var(--border);
 }
+
+/* ============================================================
+   SELECT2 — match .vs-input visual style
+   Applies to .js-school-select and .js-filter-select dropdowns.
+   ============================================================ */
+
+.select2-container--default .select2-selection--single {
+  height: auto;
+  min-height: 2.55rem;            /* matches .vs-input total height */
+  border: 1.5px solid var(--border);
+  border-radius: 8px;
+  background: #fff;
+  padding: 0.45rem 0.6rem 0.45rem 0.85rem;
+  font-family: var(--font);
+  font-size: 0.9rem;
+  transition: border-color 0.15s, background 0.15s, box-shadow 0.15s;
+}
+
+.select2-container--default .select2-selection--single .select2-selection__rendered {
+  color: var(--navy);
+  line-height: 1.4;
+  padding: 0;
+}
+
+.select2-container--default .select2-selection--single .select2-selection__placeholder {
+  color: #91a6b6;
+}
+
+.select2-container--default .select2-selection--single .select2-selection__arrow {
+  height: 100%;
+  top: 0;
+  right: 0.4rem;
+}
+
+.select2-container--default.select2-container--focus .select2-selection--single,
+.select2-container--default.select2-container--open  .select2-selection--single {
+  border-color: var(--navy-md);
+  box-shadow: 0 0 0 3px rgba(10, 166, 200, 0.14);
+  outline: none;
+}
+
+.select2-container--default .select2-selection--single {
+  position: relative;
+}
+.select2-container--default .select2-selection--single .select2-selection__clear {
+  position: absolute;
+  right: 1.8rem;            /* leaves room for the dropdown arrow */
+  top: 50%;
+  transform: translateY(-50%);
+  color: #91a6b6;
+  margin: 0;
+  padding: 0 0.25rem;
+  font-weight: 700;
+  line-height: 1;
+  background: transparent;
+}
+.select2-container--default .select2-selection--single .select2-selection__clear:hover {
+  color: var(--danger, #d23f3f);
+}
+/* Reserve right padding on the rendered text so it never overlaps the X. */
+.select2-container--default .select2-selection--single .select2-selection__rendered {
+  padding-right: 2.6rem;
+}
+
+/* Dropdown panel + search field */
+.select2-container--default .select2-dropdown {
+  border: 1.5px solid var(--border);
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(15, 35, 60, 0.10);
+}
+
+.select2-container--default .select2-search--dropdown .select2-search__field {
+  border: 1.5px solid var(--border);
+  border-radius: 6px;
+  padding: 0.45rem 0.6rem;
+  font-family: var(--font);
+  font-size: 0.9rem;
+  outline: none;
+}
+.select2-container--default .select2-search--dropdown .select2-search__field:focus {
+  border-color: var(--navy-md);
+  box-shadow: 0 0 0 3px rgba(10, 166, 200, 0.14);
+}
+
+.select2-container--default .select2-results__option {
+  padding: 0.5rem 0.8rem;
+  font-size: 0.9rem;
+  color: var(--navy);
+}
+.select2-container--default .select2-results__option--highlighted[aria-selected],
+.select2-container--default .select2-results__option--highlighted {
+  background: var(--navy-md, #0aa6c8);
+  color: #fff;
+}
+
+/* Make Select2 stack above .vs-modal-overlay (default modal z=1050). */
+.select2-container--open {
+  z-index: 1100;
+}

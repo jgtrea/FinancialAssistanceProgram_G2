@@ -20,15 +20,26 @@
         </div>
     </div>
 
-    <form method="get" id="auditFilterForm" class="vs-advanced-search vs-advanced-search-outside mb-3">
-        <input type="text" name="q" class="vs-input vs-advanced-search-input" placeholder="Enter keyword to search (action, description, etc.)" value="<?= esc((string) ($keyword ?? ''), 'attr') ?>">
-        <button type="button" class="vs-btn vs-btn-outline" id="auditBtnOpenFilter">
-            Filters
-            <span id="auditFilterBadge" class="badge bg-primary" style="display:<?= $activeFilterCount > 0 ? 'inline-block' : 'none' ?>;margin-left:.35rem"><?= $activeFilterCount > 0 ? esc($activeFilterCount) : '' ?></span>
-        </button>
-        <?php foreach ($filterKeys as $k): ?>
-            <input type="hidden" name="<?= esc($k, 'attr') ?>" value="<?= esc((string) $filterValues[$k], 'attr') ?>">
-        <?php endforeach ?>
+    <!-- Inline audit filters (Action select + date range). Auto-submits on
+         change so the user sees results immediately, matching the Schools
+         page quick-filter pattern. -->
+    <form method="get" id="auditFilterForm" class="d-flex align-items-center gap-2 mb-3" style="flex-wrap:nowrap">
+        <input type="text" name="q" class="vs-input" placeholder="Enter keyword (action, description, etc.)" value="<?= esc((string) ($keyword ?? ''), 'attr') ?>" style="flex:3 1 360px; min-width:240px">
+        <!-- Wrapper carries the flex sizing; Select2 replaces the inner <select>
+             with a container that picks up width:100% from this div. -->
+        <div style="flex:0 0 200px; min-width:0">
+            <select name="action" id="auditFilterAction" class="js-filter-select" data-placeholder="All actions" style="width:100%">
+                <option></option>
+                <?php foreach ($actionOptions as $option): ?>
+                    <?php $val = is_array($option) ? ($option['action'] ?? '') : $option ?>
+                    <option value="<?= esc($val) ?>" <?= (string) $filterValues['action'] === $val ? 'selected' : '' ?>><?= esc($val) ?></option>
+                <?php endforeach ?>
+            </select>
+        </div>
+        <input type="date" name="date_from" id="auditFilterDateFrom" class="vs-input" value="<?= esc((string) $filterValues['date_from'], 'attr') ?>" style="flex:0 0 150px" title="Date From">
+        <input type="date" name="date_to"   id="auditFilterDateTo"   class="vs-input" value="<?= esc((string) $filterValues['date_to'],   'attr') ?>" style="flex:0 0 150px" title="Date To">
+        <button type="submit" class="vs-btn vs-btn-primary"  style="flex-shrink:0">Apply</button>
+        <button type="button" class="vs-btn vs-btn-outline" id="auditFilterClear" style="flex-shrink:0">Clear</button>
     </form>
 
     <div class="vs-card">
@@ -77,98 +88,21 @@
         </div>
     </div>
 
-<div class="vs-modal-overlay" id="auditFilterModal" style="display:none">
-    <div class="vs-modal" style="max-width:680px">
-        <div class="vs-modal-header">
-            <h5>Advanced Filters</h5>
-            <button class="vs-modal-close" id="auditFilterModalClose">&times;</button>
-        </div>
-        <div class="vs-modal-body">
-            <div class="vs-form-grid vs-form-grid-4">
-                <div class="vs-span-4">
-                    <label class="vs-label" for="auditFilterAction">Action</label>
-                    <input list="auditFilterAction-list" id="auditFilterAction" class="vs-input" placeholder="All" value="<?= esc((string) $filterValues['action'], 'attr') ?>">
-                    <datalist id="auditFilterAction-list">
-                        <?php foreach ($actionOptions as $option): ?>
-                            <?php $val = is_array($option) ? ($option['action'] ?? '') : $option ?>
-                            <option value="<?= esc($val) ?>">
-                        <?php endforeach ?>
-                    </datalist>
-                </div>
-                <div class="vs-span-2">
-                    <label class="vs-label" for="auditFilterDateFrom">Date From</label>
-                    <input type="date" id="auditFilterDateFrom" class="vs-input" value="<?= esc((string) $filterValues['date_from'], 'attr') ?>">
-                </div>
-                <div class="vs-span-2">
-                    <label class="vs-label" for="auditFilterDateTo">Date To</label>
-                    <input type="date" id="auditFilterDateTo" class="vs-input" value="<?= esc((string) $filterValues['date_to'], 'attr') ?>">
-                </div>
-            </div>
-        </div>
-        <div class="vs-modal-footer">
-            <button class="vs-btn vs-btn-outline" id="auditFilterClear">Clear All</button>
-            <button class="vs-btn vs-btn-outline" id="auditFilterModalCancel">Cancel</button>
-            <button class="vs-btn vs-btn-primary" id="auditFilterApply">Apply Filters</button>
-        </div>
-    </div>
-</div>
-
 <script>
 (function () {
-    var filterForm = document.getElementById('auditFilterForm');
-    var fields = {
-        action:   document.getElementById('auditFilterAction'),
-        dateFrom: document.getElementById('auditFilterDateFrom'),
-        dateTo:   document.getElementById('auditFilterDateTo'),
-    };
-    var filterFieldToParam = {
-        action:   'action',
-        dateFrom: 'date_from',
-        dateTo:   'date_to',
-    };
-
-    var modal = document.getElementById('auditFilterModal');
-        function openFilter() { if (modal) modal.style.display = 'flex'; }
-        function closeFilter() { if (modal) modal.style.display = 'none'; }
-
-        var openButton = document.getElementById('auditBtnOpenFilter');
-        var closeButton = document.getElementById('auditFilterModalClose');
-        var cancelButton = document.getElementById('auditFilterModalCancel');
-        var applyButton = document.getElementById('auditFilterApply');
-        var clearButton = document.getElementById('auditFilterClear');
-
-        openButton && openButton.addEventListener('click', openFilter);
-        closeButton && closeButton.addEventListener('click', closeFilter);
-        cancelButton && cancelButton.addEventListener('click', closeFilter);
-        modal && modal.addEventListener('click', function (event) {
-            if (event.target === modal) closeFilter();
-        });
-
-        function syncFormFromModal() {
-            if (!filterForm) return;
-            Object.keys(filterFieldToParam).forEach(function (k) {
-                var input = filterForm.elements[filterFieldToParam[k]];
-                if (input && fields[k]) input.value = fields[k].value;
-            });
-        }
-
-        applyButton && applyButton.addEventListener('click', function () {
-            syncFormFromModal();
-            if (filterForm) filterForm.submit();
-        });
-
-        clearButton && clearButton.addEventListener('click', function () {
-            Object.keys(fields).forEach(function (k) {
-                if (fields[k]) fields[k].value = '';
-            });
-            if (filterForm) {
-                Object.keys(filterFieldToParam).forEach(function (k) {
-                    var input = filterForm.elements[filterFieldToParam[k]];
-                    if (input) input.value = '';
-                });
-                filterForm.submit();
+    var clearBtn = document.getElementById('auditFilterClear');
+    if (!clearBtn) return;
+    clearBtn.addEventListener('click', function () {
+        var form = document.getElementById('auditFilterForm');
+        if (!form) return;
+        form.querySelectorAll('input[name], select[name]').forEach(function (el) {
+            el.value = '';
+            if (window.jQuery && el.classList.contains('js-filter-select')) {
+                $(el).val('').trigger('change');
             }
         });
+        form.submit();
+    });
 }());
 </script>
 

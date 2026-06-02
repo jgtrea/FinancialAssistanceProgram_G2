@@ -113,6 +113,34 @@ function initAlertDismiss() {
   });
 }
 
+/**
+ * Initialise Select2 on every `.js-filter-select` and `.js-school-select`.
+ * Idempotent — re-runs safely after AJAX-rebuilt modals. Anchors the Select2
+ * dropdown inside the nearest .vs-modal so it stacks above the modal overlay.
+ */
+window.initVsSelect2 = function initVsSelect2(root) {
+  if (typeof $ === 'undefined' || !$.fn.select2) return;
+  var scope = root || document;
+  $(scope).find('.js-filter-select, .js-school-select').each(function () {
+    var $el = $(this);
+    if ($el.hasClass('select2-hidden-accessible')) return;
+    var $modal = $el.closest('.vs-modal-overlay');
+    var noSearch = this.dataset.noSearch === '1';
+    $el.select2({
+      tags: $el.hasClass('js-school-select'),  // school inputs allow new values
+      placeholder: this.dataset.placeholder || 'All',
+      allowClear: true,
+      width: '100%',
+      dropdownParent: $modal.length ? $modal : $(document.body),
+      minimumResultsForSearch: noSearch ? Infinity : 0,
+    });
+  });
+};
+
+document.addEventListener('DOMContentLoaded', function () {
+  if (typeof window.initVsSelect2 === 'function') window.initVsSelect2(document);
+});
+
 // Allow Bootstrap dropdowns to overflow .vs-card (overflow:hidden) while open.
 document.addEventListener('show.bs.dropdown', function (e) {
   e.target.closest('.vs-card')?.classList.add('vs-card--dropdown-open');

@@ -36,6 +36,12 @@ class JsonPdfQueue
     public const FILE_PROCESSING = 'processing.json';
     public const FILE_FINISHED   = 'finished.json';
 
+    // Chunk job_ids are parent_id * CHUNK_ID_OFFSET + chunk_index, so the
+    // user-visible parent_id stays small (ticks once per generation) while
+    // chunk IDs remain globally unique. Allows up to CHUNK_ID_OFFSET - 1
+    // chunks per parent.
+    public const CHUNK_ID_OFFSET = 100000;
+
     /** Directory holding the three JSON files. */
     public static function dir(): string
     {
@@ -213,15 +219,12 @@ class JsonPdfQueue
         $totalChunks = count($chunks);
         $now         = date('Y-m-d H:i:s');
 
-        return self::mutateAll(function (array $queue, array $processing, array $finished) use ($ids, $userId, $now, $chunks, $totalChunks) {
-            $maxJobId = 0;
-            foreach ([$queue, $processing, $finished] as $bucket) {
-                foreach (($bucket['jobs'] ?? []) as $job) {
-                    $maxJobId = max($maxJobId, (int) ($job['job_id'] ?? 0));
-                }
-            }
-
-            $nextId = max((int) ($queue['next_job_id'] ?? 1), $maxJobId + 1, 1);
+        return self::mutate(self::FILE_QUEUE, function (array $queue) use ($ids, $userId, $now, $chunks, $totalChunks) {
+            // next_job_id ticks ONCE per generation (parent). Chunk records get
+            // a derived ID parent_id * CHUNK_ID_OFFSET + chunk_index so they
+            // stay unique without bloating the counter the user sees.
+            $nextId = (int) ($queue['next_job_id'] ?? 1);
+            if ($nextId < 1) $nextId = 1;
 
             $parentId       = $nextId++;
             $queue['jobs']  = $queue['jobs'] ?? [];
@@ -241,7 +244,7 @@ class JsonPdfQueue
 
             foreach ($chunks as $idx => $chunkIds) {
                 $queue['jobs'][] = [
-                    'job_id'        => $nextId++,
+                    'job_id'        => $parentId * self::CHUNK_ID_OFFSET + ($idx + 1),
                     'parent_job_id' => $parentId,
                     'chunk_index'   => $idx + 1,
                     'total_chunks'  => $totalChunks,

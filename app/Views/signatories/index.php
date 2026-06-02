@@ -36,13 +36,24 @@
         </button>
     </div>
 
+    <!-- Inline filters: search + Status dropdown (no search) + Position Title
+         searchable Select2. Client-side filters via DataTables — no Apply
+         button needed, changes take effect on the next event. -->
     <div class="d-flex align-items-center gap-2 flex-wrap mb-3">
-        <form method="get" class="vs-advanced-search vs-advanced-search-outside">
-            <input type="text" name="q" class="vs-input vs-advanced-search-input" placeholder="Enter keyword to search (name, position, etc.)" value="<?= esc((string) ($keyword ?? ''), 'attr') ?>">
-            <button type="button" class="vs-btn vs-btn-outline" id="btnOpenSigFilter">
-                Filters
-                <span id="sigFilterBadge" class="badge bg-primary" style="display:none;margin-left:.35rem"></span>
-            </button>
+        <form method="get" class="d-flex align-items-center gap-2 flex-wrap">
+            <input type="text" name="q" class="vs-input" placeholder="Enter keyword (name, position, etc.)" value="<?= esc((string) ($keyword ?? ''), 'attr') ?>" style="width:340px; max-width:100%">
+            <div style="width:180px">
+                <select id="sfStatus" class="js-filter-select" data-placeholder="All status" data-no-search="1" style="width:100%">
+                    <option></option>
+                    <option value="selected">Selected</option>
+                    <option value="unselected">Unselected</option>
+                </select>
+            </div>
+            <div style="width:220px">
+                <select id="sfPosition" class="js-filter-select" data-placeholder="All positions" style="width:100%">
+                    <option></option>
+                </select>
+            </div>
         </form>
         <div class="ms-auto d-flex gap-2">
             <button type="button" class="vs-btn vs-btn-primary" id="btnAddSignatory">
@@ -95,7 +106,7 @@
                         $nameSortKey = trim(implode(' ', array_filter([$sLn, $sFn, $sMn])));
                     ?>
 
-                    <tr id="sig-row-<?= $sid ?>" data-archived="<?= $isArchived ? '1' : '0' ?>"<?= $isArchived ? ' class="vs-row-archived"' : '' ?>>
+                    <tr id="sig-row-<?= $sid ?>" data-archived="<?= $isArchived ? '1' : '0' ?>" data-selected="<?= $isSelected ? '1' : '0' ?>"<?= $isArchived ? ' class="vs-row-archived"' : '' ?>>
                         <td><input type="checkbox" class="vs-check sig-row-check" value="<?= $sid ?>"<?= $isArchived ? ' disabled title="Archived signatories cannot be bulk-archived"' : '' ?>></td>
                         <td><?= esc($fullName) ?></td>
                         <td><?= esc($signatory['position_title']) ?></td>
@@ -180,38 +191,6 @@
         <span id="sigArchiveBtnText">Confirm Archive</span>
         <span id="sigArchiveBtnSpinner" class="vs-spinner" style="display:none"></span>
       </button>
-    </div>
-  </div>
-</div>
-
-<!-- Signatories Filter modal -->
-<div class="vs-modal-overlay" id="sigFilterModal" style="display:none">
-  <div class="vs-modal" style="max-width:400px">
-    <div class="vs-modal-header">
-      <h5>Filter Signatories</h5>
-      <button class="vs-modal-close" id="sigFilterClose">&times;</button>
-    </div>
-    <div class="vs-modal-body">
-      <div class="d-flex flex-column gap-3">
-        <div>
-          <label class="vs-label" for="sfStatus">Selected Status</label>
-          <input list="sfStatus-list" id="sfStatus" class="vs-input" placeholder="All">
-          <datalist id="sfStatus-list">
-            <option value="selected">
-            <option value="unselected">
-          </datalist>
-        </div>
-        <div>
-          <label class="vs-label" for="sfPosition">Position Title</label>
-          <input list="sfPosition-list" id="sfPosition" class="vs-input" placeholder="All">
-          <datalist id="sfPosition-list"></datalist>
-        </div>
-      </div>
-    </div>
-    <div class="vs-modal-footer">
-      <button type="button" class="vs-btn vs-btn-outline" id="sigFilterClear">Clear All</button>
-      <button type="button" class="vs-btn vs-btn-outline" id="sigFilterCancel">Cancel</button>
-      <button type="button" class="vs-btn vs-btn-primary" id="sigFilterApply">Apply</button>
     </div>
   </div>
 </div>
@@ -877,7 +856,7 @@
     });
 }());
 
-// ── Filter modal + column search for signatories table ───────────────────────
+// ── Inline filters for signatories table ─────────────────────────────────────
 (function initSigSearch() {
     var table = document.getElementById('signatoriesTable');
     if (!table || !window.jQuery || !$.fn.DataTable || !$.fn.DataTable.isDataTable(table)) {
@@ -885,23 +864,11 @@
     }
     var dt = $(table).DataTable();
 
-    var filterModal = document.getElementById('sigFilterModal');
-    var filterBadge = document.getElementById('sigFilterBadge');
-
-    function openFilter()  { if (filterModal) filterModal.style.display = 'flex'; }
-    function closeFilter() { if (filterModal) filterModal.style.display = 'none'; }
-
-    var btnOpen   = document.getElementById('btnOpenSigFilter');
-    var btnClose  = document.getElementById('sigFilterClose');
-    var btnCancel = document.getElementById('sigFilterCancel');
-    var btnClear  = document.getElementById('sigFilterClear');
-    var btnApply  = document.getElementById('sigFilterApply');
-    var sfStatus  = document.getElementById('sfStatus');
+    var sfStatus   = document.getElementById('sfStatus');
     var sfPosition = document.getElementById('sfPosition');
-    var sfPositionList = document.getElementById('sfPosition-list');
 
-    // Populate Position Title datalist from table data
-    if (sfPositionList) {
+    // Populate Position Title select from current table data.
+    if (sfPosition) {
         var posSet = new Set();
         dt.column(2).data().each(function (val) {
             var p = (val || '').toString().trim();
@@ -910,41 +877,44 @@
         Array.from(posSet).sort().forEach(function (p) {
             var opt = document.createElement('option');
             opt.value = p;
-            sfPositionList.appendChild(opt);
+            opt.textContent = p;
+            sfPosition.appendChild(opt);
         });
     }
 
-    btnOpen   && btnOpen.addEventListener('click', openFilter);
-    btnClose  && btnClose.addEventListener('click', closeFilter);
-    btnCancel && btnCancel.addEventListener('click', closeFilter);
-    filterModal && filterModal.addEventListener('click', function (e) {
-        if (e.target === filterModal) closeFilter();
+    // Init Select2 on the two filter selects (status no-search, position searchable).
+    if (typeof window.initVsSelect2 === 'function') window.initVsSelect2(document);
+
+    // Selected column renders as an icon (no text), so column().search() can't
+    // match it. Read the row's data-selected attr via a custom DataTables
+    // filter — captures statusVal each call so it always reflects the latest
+    // dropdown value without re-pushing search handlers.
+    var statusVal = '';
+    $.fn.dataTable.ext.search.push(function (settings, rowData, rowIdx) {
+        if (settings.nTable.id !== 'signatoriesTable') return true;
+        if (statusVal === '') return true;
+        var row = settings.aoData[rowIdx].nTr;
+        if (!row) return true;
+        var isSel = row.getAttribute('data-selected') === '1';
+        if (statusVal === 'selected'   && !isSel) return false;
+        if (statusVal === 'unselected' &&  isSel) return false;
+        return true;
     });
 
-    btnClear && btnClear.addEventListener('click', function () {
-        if (sfStatus)   sfStatus.value   = '';
-        if (sfPosition) sfPosition.value = '';
-        if (filterBadge) { filterBadge.textContent = ''; filterBadge.style.display = 'none'; }
-        dt.column(2).search('').column(4).search('').draw();
-    });
-
-    btnApply && btnApply.addEventListener('click', function () {
-        var statusVal   = sfStatus   ? sfStatus.value   : '';
+    function applyFilters() {
+        statusVal = sfStatus ? sfStatus.value : '';
         var positionVal = sfPosition ? sfPosition.value : '';
-        var count = [statusVal, positionVal].filter(Boolean).length;
-        if (filterBadge) {
-            filterBadge.textContent = count || '';
-            filterBadge.style.display = count ? '' : 'none';
-        }
-        var statusSearch = statusVal === 'selected'   ? '^Selected$'
-                         : statusVal === 'unselected' ? '^Unselected$'
-                         : '';
-        var useRegex = statusSearch !== '';
-        dt.column(4).search(statusSearch, useRegex, false)
-          .column(2).search(positionVal)
-          .draw();
-        closeFilter();
-    });
+        dt.column(2).search(positionVal).draw();
+    }
+
+    // jQuery `change` fires for both native select changes AND Select2 selections.
+    if (window.jQuery) {
+        $(sfStatus).on('change', applyFilters);
+        $(sfPosition).on('change', applyFilters);
+    } else {
+        sfStatus   && sfStatus.addEventListener('change',   applyFilters);
+        sfPosition && sfPosition.addEventListener('change', applyFilters);
+    }
 }());
 </script>
 

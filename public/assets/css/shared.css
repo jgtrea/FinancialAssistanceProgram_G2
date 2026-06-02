@@ -164,6 +164,14 @@ body {
   background: var(--surface-md);
   color: var(--navy);
 }
+/* Selected pill state — used by schools level filter, users role/status
+   pills, and any other inline pill group. */
+.vs-btn-outline.active,
+.vs-btn-outline.active:hover {
+  background: var(--navy);
+  color: #fff;
+  border-color: var(--navy);
+}
 .vs-btn-success {
   background: var(--success);
   color: #fff;
