@@ -75,6 +75,11 @@ class JsonPdfRunner
                 throw new \RuntimeException('No valid students found for this job.');
             }
 
+            // Assign voucher numbers to any chunk students that don't have one
+            // yet. Moved out of the web request (where it ran per-student for the
+            // whole batch and timed out) into the worker, scoped to this chunk.
+            $students = self::assignVoucherNumbers($students);
+
             $pdfBytes = VoucherPdf::generate($students);
 
             $dir = WRITEPATH . 'pdfs' . DIRECTORY_SEPARATOR;
@@ -171,6 +176,62 @@ class JsonPdfRunner
     }
 
     /**
+     * Assign a voucher_no to any students in this chunk that don't have one,
+     * persist it, and reflect it in the returned in-memory rows so the renderer
+     * prints the new number.
+     *
+     * generate_voucher_no() derives the next sequence with a live MAX()+1 query,
+     * so concurrent workers could otherwise hand out the same number. We serialise
+     * assignment across all workers with a MySQL named lock (GET_LOCK). Each chunk
+     * holds it only for the few students it actually needs to number.
+     */
+    protected static function assignVoucherNumbers(array $students): array
+    {
+        helper('voucher');
+
+        $missing = array_filter($students, static fn($s) => empty($s['voucher_no']));
+        if (empty($missing)) {
+            return $students;
+        }
+
+        $db = \Config\Database::connect();
+
+        // Block (up to 30s) until no other worker is assigning. Skip numbering
+        // this pass if the lock can't be acquired rather than risk duplicates.
+        $got = $db->query("SELECT GET_LOCK('fap_voucher_no', 30) AS ok")->getRow();
+        if (!$got || (int) $got->ok !== 1) {
+            throw new \RuntimeException('Could not acquire voucher_no lock; will retry on next pass.');
+        }
+
+        $assigned = [];
+        try {
+            foreach ($missing as $s) {
+                $sid  = (int) $s['student_id'];
+                $jhs  = $s['junior_high_school'] ?? '';
+                $year = !empty($s['voucher_date'])
+                    ? date('Y', strtotime($s['voucher_date']))
+                    : date('Y');
+
+                $vno = generate_voucher_no($jhs, $year);
+                $db->table('students')->where('student_id', $sid)->update(['voucher_no' => $vno]);
+                $assigned[$sid] = $vno;
+            }
+        } finally {
+            $db->query("SELECT RELEASE_LOCK('fap_voucher_no')");
+        }
+
+        foreach ($students as &$s) {
+            $sid = (int) $s['student_id'];
+            if (isset($assigned[$sid])) {
+                $s['voucher_no'] = $assigned[$sid];
+            }
+        }
+        unset($s);
+
+        return $students;
+    }
+
+    /**
      * Convenience: claim + process in one call. Returns true if a chunk was
      * processed successfully, false on failure, null if nothing to claim.
      */
@@ -226,6 +287,28 @@ class JsonPdfRunner
             }
         }
 
+        // Atomically claim the parent so exactly one worker finalizes it. Without
+        // this, concurrent workers both pass the all-chunks-done check above and
+        // race: one unlinks the chunk PDFs (cleanup below) while the other is
+        // still inside ZipArchive::close() reading them -> "Can't open file".
+        // Flip pending -> finalizing under the queue's exclusive lock; whoever
+        // wins proceeds, everyone else backs off.
+        $claimed = JsonPdfQueue::mutate(JsonPdfQueue::FILE_QUEUE, function (array $queue) use ($parentId) {
+            $idx = self::findIndex($queue['jobs'] ?? [], $parentId);
+            if ($idx === null) {
+                return null; // parent gone — already finalized by another worker
+            }
+            $job = $queue['jobs'][$idx];
+            if (!empty($job['parent_job_id']) || ($job['status'] ?? '') !== 'pending') {
+                return null; // not a parent, or already claimed/finalizing
+            }
+            $queue['jobs'][$idx]['status'] = 'finalizing';
+            return [$queue, true];
+        });
+        if ($claimed !== true) {
+            return false; // another worker owns the finalize
+        }
+
         try {
             $dir = WRITEPATH . 'pdfs' . DIRECTORY_SEPARATOR;
             if (!is_dir($dir)) {
@@ -249,21 +332,43 @@ class JsonPdfRunner
             } else {
                 $finalName = 'vouchers_json_job' . $parentId . '_' . $stamp . '.zip';
                 $zipPath   = $dir . $finalName;
-                $zip       = new \ZipArchive();
-                if ($zip->open($zipPath, \ZipArchive::CREATE | \ZipArchive::OVERWRITE) !== true) {
-                    throw new \RuntimeException('Failed to open ZIP for writing.');
+
+                // Build the ZIP in batches. ZipArchive::addFile() defers opening
+                // each source file until close(), so adding all chunks at once
+                // makes close() open every chunk PDF simultaneously — which blows
+                // past the OS open-file-handle limit on large batches (e.g. 100
+                // chunks) and fails with "Can't open file". Adding/closing in
+                // bounded batches keeps the number of concurrently-open handles
+                // capped while still appending to the same archive.
+                $batchSize = 50;
+
+                // Start from a clean file; first open() below uses CREATE (append),
+                // so wipe any stale archive at this path before the first batch.
+                if (is_file($zipPath)) {
+                    @unlink($zipPath);
                 }
-                foreach ($chunks as $chunk) {
-                    $sourcePath = $dir . $chunk['file_path'];
-                    if (!is_file($sourcePath)) {
-                        $zip->close();
-                        @unlink($zipPath);
-                        throw new \RuntimeException('Missing chunk file: ' . $chunk['file_path']);
+
+                foreach (array_chunk($chunks, $batchSize) as $batch) {
+                    $zip = new \ZipArchive();
+                    if ($zip->open($zipPath, \ZipArchive::CREATE) !== true) {
+                        throw new \RuntimeException('Failed to open ZIP for writing.');
                     }
-                    $entry = 'vouchers_chunk_' . str_pad((string) $chunk['chunk_index'], 3, '0', STR_PAD_LEFT) . '.pdf';
-                    $zip->addFile($sourcePath, $entry);
+                    foreach ($batch as $chunk) {
+                        $sourcePath = $dir . $chunk['file_path'];
+                        if (!is_file($sourcePath)) {
+                            $zip->close();
+                            @unlink($zipPath);
+                            throw new \RuntimeException('Missing chunk file: ' . $chunk['file_path']);
+                        }
+                        $entry = 'vouchers_chunk_' . str_pad((string) $chunk['chunk_index'], 3, '0', STR_PAD_LEFT) . '.pdf';
+                        $zip->addFile($sourcePath, $entry);
+                    }
+                    if ($zip->close() !== true) {
+                        $status = $zip->getStatusString();
+                        @unlink($zipPath);
+                        throw new \RuntimeException('ZIP close failed: ' . $status);
+                    }
                 }
-                $zip->close();
             }
 
             // Final file is built — chunk PDFs are no longer needed on disk.

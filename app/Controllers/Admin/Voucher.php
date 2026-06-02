@@ -706,15 +706,15 @@ class Voucher extends Controller
             return $this->response->setJSON(['success' => false, 'message' => 'No students selected.']);
         }
 
-        $students = $this->prepareStudentsForGeneration($ids);
-
-        if (empty($students)) {
-            return $this->response->setJSON(['success' => false, 'message' => 'Selected students not found.']);
-        }
-
         $userId = $this->getCurrentUserId();
         $prefix = session()->get('role') === 'admin' ? 'admin' : 'user';
-        $jobId  = \App\Libraries\JsonPdfQueue::enqueueJob($ids, $userId, self::CHUNK_SIZE);
+
+        // Enqueue raw IDs only. voucher_no assignment + rendering happen in the
+        // background worker (JsonPdfRunner::processClaimed), per chunk — so this
+        // request returns instantly even for tens of thousands of students.
+        // Previously prepareStudentsForGeneration() ran ~2 queries per student
+        // here (a MAX/LIKE scan + an UPDATE) and timed out large batches.
+        $jobId = \App\Libraries\JsonPdfQueue::enqueueJob($ids, $userId, self::CHUNK_SIZE);
 
         log_action($userId, 'QUEUE_PDF_JSON', 'Queued JSON-PDF for ' . \count($ids) . ' student(s) (job #' . $jobId . ')');
 
@@ -723,7 +723,6 @@ class Voucher extends Controller
             'queued'     => true,
             'job_id'     => $jobId,
             'status_url' => site_url("{$prefix}/vouchers/json-pdf-status/{$jobId}"),
-            'vouchers'   => array_column($students, 'voucher_no', 'student_id'),
         ]);
     }
 

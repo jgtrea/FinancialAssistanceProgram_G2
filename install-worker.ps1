@@ -71,13 +71,19 @@ if ($nssm) {
     # Invoke php.exe directly (no .bat middleman) so NSSM owns the process and
     # captures stdout/stderr cleanly. The .bat in the repo is kept for manual
     # testing only.
+    #
+    # Low-resource config so a huge batch doesn't starve interactive LAN users:
+    #   - poll every 5s, --throttle=250 → 250ms pause between chunks (DB breathes)
+    #   - AppPriority BELOW_NORMAL → yields CPU to Apache/MySQL serving the website
+    # Bump throttle higher (e.g. 500) if data entry still lags during big runs.
     $phpExe = "C:\xampp\php\php.exe"
-    & nssm install $serviceName $phpExe "spark" "run:json-pdf-queue" "5"
+    & nssm install $serviceName $phpExe "spark" "run:json-pdf-queue" "5" "--throttle=250"
     & nssm set $serviceName AppDirectory $projectDir
     & nssm set $serviceName Start SERVICE_AUTO_START
     & nssm set $serviceName AppExit Default Restart
     & nssm set $serviceName AppRestartDelay 5000
     & nssm set $serviceName AppThrottle 0
+    & nssm set $serviceName AppPriority BELOW_NORMAL_PRIORITY_CLASS
     & nssm set $serviceName AppStdout $logFile
     & nssm set $serviceName AppStderr $logFile
     & nssm set $serviceName Description "Background PDF voucher worker (JSON file queue)"

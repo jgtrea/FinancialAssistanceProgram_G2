@@ -314,6 +314,40 @@ nssm remove  JsonPdfQueue2 confirm     # remove one worker
 > When updating the deployment (below), restart **every** worker, not just the first:
 > `Get-Service JsonPdfQueue* | ForEach-Object { nssm restart $_.Name }`
 
+### Keeping generation light on a shared PC
+
+The server PC is shared by the whole LAN (and often doubles as the admin's workstation), so a huge batch — e.g. 50,000 vouchers — could otherwise saturate CPU/MySQL and slow everyone else's data entry. Two mechanisms keep that in check, both configured automatically by `install-worker.ps1`:
+
+1. **Instant enqueue.** Clicking Generate only writes the job to the queue and returns immediately — the heavy rendering happens in the background worker, never in the web request. The user who generates is never blocked, and the request doesn't tie up an Apache thread.
+2. **A throttled, below-normal-priority worker.** The service runs:
+
+   ```
+   spark run:json-pdf-queue 5 --throttle=250
+   ```
+
+   - `5` — poll the queue every 5 seconds (drop to `2` for snappier small-batch pickup).
+   - `--throttle=250` — pause 250 ms between each 501-student chunk, so MySQL can serve other users between renders.
+   - `BELOW_NORMAL_PRIORITY_CLASS` (set by the installer) — the worker yields CPU to Apache/MySQL and to the admin's foreground apps.
+
+The throttle scales with batch size: a small batch is a single chunk (no pauses) and renders fast, while a 50k batch renders gradually without freezing the other users. Below-normal priority also means a job generated while nobody else is busy still runs at full speed.
+
+#### Tune the throttle
+
+If data entry still lags during big runs, increase the pause (slower generation, gentler on the box):
+
+```powershell
+nssm stop  JsonPdfQueue
+nssm set   JsonPdfQueue AppParameters "spark run:json-pdf-queue 5 --throttle=500"
+nssm start JsonPdfQueue
+```
+
+Verify the running config:
+
+```powershell
+nssm get JsonPdfQueue AppParameters     # spark run:json-pdf-queue 5 --throttle=250
+nssm get JsonPdfQueue AppPriority       # BELOW_NORMAL_PRIORITY_CLASS
+```
+
 ### Updating the deployment
 
 ```powershell
