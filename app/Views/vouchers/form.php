@@ -158,7 +158,7 @@
         <div>
           <label class="vs-label required" for="school_year">School Year</label>
           <input id="school_year" name="school_year" type="text"
-                 class="vs-input <?= ($validation && $validation->hasError('school_year')) ? 'vs-input-error' : '' ?>"
+                 class="vs-input vs-uppercase <?= ($validation && $validation->hasError('school_year')) ? 'vs-input-error' : '' ?>"
                  value="<?= old('school_year', $voucher['school_year'] ?? '') ?>"
                  placeholder="e.g. 2025-2026" required>
         </div>

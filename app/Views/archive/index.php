@@ -19,18 +19,22 @@
         </div>
     </div>
 
-    <div class="d-flex align-items-center gap-2 flex-wrap mb-3">
-        <form method="get" id="archiveFilterForm" class="vs-advanced-search vs-advanced-search-outside">
-            <input type="text" name="q" class="vs-input vs-advanced-search-input" placeholder="Enter keyword to search archived vouchers (name, school, etc.)" value="<?= esc((string) ($keyword ?? ''), 'attr') ?>">
-            <button type="button" class="vs-btn vs-btn-outline" id="btnOpenArchiveFilter">
+    <div class="d-flex align-items-center gap-2 mb-3">
+        <form method="get" id="archiveFilterForm" style="flex:1;min-width:0;display:flex;align-items:center;gap:0.5rem">
+            <input type="text" name="q" class="vs-input vs-advanced-search-input" placeholder="Enter keyword to search (name, school)" value="<?= esc((string) ($keyword ?? ''), 'attr') ?>" style="flex:1;min-width:0">
+            <button type="button" class="vs-btn vs-btn-outline" id="btnOpenArchiveFilter" style="flex-shrink:0">
                 Filters
                 <span id="archiveFilterBadge" class="badge bg-primary" style="display:<?= $activeFilterCount > 0 ? 'inline-block' : 'none' ?>;margin-left:.35rem"><?= $activeFilterCount > 0 ? esc($activeFilterCount) : '' ?></span>
             </button>
             <?php foreach ($filterKeys as $k): ?>
               <input type="hidden" name="<?= esc($k, 'attr') ?>" value="<?= esc($f($k), 'attr') ?>">
             <?php endforeach ?>
+            <span style="color:var(--border);font-size:1.2rem;line-height:1;user-select:none;flex-shrink:0">|</span>
+            <button type="submit" class="vs-btn vs-btn-primary" style="flex-shrink:0">Search</button>
+            <a href="<?= site_url('admin/archive') ?>" class="vs-btn vs-btn-outline" style="flex-shrink:0">Clear</a>
         </form>
-        <div class="ms-auto d-flex gap-2">
+        <span style="color:var(--border);font-size:1.2rem;line-height:1;user-select:none;flex-shrink:0">|</span>
+        <div style="display:flex;gap:0.5rem;flex-shrink:0">
             <button type="button" class="vs-btn vs-btn-danger" id="btnArchiveCurrentData">
                 Archive Current Data
             </button>
@@ -44,8 +48,7 @@
                     Open <strong>Filters</strong> and choose a <strong>School Year</strong> to load archived records.
                 </div>
             <?php else: ?>
-            <table id="archivedVouchersTable" class="vs-datatable js-data-table"
-                   data-page-search="customArchiveSearch"
+            <table id="archivedVouchersTable" class="vs-datatable js-data-table" data-page-search="customArchiveSearch"
                    data-search-placeholder="Search archived vouchers..."
                    data-order='[[3,"asc"]]'
                    data-col-defs='[{"orderData":[3],"targets":[0]},{"visible":false,"targets":[3]}]'
@@ -267,6 +270,8 @@
                 }
                 if (hidden) hidden.value = '';
             });
+            closeFilter();
+            if (filterForm) filterForm.submit();
         });
     }
     // ── Archive Current Data button ───────────────────────────────────────────

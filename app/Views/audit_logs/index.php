@@ -20,15 +20,18 @@
         </div>
     </div>
 
-    <form method="get" id="auditFilterForm" class="vs-advanced-search vs-advanced-search-outside mb-3">
-        <input type="text" name="q" class="vs-input vs-advanced-search-input" placeholder="Enter keyword to search (action, description, etc.)" value="<?= esc((string) ($keyword ?? ''), 'attr') ?>">
-        <button type="button" class="vs-btn vs-btn-outline" id="auditBtnOpenFilter">
+    <form method="get" id="auditFilterForm" style="display:flex;align-items:center;gap:0.5rem;margin-bottom:1rem">
+        <input type="text" name="q" class="vs-input vs-advanced-search-input" placeholder="Enter keyword to search (action, description)" value="<?= esc((string) ($keyword ?? ''), 'attr') ?>" style="flex:1;min-width:0">
+        <button type="button" class="vs-btn vs-btn-outline" id="auditBtnOpenFilter" style="flex-shrink:0">
             Filters
             <span id="auditFilterBadge" class="badge bg-primary" style="display:<?= $activeFilterCount > 0 ? 'inline-block' : 'none' ?>;margin-left:.35rem"><?= $activeFilterCount > 0 ? esc($activeFilterCount) : '' ?></span>
         </button>
         <?php foreach ($filterKeys as $k): ?>
             <input type="hidden" name="<?= esc($k, 'attr') ?>" value="<?= esc((string) $filterValues[$k], 'attr') ?>">
         <?php endforeach ?>
+        <span style="color:var(--border);font-size:1.2rem;line-height:1;user-select:none;flex-shrink:0">|</span>
+        <button type="submit" class="vs-btn vs-btn-primary" style="flex-shrink:0">Search</button>
+        <a href="<?= site_url('user/audit-logs') ?>" class="vs-btn vs-btn-outline" style="flex-shrink:0">Clear</a>
     </form>
 
     <div class="vs-card">
@@ -65,7 +68,7 @@
                             </td>
                             <td class="small"><?= esc($log['user_agent']) ?></td>
                             <td>
-                                <?= esc($log['full_name'] ?? $log['username'] ?? '-') ?>
+                                <?= esc($log['full_name'] ?? $log['email'] ?? '-') ?>
                                 <?php if (!empty($log['user_id'])): ?>
                                     <span class="text-muted small">#<?= esc($log['user_id']) ?></span>
                                 <?php endif; ?>
@@ -170,8 +173,9 @@
                     var input = filterForm.elements[filterFieldToParam[k]];
                     if (input) input.value = '';
                 });
-                filterForm.submit();
             }
+            closeFilter();
+            if (filterForm) filterForm.submit();
         });
 }());
 </script>

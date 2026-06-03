@@ -63,9 +63,6 @@ function initGenericDataTables() {
       }
     }
 
-    const advInput = document.querySelector('.vs-advanced-search-input');
-    if (advInput) window.VS.bindFullTableSearch(dt, advInput);
-
   });
 }
 
@@ -116,7 +113,8 @@ window.VS.bindCurrentPageSearch = function bindCurrentPageSearch(dt, input) {
     dt.rows({ page: 'current' }).every(function () {
       const row = this.node();
       if (!row) return;
-      const text = normalize(row.textContent);
+      const extra = normalize(row.dataset.searchExtra || '');
+      const text  = normalize(row.textContent) + ' ' + extra;
       row.style.display = !query || text.indexOf(query) !== -1 ? '' : 'none';
     });
   }

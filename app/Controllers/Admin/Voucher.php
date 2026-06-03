@@ -59,9 +59,9 @@ class Voucher extends Controller
             'junior_high_school'           => 'required|max_length[200]',
             'preferred_senior_high_school' => 'required|max_length[200]',
             'contact_number'               => 'permit_empty|max_length[30]|regex_match[/^[0-9+().\\-\\s]+$/]',
-            'remarks_status'               => 'permit_empty|in_list[PASSED,FOR REVIEW,FAILED]',
+            'remarks_status'               => 'required|in_list[PASSED,FOR REVIEW,FAILED]',
             'school_year'                  => 'required|max_length[20]|regex_match[/^\\d{4}(-\\d{4})?$/]',
-            'eligibility_status'           => 'permit_empty|in_list[eligible,not_eligible]',
+            'eligibility_status'           => 'required|in_list[eligible,not_eligible]',
         ];
 
         if ($includeVoucherStatus) {
@@ -385,6 +385,10 @@ class Voucher extends Controller
                 'data-eligibility'    => $elig,
                 'data-active'         => $isActive ? '1' : '0',
                 'data-gwa'            => (string) ($v['gwa'] ?? ''),
+                'data-search-extra'   => implode(' ', array_filter([
+                    $v['jhs_acronym'] ?? '',
+                    $v['shs_acronym'] ?? '',
+                ])),
             ],
             'checkbox'      => $checkbox,
             'voucher_no'    => $voucherNo,
@@ -394,10 +398,10 @@ class Voucher extends Controller
             'shs'           => $shs,
             'school_year'   => $schoolYear,
             'eligibility'   => $eligCell,
-            'status'        => $statusCell,
             'remarks'       => $remarks,
             'generate_count'=> $genCount,
             'last_generated'=> $lastGenCell,
+            'status'        => $statusCell,
             'actions'       => $actCell,
         ];
     }

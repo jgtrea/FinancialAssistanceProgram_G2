@@ -128,12 +128,60 @@
     }
   }
 
+  var remarksOptionsByEligibility = {
+    eligible:     ['PASSED'],
+    not_eligible: ['FOR REVIEW', 'FAILED'],
+  };
+
+  function vmUpdateRemarksOptions(eligValue) {
+    var remarksEl = document.getElementById('vmRemarks');
+    if (!remarksEl) return;
+    var current = remarksEl.value;
+    var noElig  = !eligValue;
+    var allowed = remarksOptionsByEligibility[eligValue] || [];
+    var newVal  = allowed.includes(current) ? current : '';
+
+    if (window.jQuery && $(remarksEl).hasClass('select2-hidden-accessible')) {
+      $(remarksEl).empty().append('<option></option>');
+      allowed.forEach(function (v) {
+        $(remarksEl).append(new Option(v, v, false, v === newVal));
+      });
+      $(remarksEl).val(newVal).prop('disabled', noElig).trigger('change');
+    } else {
+      remarksEl.innerHTML = '<option></option>';
+      allowed.forEach(function (v) {
+        var opt = document.createElement('option');
+        opt.value = v; opt.textContent = v;
+        if (v === newVal) opt.selected = true;
+        remarksEl.appendChild(opt);
+      });
+      remarksEl.value    = newVal;
+      remarksEl.disabled = noElig;
+    }
+  }
+
+  // Use jQuery delegation so Select2's triggered change events are caught.
+  function bindEligibilityChange() {
+    if (window.jQuery) {
+      $(document).off('change.vmElig', '#vmEligibility')
+                 .on('change.vmElig',  '#vmEligibility', function () {
+        vmUpdateRemarksOptions(this.value);
+      });
+    } else {
+      document.addEventListener('change', function (e) {
+        if (e.target && e.target.id === 'vmEligibility') vmUpdateRemarksOptions(e.target.value);
+      });
+    }
+  }
+  bindEligibilityChange();
+
   function vmClearFields() {
     document.getElementById('vmStudentId').value = '';
     vmFieldIds.forEach(function (id) {
       vmSetFieldValue(document.getElementById(id), '');
     });
-    document.getElementById('vmEligibility').value = 'eligible';
+    document.getElementById('vmEligibility').value = '';
+    vmUpdateRemarksOptions('');
     if (vmLastGeneratedByEl) vmLastGeneratedByEl.textContent = '-';
     if (vmLastGeneratedAtEl) vmLastGeneratedAtEl.textContent = '';
     if (vmGenerationHistoryDetails) vmGenerationHistoryDetails.open = false;
@@ -142,7 +190,14 @@
 
   function vmPopulateFields(student) {
     document.getElementById('vmStudentId').value = student.student_id || '';
+    // Set eligibility first so remarks options update correctly before remarks value is set.
+    var eligEl = document.getElementById('vmEligibility');
+    if (eligEl) {
+      vmSetFieldValue(eligEl, student.eligibility_status || '');
+      vmUpdateRemarksOptions(eligEl.value);
+    }
     vmFieldIds.forEach(function (id) {
+      if (id === 'vmEligibility') return; // already handled above
       var el = document.getElementById(id);
       if (!el) return;
       vmSetFieldValue(el, student[vmFieldToName[id]]);
@@ -256,6 +311,7 @@
       document.getElementById('vmVoucherDate').value = new Date().toISOString().slice(0, 10);
       loadSchoolOptions('', '');
       initModalExtraSelects();
+      vmUpdateRemarksOptions('');
       voucherModal.style.display = 'flex';
       return;
     }

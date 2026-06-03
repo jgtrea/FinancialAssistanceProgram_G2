@@ -25,7 +25,7 @@ class AuditLogController extends BaseController
         $hasKeyword = $keyword !== '';
 
         $auditModel
-            ->select('audit_log.*, users.username, users.email')
+            ->select("audit_log.*, users.email, TRIM(CONCAT_WS(' ', NULLIF(users.first_name,''), NULLIF(users.middle_name,''), NULLIF(users.last_name,''))) AS full_name")
             ->join('users', 'users.user_id = audit_log.user_id', 'left');
 
         if (!$isAdminRoute) {
@@ -48,7 +48,8 @@ class AuditLogController extends BaseController
                 ->orLike('audit_log.action', $keyword)
                 ->orLike('audit_log.ip_address', $keyword)
                 ->orLike('audit_log.user_agent', $keyword)
-                ->orLike('users.username', $keyword)
+                ->orLike('users.first_name', $keyword)
+                ->orLike('users.last_name', $keyword)
                 ->orLike('users.email', $keyword)
                 ->groupEnd();
         }

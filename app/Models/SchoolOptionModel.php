@@ -76,8 +76,23 @@ class SchoolOptionModel extends Model
             $this->db->table('school')->insert([
                 'school_level' => $level,
                 'school_name'  => $name,
+                'acronym'      => $this->generateAcronym($name),
+                'is_active'    => 1,
             ]);
         }
+    }
+
+    private function generateAcronym(string $name): string
+    {
+        $skip  = ['AND', 'THE', 'OF', 'A', 'AN', 'OR', 'FOR'];
+        $parts = preg_split('/[\s\-]+/', $name, -1, PREG_SPLIT_NO_EMPTY) ?: [];
+        $initials = '';
+        foreach ($parts as $word) {
+            $word = strtoupper(preg_replace('/[^A-Za-z0-9]/', '', $word));
+            if ($word === '' || in_array($word, $skip, true)) continue;
+            $initials .= $word[0];
+        }
+        return $initials;
     }
 
     private function upper(string $value): string

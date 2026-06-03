@@ -127,6 +127,7 @@ class VoucherModel extends Model
 
         $keyword = trim($keyword);
         if ($keyword !== '') {
+            $escapedKw = $this->db->escape('%' . $keyword . '%');
             $builder
                 ->groupStart()
                 ->like('voucher_no', $keyword)
@@ -141,6 +142,8 @@ class VoucherModel extends Model
                 ->orLike('remarks_status', $keyword)
                 ->orLike('voucher_status', $keyword)
                 ->orLike('contact_number', $keyword)
+                ->orWhere("`junior_high_school` IN (SELECT `school_name` FROM `school` WHERE `acronym` LIKE {$escapedKw})")
+                ->orWhere("`preferred_senior_high_school` IN (SELECT `school_name` FROM `school` WHERE `acronym` LIKE {$escapedKw})")
                 ->groupEnd();
         }
 
@@ -201,15 +204,15 @@ class VoucherModel extends Model
         $columnMap = [
             1  => 'voucher_no',
             2  => 'last_name',          // visible Name column
-            3  => 'last_name',          // hidden name_sort column (DataTables uses this to sort col 2)
+            3  => 'last_name',          // hidden name_sort column
             4  => 'junior_high_school',
             5  => 'preferred_senior_high_school',
             6  => 'school_year',
             7  => 'eligibility_status',
-            8  => 'is_active',
-            9  => 'remarks_status',
-            10 => 'generate_count',
-            11 => 'generated_at',
+            8  => 'remarks_status',
+            9  => 'generate_count',
+            10 => 'generated_at',
+            11 => 'is_active',
         ];
 
         // Total (unfiltered).
@@ -220,7 +223,8 @@ class VoucherModel extends Model
         // together. Only $keyword + advanced filters decide whether the
         // 1000-row "recent scope" cap applies (see $noScope below).
         $likeGroup = function ($builder, string $needle): void {
-            $escaped = $this->db->escape('%' . $needle . '%');
+            $escaped      = $this->db->escape('%' . $needle . '%');
+            $escapedAcr   = $this->db->escape('%' . $needle . '%');
             $builder
                 ->groupStart()
                 ->like('voucher_no', $needle)
@@ -240,6 +244,8 @@ class VoucherModel extends Model
                 ->orWhere("CONCAT_WS(' ', `first_name`, `last_name`) LIKE {$escaped}")
                 ->orWhere("CONCAT_WS(', ', `last_name`, `first_name`) LIKE {$escaped}")
                 ->orWhere("CONCAT_WS(', ', `last_name`, CONCAT_WS(' ', `first_name`, `middle_name`, `suffix`)) LIKE {$escaped}")
+                ->orWhere("`junior_high_school` IN (SELECT `school_name` FROM `school` WHERE `acronym` LIKE {$escapedAcr})")
+                ->orWhere("`preferred_senior_high_school` IN (SELECT `school_name` FROM `school` WHERE `acronym` LIKE {$escapedAcr})")
                 ->groupEnd();
         };
 
@@ -292,7 +298,9 @@ class VoucherModel extends Model
                 eligibility_status, voucher_status, is_active,
                 gwa, rank_no, gender, junior_high_school,
                 contact_number, remarks_status, created_at, generated_at,
-                generate_count
+                generate_count,
+                (SELECT acronym FROM school WHERE school_name = students.junior_high_school LIMIT 1) AS jhs_acronym,
+                (SELECT acronym FROM school WHERE school_name = students.preferred_senior_high_school LIMIT 1) AS shs_acronym
             ");
         if ($scopeIds !== null && !empty($scopeIds)) {
             $builder->whereIn('student_id', $scopeIds);
@@ -454,6 +462,7 @@ class VoucherModel extends Model
 
         $keyword = trim($keyword);
         if ($keyword !== '') {
+            $escapedKw = $this->db->escape('%' . $keyword . '%');
             $builder
                 ->groupStart()
                 ->like('voucher_no', $keyword)
@@ -468,6 +477,8 @@ class VoucherModel extends Model
                 ->orLike('remarks_status', $keyword)
                 ->orLike('voucher_status', $keyword)
                 ->orLike('contact_number', $keyword)
+                ->orWhere("`junior_high_school` IN (SELECT `school_name` FROM `school` WHERE `acronym` LIKE {$escapedKw})")
+                ->orWhere("`preferred_senior_high_school` IN (SELECT `school_name` FROM `school` WHERE `acronym` LIKE {$escapedKw})")
                 ->groupEnd();
         }
 

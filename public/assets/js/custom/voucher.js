@@ -50,10 +50,10 @@ document.addEventListener('DOMContentLoaded', function () {
         { data: 'shs' },
         { data: 'school_year' },
         { data: 'eligibility' },
-        { data: 'status' },
         { data: 'remarks' },
         { data: 'generate_count' },
         { data: 'last_generated' },
+        { data: 'status' },
         { data: 'actions',        orderable: false },
       ],
       columnDefs: [
@@ -105,11 +105,6 @@ document.addEventListener('DOMContentLoaded', function () {
                            || document.getElementById('customVouchersSearch');
     if (currentPageSearch && window.VS && window.VS.bindCurrentPageSearch) {
       window.VS.bindCurrentPageSearch(dt, currentPageSearch);
-    }
-
-    const advInput = document.querySelector('.vs-advanced-search-input');
-    if (advInput && window.VS && window.VS.bindFullTableSearch) {
-      window.VS.bindFullTableSearch(dt, advInput);
     }
   }
 

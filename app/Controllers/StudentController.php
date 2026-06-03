@@ -54,11 +54,11 @@ class StudentController extends BaseController
         $history = (new GenerationHistoryModel())->getRecentForStudent((int) $id);
         $latest  = $history[0] ?? null;
 
-        $student['last_generated_by'] = $latest['username'] ?? null;
+        $student['last_generated_by'] = $latest['full_name'] ?? null;
         $student['last_generated_at'] = $latest['generated_at'] ?? ($student['generated_at'] ?? null);
         $student['generation_history'] = array_map(static function (array $row): array {
             return [
-                'generated_by' => $row['username'] ?? null,
+                'generated_by' => $row['full_name'] ?? null,
                 'generated_at' => $row['generated_at'] ?? null,
                 'source'       => $row['generation_source'] ?? null,
             ];

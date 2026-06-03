@@ -255,7 +255,8 @@ body {
   max-width: 760px;
 }
 .vs-advanced-search-input {
-  min-width: 240px;
+  flex: 1 1 320px;
+  min-width: 200px;
 }
 .vs-input-wrap {
   position: relative;
