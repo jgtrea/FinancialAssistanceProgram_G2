@@ -50,10 +50,10 @@ document.addEventListener('DOMContentLoaded', function () {
         { data: 'shs' },
         { data: 'school_year' },
         { data: 'eligibility' },
-        { data: 'status' },
         { data: 'remarks' },
         { data: 'generate_count' },
         { data: 'last_generated' },
+        { data: 'status' },
         { data: 'actions',        orderable: false },
       ],
       columnDefs: [

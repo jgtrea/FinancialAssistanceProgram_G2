@@ -138,31 +138,32 @@
         <div id="userModalAlert"></div>
 
         <div class="vs-form-grid vs-form-grid-4">
-          <div class="vs-span-2">
+          <!-- Row 1: First Name, Middle Name, Last Name -->
+          <div>
             <label class="vs-label required" for="umFirstName">First Name</label>
             <input type="text" id="umFirstName" name="first_name" class="vs-input vs-uppercase" required autocapitalize="words" spellcheck="false">
           </div>
-
-          <div class="vs-span-2">
+          <div>
             <label class="vs-label" for="umMiddleName">Middle Name</label>
             <input type="text" id="umMiddleName" name="middle_name" class="vs-input vs-uppercase" autocapitalize="words" spellcheck="false">
           </div>
-
-          <div class="vs-span-2">
+          <div>
             <label class="vs-label required" for="umLastName">Last Name</label>
             <input type="text" id="umLastName" name="last_name" class="vs-input vs-uppercase" required autocapitalize="words" spellcheck="false">
           </div>
+          <div></div>
 
+          <!-- Row 2: Email, Password -->
           <div class="vs-span-2">
             <label class="vs-label required" for="umEmail">Email</label>
             <input type="email" id="umEmail" name="email" class="vs-input" required autocomplete="email" autocapitalize="none" spellcheck="false">
           </div>
-
           <div class="vs-span-2">
             <label class="vs-label" id="umPasswordLabel" for="umPassword">Password</label>
             <input type="password" id="umPassword" name="password" class="vs-input" autocomplete="new-password" autocapitalize="none" spellcheck="false">
           </div>
 
+          <!-- Row 3: Role -->
           <div class="vs-span-2">
             <label class="vs-label required" for="umRole">Role</label>
             <input list="umRole-list" id="umRole" name="role" class="vs-input" placeholder="-- Select --" required>
@@ -171,6 +172,7 @@
               <option value="user">
             </datalist>
           </div>
+          <div class="vs-span-2"></div>
         </div>
       </div>
 

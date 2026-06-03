@@ -78,6 +78,7 @@
                     <th>School Name</th>
                     <th>Acronym</th>
                     <th>Level</th>
+                    <th>Status</th>
                     <th class="actions-column actions-column--sm" data-orderable="false">Actions</th>
                 </tr>
             </thead>
@@ -105,6 +106,13 @@
                         <td><?= esc($school['school_name']) ?></td>
                         <td><?= esc($school['acronym'] ?? '') ?></td>
                         <td><?= esc($level) ?></td>
+                        <td>
+                            <span style="color:<?= $isActive ? '#16a34a' : '#9ca3af' ?>;display:inline-flex"
+                                  title="<?= $isActive ? 'Active' : 'Archived' ?>"
+                                  aria-label="<?= $isActive ? 'Active' : 'Archived' ?>">
+                                <?= asset_icon($isActive ? 'circle_check' : 'circle_x', ['width' => '18', 'height' => '18']) ?>
+                            </span>
+                        </td>
                         <td class="actions-cell">
                             <?php if ($isActive): ?>
                                 <div class="dropdown">

@@ -86,6 +86,7 @@
                     <th>Position Title</th>
                     <th data-orderable="false">Signature</th>
                     <th data-orderable="false">Selected</th>
+                    <th data-orderable="false">Status</th>
                     <th class="actions-column actions-column--sm">Actions</th>
                     <th></th>
                 </tr>
@@ -132,6 +133,13 @@
                                   style="color:<?= $iconColor ?>;display:inline-flex"
                                   title="<?= $iconTitle ?>" aria-label="<?= $iconTitle ?>">
                                 <?= asset_icon($iconName, ['width' => '18', 'height' => '18']) ?>
+                            </span>
+                        </td>
+                        <td>
+                            <span style="color:<?= $isArchived ? '#9ca3af' : '#16a34a' ?>;display:inline-flex"
+                                  title="<?= $isArchived ? 'Archived' : 'Active' ?>"
+                                  aria-label="<?= $isArchived ? 'Archived' : 'Active' ?>">
+                                <?= asset_icon($isArchived ? 'circle_x' : 'circle_check', ['width' => '18', 'height' => '18']) ?>
                             </span>
                         </td>
                         <td class="actions-cell">
@@ -213,6 +221,22 @@
         <div id="signatoryModalAlert"></div>
 
         <div class="vs-form-grid vs-form-grid-4">
+          <!-- Row 1: First Name, Middle Name, Last Name -->
+          <div>
+            <label class="vs-label required" for="smFirstName">First Name</label>
+            <input id="smFirstName" name="first_name" type="text" class="vs-input vs-uppercase" required>
+          </div>
+          <div>
+            <label class="vs-label" for="smMiddleName">Middle Name</label>
+            <input id="smMiddleName" name="middle_name" type="text" class="vs-input vs-uppercase">
+          </div>
+          <div>
+            <label class="vs-label required" for="smLastName">Last Name</label>
+            <input id="smLastName" name="last_name" type="text" class="vs-input vs-uppercase" required>
+          </div>
+          <div></div>
+
+          <!-- Row 2: Prefix, Suffix -->
           <div>
             <label class="vs-label" for="smPrefix">Prefix</label>
             <input list="smPrefix-list" id="smPrefix" name="prefix" class="vs-input" placeholder="-- Select --">
@@ -222,22 +246,6 @@
               <?php endforeach ?>
             </datalist>
           </div>
-
-          <div>
-            <label class="vs-label required" for="smFirstName">First Name</label>
-            <input id="smFirstName" name="first_name" type="text" class="vs-input vs-uppercase" required>
-          </div>
-
-          <div>
-            <label class="vs-label" for="smMiddleName">Middle Name</label>
-            <input id="smMiddleName" name="middle_name" type="text" class="vs-input vs-uppercase">
-          </div>
-
-          <div>
-            <label class="vs-label required" for="smLastName">Last Name</label>
-            <input id="smLastName" name="last_name" type="text" class="vs-input vs-uppercase" required>
-          </div>
-
           <div>
             <label class="vs-label" for="smSuffix">Suffix</label>
             <input list="smSuffix-list" id="smSuffix" name="suffix" class="vs-input" placeholder="-- Select --">
@@ -247,7 +255,9 @@
               <?php endforeach ?>
             </datalist>
           </div>
+          <div></div><div></div>
 
+          <!-- Row 3: Degree, Position Title -->
           <div>
             <label class="vs-label" for="smDegree">Degree</label>
             <input list="smDegree-list" id="smDegree" name="degree" class="vs-input" placeholder="-- Select --">

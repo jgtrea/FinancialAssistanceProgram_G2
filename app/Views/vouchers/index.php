@@ -104,10 +104,10 @@
             <th>Preferred School</th>
             <th>School Year</th>
             <th>Eligibility</th>
-            <th>Status</th>
             <th>Remarks</th>
             <th>Generate Count</th>
             <th>Last Generated</th>
+            <th>Status</th>
             <th>Actions</th>
           </tr>
         </thead>

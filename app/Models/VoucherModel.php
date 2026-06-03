@@ -204,15 +204,15 @@ class VoucherModel extends Model
         $columnMap = [
             1  => 'voucher_no',
             2  => 'last_name',          // visible Name column
-            3  => 'last_name',          // hidden name_sort column (DataTables uses this to sort col 2)
+            3  => 'last_name',          // hidden name_sort column
             4  => 'junior_high_school',
             5  => 'preferred_senior_high_school',
             6  => 'school_year',
             7  => 'eligibility_status',
-            8  => 'is_active',
-            9  => 'remarks_status',
-            10 => 'generate_count',
-            11 => 'generated_at',
+            8  => 'remarks_status',
+            9  => 'generate_count',
+            10 => 'generated_at',
+            11 => 'is_active',
         ];
 
         // Total (unfiltered).
