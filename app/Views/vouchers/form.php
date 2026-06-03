@@ -14,7 +14,7 @@
 <div class="vs-page-header mb-4">
   <div>
     <h4 class="vs-page-title"><?= esc($title) ?></h4>
-    <p class="vs-page-sub">Enter student and voucher details.</p>
+    <p class="vs-page-sub">Enter Student And Voucher Details.</p>
   </div>
   <a href="<?= site_url($prefix . '/students') ?>" class="vs-btn vs-btn-outline">Back to Vouchers</a>
 </div>

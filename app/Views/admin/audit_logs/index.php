@@ -16,7 +16,7 @@
 <div class="vs-page-header mb-4">
         <div>
             <h4 class="vs-page-title">Audit Logs</h4>
-            <p class="vs-page-sub">Track account activity and voucher changes.</p>
+            <p class="vs-page-sub">Track Account Activity And Voucher Changes.</p>
         </div>
     </div>
 

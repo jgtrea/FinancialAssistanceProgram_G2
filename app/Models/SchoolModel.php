@@ -15,6 +15,7 @@ class SchoolModel extends Model
     {
         $builder = $this->db->table('school')
             ->select('school_id, school_name, acronym, school_level, is_active')
+            ->orderBy('is_active', 'DESC')
             ->orderBy('school_level', 'ASC')
             ->orderBy('school_name', 'ASC');
 

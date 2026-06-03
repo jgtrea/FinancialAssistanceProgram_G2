@@ -7,7 +7,7 @@
 <div class="vs-page-header mb-4">
   <div>
     <h4 class="vs-page-title">Voucher Details</h4>
-    <p class="vs-page-sub">Review the student voucher data.</p>
+    <p class="vs-page-sub">Review The Student Voucher Data.</p>
   </div>
   <a href="<?= site_url($prefix . '/students') ?>" class="vs-btn vs-btn-outline">Back to Vouchers</a>
 </div>

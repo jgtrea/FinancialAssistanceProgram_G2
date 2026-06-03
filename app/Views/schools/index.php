@@ -11,7 +11,7 @@
 <div class="vs-page-header mb-3">
     <div>
         <h4 class="vs-page-title">Schools</h4>
-        <p class="vs-page-sub">Manage junior and senior high school data.</p>
+        <p class="vs-page-sub">Manage Junior And Senior High School Data.</p>
     </div>
 </div>
 
@@ -69,7 +69,7 @@
             <a href="#" id="schoolSelectAllMatchingLink" style="font-weight:600;margin-left:.5rem;display:none"></a>
             <a href="#" id="schoolClearLink" style="margin-left:.5rem;display:none">Clear</a>
         </div>
-        <table id="schoolsTable" class="vs-datatable js-data-table" data-page-search="customSchoolsSearch" data-order='[[1,"asc"]]' style="width:100%">
+        <table id="schoolsTable" class="vs-datatable js-data-table" data-page-search="customSchoolsSearch" data-order='[[6,"desc"],[1,"asc"]]' data-col-defs='[{"orderable":false,"targets":5},{"visible":false,"targets":6}]' style="width:100%">
             <thead>
                 <tr>
                     <th class="vs-th-check">
@@ -80,6 +80,7 @@
                     <th>Level</th>
                     <th>Status</th>
                     <th class="actions-column actions-column--sm" data-orderable="false">Actions</th>
+                    <th style="display:none"></th>
                 </tr>
             </thead>
             <tbody>
@@ -136,6 +137,7 @@
                                 </div>
                             <?php endif ?>
                         </td>
+                        <td style="display:none"><?= $isActive ? '1' : '0' ?></td>
                     </tr>
                 <?php endforeach ?>
             </tbody>
@@ -488,11 +490,19 @@
         if (archModal) archModal.style.display = 'flex';
     });
 
+    function schoolDtRedraw() {
+        if (!window.jQuery || !$.fn.DataTable) return;
+        var tbl = document.getElementById('schoolsTable');
+        if (tbl && $.fn.DataTable.isDataTable(tbl)) $(tbl).DataTable().draw(false);
+    }
+
     function applySchoolArchiveDom(id) {
         var row = document.getElementById('school-row-' + id);
         if (!row) return;
         row.classList.add('vs-row-archived');
         row.setAttribute('data-active', '0');
+        var sortCell = row.cells[row.cells.length - 1];
+        if (sortCell) sortCell.textContent = '0';
         var cb = row.querySelector('.school-row-check');
         if (cb) { cb.disabled = true; cb.checked = false; }
         var actionsCell = row.querySelector('.actions-cell');
@@ -535,6 +545,7 @@
                     applySchoolArchiveDom(id);
                     schoolSelected.delete(id);
                 });
+                schoolDtRedraw();
                 updateBar();
                 updateCheckAll();
                 showAlert(data.message || 'Archived successfully.', 'success');
@@ -569,6 +580,8 @@
                 if (row) {
                     row.classList.remove('vs-row-archived');
                     row.setAttribute('data-active', '1');
+                    var sortCell = row.cells[row.cells.length - 1];
+                    if (sortCell) sortCell.textContent = '1';
                     var cb = row.querySelector('.school-row-check');
                     if (cb) { cb.disabled = false; }
                     var actionsCell = row.querySelector('.actions-cell');
@@ -585,6 +598,7 @@
                         if (newEdit) newEdit.addEventListener('click', function () { smOpen('edit', id); });
                     }
                 }
+                schoolDtRedraw();
                 showAlert(data.message || 'Restored successfully.', 'success');
             } else {
                 showAlert(data.message || 'Failed to restore.', 'error');

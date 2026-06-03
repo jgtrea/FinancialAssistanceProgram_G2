@@ -15,7 +15,7 @@
 <div class="vs-page-header mb-3">
         <div>
             <h4 class="vs-page-title">Archive</h4>
-            <p class="vs-page-sub">View archived student records. Use <strong>Filters</strong> to narrow by school year.</p>
+            <p class="vs-page-sub">View Archived Student Records. Use <strong>Filters</strong> To Narrow By School Year.</p>
         </div>
     </div>
 
@@ -50,15 +50,21 @@
             <?php else: ?>
             <table id="archivedVouchersTable" class="vs-datatable js-data-table" data-page-search="customArchiveSearch"
                    data-search-placeholder="Search archived vouchers..."
-                   data-order='[[3,"asc"]]'
-                   data-col-defs='[{"orderData":[3],"targets":[0]},{"visible":false,"targets":[3]}]'
+                   data-order='[[2,"asc"]]'
+                   data-col-defs='[{"orderData":[2],"targets":[1]},{"visible":false,"targets":2}]'
                    style="width:100%">
                 <thead>
                     <tr>
-                        <th>Student Name</th>
-                        <th>School</th>
+                        <th>Voucher No.</th>
+                        <th>Name</th>
+                        <th style="display:none">Name Sort</th>
+                        <th>Junior High School</th>
+                        <th>Preferred School</th>
+                        <th>School Year</th>
+                        <th>Remarks</th>
+                        <th>Generate Count</th>
+                        <th>Last Generated</th>
                         <th>Archived At</th>
-                        <th></th>
                     </tr>
                 </thead>
                 <tbody>
@@ -67,12 +73,19 @@
                             $aLn = trim((string) ($voucher['last_name']   ?? ''));
                             $aFm = implode(' ', array_filter([trim((string) ($voucher['first_name'] ?? '')), trim((string) ($voucher['middle_name'] ?? ''))]));
                             $aDn = $aLn !== '' ? $aLn . ($aFm !== '' ? ', ' . $aFm : '') : $aFm;
+                            $aSort = trim($aLn . ' ' . $aFm);
                         ?>
                         <tr data-archived-date="<?= !empty($voucher['archived_at']) ? esc(date('Y-m-d', strtotime($voucher['archived_at']))) : '' ?>">
+                            <td><?= esc($voucher['voucher_no'] ?: '-') ?></td>
                             <td><?= esc($aDn) ?></td>
-                            <td><?= esc($voucher['preferred_senior_high_school']) ?></td>
+                            <td style="display:none"><?= esc($aSort) ?></td>
+                            <td><?= esc($voucher['junior_high_school'] ?? '') ?></td>
+                            <td><?= esc($voucher['preferred_senior_high_school'] ?? '') ?></td>
+                            <td><?= esc($voucher['school_year'] ?? '') ?></td>
+                            <td><?= esc($voucher['remarks_status'] ?: '-') ?></td>
+                            <td><?= esc((string) ($voucher['generate_count'] ?? 0)) ?></td>
+                            <td><?= !empty($voucher['generated_at']) ? esc(date('M d, Y', strtotime($voucher['generated_at']))) : '-' ?></td>
                             <td><?= !empty($voucher['archived_at']) ? esc(date('M d, Y h:i A', strtotime($voucher['archived_at']))) : '-' ?></td>
-                            <td><?= esc($voucher['name_sort'] ?? '') ?></td>
                         </tr>
                     <?php endforeach; ?>
                 </tbody>

@@ -126,10 +126,9 @@ class JsonPdfRunner
             $filename = 'json_chunk_' . $jobId . '_' . date('Ymd_His') . '.pdf';
             file_put_contents($dir . $filename, $pdfBytes);
 
-            // Flip the UI badge to "generated" for affected students + bump
-            // generate_count so the listing can show running totals without
-            // re-scanning pdf_jobs JSON.
+            // Reconnect — MySQL may have dropped the connection during mPDF render.
             $db = \Config\Database::connect();
+            try { $db->reconnect(); } catch (\Throwable $_) {}
             $generatedAt = date('Y-m-d H:i:s');
             $db->table('students')
                 ->whereIn('student_id', $ids)

@@ -90,6 +90,10 @@ class PdfJobRunner
             $filename = 'vouchers_job' . $jobId . '_' . date('Ymd_His') . '.pdf';
             file_put_contents($dir . $filename, $pdfBytes);
 
+            // Reconnect after the slow render — MySQL may have dropped the
+            // connection due to wait_timeout during mPDF generation.
+            try { $db->reconnect(); } catch (\Throwable $_) {}
+
             // Flip the UI badge from "Pending" → "Generated" for every student
             // in this chunk, stamping the moment of generation.
             $generatedAt = date('Y-m-d H:i:s');

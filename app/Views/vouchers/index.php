@@ -15,7 +15,7 @@
 <div class="vs-page-header mb-3">
     <div>
       <h4 class="vs-page-title"><?= esc($title) ?></h4>
-      <p class="vs-page-sub">Manage student financial assistance records.</p>
+      <p class="vs-page-sub">Manage Student Financial Assistance Records.</p>
     </div>
   </div>
 
@@ -651,6 +651,8 @@ window.VM_CONFIG = {
         var rowEl = document.getElementById('row-' + id);
         if (rowEl) {
           rowEl.setAttribute('data-active', isActive ? '1' : '0');
+          if (isActive) rowEl.classList.remove('vs-row-archived');
+          else          rowEl.classList.add('vs-row-archived');
           var iconSpan = rowEl.querySelector('.js-status-icon');
           if (iconSpan) {
             iconSpan.innerHTML   = isActive ? statusIcons.active : statusIcons.inactive;
@@ -747,6 +749,8 @@ window.VM_CONFIG = {
           var rowEl = document.getElementById('row-' + id);
           if (!rowEl) return;
           rowEl.setAttribute('data-active', isActive ? '1' : '0');
+          if (isActive) rowEl.classList.remove('vs-row-archived');
+          else          rowEl.classList.add('vs-row-archived');
           var iconSpan = rowEl.querySelector('.js-status-icon');
           if (iconSpan) {
             iconSpan.innerHTML   = isActive ? statusIcons.active : statusIcons.inactive;

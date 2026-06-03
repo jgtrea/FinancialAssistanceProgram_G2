@@ -5,7 +5,7 @@
 <div class="vs-page-header mb-4">
         <div>
             <h4 class="vs-page-title">Dashboard</h4>
-            <p class="vs-page-sub">Review voucher activity and recent student records.</p>
+            <p class="vs-page-sub">Review Voucher Activity And Recent Student Records.</p>
         </div>
     </div>
 

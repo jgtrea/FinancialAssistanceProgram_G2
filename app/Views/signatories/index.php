@@ -15,7 +15,7 @@
 <div class="vs-page-header mb-3">
         <div>
             <h4 class="vs-page-title">Signatories</h4>
-            <p class="vs-page-sub">Manage active voucher signatories.</p>
+            <p class="vs-page-sub">Manage Active Voucher Signatories.</p>
         </div>
     </div>
 
@@ -76,8 +76,8 @@
             </div>
             <table id="signatoriesTable" class="vs-datatable js-data-table" data-page-search="customSignatoriesSearch"
                    data-search-placeholder="Search signatories..."
-                   data-order='[[7,"asc"]]'
-                   data-col-defs='[{"orderData":[7],"targets":[1]},{"visible":false,"targets":7}]'
+                   data-order='[[8,"desc"],[7,"asc"]]'
+                   data-col-defs='[{"orderData":[7],"targets":[1]},{"visible":false,"targets":7},{"visible":false,"targets":8}]'
                    style="width:100%">
             <thead>
                 <tr>
@@ -88,6 +88,7 @@
                     <th data-orderable="false">Selected</th>
                     <th data-orderable="false">Status</th>
                     <th class="actions-column actions-column--sm">Actions</th>
+                    <th style="display:none"></th>
                     <th style="display:none"></th>
                 </tr>
             </thead>
@@ -177,6 +178,7 @@
                             </div>
                         </td>
                         <td style="display:none"><?= esc($nameSortKey) ?></td>
+                        <td style="display:none"><?= $isArchived ? '0' : '1' ?></td>
                     </tr>
                 <?php endforeach; ?>
             </tbody>
@@ -798,11 +800,20 @@
         if (sigArchModal) sigArchModal.style.display = 'flex';
     });
 
+    function sigDtRedraw() {
+        if (!window.jQuery || !$.fn.DataTable) return;
+        var tbl = document.getElementById('signatoriesTable');
+        if (tbl && $.fn.DataTable.isDataTable(tbl)) $(tbl).DataTable().draw(false);
+    }
+
     function applySigArchiveDom(id) {
         var row = document.getElementById('sig-row-' + id);
         if (!row) return;
         row.classList.add('vs-row-archived');
         row.setAttribute('data-archived', '1');
+        // Update hidden is_active sort cell to 0 so DT re-sorts to bottom.
+        var lastCell = row.cells[row.cells.length - 1];
+        if (lastCell) lastCell.textContent = '0';
         var cb = row.querySelector('.sig-row-check');
         if (cb) { cb.disabled = true; cb.checked = false; }
         var badge = document.getElementById('sig-badge-' + id);
@@ -850,6 +861,7 @@
                     applySigArchiveDom(id);
                     selectedIds.delete(id);
                 });
+                sigDtRedraw();
                 updateActionBar();
                 showAlert(data.message || 'Archived successfully.', 'success');
             } else {

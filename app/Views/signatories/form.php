@@ -20,7 +20,7 @@
 <div class="vs-page-header mb-4">
   <div>
     <h4 class="vs-page-title"><?= esc($title) ?></h4>
-    <p class="vs-page-sub">Enter signatory details and upload a signature image.</p>
+    <p class="vs-page-sub">Enter Signatory Details And Upload A Signature Image.</p>
   </div>
   <a href="<?= base_url('/signatories') ?>" class="vs-btn vs-btn-outline">Back to signatories</a>
 </div>

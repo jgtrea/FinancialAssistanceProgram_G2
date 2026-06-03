@@ -23,19 +23,9 @@ class Authentication extends BaseController
         $input    = strtolower(trim((string) $this->request->getPost('username')));
         $password = $this->request->getPost('password');
 
-        // Try email first, then full-name match (case-insensitive).
-        $user = $model->where('email', $input)->first();
-
-        if (!$user) {
-            $nameUpper = mb_strtoupper($input, 'UTF-8');
-            $user = $model->db->table('users')
-                ->where("UPPER(CONCAT_WS(' ', first_name, last_name))", $nameUpper)
-                ->orWhere("UPPER(CONCAT_WS(' ', first_name, middle_name, last_name))", $nameUpper)
-                ->orWhere("UPPER(CONCAT_WS(', ', last_name, first_name))", $nameUpper)
-                ->limit(1)
-                ->get()
-                ->getRowArray();
-        }
+        // Try email first, then username.
+        $user = $model->where('email', $input)->first()
+             ?? $model->where('username', $input)->first();
 
         if (!$user || $user['is_active'] == 0) {
             log_action(null, 'LOGIN_FAILED', "Failed login attempt for \"{$input}\"");
@@ -47,15 +37,9 @@ class Authentication extends BaseController
             return redirect()->to('/')->with('error', 'Invalid credentials.');
         }
 
-        $fullName = trim(implode(' ', array_filter([
-            $user['first_name'] ?? '',
-            $user['middle_name'] ?? '',
-            $user['last_name'] ?? '',
-        ])));
-
         session()->set([
             'user_id'    => $user['user_id'],
-            'full_name'  => $fullName ?: $user['email'],
+            'full_name'  => $user['username'] ?? $user['email'],
             'role'       => $user['role'],
             'isLoggedIn' => true,
         ]);

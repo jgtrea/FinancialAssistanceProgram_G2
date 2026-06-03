@@ -209,6 +209,96 @@
             "file_path": null,
             "completed_at": "2026-06-03 04:42:22",
             "error_message": "Chunk failed: MySQL server has gone away"
+        },
+        {
+            "job_id": 38500001,
+            "parent_job_id": 385,
+            "chunk_index": 1,
+            "total_chunks": 1,
+            "voucher_ids": [
+                461
+            ],
+            "created_by": 2,
+            "created_at": "2026-06-03 14:27:40",
+            "status": "failed",
+            "file_path": null,
+            "completed_at": "2026-06-03 06:27:40",
+            "error_message": "MySQL server has gone away"
+        },
+        {
+            "job_id": 385,
+            "parent_job_id": null,
+            "chunk_index": null,
+            "total_chunks": 1,
+            "voucher_ids": [
+                461
+            ],
+            "created_by": 2,
+            "created_at": "2026-06-03 14:27:40",
+            "status": "failed",
+            "file_path": null,
+            "completed_at": "2026-06-03 06:27:40",
+            "error_message": "Chunk failed: MySQL server has gone away"
+        },
+        {
+            "job_id": 38600001,
+            "parent_job_id": 386,
+            "chunk_index": 1,
+            "total_chunks": 1,
+            "voucher_ids": [
+                461
+            ],
+            "created_by": 2,
+            "created_at": "2026-06-03 14:36:58",
+            "status": "failed",
+            "file_path": null,
+            "completed_at": "2026-06-03 06:37:02",
+            "error_message": "MySQL server has gone away"
+        },
+        {
+            "job_id": 386,
+            "parent_job_id": null,
+            "chunk_index": null,
+            "total_chunks": 1,
+            "voucher_ids": [
+                461
+            ],
+            "created_by": 2,
+            "created_at": "2026-06-03 14:36:58",
+            "status": "failed",
+            "file_path": null,
+            "completed_at": "2026-06-03 06:37:02",
+            "error_message": "Chunk failed: MySQL server has gone away"
+        },
+        {
+            "job_id": 38700001,
+            "parent_job_id": 387,
+            "chunk_index": 1,
+            "total_chunks": 1,
+            "voucher_ids": [
+                463
+            ],
+            "created_by": 2,
+            "created_at": "2026-06-03 14:46:31",
+            "status": "failed",
+            "file_path": null,
+            "completed_at": "2026-06-03 06:46:33",
+            "error_message": "MySQL server has gone away"
+        },
+        {
+            "job_id": 387,
+            "parent_job_id": null,
+            "chunk_index": null,
+            "total_chunks": 1,
+            "voucher_ids": [
+                463
+            ],
+            "created_by": 2,
+            "created_at": "2026-06-03 14:46:31",
+            "status": "failed",
+            "file_path": null,
+            "completed_at": "2026-06-03 06:46:33",
+            "error_message": "Chunk failed: MySQL server has gone away"
         }
     ]
 }

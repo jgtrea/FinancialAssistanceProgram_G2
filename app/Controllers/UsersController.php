@@ -16,9 +16,7 @@ class UsersController extends BaseController
         if ($keyword !== '') {
             $model
                 ->groupStart()
-                ->like('first_name', $keyword)
-                ->orLike('middle_name', $keyword)
-                ->orLike('last_name', $keyword)
+                ->like('username', $keyword)
                 ->orLike('email', $keyword)
                 ->orLike('role', $keyword)
                 ->groupEnd();
@@ -34,7 +32,7 @@ class UsersController extends BaseController
             $model->where('is_active', 0);
         }
 
-        $data['users']        = $model->orderBy('user_id', 'DESC')->findAll();
+        $data['users']        = $model->orderBy('is_active', 'DESC')->orderBy('user_id', 'DESC')->findAll();
         $data['keyword']      = $keyword;
         $data['filterRole']   = $filterRole;
         $data['filterStatus'] = $filterStatus;
@@ -59,7 +57,7 @@ class UsersController extends BaseController
         $model->update($id, ['is_active' => $newStatus]);
 
         $action = $newStatus ? 'ACTIVATE_USER' : 'DEACTIVATE_USER';
-        $uName = trim(($user['first_name'] ?? '') . ' ' . ($user['last_name'] ?? ''));
+        $uName = $user['username'] ?? '';
         log_action($adminId, $action, ($newStatus ? 'Activated' : 'Deactivated') . " user #{$id} ({$uName})");
 
         return $this->response->setJSON([
@@ -104,9 +102,8 @@ class UsersController extends BaseController
 
         $validation = \Config\Services::validation();
         $validation->setRules([
-            'first_name' => 'required|max_length[100]',
-            'last_name'  => 'required|max_length[100]',
-            'email'      => 'required|valid_email|max_length[150]',
+            'username' => 'required|max_length[100]',
+            'email'    => 'required|valid_email|max_length[150]',
             'password'   => ($id ? 'permit_empty' : 'required') . '|min_length[8]|max_length[255]',
             'role'       => 'required|in_list[admin,user]',
         ]);
@@ -135,11 +132,9 @@ class UsersController extends BaseController
         }
 
         $data = [
-            'first_name'  => trim((string) $this->request->getPost('first_name')),
-            'middle_name' => trim((string) $this->request->getPost('middle_name')),
-            'last_name'   => trim((string) $this->request->getPost('last_name')),
-            'email'       => strtolower(trim((string) $this->request->getPost('email'))),
-            'role'        => $role,
+            'username' => trim((string) $this->request->getPost('username')),
+            'email'    => strtolower(trim((string) $this->request->getPost('email'))),
+            'role'     => $role,
         ];
 
         if ($this->userFieldTaken('email', $data['email'], $id)) {
@@ -161,11 +156,11 @@ class UsersController extends BaseController
 
         if ($id) {
             $model->update($id, $data);
-            log_action($adminId, 'UPDATE_USER', "Updated user #{$id} ({$data['first_name']} {$data['last_name']})");
+            log_action($adminId, 'UPDATE_USER', "Updated user #{$id} ({$data['username']})");
             $message = 'User updated successfully.';
         } else {
             $model->insert($data);
-            log_action($adminId, 'CREATE_USER', "Created user {$data['first_name']} {$data['last_name']}");
+            log_action($adminId, 'CREATE_USER', "Created user {$data['username']}");
             $message = 'User created successfully.';
         }
 
@@ -200,7 +195,7 @@ class UsersController extends BaseController
             if (!$user) continue;
             $model->update($id, ['is_active' => $status]);
             $action = $status ? 'ACTIVATE_USER' : 'DEACTIVATE_USER';
-            $uName = trim(($user['first_name'] ?? '') . ' ' . ($user['last_name'] ?? ''));
+            $uName = $user['username'] ?? '';
             log_action($adminId, $action, ($status ? 'Activated' : 'Deactivated') . " user #{$id} ({$uName})");
             $changed++;
         }

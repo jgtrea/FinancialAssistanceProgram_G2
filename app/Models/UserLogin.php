@@ -5,7 +5,7 @@ class UserLogin extends Model {
     protected $table      = 'users';
     protected $primaryKey = 'user_id';
     protected $allowedFields = [
-        'first_name', 'middle_name', 'last_name',
+        'username',
         'email', 'password', 'role',
         'is_active', 'last_login',
     ];
@@ -14,7 +14,7 @@ class UserLogin extends Model {
     protected $beforeUpdate = ['normalizeUppercase'];
     protected $afterFind    = ['normalizeUppercaseResult'];
 
-    protected array $uppercaseFields = [];
+    protected array $uppercaseFields = ['username'];
     protected array $lowercaseFields = ['email'];
 
     protected function normalizeUppercase(array $data): array

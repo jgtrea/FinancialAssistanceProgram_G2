@@ -133,7 +133,7 @@ function showPdfToast(message, key, job) {
 function showAlert(message, type = 'success') {
   const map = { success: 'vs-alert-success', error: 'vs-alert-error', warning: 'vs-alert-warning' };
   const el  = document.createElement('div');
-  el.className = `vs-alert ${map[type] ?? map.success} mb-3`;
+  el.className = `vs-alert ${map[type] ?? map.success} mb-3 mt-2`;
   el.textContent = message;
 
   const main = document.querySelector('.vs-content') || document.querySelector('main');
@@ -182,8 +182,9 @@ window.initVsSelect2 = function initVsSelect2(root) {
     if ($el.hasClass('select2-hidden-accessible')) return;
     var $modal = $el.closest('.vs-modal-overlay');
     var noSearch = this.dataset.noSearch === '1';
+    var isSchoolSelect = $el.hasClass('js-school-select');
     $el.select2({
-      tags: $el.hasClass('js-school-select'),
+      tags: isSchoolSelect,
       placeholder: this.dataset.placeholder || 'All',
       allowClear: true,
       width: '100%',
@@ -197,6 +198,25 @@ window.initVsSelect2 = function initVsSelect2(root) {
         if (text.indexOf(term) !== -1 || acronym.indexOf(term) !== -1) return data;
         return null;
       },
+      createTag: isSchoolSelect ? function (params) {
+        var term = params.term.trim();
+        if (!term) return null;
+        // Prevent duplicate: check if term matches existing option (case-insensitive).
+        var termUpper = term.toUpperCase();
+        var isDuplicate = false;
+        $(this.options.dropdownParent || 'body').find('select').addBack('select').each(function () {
+          // Check against the actual select element's options.
+        });
+        // Check the select element's current options.
+        var $select = $el;
+        $select.find('option').each(function () {
+          if (($(this).val() || '').toUpperCase() === termUpper || ($(this).text() || '').toUpperCase() === termUpper) {
+            isDuplicate = true;
+          }
+        });
+        if (isDuplicate) return null;
+        return { id: term, text: term, newTag: true };
+      } : undefined,
     });
   });
 };

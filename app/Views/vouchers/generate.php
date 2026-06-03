@@ -8,7 +8,7 @@
 <div class="vs-page-header mb-4">
     <div>
       <h4 class="vs-page-title"><?= esc($title) ?></h4>
-      <p class="vs-page-sub">Select students and generate printable voucher PDFs.</p>
+      <p class="vs-page-sub">Select Students And Generate Printable Voucher PDFs.</p>
     </div>
   </div>
 
