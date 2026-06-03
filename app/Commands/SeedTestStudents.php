@@ -40,30 +40,24 @@ class SeedTestStudents extends BaseCommand
         'Soriano', 'Navarro', 'Rosales', 'Bernardo', 'Magtanggol',
     ];
 
+    // Fallback school names used only when the `school` table is empty or
+    // missing. Normally the seeder pulls the live active schools from the DB
+    // (see loadActiveSchools()) so seeded students always reference schools
+    // that actually exist in the dropdowns.
     private const JHS_SCHOOLS = [
         'STA. CRUZ NATIONAL HIGH SCHOOL',
-        'BALANACAN NATIONAL HIGH SCHOOL',
         'UNION NATIONAL HIGH SCHOOL',
         'DEL PILAR NATIONAL HIGH SCHOOL',
         'SAN ISIDRO NATIONAL HIGH SCHOOL',
-        'PIONEER NATIONAL HIGH SCHOOL',
-        'MABINI NATIONAL HIGH SCHOOL',
-        'BONIFACIO NATIONAL HIGH SCHOOL',
-        'RIZAL NATIONAL HIGH SCHOOL',
-        'AGUINALDO NATIONAL HIGH SCHOOL',
+        'MADRID NATIONAL HIGH SCHOOL',
     ];
 
     private const SHS_SCHOOLS = [
-        'MARINDUQUE NATIONAL HIGH SCHOOL SHS',
-        'MADRID SENIOR HIGH SCHOOL',
+        'MADRID NATIONAL HIGH SCHOOL - SENIOR HIGH',
         'SAN JUAN NATIONAL HIGH SCHOOL - SENIOR HIGH',
         'TANDAG NATIONAL HIGH SCHOOL - SENIOR HIGH',
         'STA. CRUZ NATIONAL HIGH SCHOOL - SENIOR HIGH',
         'SAN ISIDRO NATIONAL HIGH SCHOOL - SENIOR HIGH',
-        'BALANACAN SENIOR HIGH SCHOOL',
-        'BUENAVISTA SENIOR HIGH SCHOOL',
-        'GASAN SENIOR HIGH SCHOOL',
-        'MOGPOG SENIOR HIGH SCHOOL',
     ];
 
     private const SUFFIXES   = ['', '', '', '', '', '', '', 'JR.', 'SR.', 'II', 'III'];
@@ -88,6 +82,13 @@ class SeedTestStudents extends BaseCommand
 
         $now        = date('Y-m-d H:i:s');
         $schoolYear = (int) date('Y') . '-' . (int) (date('Y') + 1);
+
+        // Pull the live active schools from the DB so seeded students reference
+        // schools that actually exist. Fall back to the constants if the table
+        // is missing/empty.
+        $jhsSchools = $this->loadActiveSchools($db, 'JHS') ?: self::JHS_SCHOOLS;
+        $shsSchools = $this->loadActiveSchools($db, 'SHS') ?: self::SHS_SCHOOLS;
+        CLI::write('Using ' . count($jhsSchools) . ' JHS and ' . count($shsSchools) . ' SHS school(s) from the database.');
 
         CLI::write("Inserting {$count} test students in batches of " . self::BATCH_SIZE . '...');
         $start = microtime(true);
@@ -115,8 +116,8 @@ class SeedTestStudents extends BaseCommand
                     'rank_no'                      => null,
                     'gwa'                          => round(75 + mt_rand(0, 2400) / 100, 2),
                     'gender'                       => self::GENDERS[array_rand(self::GENDERS)],
-                    'junior_high_school'           => self::JHS_SCHOOLS[array_rand(self::JHS_SCHOOLS)],
-                    'preferred_senior_high_school' => self::SHS_SCHOOLS[array_rand(self::SHS_SCHOOLS)],
+                    'junior_high_school'           => $jhsSchools[array_rand($jhsSchools)],
+                    'preferred_senior_high_school' => $shsSchools[array_rand($shsSchools)],
                     'contact_number'               => '09' . str_pad((string) mt_rand(100000000, 999999999), 9, '0', STR_PAD_LEFT),
                     'remarks_status'               => self::REMARKS[array_rand(self::REMARKS)],
                     'school_year'                  => $schoolYear,
@@ -138,5 +139,35 @@ class SeedTestStudents extends BaseCommand
         $elapsed = round(microtime(true) - $start, 2);
         CLI::write("Done. {$inserted} rows inserted in {$elapsed}s.");
         return EXIT_SUCCESS;
+    }
+
+    /**
+     * Active school names for a level ('JHS'|'SHS') straight from the `school`
+     * table. Returns [] if the table is absent or has no active rows, so the
+     * caller can fall back to the hardcoded constants.
+     *
+     * @return string[]
+     */
+    private function loadActiveSchools($db, string $level): array
+    {
+        if (!$db->tableExists('school')) {
+            return [];
+        }
+
+        $rows = $db->table('school')
+            ->select('school_name')
+            ->where('school_level', $level)
+            ->where('is_active', 1)
+            ->where('school_name IS NOT NULL', null, false)
+            ->where('school_name !=', '')
+            ->get()
+            ->getResultArray();
+
+        $names = [];
+        foreach ($rows as $row) {
+            $names[] = $row['school_name'];
+        }
+
+        return $names;
     }
 }
