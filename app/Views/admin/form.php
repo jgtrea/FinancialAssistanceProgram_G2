@@ -36,11 +36,11 @@
 
         <div>
             <label class="vs-label required">Role</label>
-            <input list="role-list" name="role" class="vs-input" placeholder="-- Select --" value="<?= esc($user['role'] ?? '') ?>" required>
-            <datalist id="role-list">
-                <option value="admin">
-                <option value="user">
-            </datalist>
+            <select name="role" class="vs-input js-filter-select" data-placeholder="ADMIN / USER" data-no-search="1" required>
+                <option></option>
+                <option value="admin" <?= ($user['role'] ?? '') === 'admin' ? 'selected' : '' ?>>ADMIN</option>
+                <option value="user"  <?= ($user['role'] ?? '') === 'user'  ? 'selected' : '' ?>>USER</option>
+            </select>
         </div>
 
         </div>

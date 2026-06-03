@@ -135,9 +135,9 @@ class UsersController extends BaseController
         }
 
         $data = [
-            'first_name'  => strtoupper(trim((string) $this->request->getPost('first_name'))),
-            'middle_name' => strtoupper(trim((string) $this->request->getPost('middle_name'))),
-            'last_name'   => strtoupper(trim((string) $this->request->getPost('last_name'))),
+            'first_name'  => trim((string) $this->request->getPost('first_name')),
+            'middle_name' => trim((string) $this->request->getPost('middle_name')),
+            'last_name'   => trim((string) $this->request->getPost('last_name')),
             'email'       => strtolower(trim((string) $this->request->getPost('email'))),
             'role'        => $role,
         ];

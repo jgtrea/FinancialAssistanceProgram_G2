@@ -202,14 +202,15 @@ class School extends Controller
         }
 
         // Validate header row (must contain "school name" and "level")
-        $header   = array_map(static fn ($v) => strtolower(trim((string) $v)), $sheetData[0]);
-        $nameIdx  = array_search('school name', $header, true);
-        $levelIdx = array_search('level', $header, true);
+        $header    = array_map(static fn ($v) => strtolower(trim((string) $v)), $sheetData[0]);
+        $nameIdx   = array_search('school name', $header, true);
+        $levelIdx  = array_search('level', $header, true);
+        $acronymIdx = array_search('acronym', $header, true); // optional
 
         if ($nameIdx === false || $levelIdx === false) {
             return $this->response->setJSON([
                 'success' => false,
-                'message' => 'Expected column headers: "School Name" and "Level" (JHS or SHS).',
+                'message' => 'Expected column headers: "School Name" and "Level" (JHS or SHS). "Acronym" is optional.',
             ]);
         }
 
@@ -234,8 +235,12 @@ class School extends Controller
                 continue;
             }
 
-            $this->schoolModel->insert(['school_name' => $name, 'school_level' => $level, 'is_active' => 1]);
-            log_action($userId, 'IMPORT_SCHOOL', "Imported school: {$name} ({$level})");
+            $acronym = $acronymIdx !== false
+                ? strtoupper(trim((string) ($row[$acronymIdx] ?? '')))
+                : $this->generateAcronym($name);
+
+            $this->schoolModel->insert(['school_name' => $name, 'school_level' => $level, 'is_active' => 1, 'acronym' => $acronym]);
+            log_action($userId, 'IMPORT_SCHOOL', "Imported school: {$name} ({$level}, {$acronym})");
             $inserted++;
         }
 
@@ -287,7 +292,7 @@ class School extends Controller
             $ids = array_map('intval', array_filter($ids, static fn ($v) => (int) $v > 0));
             if (!empty($ids)) {
                 return $this->schoolModel->db->table('school')
-                    ->select('school_id, school_name, school_level, is_active')
+                    ->select('school_id, school_name, acronym, school_level, is_active')
                     ->whereIn('school_id', $ids)
                     ->orderBy('school_level', 'ASC')
                     ->orderBy('school_name', 'ASC')
@@ -305,10 +310,10 @@ class School extends Controller
         $sheet->setTitle('Schools');
 
         // Header row
-        $sheet->fromArray([['School Name', 'Level', 'Status']], null, 'A1');
+        $sheet->fromArray([['School Name', 'Acronym', 'Level', 'Status']], null, 'A1');
 
         // Style header
-        $headerStyle = $sheet->getStyle('A1:C1');
+        $headerStyle = $sheet->getStyle('A1:D1');
         $headerStyle->getFont()->setBold(true);
 
         // Data rows
@@ -316,6 +321,7 @@ class School extends Controller
         foreach ($schools as $s) {
             $sheet->fromArray([[
                 $s['school_name'],
+                $s['acronym'] ?? '',
                 $s['school_level'],
                 $s['is_active'] ? 'Active' : 'Inactive',
             ]], null, 'A' . $row);
@@ -323,7 +329,7 @@ class School extends Controller
         }
 
         // Auto-size columns
-        foreach (['A', 'B', 'C'] as $col) {
+        foreach (['A', 'B', 'C', 'D'] as $col) {
             $sheet->getColumnDimension($col)->setAutoSize(true);
         }
 
@@ -344,10 +350,11 @@ class School extends Controller
     private function buildCsvResponse(array $schools)
     {
         $out = fopen('php://memory', 'w');
-        fputcsv($out, ['School Name', 'Level', 'Status']);
+        fputcsv($out, ['School Name', 'Acronym', 'Level', 'Status']);
         foreach ($schools as $s) {
             fputcsv($out, [
                 $s['school_name'],
+                $s['acronym'] ?? '',
                 $s['school_level'],
                 $s['is_active'] ? 'Active' : 'Inactive',
             ]);

@@ -25,6 +25,15 @@ document.addEventListener('DOMContentLoaded', function () {
   initPasswordToggles();
   initAlertDismiss();
 
+  // Force actual input value to uppercase for all .vs-uppercase inputs.
+  document.addEventListener('input', function (e) {
+    if (!e.target.classList || !e.target.classList.contains('vs-uppercase')) return;
+    var el  = e.target;
+    var pos = el.selectionStart;
+    el.value = el.value.toUpperCase();
+    try { el.setSelectionRange(pos, pos); } catch (_) {}
+  });
+
 });
 
 

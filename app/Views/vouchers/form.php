@@ -65,24 +65,24 @@
 
         <div>
           <label class="vs-label" for="suffix">Suffix</label>
-          <input list="suffix-list" id="suffix" name="suffix" class="vs-input" placeholder="-- Select --" value="<?= esc($suffix) ?>">
-          <datalist id="suffix-list">
-            <option value="JR.">
-            <option value="SR.">
-            <option value="II">
-            <option value="III">
-            <option value="IV">
-          </datalist>
+          <select id="suffix" name="suffix" class="vs-input js-filter-select" data-placeholder="- SELECT -" data-no-search="1">
+            <option></option>
+            <option value="JR." <?= $suffix === 'JR.' ? 'selected' : '' ?>>JR.</option>
+            <option value="SR." <?= $suffix === 'SR.' ? 'selected' : '' ?>>SR.</option>
+            <option value="II"  <?= $suffix === 'II'  ? 'selected' : '' ?>>II</option>
+            <option value="III" <?= $suffix === 'III' ? 'selected' : '' ?>>III</option>
+            <option value="IV"  <?= $suffix === 'IV'  ? 'selected' : '' ?>>IV</option>
+          </select>
         </div>
 
         <div>
           <label class="vs-label" for="gender">Sex</label>
           <?php $gender = old('gender', $voucher['gender'] ?? '') ?>
-          <input list="gender-list" id="gender" name="gender" class="vs-input" placeholder="-- Select --" value="<?= esc($gender) ?>">
-          <datalist id="gender-list">
-            <option value="MALE">
-            <option value="FEMALE">
-          </datalist>
+          <select id="gender" name="gender" class="vs-input js-filter-select" data-placeholder="MALE / FEMALE" data-no-search="1">
+            <option></option>
+            <option value="MALE"   <?= $gender === 'MALE'   ? 'selected' : '' ?>>MALE</option>
+            <option value="FEMALE" <?= $gender === 'FEMALE' ? 'selected' : '' ?>>FEMALE</option>
+          </select>
         </div>
 
         <div>
@@ -147,12 +147,12 @@
 
         <div>
           <label class="vs-label" for="remarks_status">Remarks</label>
-          <input list="remarks-list" id="remarks_status" name="remarks_status" class="vs-input" placeholder="-- Select --" value="<?= esc($remarks) ?>">
-          <datalist id="remarks-list">
-            <option value="PASSED">
-            <option value="FOR REVIEW">
-            <option value="FAILED">
-          </datalist>
+          <select id="remarks_status" name="remarks_status" class="vs-input js-filter-select" data-placeholder="PASSED / FOR REVIEW / FAILED" data-no-search="1">
+            <option></option>
+            <option value="PASSED"     <?= $remarks === 'PASSED'     ? 'selected' : '' ?>>PASSED</option>
+            <option value="FOR REVIEW" <?= $remarks === 'FOR REVIEW' ? 'selected' : '' ?>>FOR REVIEW</option>
+            <option value="FAILED"     <?= $remarks === 'FAILED'     ? 'selected' : '' ?>>FAILED</option>
+          </select>
         </div>
 
         <div>
@@ -166,11 +166,11 @@
         <div>
           <label class="vs-label" for="eligibility_status">Eligibility</label>
           <?php $eligibility = old('eligibility_status', $voucher['eligibility_status'] ?? '') ?>
-          <input list="eligibility-list" id="eligibility_status" name="eligibility_status" class="vs-input" placeholder="-- Select --" value="<?= esc($eligibility) ?>">
-          <datalist id="eligibility-list">
-            <option value="eligible">
-            <option value="not_eligible">
-          </datalist>
+          <select id="eligibility_status" name="eligibility_status" class="vs-input js-filter-select" data-placeholder="ELIGIBLE / NOT ELIGIBLE" data-no-search="1">
+            <option></option>
+            <option value="eligible"     <?= $eligibility === 'eligible'     ? 'selected' : '' ?>>ELIGIBLE</option>
+            <option value="not_eligible" <?= $eligibility === 'not_eligible' ? 'selected' : '' ?>>NOT ELIGIBLE</option>
+          </select>
         </div>
 
       </div>

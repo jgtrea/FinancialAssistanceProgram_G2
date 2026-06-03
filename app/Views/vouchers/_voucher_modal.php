@@ -14,12 +14,12 @@
 
         <div class="vs-form-grid vs-form-grid-4">
 
-          <!-- Row 1: Voucher No. (view only) + Voucher Date -->
-          <div id="vmVoucherNoWrap" style="display:none">
+          <!-- Row 1: Voucher No. (view only) or Voucher Date (add/edit) — each full row -->
+          <div id="vmVoucherNoWrap" class="vs-span-4" style="display:none">
             <label class="vs-label">Voucher No.</label>
-            <div id="vmVoucherNoDisplay" class="vs-input" style="background:#f9fafb;min-height:38px;display:flex;align-items:center;cursor:default">—</div>
+            <div id="vmVoucherNoDisplay" class="vs-input" style="background:#f9fafb;min-height:38px;display:flex;align-items:center;cursor:default;max-width:220px">—</div>
           </div>
-          <div id="vmVoucherDateWrap" style="grid-column: 1 / -1">
+          <div id="vmVoucherDateWrap" class="vs-span-4">
             <label class="vs-label required" for="vmVoucherDate">Voucher Date</label>
             <input id="vmVoucherDate" name="voucher_date" type="date" class="vs-input" required style="max-width:220px">
           </div>
@@ -42,7 +42,7 @@
           <!-- Row 3: Suffix, Sex, Contact Number -->
           <div>
             <label class="vs-label" for="vmSuffix">Suffix</label>
-            <select id="vmSuffix" name="suffix" class="vs-input js-school-select vs-uppercase" data-placeholder="e.g. JR." data-no-search="1">
+            <select id="vmSuffix" name="suffix" class="vs-input js-school-select vs-uppercase" data-placeholder="- SELECT -" data-no-search="1">
               <option></option>
               <option value="JR.">JR.</option>
               <option value="SR.">SR.</option>
@@ -77,25 +77,27 @@
           <div></div><div></div>
 
           <!-- Row 5: JHS, Preferred SHS, School Year -->
-          <div style="display:flex;flex-direction:column;justify-content:flex-end">
+          <div>
             <label class="vs-label required" for="vmJuniorHs">Junior High School</label>
-            <select id="vmJuniorHs" name="junior_high_school" class="vs-input js-school-select vs-uppercase" data-placeholder="Type or select" required>
+            <select id="vmJuniorHs" name="junior_high_school" class="vs-input js-school-select vs-uppercase" data-placeholder="- TYPE OR SELECT -" required>
               <option></option>
               <?php foreach ($juniorHighSchools as $school): ?>
-                <option value="<?= esc($school['school_name'] ?? '') ?>"><?= esc($school['school_name'] ?? '') ?></option>
+                <?php $sn = is_array($school) ? ($school['school_name'] ?? '') : $school; $sa = is_array($school) ? ($school['acronym'] ?? '') : ''; ?>
+                <option value="<?= esc($sn) ?>" data-acronym="<?= esc($sa) ?>"><?= esc($sn) ?></option>
               <?php endforeach ?>
             </select>
           </div>
-          <div style="display:flex;flex-direction:column;justify-content:flex-end">
+          <div>
             <label class="vs-label required" for="vmPreferredHs">Preferred Senior High School</label>
-            <select id="vmPreferredHs" name="preferred_senior_high_school" class="vs-input js-school-select vs-uppercase" data-placeholder="Type or select" required>
+            <select id="vmPreferredHs" name="preferred_senior_high_school" class="vs-input js-school-select vs-uppercase" data-placeholder="- TYPE OR SELECT -" required>
               <option></option>
               <?php foreach ($seniorHighSchools as $school): ?>
-                <option value="<?= esc($school['school_name'] ?? '') ?>"><?= esc($school['school_name'] ?? '') ?></option>
+                <?php $sn = is_array($school) ? ($school['school_name'] ?? '') : $school; $sa = is_array($school) ? ($school['acronym'] ?? '') : ''; ?>
+                <option value="<?= esc($sn) ?>" data-acronym="<?= esc($sa) ?>"><?= esc($sn) ?></option>
               <?php endforeach ?>
             </select>
           </div>
-          <div id="vmSchoolYearWrap" style="display:flex;flex-direction:column;justify-content:flex-end">
+          <div id="vmSchoolYearWrap">
             <label class="vs-label required" for="vmSchoolYear">School Year</label>
             <input id="vmSchoolYear" name="school_year" type="text" list="vmSchoolYear-list"
                    class="vs-input vs-uppercase" placeholder="e.g. 2025-2026" required autocomplete="off">
@@ -110,7 +112,7 @@
           <!-- Row 6: Eligibility, Remarks -->
           <div>
             <label class="vs-label required" for="vmEligibility">Eligibility</label>
-            <select id="vmEligibility" name="eligibility_status" class="vs-input js-school-select" data-placeholder="— Select —" data-no-search="1" required>
+            <select id="vmEligibility" name="eligibility_status" class="vs-input js-school-select" data-placeholder="ELIGIBLE / NOT ELIGIBLE" data-no-search="1" required>
               <option></option>
               <option value="eligible">ELIGIBLE</option>
               <option value="not_eligible">NOT ELIGIBLE</option>
@@ -118,7 +120,7 @@
           </div>
           <div>
             <label class="vs-label required" for="vmRemarks">Remarks</label>
-            <select id="vmRemarks" name="remarks_status" class="vs-input js-school-select vs-uppercase" data-placeholder="— Select —" data-no-search="1" required>
+            <select id="vmRemarks" name="remarks_status" class="vs-input js-school-select vs-uppercase" data-placeholder="PASSED / FOR REVIEW / FAILED" data-no-search="1" required>
               <option></option>
               <option value="PASSED">PASSED</option>
               <option value="FOR REVIEW">FOR REVIEW</option>

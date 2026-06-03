@@ -49,7 +49,7 @@
                     <div class="mb-3">
                         <label for="username" class="form-label">Username or Email</label>
                         <input id="username" type="text" name="username" class="form-control"
-                            placeholder="username or email address" required autocomplete="username" autocapitalize="none" spellcheck="false">
+                            placeholder="email address or full name" required autocomplete="username" autocapitalize="none" spellcheck="false">
                     </div>
 
                     <div class="mb-3">

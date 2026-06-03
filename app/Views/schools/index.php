@@ -39,7 +39,7 @@
                placeholder="Enter keyword to search (name, acronym, level)"
                value="<?= esc($keyword, 'attr') ?>" style="flex:1;min-width:0">
         <div style="width:110px;flex-shrink:0">
-            <select id="schoolLevelFilter" name="level" class="js-filter-select" data-placeholder="Level" data-no-search="1" style="width:100%">
+            <select id="schoolLevelFilter" name="level" class="js-filter-select" data-placeholder="JHS / SHS" data-no-search="1" style="width:100%">
                 <option value="" <?= $filterLevel === ''    ? 'selected' : '' ?>></option>
                 <option value="JHS" <?= $filterLevel === 'JHS' ? 'selected' : '' ?>>JHS</option>
                 <option value="SHS" <?= $filterLevel === 'SHS' ? 'selected' : '' ?>>SHS</option>
@@ -212,11 +212,11 @@
                     </div>
 <div>
                         <label class="vs-label required" for="smSchoolLevel">Level</label>
-                        <input list="smSchoolLevel-list" id="smSchoolLevel" name="school_level" class="vs-input" placeholder="-- Select --" required>
-                        <datalist id="smSchoolLevel-list">
-                            <option value="JHS">
-                            <option value="SHS">
-                        </datalist>
+                        <select id="smSchoolLevel" name="school_level" class="vs-input js-filter-select" data-placeholder="JHS / SHS" data-no-search="1" required>
+                            <option></option>
+                            <option value="JHS">JHS</option>
+                            <option value="SHS">SHS</option>
+                        </select>
                     </div>
                 </div>
             </div>

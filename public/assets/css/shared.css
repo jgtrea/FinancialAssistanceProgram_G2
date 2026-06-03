@@ -450,13 +450,16 @@ body {
 .vs-form-grid {
   display: grid;
   gap: 1rem;
-  align-items: start;
+  align-items: end;
 }
 .vs-form-grid-4 {
   grid-template-columns: repeat(4, minmax(0, 1fr));
 }
 .vs-span-2 {
   grid-column: span 2;
+}
+.vs-span-4 {
+  grid-column: 1 / -1;
 }
 
 @media (max-width: 1100px) {

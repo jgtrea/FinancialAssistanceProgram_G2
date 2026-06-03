@@ -27,14 +27,14 @@
     <form method="get" style="flex:1;min-width:0;display:flex;align-items:center;gap:0.5rem">
         <input type="text" name="q" class="vs-input vs-advanced-search-input" placeholder="Enter keyword to search (name, email)" value="<?= esc((string) ($keyword ?? ''), 'attr') ?>" style="flex:1;min-width:0">
         <div style="width:140px;flex-shrink:0">
-            <select id="ufRole" name="role" class="js-filter-select" data-placeholder="Account type" data-no-search="1" style="width:100%">
+            <select id="ufRole" name="role" class="js-filter-select" data-placeholder="ADMIN / USER" data-no-search="1" style="width:100%">
                 <option value=""></option>
-                <option value="admin" <?= ($filterRole ?? '') === 'admin' ? 'selected' : '' ?>>Admin</option>
-                <option value="user"  <?= ($filterRole ?? '') === 'user'  ? 'selected' : '' ?>>User</option>
+                <option value="admin" <?= ($filterRole ?? '') === 'admin' ? 'selected' : '' ?>>ADMIN</option>
+                <option value="user"  <?= ($filterRole ?? '') === 'user'  ? 'selected' : '' ?>>USER</option>
             </select>
         </div>
         <div style="width:130px;flex-shrink:0">
-            <select id="ufStatus" name="status" class="js-filter-select" data-placeholder="Status" data-no-search="1" style="width:100%">
+            <select id="ufStatus" name="status" class="js-filter-select" data-placeholder="ACTIVE / INACTIVE" data-no-search="1" style="width:100%">
                 <option value=""></option>
                 <option value="active"   <?= ($filterStatus ?? '') === 'active'   ? 'selected' : '' ?>>Active</option>
                 <option value="inactive" <?= ($filterStatus ?? '') === 'inactive' ? 'selected' : '' ?>>Inactive</option>
@@ -141,15 +141,15 @@
           <!-- Row 1: First Name, Middle Name, Last Name -->
           <div>
             <label class="vs-label required" for="umFirstName">First Name</label>
-            <input type="text" id="umFirstName" name="first_name" class="vs-input vs-uppercase" required autocapitalize="words" spellcheck="false">
+            <input type="text" id="umFirstName" name="first_name" class="vs-input" autocapitalize="words" spellcheck="false" required>
           </div>
           <div>
             <label class="vs-label" for="umMiddleName">Middle Name</label>
-            <input type="text" id="umMiddleName" name="middle_name" class="vs-input vs-uppercase" autocapitalize="words" spellcheck="false">
+            <input type="text" id="umMiddleName" name="middle_name" class="vs-input" autocapitalize="words" spellcheck="false">
           </div>
           <div>
             <label class="vs-label required" for="umLastName">Last Name</label>
-            <input type="text" id="umLastName" name="last_name" class="vs-input vs-uppercase" required autocapitalize="words" spellcheck="false">
+            <input type="text" id="umLastName" name="last_name" class="vs-input" autocapitalize="words" spellcheck="false" required>
           </div>
           <div></div>
 
@@ -166,11 +166,11 @@
           <!-- Row 3: Role -->
           <div class="vs-span-2">
             <label class="vs-label required" for="umRole">Role</label>
-            <input list="umRole-list" id="umRole" name="role" class="vs-input" placeholder="-- Select --" required>
-            <datalist id="umRole-list">
-              <option value="admin">
-              <option value="user">
-            </datalist>
+            <select id="umRole" name="role" class="vs-input js-filter-select" data-placeholder="ADMIN / USER" data-no-search="1" required>
+              <option></option>
+              <option value="admin">ADMIN</option>
+              <option value="user">USER</option>
+            </select>
           </div>
           <div class="vs-span-2"></div>
         </div>
