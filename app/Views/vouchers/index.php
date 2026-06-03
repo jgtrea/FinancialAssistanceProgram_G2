@@ -233,7 +233,7 @@
       <div class="vs-form-grid vs-form-grid-4">
         <div class="vs-span-2">
           <label class="vs-label" for="filterSchoolYear">School Year</label>
-          <select id="filterSchoolYear" class="vs-input js-filter-select" data-placeholder="All">
+          <select id="filterSchoolYear" class="vs-input js-filter-select" data-placeholder="- TYPE OR SELECT -">
             <option></option>
             <?php foreach (($filterOptions['school_years'] ?? []) as $sy): ?>
               <option value="<?= esc($sy) ?>" <?= $f('school_year') === $sy ? 'selected' : '' ?>><?= esc($sy) ?></option>
@@ -242,7 +242,7 @@
         </div>
         <div class="vs-span-2">
           <label class="vs-label" for="filterGender">Sex</label>
-          <select id="filterGender" class="vs-input js-filter-select" data-placeholder="All" data-no-search="1">
+          <select id="filterGender" class="vs-input js-filter-select" data-placeholder="MALE / FEMALE" data-no-search="1">
             <option></option>
             <option value="MALE"   <?= $f('gender') === 'MALE'   ? 'selected' : '' ?>>MALE</option>
             <option value="FEMALE" <?= $f('gender') === 'FEMALE' ? 'selected' : '' ?>>FEMALE</option>
@@ -250,7 +250,7 @@
         </div>
         <div class="vs-span-2">
           <label class="vs-label" for="filterRemarks">Remarks</label>
-          <select id="filterRemarks" class="vs-input js-filter-select" data-placeholder="All" data-no-search="1">
+          <select id="filterRemarks" class="vs-input js-filter-select" data-placeholder="PASSED / FOR REVIEW / FAILED" data-no-search="1">
             <option></option>
             <option value="PASSED"     <?= $f('remarks') === 'PASSED'     ? 'selected' : '' ?>>PASSED</option>
             <option value="FOR REVIEW" <?= $f('remarks') === 'FOR REVIEW' ? 'selected' : '' ?>>FOR REVIEW</option>
@@ -259,7 +259,7 @@
         </div>
         <div class="vs-span-2">
           <label class="vs-label" for="filterVoucherStatus">Voucher Status</label>
-          <select id="filterVoucherStatus" class="vs-input js-filter-select" data-placeholder="All" data-no-search="1">
+          <select id="filterVoucherStatus" class="vs-input js-filter-select" data-placeholder="GENERATED / NOT GENERATED" data-no-search="1">
             <option></option>
             <option value="generated"     <?= $f('voucher_status') === 'generated'     ? 'selected' : '' ?>>generated</option>
             <option value="not_generated" <?= $f('voucher_status') === 'not_generated' ? 'selected' : '' ?>>not_generated</option>
@@ -275,7 +275,7 @@
         </div>
         <div class="vs-span-2">
           <label class="vs-label" for="filterJuniorHs">Junior High School</label>
-          <select id="filterJuniorHs" class="vs-input js-filter-select" data-placeholder="All">
+          <select id="filterJuniorHs" class="vs-input js-filter-select" data-placeholder="- TYPE OR SELECT -">
             <option></option>
             <?php foreach (($filterOptions['junior_high_schools'] ?? []) as $schoolName): ?>
               <option value="<?= esc($schoolName) ?>" <?= $f('junior_hs') === $schoolName ? 'selected' : '' ?>><?= esc($schoolName) ?></option>
@@ -287,7 +287,7 @@
         </div>
         <div class="vs-span-2">
           <label class="vs-label" for="filterPreferredHs">Preferred Senior HS</label>
-          <select id="filterPreferredHs" class="vs-input js-filter-select" data-placeholder="All">
+          <select id="filterPreferredHs" class="vs-input js-filter-select" data-placeholder="- TYPE OR SELECT -">
             <option></option>
             <?php foreach (($filterOptions['senior_high_schools'] ?? []) as $schoolName): ?>
               <option value="<?= esc($schoolName) ?>" <?= $f('preferred_hs') === $schoolName ? 'selected' : '' ?>><?= esc($schoolName) ?></option>
@@ -307,7 +307,7 @@
         </div>
         <div class="vs-span-2">
           <label class="vs-label" for="filterEligibility">Eligibility Status</label>
-          <select id="filterEligibility" class="vs-input js-filter-select" data-placeholder="All" data-no-search="1">
+          <select id="filterEligibility" class="vs-input js-filter-select" data-placeholder="ELIGIBLE / NOT ELIGIBLE" data-no-search="1">
             <option></option>
             <option value="eligible"     <?= $f('eligibility') === 'eligible'     ? 'selected' : '' ?>>eligible</option>
             <option value="not_eligible" <?= $f('eligibility') === 'not_eligible' ? 'selected' : '' ?>>not_eligible</option>

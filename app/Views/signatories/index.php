@@ -40,14 +40,14 @@
         <form method="get" id="sigSearchForm" style="flex:1;min-width:0;display:flex;align-items:center;gap:0.5rem">
             <input type="text" name="q" class="vs-input vs-advanced-search-input" placeholder="Enter keyword to search (name, position)" value="<?= esc((string) ($keyword ?? ''), 'attr') ?>" style="flex:1;min-width:0">
             <div style="width:150px;flex-shrink:0">
-                <select id="sfStatus" name="status" class="js-filter-select" data-placeholder="Status" data-no-search="1" style="width:100%">
+                <select id="sfStatus" name="status" class="js-filter-select" data-placeholder="SELECTED / UNSELECTED" data-no-search="1" style="width:100%">
                     <option></option>
                     <option value="selected"   <?= ($filterStatus ?? '') === 'selected'   ? 'selected' : '' ?>>Selected</option>
                     <option value="unselected" <?= ($filterStatus ?? '') === 'unselected' ? 'selected' : '' ?>>Unselected</option>
                 </select>
             </div>
             <div style="width:180px;flex-shrink:0">
-                <select id="sfPosition" name="position" class="js-filter-select" data-placeholder="Position title" style="width:100%">
+                <select id="sfPosition" name="position" class="js-filter-select" data-placeholder="- TYPE OR SELECT -" style="width:100%">
                     <option></option>
                     <?php foreach (($allPositions ?? []) as $pos): ?>
                         <option value="<?= esc($pos) ?>" <?= ($filterPosition ?? '') === $pos ? 'selected' : '' ?>><?= esc($pos) ?></option>
@@ -76,8 +76,8 @@
             </div>
             <table id="signatoriesTable" class="vs-datatable js-data-table" data-page-search="customSignatoriesSearch"
                    data-search-placeholder="Search signatories..."
-                   data-order='[[6,"asc"]]'
-                   data-col-defs='[{"orderData":[6],"targets":[1]},{"visible":false,"targets":[6]}]'
+                   data-order='[[7,"asc"]]'
+                   data-col-defs='[{"orderData":[7],"targets":[1]},{"visible":false,"targets":7}]'
                    style="width:100%">
             <thead>
                 <tr>
@@ -88,7 +88,7 @@
                     <th data-orderable="false">Selected</th>
                     <th data-orderable="false">Status</th>
                     <th class="actions-column actions-column--sm">Actions</th>
-                    <th></th>
+                    <th style="display:none"></th>
                 </tr>
             </thead>
 
@@ -176,7 +176,7 @@
                                 </ul>
                             </div>
                         </td>
-                        <td><?= esc($nameSortKey) ?></td>
+                        <td style="display:none"><?= esc($nameSortKey) ?></td>
                     </tr>
                 <?php endforeach; ?>
             </tbody>
@@ -239,33 +239,33 @@
           <!-- Row 2: Prefix, Suffix -->
           <div>
             <label class="vs-label" for="smPrefix">Prefix</label>
-            <input list="smPrefix-list" id="smPrefix" name="prefix" class="vs-input" placeholder="-- Select --">
-            <datalist id="smPrefix-list">
+            <select id="smPrefix" name="prefix" class="vs-input js-filter-select" data-placeholder="- SELECT -" data-no-search="1">
+              <option></option>
               <?php foreach ($prefixOptions as $option): if ($option === '') continue; ?>
-                <option value="<?= esc($option) ?>">
+                <option value="<?= esc($option) ?>"><?= esc($option) ?></option>
               <?php endforeach ?>
-            </datalist>
+            </select>
           </div>
           <div>
             <label class="vs-label" for="smSuffix">Suffix</label>
-            <input list="smSuffix-list" id="smSuffix" name="suffix" class="vs-input" placeholder="-- Select --">
-            <datalist id="smSuffix-list">
+            <select id="smSuffix" name="suffix" class="vs-input js-filter-select" data-placeholder="- SELECT -" data-no-search="1">
+              <option></option>
               <?php foreach ($suffixOptions as $option): if ($option === '') continue; ?>
-                <option value="<?= esc($option) ?>">
+                <option value="<?= esc($option) ?>"><?= esc($option) ?></option>
               <?php endforeach ?>
-            </datalist>
+            </select>
           </div>
           <div></div><div></div>
 
           <!-- Row 3: Degree, Position Title -->
           <div>
             <label class="vs-label" for="smDegree">Degree</label>
-            <input list="smDegree-list" id="smDegree" name="degree" class="vs-input" placeholder="-- Select --">
-            <datalist id="smDegree-list">
+            <select id="smDegree" name="degree" class="vs-input js-filter-select" data-placeholder="- TYPE OR SELECT -">
+              <option></option>
               <?php foreach ($degreeOptions as $option): ?>
-                <option value="<?= esc($option) ?>">
+                <option value="<?= esc($option) ?>"><?= esc($option) ?></option>
               <?php endforeach ?>
-            </datalist>
+            </select>
             <input id="smDegreeOther" name="degree_other" type="text"
                    class="vs-input mt-2" placeholder="Specify degree" style="display:none">
           </div>

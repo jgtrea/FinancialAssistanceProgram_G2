@@ -168,6 +168,7 @@ function initAlertDismiss() {
   });
 }
 
+
 /**
  * Initialise Select2 on every `.js-filter-select` and `.js-school-select`.
  * Idempotent — re-runs safely after AJAX-rebuilt modals. Anchors the Select2

@@ -115,7 +115,7 @@
       <div class="vs-form-grid vs-form-grid-4">
         <div class="vs-span-2">
           <label class="vs-label required" for="afSchoolYear">School Year</label>
-          <select id="afSchoolYear" class="vs-input js-filter-select" data-placeholder="— Select a school year —">
+          <select id="afSchoolYear" class="vs-input js-filter-select" data-placeholder="- TYPE OR SELECT -">
             <option></option>
             <?php foreach ($schoolYears as $sy): ?>
               <option value="<?= esc($sy) ?>" <?= $f('school_year') === $sy ? 'selected' : '' ?>><?= esc($sy) ?></option>
@@ -127,7 +127,7 @@
         </div>
         <div class="vs-span-2">
           <label class="vs-label" for="afGender">Sex</label>
-          <select id="afGender" class="vs-input js-filter-select" data-placeholder="All" data-no-search="1">
+          <select id="afGender" class="vs-input js-filter-select" data-placeholder="MALE / FEMALE" data-no-search="1">
             <option></option>
             <option value="MALE"   <?= $f('gender') === 'MALE'   ? 'selected' : '' ?>>MALE</option>
             <option value="FEMALE" <?= $f('gender') === 'FEMALE' ? 'selected' : '' ?>>FEMALE</option>
@@ -135,7 +135,7 @@
         </div>
         <div class="vs-span-2">
           <label class="vs-label" for="afRemarks">Remarks</label>
-          <select id="afRemarks" class="vs-input js-filter-select" data-placeholder="All" data-no-search="1">
+          <select id="afRemarks" class="vs-input js-filter-select" data-placeholder="PASSED / FOR REVIEW / FAILED" data-no-search="1">
             <option></option>
             <option value="PASSED"     <?= $f('remarks') === 'PASSED'     ? 'selected' : '' ?>>PASSED</option>
             <option value="FOR REVIEW" <?= $f('remarks') === 'FOR REVIEW' ? 'selected' : '' ?>>FOR REVIEW</option>
@@ -144,7 +144,7 @@
         </div>
         <div class="vs-span-2">
           <label class="vs-label" for="afVoucherStatus">Voucher Status</label>
-          <select id="afVoucherStatus" class="vs-input js-filter-select" data-placeholder="All" data-no-search="1">
+          <select id="afVoucherStatus" class="vs-input js-filter-select" data-placeholder="GENERATED / NOT GENERATED" data-no-search="1">
             <option></option>
             <option value="generated"     <?= $f('voucher_status') === 'generated'     ? 'selected' : '' ?>>generated</option>
             <option value="not_generated" <?= $f('voucher_status') === 'not_generated' ? 'selected' : '' ?>>not_generated</option>
@@ -160,7 +160,7 @@
         </div>
         <div class="vs-span-2">
           <label class="vs-label" for="afJuniorHs">Junior High School</label>
-          <select id="afJuniorHs" class="vs-input js-filter-select" data-placeholder="All">
+          <select id="afJuniorHs" class="vs-input js-filter-select" data-placeholder="- TYPE OR SELECT -">
             <option></option>
             <?php $jhsNames = array_map(static fn($s) => $s['school_name'] ?? '', $juniorHighSchools); ?>
             <?php foreach ($jhsNames as $schoolName): ?>
@@ -173,7 +173,7 @@
         </div>
         <div class="vs-span-2">
           <label class="vs-label" for="afPreferredHs">Preferred Senior HS</label>
-          <select id="afPreferredHs" class="vs-input js-filter-select" data-placeholder="All">
+          <select id="afPreferredHs" class="vs-input js-filter-select" data-placeholder="- TYPE OR SELECT -">
             <option></option>
             <?php $shsNames = array_map(static fn($s) => $s['school_name'] ?? '', $seniorHighSchools); ?>
             <?php foreach ($shsNames as $schoolName): ?>

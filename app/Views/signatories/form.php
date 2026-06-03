@@ -39,12 +39,12 @@
 
         <div>
           <label class="vs-label" for="prefix">Prefix</label>
-          <input list="prefix-list" id="prefix" name="prefix" class="vs-input" placeholder="-- Select --" value="<?= esc($selectedPrefix) ?>">
-          <datalist id="prefix-list">
+          <select id="prefix" name="prefix" class="vs-input js-filter-select" data-placeholder="- SELECT -" data-no-search="1">
+            <option></option>
             <?php foreach ($prefixOptions as $option): if ($option === '') continue; ?>
-              <option value="<?= esc($option) ?>">
+              <option value="<?= esc($option) ?>" <?= $selectedPrefix === $option ? 'selected' : '' ?>><?= esc($option) ?></option>
             <?php endforeach ?>
-          </datalist>
+          </select>
         </div>
 
         <div>
@@ -70,22 +70,22 @@
 
         <div>
           <label class="vs-label" for="suffix">Suffix</label>
-          <input list="sig-suffix-list" id="suffix" name="suffix" class="vs-input" placeholder="-- Select --" value="<?= esc($selectedSuffix) ?>">
-          <datalist id="sig-suffix-list">
+          <select id="suffix" name="suffix" class="vs-input js-filter-select" data-placeholder="- SELECT -" data-no-search="1">
+            <option></option>
             <?php foreach ($suffixOptions as $option): if ($option === '') continue; ?>
-              <option value="<?= esc($option) ?>">
+              <option value="<?= esc($option) ?>" <?= $selectedSuffix === $option ? 'selected' : '' ?>><?= esc($option) ?></option>
             <?php endforeach ?>
-          </datalist>
+          </select>
         </div>
 
         <div>
           <label class="vs-label" for="degree">Degree</label>
-          <input list="degree-list" id="degree" name="degree" class="vs-input" placeholder="-- Select --" value="<?= esc($selectedDegree) ?>">
-          <datalist id="degree-list">
+          <select id="degree" name="degree" class="vs-input js-filter-select" data-placeholder="- TYPE OR SELECT -">
+            <option></option>
             <?php foreach ($degreeOptions as $option): ?>
-              <option value="<?= esc($option) ?>">
+              <option value="<?= esc($option) ?>" <?= $selectedDegree === $option ? 'selected' : '' ?>><?= esc($option) ?></option>
             <?php endforeach ?>
-          </datalist>
+          </select>
           <input id="degree_other" name="degree_other" type="text"
                  class="vs-input mt-2" placeholder="Specify degree"
                  value="<?= esc($degreeOtherValue, 'attr') ?>"

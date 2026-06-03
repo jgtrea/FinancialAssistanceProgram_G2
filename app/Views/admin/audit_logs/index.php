@@ -28,7 +28,7 @@
         <!-- Wrapper carries the flex sizing; Select2 replaces the inner <select>
              with a container that picks up width:100% from this div. -->
         <div style="flex:0 0 200px; min-width:0">
-            <select name="action" id="auditFilterAction" class="js-filter-select" data-placeholder="Action type" style="width:100%">
+            <select name="action" id="auditFilterAction" class="js-filter-select" data-placeholder="- TYPE OR SELECT -" style="width:100%">
                 <option></option>
                 <?php foreach ($actionOptions as $option): ?>
                     <?php $val = is_array($option) ? ($option['action'] ?? '') : $option ?>

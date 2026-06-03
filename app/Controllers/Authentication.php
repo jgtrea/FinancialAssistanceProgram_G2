@@ -23,7 +23,19 @@ class Authentication extends BaseController
         $input    = strtolower(trim((string) $this->request->getPost('username')));
         $password = $this->request->getPost('password');
 
+        // Try email first, then full-name match (case-insensitive).
         $user = $model->where('email', $input)->first();
+
+        if (!$user) {
+            $nameUpper = mb_strtoupper($input, 'UTF-8');
+            $user = $model->db->table('users')
+                ->where("UPPER(CONCAT_WS(' ', first_name, last_name))", $nameUpper)
+                ->orWhere("UPPER(CONCAT_WS(' ', first_name, middle_name, last_name))", $nameUpper)
+                ->orWhere("UPPER(CONCAT_WS(', ', last_name, first_name))", $nameUpper)
+                ->limit(1)
+                ->get()
+                ->getRowArray();
+        }
 
         if (!$user || $user['is_active'] == 0) {
             log_action(null, 'LOGIN_FAILED', "Failed login attempt for \"{$input}\"");
