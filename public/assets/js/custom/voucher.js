@@ -5,7 +5,7 @@
 document.addEventListener('DOMContentLoaded', function () {
 
   // Handles BOTH the voucher generation page (#vouchersTable) and the
-  // students listing page (#studentsTable). Both have the same column shape.
+  // students listing page (#studentsTable).
   const vouchersTable = document.getElementById('vouchersTable')
                      || document.getElementById('studentsTable');
   if (!vouchersTable) return;
@@ -46,6 +46,7 @@ document.addEventListener('DOMContentLoaded', function () {
         { data: 'voucher_no' },
         { data: 'name' },
         { data: 'name_sort',      visible: false },
+        { data: 'rank' },
         { data: 'jhs' },
         { data: 'shs' },
         { data: 'school_year' },

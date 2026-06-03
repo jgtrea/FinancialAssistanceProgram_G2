@@ -70,6 +70,14 @@
     color: #073b78;
 }
 
+#layoutSidenav_content {
+    min-width: 0;
+}
+
+.container-fluid {
+    min-width: 0;
+}
+
 .sb-sidenav-dark {
     background: linear-gradient(180deg, #042b61 0%, #073b78 48%, #07789a 100%) !important;
     color: rgba(234, 248, 255, .86);
@@ -141,6 +149,65 @@
 
 .badge {
     border-radius: 999px;
+}
+
+@media (max-width: 767.98px) {
+    .container-fluid {
+        padding-left: 0.75rem !important;
+        padding-right: 0.75rem !important;
+    }
+
+    .sb-topnav .navbar-brand {
+        width: auto;
+        max-width: 44vw;
+        padding-left: 0.75rem !important;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .sb-topnav .ms-auto {
+        min-width: 0;
+        gap: 0.5rem !important;
+        margin-right: 0.5rem !important;
+    }
+
+    .sb-topnav .ms-auto span {
+        max-width: 26vw;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .page-actions > *,
+    .page-actions .vs-btn {
+        flex: 1 1 auto;
+    }
+
+    .container-fluid > .d-flex.align-items-center.gap-2.mb-3 {
+        align-items: stretch !important;
+        flex-wrap: wrap;
+    }
+
+    .container-fluid > .d-flex.align-items-center.gap-2.mb-3 > form {
+        flex: 1 1 100% !important;
+        flex-wrap: wrap;
+    }
+
+    .container-fluid > .d-flex.align-items-center.gap-2.mb-3 > div {
+        flex-wrap: wrap;
+    }
+}
+
+@media (max-width: 420px) {
+    .sb-topnav .ms-auto span {
+        display: none;
+    }
+
+    .navbar-logo {
+        width: 30px;
+        height: 30px;
+        max-width: 30px;
+    }
 }
 
 .border-left-primary {

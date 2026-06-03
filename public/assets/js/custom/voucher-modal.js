@@ -88,10 +88,9 @@
     vmGenerationHistoryList.innerHTML = history.map(function (item) {
       var by = item.generated_by || '-';
       var at = vmFormatDateTime(item.generated_at);
-      var source = item.source ? String(item.source).replace(/_/g, ' ') : '';
       return '<div class="vm-generation-history-item">'
-        + '<strong>' + escapeHtml(by) + '</strong>'
-        + '<span>' + escapeHtml(at) + (source ? ' - ' + escapeHtml(source) : '') + '</span>'
+        + '<span class="vm-generation-history-date">' + escapeHtml(at) + '</span>'
+        + '<span class="vm-generation-history-name">' + escapeHtml(by) + '</span>'
         + '</div>';
     }).join('');
   }

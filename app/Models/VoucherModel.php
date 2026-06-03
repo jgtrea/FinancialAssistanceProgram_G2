@@ -205,14 +205,15 @@ class VoucherModel extends Model
             1  => 'voucher_no',
             2  => 'last_name',          // visible Name column
             3  => 'last_name',          // hidden name_sort column
-            4  => 'junior_high_school',
-            5  => 'preferred_senior_high_school',
-            6  => 'school_year',
-            7  => 'eligibility_status',
-            8  => 'remarks_status',
-            9  => 'generate_count',
-            10 => 'generated_at',
-            11 => 'is_active',
+            4  => 'rank_no',
+            5  => 'junior_high_school',
+            6  => 'preferred_senior_high_school',
+            7  => 'school_year',
+            8  => 'eligibility_status',
+            9  => 'remarks_status',
+            10 => 'generate_count',
+            11 => 'generated_at',
+            12 => 'is_active',
         ];
 
         // Total (unfiltered).

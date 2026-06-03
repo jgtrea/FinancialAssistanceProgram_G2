@@ -340,6 +340,7 @@ class Voucher extends Controller
         $firstMid   = implode(' ', array_filter([$firstName, $middleName]));
         $name       = esc($lastName !== '' ? $lastName . ($firstMid !== '' ? ', ' . $firstMid : '') : $firstMid);
         $nameSort   = esc(trim($lastName . ' ' . $firstName . ' ' . $middleName));
+        $rank       = ($v['rank_no'] ?? null) !== null && (string) $v['rank_no'] !== '' ? esc((string) $v['rank_no']) : '-';
         $jhs        = esc($v['junior_high_school'] ?: '-');
         $shs        = esc($v['preferred_senior_high_school'] ?? '');
         $schoolYear = esc($v['school_year'] ?? '');
@@ -394,6 +395,7 @@ class Voucher extends Controller
             'voucher_no'    => $voucherNo,
             'name'          => $name,
             'name_sort'     => $nameSort,
+            'rank'          => $rank,
             'jhs'           => $jhs,
             'shs'           => $shs,
             'school_year'   => $schoolYear,

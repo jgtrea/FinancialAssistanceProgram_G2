@@ -28,7 +28,7 @@
 
   <div class="vs-action-bar" id="actionBar" style="display:none">
     <span class="vs-action-bar-count"><span id="selectedCount">0</span> selected</span>
-    <div class="d-flex gap-2 ms-auto align-items-center">
+    <div class="vs-action-bar-buttons d-flex gap-2 ms-auto align-items-center">
       <button class="vs-btn vs-btn-dark-green" id="btnGeneratePdf">
         <?= asset_icon('voucher-add') ?>
         Generate Voucher
@@ -45,8 +45,8 @@
 
   <div id="studentsAlertBox"></div>
 
-  <div class="d-flex align-items-center gap-2 mb-3">
-    <form method="get" id="vouchersFilterForm" style="flex:1;min-width:0;display:flex;align-items:center;gap:0.5rem">
+  <div class="vs-page-toolbar d-flex align-items-center gap-2 mb-3">
+    <form method="get" id="vouchersFilterForm" class="vs-page-filter-form" style="flex:1;min-width:0;display:flex;align-items:center;gap:0.5rem">
       <input type="text" name="q" class="vs-input vs-advanced-search-input" placeholder="Enter keyword to search (voucher no, name)" value="<?= esc((string) ($keyword ?? ''), 'attr') ?>" style="flex:1;min-width:0">
       <button type="button" class="vs-btn vs-btn-outline" id="btnOpenFilter" style="flex-shrink:0">
         Filters
@@ -55,12 +55,12 @@
       <?php foreach ($filterKeys as $k): ?>
         <input type="hidden" name="<?= esc($k, 'attr') ?>" value="<?= esc($f($k), 'attr') ?>">
       <?php endforeach ?>
-      <span style="color:var(--border);font-size:1.2rem;line-height:1;user-select:none;flex-shrink:0">|</span>
+      <span class="vs-toolbar-separator" style="color:var(--border);font-size:1.2rem;line-height:1;user-select:none;flex-shrink:0">|</span>
       <button type="submit" class="vs-btn vs-btn-primary" style="flex-shrink:0">Search</button>
       <a href="<?= site_url($prefix . '/students') ?>" class="vs-btn vs-btn-outline" style="flex-shrink:0">Clear</a>
     </form>
-    <span style="color:var(--border);font-size:1.2rem;line-height:1;user-select:none;flex-shrink:0">|</span>
-    <div style="display:flex;gap:0.5rem;flex-shrink:0">
+    <span class="vs-toolbar-separator" style="color:var(--border);font-size:1.2rem;line-height:1;user-select:none;flex-shrink:0">|</span>
+    <div class="vs-page-action-buttons" style="display:flex;gap:0.5rem;flex-shrink:0">
       <button type="button" class="vs-btn vs-btn-primary" id="btnAddVoucher" data-mode="add">
         <?= asset_icon('add', ['stroke-width' => '2.5']) ?>
         Add Voucher
@@ -69,13 +69,12 @@
         <?= asset_icon('import') ?>
         Import
       </button>
-      <button type="button" class="vs-btn vs-btn-outline" id="btnActivateAll">Activate All</button>
     </div>
   </div>
 
   <div class="vs-card">
     <div class="vs-card-body">
-      <div class="d-flex align-items-center gap-2 mb-3 flex-wrap">
+      <div class="vs-table-toolbar d-flex align-items-center gap-2 mb-3 flex-wrap">
         <input type="text" id="customStudentsSearch" class="vs-input vs-page-search" placeholder="Enter keyword to search this page" style="max-width:260px">
         <label class="vs-length-label ms-auto">Show <input type="number" id="vouchersLengthInput" class="vs-length-input" value="10" min="1" max="500"> entries</label>
       </div>
@@ -100,6 +99,7 @@
             <th>Voucher No.</th>
             <th>Name</th>
             <th style="display:none">Name Sort</th>
+            <th>Rank</th>
             <th>Junior High School</th>
             <th>Preferred School</th>
             <th>School Year</th>
@@ -114,8 +114,8 @@
         <tbody>
           <!-- Rows loaded by DataTables via AJAX from the data-datatable-url endpoint. -->
           <!-- Schema matches the <th>s above: checkbox, voucher_no, name, name_sort (hidden),
-               jhs, shs, school_year, eligibility, status, remarks, generate_count,
-               last_generated, actions. Server-side cell HTML lives in
+               rank, jhs, shs, school_year, eligibility, remarks, generate_count,
+               last_generated, status, actions. Server-side cell HTML lives in
                Admin\Voucher::renderStudentRowForDatatable(). -->
         </tbody>
       </table>
@@ -923,11 +923,6 @@ window.VM_CONFIG = {
         bulkAllBtnSpinner.style.display = 'none';
         closeBulkAllModal();
       });
-  });
-
-  var btnActivateAll = document.getElementById('btnActivateAll');
-  btnActivateAll && btnActivateAll.addEventListener('click', function () {
-    runBulkAll('activate');
   });
 
   // ── TEMP: Unarchive All — restore every student_archive row to students ────
