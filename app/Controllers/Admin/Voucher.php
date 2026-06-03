@@ -385,6 +385,10 @@ class Voucher extends Controller
                 'data-eligibility'    => $elig,
                 'data-active'         => $isActive ? '1' : '0',
                 'data-gwa'            => (string) ($v['gwa'] ?? ''),
+                'data-search-extra'   => implode(' ', array_filter([
+                    $v['jhs_acronym'] ?? '',
+                    $v['shs_acronym'] ?? '',
+                ])),
             ],
             'checkbox'      => $checkbox,
             'voucher_no'    => $voucherNo,

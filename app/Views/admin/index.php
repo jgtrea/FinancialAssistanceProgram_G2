@@ -138,17 +138,17 @@
         <div class="vs-form-grid vs-form-grid-4">
           <div class="vs-span-2">
             <label class="vs-label required" for="umFirstName">First Name</label>
-            <input type="text" id="umFirstName" name="first_name" class="vs-input" required autocapitalize="words" spellcheck="false">
+            <input type="text" id="umFirstName" name="first_name" class="vs-input vs-uppercase" required autocapitalize="words" spellcheck="false">
           </div>
 
           <div class="vs-span-2">
             <label class="vs-label" for="umMiddleName">Middle Name</label>
-            <input type="text" id="umMiddleName" name="middle_name" class="vs-input" autocapitalize="words" spellcheck="false">
+            <input type="text" id="umMiddleName" name="middle_name" class="vs-input vs-uppercase" autocapitalize="words" spellcheck="false">
           </div>
 
           <div class="vs-span-2">
             <label class="vs-label required" for="umLastName">Last Name</label>
-            <input type="text" id="umLastName" name="last_name" class="vs-input" required autocapitalize="words" spellcheck="false">
+            <input type="text" id="umLastName" name="last_name" class="vs-input vs-uppercase" required autocapitalize="words" spellcheck="false">
           </div>
 
           <div class="vs-span-2">

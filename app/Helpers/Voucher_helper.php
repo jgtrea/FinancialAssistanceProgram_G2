@@ -6,11 +6,23 @@ if (!function_exists('generate_voucher_no')) {
         $db   = \Config\Database::connect();
         $year = $year ?: date('Y');
 
-        // Build acronym: first letter of each word, uppercase
         $jhs = trim($jhs);
         if ($jhs !== '') {
-            $words   = preg_split('/\s+/', $jhs);
-            $acronym = strtoupper(implode('', array_map(fn($w) => $w[0] ?? '', array_filter($words))));
+            // Prefer the stored acronym from the school table.
+            $schoolRow = $db->table('school')
+                ->select('acronym')
+                ->where('school_name', strtoupper($jhs))
+                ->limit(1)
+                ->get()->getRow();
+            $stored = $schoolRow ? trim((string) ($schoolRow->acronym ?? '')) : '';
+
+            if ($stored !== '') {
+                $acronym = strtoupper($stored);
+            } else {
+                // Fallback: first letter of each word.
+                $words   = preg_split('/\s+/', $jhs);
+                $acronym = strtoupper(implode('', array_map(fn($w) => $w[0] ?? '', array_filter($words))));
+            }
         } else {
             $acronym = 'VOU';
         }

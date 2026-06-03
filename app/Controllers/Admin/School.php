@@ -53,11 +53,15 @@ class School extends Controller
 
     public function save()
     {
-        $id    = (int) $this->request->getPost('school_id');
-        $name  = function_exists('mb_strtoupper')
+        $id      = (int) $this->request->getPost('school_id');
+        $name    = function_exists('mb_strtoupper')
             ? mb_strtoupper(trim((string) $this->request->getPost('school_name')), 'UTF-8')
             : strtoupper(trim((string) $this->request->getPost('school_name')));
-        $level = strtoupper(trim((string) $this->request->getPost('school_level')));
+        $level   = strtoupper(trim((string) $this->request->getPost('school_level')));
+        $acronym = strtoupper(trim((string) $this->request->getPost('acronym')));
+        if ($acronym === '') {
+            $acronym = $this->generateAcronym($name);
+        }
 
         if ($name === '') {
             return $this->response->setJSON(['success' => false, 'message' => 'School name is required.']);
@@ -83,7 +87,7 @@ class School extends Controller
                 ? (function_exists('mb_strtoupper') ? mb_strtoupper($existing['school_name'], 'UTF-8') : strtoupper($existing['school_name']))
                 : '';
 
-            $this->schoolModel->update($id, ['school_name' => $name, 'school_level' => $level]);
+            $this->schoolModel->update($id, ['school_name' => $name, 'school_level' => $level, 'acronym' => $acronym]);
             log_action($userId, 'UPDATE_SCHOOL', "Updated school #{$id}: {$name} ({$level})");
 
             // Propagate the name change to all matching voucher rows.
@@ -99,8 +103,8 @@ class School extends Controller
             return $this->response->setJSON(['success' => true, 'message' => 'School updated successfully.']);
         }
 
-        $this->schoolModel->insert(['school_name' => $name, 'school_level' => $level, 'is_active' => 1]);
-        log_action($userId, 'CREATE_SCHOOL', "Created school: {$name} ({$level})");
+        $this->schoolModel->insert(['school_name' => $name, 'school_level' => $level, 'is_active' => 1, 'acronym' => $acronym]);
+        log_action($userId, 'CREATE_SCHOOL', "Created school: {$name} ({$level}, {$acronym})");
         return $this->response->setJSON(['success' => true, 'message' => 'School added successfully.']);
     }
 
@@ -358,6 +362,19 @@ class School extends Controller
             ->setHeader('Content-Disposition', 'attachment; filename="' . $filename . '"')
             ->setHeader('Cache-Control', 'max-age=0')
             ->setBody($csv);
+    }
+
+    private function generateAcronym(string $name): string
+    {
+        $skip  = ['AND', 'THE', 'OF', 'A', 'AN', 'OR', 'FOR'];
+        $parts = preg_split('/[\s\-]+/', $name, -1, PREG_SPLIT_NO_EMPTY) ?: [];
+        $initials = '';
+        foreach ($parts as $word) {
+            $word = strtoupper(preg_replace('/[^A-Za-z0-9]/', '', $word));
+            if ($word === '' || in_array($word, $skip, true)) continue;
+            $initials .= $word[0];
+        }
+        return $initials;
     }
 
     private function parseCsv(string $path): array

@@ -43,7 +43,7 @@
 
           <div>
             <label class="vs-label" for="vmSuffix">Suffix</label>
-            <select id="vmSuffix" name="suffix" class="vs-input js-school-select" data-placeholder="e.g. JR." data-no-search="1">
+            <select id="vmSuffix" name="suffix" class="vs-input js-school-select vs-uppercase" data-placeholder="e.g. JR." data-no-search="1">
               <option></option>
               <option value="JR.">JR.</option>
               <option value="SR.">SR.</option>
@@ -79,7 +79,7 @@
 
           <div class="vs-span-2">
             <label class="vs-label required" for="vmJuniorHs">Junior High School</label>
-            <select id="vmJuniorHs" name="junior_high_school" class="vs-input js-school-select" data-placeholder="Type or select a school" required>
+            <select id="vmJuniorHs" name="junior_high_school" class="vs-input js-school-select vs-uppercase" data-placeholder="Type or select a school" required>
               <option></option>
               <?php foreach ($juniorHighSchools as $school): ?>
                 <option value="<?= esc($school['school_name'] ?? '') ?>"><?= esc($school['school_name'] ?? '') ?></option>
@@ -89,7 +89,7 @@
 
           <div class="vs-span-2">
             <label class="vs-label required" for="vmPreferredHs">Preferred Senior High School</label>
-            <select id="vmPreferredHs" name="preferred_senior_high_school" class="vs-input js-school-select" data-placeholder="Type or select a school" required>
+            <select id="vmPreferredHs" name="preferred_senior_high_school" class="vs-input js-school-select vs-uppercase" data-placeholder="Type or select a school" required>
               <option></option>
               <?php foreach ($seniorHighSchools as $school): ?>
                 <option value="<?= esc($school['school_name'] ?? '') ?>"><?= esc($school['school_name'] ?? '') ?></option>
@@ -99,7 +99,7 @@
 
           <div>
             <label class="vs-label" for="vmRemarks">Remarks</label>
-            <select id="vmRemarks" name="remarks_status" class="vs-input js-school-select" data-placeholder="PASSED / FOR REVIEW / FAILED" data-no-search="1">
+            <select id="vmRemarks" name="remarks_status" class="vs-input js-school-selec vs-uppercase" data-placeholder="PASSED / FOR REVIEW / FAILED" data-no-search="1">
               <option></option>
               <option value="PASSED">PASSED</option>
               <option value="FOR REVIEW">FOR REVIEW</option>
@@ -110,12 +110,13 @@
           <!-- Add/Edit mode only: School Year -->
           <div id="vmSchoolYearWrap">
             <label class="vs-label required" for="vmSchoolYear">School Year</label>
-            <select id="vmSchoolYear" name="school_year" class="vs-input js-school-select" data-placeholder="e.g. 2025-2026" required>
-              <option></option>
+            <input id="vmSchoolYear" name="school_year" type="text" list="vmSchoolYear-list"
+                   class="vs-input vs-uppercase" placeholder="e.g. 2025-2026" required autocomplete="off">
+            <datalist id="vmSchoolYear-list">
               <?php foreach (($filterOptions['school_years'] ?? []) as $sy): ?>
-                <option value="<?= esc($sy) ?>"><?= esc($sy) ?></option>
+                <option value="<?= esc($sy) ?>">
               <?php endforeach ?>
-            </select>
+            </datalist>
           </div>
 
           <div>

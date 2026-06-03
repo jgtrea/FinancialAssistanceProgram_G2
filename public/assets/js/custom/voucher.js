@@ -106,11 +106,6 @@ document.addEventListener('DOMContentLoaded', function () {
     if (currentPageSearch && window.VS && window.VS.bindCurrentPageSearch) {
       window.VS.bindCurrentPageSearch(dt, currentPageSearch);
     }
-
-    const advInput = document.querySelector('.vs-advanced-search-input');
-    if (advInput && window.VS && window.VS.bindFullTableSearch) {
-      window.VS.bindFullTableSearch(dt, advInput);
-    }
   }
 
   // ── Cross-page selection (Set of string IDs) ──────────────────────────────────

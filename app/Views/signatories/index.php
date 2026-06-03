@@ -222,17 +222,17 @@
 
           <div>
             <label class="vs-label required" for="smFirstName">First Name</label>
-            <input id="smFirstName" name="first_name" type="text" class="vs-input" required>
+            <input id="smFirstName" name="first_name" type="text" class="vs-input vs-uppercase" required>
           </div>
 
           <div>
             <label class="vs-label" for="smMiddleName">Middle Name</label>
-            <input id="smMiddleName" name="middle_name" type="text" class="vs-input">
+            <input id="smMiddleName" name="middle_name" type="text" class="vs-input vs-uppercase">
           </div>
 
           <div>
             <label class="vs-label required" for="smLastName">Last Name</label>
-            <input id="smLastName" name="last_name" type="text" class="vs-input" required>
+            <input id="smLastName" name="last_name" type="text" class="vs-input vs-uppercase" required>
           </div>
 
           <div>
@@ -259,7 +259,7 @@
 
           <div class="vs-span-2">
             <label class="vs-label required" for="smPositionTitle">Position Title</label>
-            <input id="smPositionTitle" name="position_title" type="text" class="vs-input" required>
+            <input id="smPositionTitle" name="position_title" type="text" class="vs-input vs-uppercase" required>
           </div>
 
           <div style="grid-column: 1 / -1">

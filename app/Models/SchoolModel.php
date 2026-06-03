@@ -9,17 +9,20 @@ class SchoolModel extends Model
     protected $table      = 'school';
     protected $primaryKey = 'school_id';
     protected $returnType = 'array';
-    protected $allowedFields = ['school_name', 'school_level', 'is_active'];
+    protected $allowedFields = ['school_name', 'school_level', 'is_active', 'acronym'];
 
     public function getSchoolsForListing(string $keyword = '', array $filters = []): array
     {
         $builder = $this->db->table('school')
-            ->select('school_id, school_name, school_level, is_active')
+            ->select('school_id, school_name, acronym, school_level, is_active')
             ->orderBy('school_level', 'ASC')
             ->orderBy('school_name', 'ASC');
 
         if ($keyword !== '') {
-            $builder->like('school_name', $keyword);
+            $builder->groupStart()
+                    ->like('school_name', $keyword)
+                    ->orLike('acronym', $keyword)
+                    ->groupEnd();
         }
 
         if (!empty($filters['level'])) {

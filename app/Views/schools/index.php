@@ -72,6 +72,7 @@
                         <input type="checkbox" class="vs-check" id="schoolCheckAll" aria-label="Select all schools">
                     </th>
                     <th>School Name</th>
+                    <th>Acronym</th>
                     <th>Level</th>
                     <th class="actions-column actions-column--sm" data-orderable="false">Actions</th>
                 </tr>
@@ -98,6 +99,7 @@
                                    <?= !$isActive ? 'disabled title="Inactive schools cannot be archived"' : '' ?>>
                         </td>
                         <td><?= esc($school['school_name']) ?></td>
+                        <td><?= esc($school['acronym'] ?? '') ?></td>
                         <td><?= esc($level) ?></td>
                         <td class="actions-cell">
                             <?php if ($isActive): ?>
@@ -196,7 +198,7 @@
                                class="vs-input vs-uppercase" required
                                placeholder="e.g. TANDAG NATIONAL HIGH SCHOOL">
                     </div>
-                    <div>
+<div>
                         <label class="vs-label required" for="smSchoolLevel">Level</label>
                         <input list="smSchoolLevel-list" id="smSchoolLevel" name="school_level" class="vs-input" placeholder="-- Select --" required>
                         <datalist id="smSchoolLevel-list">
@@ -649,7 +651,7 @@
 
     function smClose() { schoolModal.style.display = 'none'; }
 
-    document.getElementById('btnAddSchool')    && document.getElementById('btnAddSchool').addEventListener('click', function () { smOpen('add'); });
+document.getElementById('btnAddSchool')    && document.getElementById('btnAddSchool').addEventListener('click', function () { smOpen('add'); });
     document.getElementById('schoolModalClose')   && document.getElementById('schoolModalClose').addEventListener('click', smClose);
     document.getElementById('schoolModalCancel')  && document.getElementById('schoolModalCancel').addEventListener('click', smClose);
     schoolModal && schoolModal.addEventListener('click', function (e) { if (e.target === schoolModal) smClose(); });

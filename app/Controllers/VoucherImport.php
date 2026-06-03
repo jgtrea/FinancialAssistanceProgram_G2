@@ -224,9 +224,9 @@ class VoucherImport extends BaseController
                 return $this->importRowError($i, 'School names must be 200 characters or fewer.');
             }
 
-            if (!$schoolOptions->juniorHighSchoolExists($jhsSchool) || !$schoolOptions->seniorHighSchoolExists($shsSchool)) {
-                return $this->importRowError($i, 'School names must exist in the school dropdown tables.');
-            }
+            // Auto-add new schools to the school table with generated acronym.
+            if ($jhsSchool !== '') $schoolOptions->addSchool('JHS', $jhsSchool);
+            if ($shsSchool !== '') $schoolOptions->addSchool('SHS', $shsSchool);
 
             $voucherModel->insert([
                 'voucher_no'                   => $voucherNo !== '' ? $voucherNo : null,
