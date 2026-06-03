@@ -205,14 +205,18 @@
             <div class="vs-modal-body">
                 <div id="schoolModalAlert"></div>
 
-                <div class="d-flex flex-column gap-3">
-                    <div>
+                <div class="vs-form-grid vs-form-grid-4">
+                    <div class="vs-span-2">
                         <label class="vs-label required" for="smSchoolName">School Name</label>
                         <input id="smSchoolName" name="school_name" type="text"
                                class="vs-input vs-uppercase" required
                                placeholder="e.g. TANDAG NATIONAL HIGH SCHOOL">
                     </div>
-<div>
+                    <div class="vs-span-2">
+                        <label class="vs-label">Acronym</label>
+                        <div id="smAcronymDisplay" class="vs-input" style="background:#f9fafb;cursor:default;display:flex;align-items:center;min-height:38px;color:#6b7280">—</div>
+                    </div>
+                    <div class="vs-span-4">
                         <label class="vs-label required" for="smSchoolLevel">Level</label>
                         <select id="smSchoolLevel" name="school_level" class="vs-input js-filter-select" data-placeholder="JHS / SHS" data-no-search="1" required>
                             <option></option>
@@ -629,6 +633,8 @@
     function smReset() {
         schoolForm.reset();
         document.getElementById('smSchoolId').value = '';
+        var acDisp = document.getElementById('smAcronymDisplay');
+        if (acDisp) acDisp.textContent = '—';
         smClearAlert();
     }
 
@@ -654,6 +660,8 @@
             document.getElementById('smSchoolId').value    = s.school_id;
             document.getElementById('smSchoolName').value  = s.school_name  || '';
             document.getElementById('smSchoolLevel').value = s.school_level || '';
+            var acDisp = document.getElementById('smAcronymDisplay');
+            if (acDisp) acDisp.textContent = s.acronym || '—';
         })
         .catch(function () { smOpenAlert('Failed to load school.'); });
     }

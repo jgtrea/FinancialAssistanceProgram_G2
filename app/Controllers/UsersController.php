@@ -102,8 +102,10 @@ class UsersController extends BaseController
 
         $validation = \Config\Services::validation();
         $validation->setRules([
-            'username' => 'required|max_length[100]',
-            'email'    => 'required|valid_email|max_length[150]',
+            'username'   => 'required|max_length[100]',
+            'first_name' => 'required|max_length[100]',
+            'last_name'  => 'required|max_length[100]',
+            'email'      => 'required|valid_email|max_length[150]',
             'password'   => ($id ? 'permit_empty' : 'required') . '|min_length[8]|max_length[255]',
             'role'       => 'required|in_list[admin,user]',
         ]);
@@ -132,9 +134,12 @@ class UsersController extends BaseController
         }
 
         $data = [
-            'username' => trim((string) $this->request->getPost('username')),
-            'email'    => strtolower(trim((string) $this->request->getPost('email'))),
-            'role'     => $role,
+            'username'    => trim((string) $this->request->getPost('username')),
+            'first_name'  => strtoupper(trim((string) $this->request->getPost('first_name'))),
+            'middle_name' => strtoupper(trim((string) $this->request->getPost('middle_name'))),
+            'last_name'   => strtoupper(trim((string) $this->request->getPost('last_name'))),
+            'email'       => strtolower(trim((string) $this->request->getPost('email'))),
+            'role'        => $role,
         ];
 
         if ($this->userFieldTaken('email', $data['email'], $id)) {

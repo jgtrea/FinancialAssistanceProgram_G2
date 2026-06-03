@@ -55,9 +55,10 @@
 
     <div class="vs-card">
         <div class="vs-card-body">
-            <table id="userManagementTable" class="vs-datatable js-data-table" data-page-search="customUsersSearch" data-search-placeholder="Search users..." data-order='[[5,"desc"],[1,"asc"]]' data-col-defs='[{"orderable":false,"targets":4},{"visible":false,"targets":5}]' style="width:100%">
+            <table id="userManagementTable" class="vs-datatable js-data-table" data-page-search="customUsersSearch" data-search-placeholder="Search users..." data-order='[[6,"desc"],[1,"asc"]]' data-col-defs='[{"orderable":false,"targets":5},{"visible":false,"targets":6}]' style="width:100%">
             <thead>
                 <tr>
+                    <th>Full Name</th>
                     <th>Username</th>
                     <th>Email</th>
                     <th>Role</th>
@@ -77,6 +78,7 @@
                         data-active="<?= $isActive ? '1' : '0' ?>"
                         data-last-login="<?= !empty($user['last_login']) ? esc(date('Y-m-d', strtotime($user['last_login']))) : '' ?>"
                         <?= !$isActive ? 'class="vs-row-archived"' : '' ?>>
+                        <td><?= esc(trim(implode(' ', array_filter([$user['first_name'] ?? '', $user['middle_name'] ?? '', $user['last_name'] ?? ''])))) ?></td>
                         <td><?= esc($user['username'] ?? '') ?></td>
                         <td><?= esc($user['email']) ?></td>
                         <td>
@@ -140,14 +142,29 @@
         <div id="userModalAlert"></div>
 
         <div class="vs-form-grid vs-form-grid-4">
-          <!-- Row 1: Username -->
+          <!-- Row 1: First Name, Middle Name, Last Name -->
+          <div>
+            <label class="vs-label required" for="umFirstName">First Name</label>
+            <input type="text" id="umFirstName" name="first_name" class="vs-input vs-uppercase" required spellcheck="false">
+          </div>
+          <div>
+            <label class="vs-label" for="umMiddleName">Middle Name</label>
+            <input type="text" id="umMiddleName" name="middle_name" class="vs-input vs-uppercase" spellcheck="false">
+          </div>
+          <div>
+            <label class="vs-label required" for="umLastName">Last Name</label>
+            <input type="text" id="umLastName" name="last_name" class="vs-input vs-uppercase" required spellcheck="false">
+          </div>
+          <div></div>
+
+          <!-- Row 2: Username (login identifier, case-sensitive) -->
           <div class="vs-span-2">
-            <label class="vs-label required" for="umUsername">Username</label>
-            <input type="text" id="umUsername" name="username" class="vs-input" required spellcheck="false">
+            <label class="vs-label required" for="umUsername">Username <span class="vs-label-hint">(used for login)</span></label>
+            <input type="text" id="umUsername" name="username" class="vs-input" required spellcheck="false" autocomplete="off">
           </div>
           <div class="vs-span-2"></div>
 
-          <!-- Row 2: Email, Password -->
+          <!-- Row 3: Email, Password -->
           <div class="vs-span-2">
             <label class="vs-label required" for="umEmail">Email</label>
             <input type="email" id="umEmail" name="email" class="vs-input" required autocomplete="email" autocapitalize="none" spellcheck="false">
@@ -245,7 +262,10 @@
 
     function umPopulate(user) {
         document.getElementById('umUserId').value    = user.user_id    || '';
-        document.getElementById('umUsername').value = user.username || '';
+        document.getElementById('umFirstName').value  = user.first_name  || '';
+        document.getElementById('umMiddleName').value = user.middle_name || '';
+        document.getElementById('umLastName').value   = user.last_name   || '';
+        document.getElementById('umUsername').value   = user.username    || '';
         document.getElementById('umEmail').value     = user.email      || '';
         document.getElementById('umRole').value      = user.role       || 'user';
         umPassword.value = '';

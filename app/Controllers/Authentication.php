@@ -37,9 +37,15 @@ class Authentication extends BaseController
             return redirect()->to('/')->with('error', 'Invalid credentials.');
         }
 
+        $fullName = trim(implode(' ', array_filter([
+            $user['first_name'] ?? '',
+            $user['middle_name'] ?? '',
+            $user['last_name'] ?? '',
+        ])));
+
         session()->set([
             'user_id'    => $user['user_id'],
-            'full_name'  => $user['username'] ?? $user['email'],
+            'full_name'  => $fullName ?: ($user['username'] ?? $user['email']),
             'role'       => $user['role'],
             'isLoggedIn' => true,
         ]);
