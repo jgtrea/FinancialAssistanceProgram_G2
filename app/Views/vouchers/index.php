@@ -277,8 +277,9 @@
           <label class="vs-label" for="filterJuniorHs">Junior High School</label>
           <select id="filterJuniorHs" class="vs-input js-filter-select" data-placeholder="- TYPE OR SELECT -">
             <option></option>
-            <?php foreach (($filterOptions['junior_high_schools'] ?? []) as $schoolName): ?>
-              <option value="<?= esc($schoolName) ?>" <?= $f('junior_hs') === $schoolName ? 'selected' : '' ?>><?= esc($schoolName) ?></option>
+            <?php foreach (($filterOptions['junior_high_schools'] ?? []) as $school): ?>
+              <?php $sn = is_array($school) ? ($school['school_name'] ?? '') : $school; $sa = is_array($school) ? ($school['acronym'] ?? '') : ''; ?>
+              <option value="<?= esc($sn) ?>" data-acronym="<?= esc($sa) ?>" <?= $f('junior_hs') === $sn ? 'selected' : '' ?>><?= esc($sn) ?></option>
             <?php endforeach ?>
             <?php if ($f('junior_hs') !== '' && !in_array($f('junior_hs'), $filterOptions['junior_high_schools'] ?? [], true)): ?>
               <option value="<?= esc($f('junior_hs')) ?>" selected><?= esc($f('junior_hs')) ?></option>
@@ -289,8 +290,9 @@
           <label class="vs-label" for="filterPreferredHs">Preferred Senior HS</label>
           <select id="filterPreferredHs" class="vs-input js-filter-select" data-placeholder="- TYPE OR SELECT -">
             <option></option>
-            <?php foreach (($filterOptions['senior_high_schools'] ?? []) as $schoolName): ?>
-              <option value="<?= esc($schoolName) ?>" <?= $f('preferred_hs') === $schoolName ? 'selected' : '' ?>><?= esc($schoolName) ?></option>
+            <?php foreach (($filterOptions['senior_high_schools'] ?? []) as $school): ?>
+              <?php $sn = is_array($school) ? ($school['school_name'] ?? '') : $school; $sa = is_array($school) ? ($school['acronym'] ?? '') : ''; ?>
+              <option value="<?= esc($sn) ?>" data-acronym="<?= esc($sa) ?>" <?= $f('preferred_hs') === $sn ? 'selected' : '' ?>><?= esc($sn) ?></option>
             <?php endforeach ?>
             <?php if ($f('preferred_hs') !== '' && !in_array($f('preferred_hs'), $filterOptions['senior_high_schools'] ?? [], true)): ?>
               <option value="<?= esc($f('preferred_hs')) ?>" selected><?= esc($f('preferred_hs')) ?></option>

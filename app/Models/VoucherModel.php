@@ -354,10 +354,11 @@ class VoucherModel extends Model
             ), static fn ($v) => $v !== ''));
         };
 
+        // Returns [['school_name'=>'...','acronym'=>'...'], ...]
         $fromSchoolTable = function (string $level): array {
             try {
-                $rows = $this->db->table('school')
-                    ->select('school_name')
+                return $this->db->table('school')
+                    ->select('school_name, acronym')
                     ->where('school_level', $level)
                     ->where('is_active', 1)
                     ->get()
@@ -365,22 +366,29 @@ class VoucherModel extends Model
             } catch (\Throwable $e) {
                 return [];
             }
-            return array_values(array_filter(array_map(
-                static fn ($r) => trim((string) ($r['school_name'] ?? '')),
-                $rows
-            ), static fn ($v) => $v !== ''));
         };
 
-        $mergeSchools = function (array $a, array $b): array {
-            $seen = [];
-            $out  = [];
-            foreach (array_merge($a, $b) as $name) {
+        // Merges school-table rows (with acronym) and distinct student values (name only).
+        $mergeSchools = function (array $schoolRows, array $nameStrings): array {
+            $seen    = [];
+            $out     = [];
+            foreach ($schoolRows as $row) {
+                $name = trim((string) ($row['school_name'] ?? ''));
+                if ($name === '') continue;
                 $key = mb_strtoupper($name);
                 if (isset($seen[$key])) continue;
                 $seen[$key] = true;
-                $out[] = $name;
+                $out[] = ['school_name' => $name, 'acronym' => trim((string) ($row['acronym'] ?? ''))];
             }
-            sort($out, SORT_NATURAL | SORT_FLAG_CASE);
+            foreach ($nameStrings as $name) {
+                $name = trim((string) $name);
+                if ($name === '') continue;
+                $key = mb_strtoupper($name);
+                if (isset($seen[$key])) continue;
+                $seen[$key] = true;
+                $out[] = ['school_name' => $name, 'acronym' => ''];
+            }
+            usort($out, static fn ($a, $b) => strnatcasecmp($a['school_name'], $b['school_name']));
             return $out;
         };
 

@@ -183,12 +183,20 @@ window.initVsSelect2 = function initVsSelect2(root) {
     var $modal = $el.closest('.vs-modal-overlay');
     var noSearch = this.dataset.noSearch === '1';
     $el.select2({
-      tags: $el.hasClass('js-school-select'),  // school inputs allow new values
+      tags: $el.hasClass('js-school-select'),
       placeholder: this.dataset.placeholder || 'All',
       allowClear: true,
       width: '100%',
       dropdownParent: $modal.length ? $modal : $(document.body),
       minimumResultsForSearch: noSearch ? Infinity : 0,
+      matcher: function (params, data) {
+        if (!params.term || params.term.trim() === '') return data;
+        var term = params.term.toUpperCase();
+        var text = (data.text || '').toUpperCase();
+        var acronym = ($(data.element).data('acronym') || '').toUpperCase();
+        if (text.indexOf(term) !== -1 || acronym.indexOf(term) !== -1) return data;
+        return null;
+      },
     });
   });
 };

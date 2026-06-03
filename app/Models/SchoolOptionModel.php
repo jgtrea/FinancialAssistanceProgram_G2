@@ -33,7 +33,7 @@ class SchoolOptionModel extends Model
     {
         try {
             return $this->db->table('school')
-                ->select('school_name')
+                ->select('school_name, acronym')
                 ->where('school_level', $level)
                 ->where('is_active', 1)
                 ->orderBy('school_name', 'ASC')

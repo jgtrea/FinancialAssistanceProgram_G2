@@ -224,7 +224,7 @@
     var isView = mode === 'view';
     if (vmVoucherNoWrap)       vmVoucherNoWrap.style.display       = isView ? ''     : 'none';
     if (vmVoucherDateWrap)     vmVoucherDateWrap.style.display     = isView ? 'none' : '';
-    if (vmSchoolYearWrap)      vmSchoolYearWrap.style.display      = isView ? 'none' : '';
+    if (vmSchoolYearWrap)      vmSchoolYearWrap.style.visibility   = isView ? 'hidden' : '';
     if (vmLastGeneratedByWrap) vmLastGeneratedByWrap.style.display = isView ? ''     : 'none';
   }
 
