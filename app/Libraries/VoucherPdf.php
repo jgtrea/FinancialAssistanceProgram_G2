@@ -96,23 +96,24 @@ class VoucherPdf
                 $st = $slotIdx * self::SLOT_HEIGHT;  // slot's top Y on the page
                 $s  = $page[$slotIdx] ?? null;       // null when fewer than 3 students remain
 
-                // Always paint the background, even on empty trailing slots,
-                // so the page looks visually consistent.
+                // Skip empty trailing slots entirely — no background, no
+                // signatures — so we never emit a blank/unfilled voucher when
+                // the student count isn't a multiple of 3.
+                if ($s === null) {
+                    continue;
+                }
+
                 if ($hasBg) {
                     $mpdf->Image($bgPath, 0, $st, 210, self::SLOT_HEIGHT, 'PNG');
                 }
 
-                // Dynamic text fields — only drawn when there's a student in this slot.
-                if ($s !== null) {
-                    $mpdf->SetFont('Arial', '', self::FONT_SIZE);
-                    $mpdf->Text(self::X_VOUCHER_NO, $st + self::Y_VOUCHER_NO, $s['voucher_no'] ?? '');
-                    $mpdf->Text(self::X_DATE,        $st + self::Y_VOUCHER_NO, date('m/d/Y', strtotime($s['voucher_date'] ?? 'now')));
-                    $mpdf->Text(self::X_RECIPIENT,   $st + self::Y_RECIPIENT,  self::formatVoucherName($s['full_name'] ?? ''));
-                    $mpdf->Text(self::X_SCHOOL,      $st + self::Y_SCHOOL,     $s['preferred_senior_high_school'] ?? '');
-                }
+                $mpdf->SetFont('Arial', '', self::FONT_SIZE);
+                $mpdf->Text(self::X_VOUCHER_NO, $st + self::Y_VOUCHER_NO, $s['voucher_no'] ?? '');
+                $mpdf->Text(self::X_DATE,        $st + self::Y_VOUCHER_NO, date('m/d/Y', strtotime($s['voucher_date'] ?? 'now')));
+                $mpdf->Text(self::X_RECIPIENT,   $st + self::Y_RECIPIENT,  self::formatVoucherName($s['full_name'] ?? ''));
+                $mpdf->Text(self::X_SCHOOL,      $st + self::Y_SCHOOL,     $s['preferred_senior_high_school'] ?? '');
 
-                // Signatures are drawn on every slot — including empty ones —
-                // so the bottom of the page always shows the officials.
+                // Signatures only under a real voucher.
                 self::renderSignatures($mpdf, $signatories, $st);
             }
         }
