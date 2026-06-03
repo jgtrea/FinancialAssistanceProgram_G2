@@ -33,20 +33,24 @@
 </div>
 
 <!-- Search + Level quick filter + action buttons -->
-<div class="d-flex align-items-center gap-2 flex-wrap mb-3">
-    <form method="get" class="vs-advanced-search vs-advanced-search-outside" id="schoolSearchForm">
+<div class="d-flex align-items-center gap-2 mb-3">
+    <form method="get" id="schoolSearchForm" style="flex:1;min-width:0;display:flex;align-items:center;gap:0.5rem">
         <input type="text" name="q" class="vs-input vs-advanced-search-input"
-               placeholder="Enter keyword to search schools (school name, level, etc.   )"
-               value="<?= esc($keyword, 'attr') ?>">
-        <div style="width:160px">
-            <select id="schoolLevelFilter" name="level" class="js-filter-select" data-placeholder="Select type" data-no-search="1" style="width:100%">
+               placeholder="Enter keyword to search (name, acronym, level)"
+               value="<?= esc($keyword, 'attr') ?>" style="flex:1;min-width:0">
+        <div style="width:110px;flex-shrink:0">
+            <select id="schoolLevelFilter" name="level" class="js-filter-select" data-placeholder="Level" data-no-search="1" style="width:100%">
                 <option value="" <?= $filterLevel === ''    ? 'selected' : '' ?>></option>
                 <option value="JHS" <?= $filterLevel === 'JHS' ? 'selected' : '' ?>>JHS</option>
                 <option value="SHS" <?= $filterLevel === 'SHS' ? 'selected' : '' ?>>SHS</option>
             </select>
         </div>
+        <span style="color:var(--border);font-size:1.2rem;line-height:1;user-select:none;flex-shrink:0">|</span>
+        <button type="submit" class="vs-btn vs-btn-primary" style="flex-shrink:0">Search</button>
+        <a href="<?= site_url('admin/schools') ?>" class="vs-btn vs-btn-outline" style="flex-shrink:0">Clear</a>
     </form>
-    <div class="ms-auto d-flex gap-2">
+    <span style="color:var(--border);font-size:1.2rem;line-height:1;user-select:none;flex-shrink:0">|</span>
+    <div style="display:flex;gap:0.5rem;flex-shrink:0">
         <button type="button" class="vs-btn vs-btn-primary" id="btnAddSchool">
             <?= asset_icon('add', ['stroke-width' => '2.5']) ?>
             Add School
@@ -420,24 +424,7 @@
         updateBar();
     });
 
-    // ── Level dropdown filter — narrows the DataTable's Level column client-side.
-    //    Avoids a page reload and works whether or not the server pre-filtered.
-    var schoolLevelEl = document.getElementById('schoolLevelFilter');
-    // This inline script parses before pre_script('app') loads jQuery/Select2,
-    // so defer binding until jQuery exists (Select2 dispatches its change event
-    // through jQuery, so a native addEventListener would never fire).
-    (function bindLevelFilter() {
-        if (!schoolLevelEl) return;
-        if (!window.jQuery) { return setTimeout(bindLevelFilter, 50); }
-        $(schoolLevelEl).on('change', function () {
-            var v = schoolLevelEl.value || '';
-            var tbl = document.getElementById('schoolsTable');
-            if (!tbl || !$.fn.DataTable || !$.fn.DataTable.isDataTable(tbl)) return;
-            // exact-match regex so "SHS" does not also match "JHS" substrings
-            var rx = v === '' ? '' : '^' + v.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '$';
-            $(tbl).DataTable().column(2).search(rx, true, false).draw();
-        });
-    }());
+    // No auto-submit on level change — user clicks Search button.
 
     // ── Export modal ──────────────────────────────────────────────────────────
     var exportModal = document.getElementById('schoolExportModal');
@@ -753,20 +740,7 @@ document.getElementById('btnAddSchool')    && document.getElementById('btnAddSch
 
 }());
 
-// Apply initial level filter once initGenericDataTables has initialized the table
-(function () {
-    var initialLevel = '<?= esc($filterLevel, 'js') ?>';
-    if (!initialLevel) return;
-    function applyInitialLevel() {
-        var table = document.getElementById('schoolsTable');
-        if (!table || !window.jQuery || !$.fn.DataTable || !$.fn.DataTable.isDataTable(table)) {
-            return setTimeout(applyInitialLevel, 50);
-        }
-        var rx = '^' + initialLevel.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '$';
-        $(table).DataTable().column(2).search(rx, true, false).draw();
-    }
-    applyInitialLevel();
-}());
+// Level filtering is handled server-side via SQL (no client-side column filter).
 </script>
 
 <?= $this->endSection() ?>

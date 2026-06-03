@@ -23,8 +23,8 @@
     <!-- Inline audit filters (Action select + date range). Auto-submits on
          change so the user sees results immediately, matching the Schools
          page quick-filter pattern. -->
-    <form method="get" id="auditFilterForm" class="d-flex align-items-center gap-2 mb-3" style="flex-wrap:nowrap">
-        <input type="text" name="q" class="vs-input" placeholder="Enter keyword (action, description, etc.)" value="<?= esc((string) ($keyword ?? ''), 'attr') ?>" style="flex:3 1 360px; min-width:240px">
+    <form method="get" id="auditFilterForm" style="display:flex;align-items:center;gap:0.5rem;margin-bottom:1rem">
+        <input type="text" name="q" class="vs-input vs-advanced-search-input" placeholder="Enter keyword to search (action, description)" value="<?= esc((string) ($keyword ?? ''), 'attr') ?>" style="flex:1;min-width:0">
         <!-- Wrapper carries the flex sizing; Select2 replaces the inner <select>
              with a container that picks up width:100% from this div. -->
         <div style="flex:0 0 200px; min-width:0">
@@ -38,8 +38,9 @@
         </div>
         <input type="date" name="date_from" id="auditFilterDateFrom" class="vs-input" value="<?= esc((string) $filterValues['date_from'], 'attr') ?>" style="flex:0 0 150px" title="Date From">
         <input type="date" name="date_to"   id="auditFilterDateTo"   class="vs-input" value="<?= esc((string) $filterValues['date_to'],   'attr') ?>" style="flex:0 0 150px" title="Date To">
-        <button type="submit" class="vs-btn vs-btn-primary"  style="flex-shrink:0">Apply</button>
-        <button type="button" class="vs-btn vs-btn-outline" id="auditFilterClear" style="flex-shrink:0">Clear</button>
+        <span style="color:var(--border);font-size:1.2rem;line-height:1;user-select:none;flex-shrink:0">|</span>
+        <button type="submit" class="vs-btn vs-btn-primary" style="flex-shrink:0">Search</button>
+        <a href="<?= site_url('admin/audit-logs') ?>" class="vs-btn vs-btn-outline" style="flex-shrink:0">Clear</a>
     </form>
 
     <div class="vs-card">
@@ -87,23 +88,5 @@
             </table>
         </div>
     </div>
-
-<script>
-(function () {
-    var clearBtn = document.getElementById('auditFilterClear');
-    if (!clearBtn) return;
-    clearBtn.addEventListener('click', function () {
-        var form = document.getElementById('auditFilterForm');
-        if (!form) return;
-        form.querySelectorAll('input[name], select[name]').forEach(function (el) {
-            el.value = '';
-            if (window.jQuery && el.classList.contains('js-filter-select')) {
-                $(el).val('').trigger('change');
-            }
-        });
-        form.submit();
-    });
-}());
-</script>
 
 <?= $this->endSection() ?>

@@ -23,27 +23,29 @@
 
     <div id="userAlertBox"></div>
 
-<!-- Inline filters: search + Role + Status dropdowns + Clear. -->
-<div class="d-flex align-items-center gap-2 flex-wrap mb-3">
-    <form method="get" class="d-flex align-items-center gap-2 flex-wrap">
-        <input type="text" name="q" class="vs-input" placeholder="Enter keyword (username, email, etc.)" value="<?= esc((string) ($keyword ?? ''), 'attr') ?>" style="width:380px; max-width:100%">
-        <div style="width:160px">
-            <select id="ufRole" class="js-filter-select" data-placeholder="Account type" data-no-search="1" style="width:100%">
+<div class="d-flex align-items-center gap-2 mb-3">
+    <form method="get" style="flex:1;min-width:0;display:flex;align-items:center;gap:0.5rem">
+        <input type="text" name="q" class="vs-input vs-advanced-search-input" placeholder="Enter keyword to search (name, email)" value="<?= esc((string) ($keyword ?? ''), 'attr') ?>" style="flex:1;min-width:0">
+        <div style="width:140px;flex-shrink:0">
+            <select id="ufRole" name="role" class="js-filter-select" data-placeholder="Account type" data-no-search="1" style="width:100%">
                 <option value=""></option>
-                <option value="admin">Admin</option>
-                <option value="user">User</option>
+                <option value="admin" <?= ($filterRole ?? '') === 'admin' ? 'selected' : '' ?>>Admin</option>
+                <option value="user"  <?= ($filterRole ?? '') === 'user'  ? 'selected' : '' ?>>User</option>
             </select>
         </div>
-        <div style="width:160px">
-            <select id="ufStatus" class="js-filter-select" data-placeholder="Status" data-no-search="1" style="width:100%">
+        <div style="width:130px;flex-shrink:0">
+            <select id="ufStatus" name="status" class="js-filter-select" data-placeholder="Status" data-no-search="1" style="width:100%">
                 <option value=""></option>
-                <option value="active">Active</option>
-                <option value="inactive">Inactive</option>
+                <option value="active"   <?= ($filterStatus ?? '') === 'active'   ? 'selected' : '' ?>>Active</option>
+                <option value="inactive" <?= ($filterStatus ?? '') === 'inactive' ? 'selected' : '' ?>>Inactive</option>
             </select>
         </div>
-        <button type="button" class="vs-btn vs-btn-outline" id="userFilterClear">Clear</button>
+        <span style="color:var(--border);font-size:1.2rem;line-height:1;user-select:none;flex-shrink:0">|</span>
+        <button type="submit" class="vs-btn vs-btn-primary" style="flex-shrink:0">Search</button>
+        <a href="<?= site_url('admin/users') ?>" class="vs-btn vs-btn-outline" id="userFilterClear" style="flex-shrink:0">Clear</a>
     </form>
-    <div class="ms-auto d-flex gap-2">
+    <span style="color:var(--border);font-size:1.2rem;line-height:1;user-select:none;flex-shrink:0">|</span>
+    <div style="display:flex;gap:0.5rem;flex-shrink:0">
         <button type="button" class="vs-btn vs-btn-primary" id="btnAddUser">
             <?= asset_icon('add', ['stroke-width' => '2.5']) ?>
             Add User
@@ -410,58 +412,7 @@
 
 }());
 
-// ── Filter modal + date-range custom filter for users table ──────────────────
-(function initUserSearch() {
-    var table = document.getElementById('userManagementTable');
-    if (!table || !window.jQuery || !$.fn.DataTable || !$.fn.DataTable.isDataTable(table)) {
-        return setTimeout(initUserSearch, 50);
-    }
-    var dt = $(table).DataTable();
-
-    var ufRole    = document.getElementById('ufRole');
-    var ufStatus  = document.getElementById('ufStatus');
-    var clearBtn  = document.getElementById('userFilterClear');
-
-    var state = { role: '', status: '' };
-
-    // Status column renders as an SVG badge (no text), so column().search()
-    // can't match it. Use a custom row-level filter that reads data-active
-    // from the <tr>. Role uses column().search() since Role is rendered as
-    // plain text ("Admin" / "User").
-    $.fn.dataTable.ext.search.push(function (settings, rowData, rowIdx) {
-        if (settings.nTable.id !== 'userManagementTable') return true;
-        if (state.status === '') return true;
-        var row = settings.aoData[rowIdx].nTr;
-        if (!row) return true;
-        var isActive = row.getAttribute('data-active') === '1';
-        if (state.status === 'active'   && !isActive) return false;
-        if (state.status === 'inactive' &&  isActive) return false;
-        return true;
-    });
-
-    function applyFilters() {
-        // Column indices: Username=0, Email=1, Role=2, Status=3, LastLogin=4, Actions=5.
-        var roleSearch = state.role === 'admin' ? '^Admin$' : state.role === 'user' ? '^User$' : '';
-        dt.column(2).search(roleSearch, roleSearch !== '', false).draw();
-    }
-
-    function bindSelect(el, key) {
-        if (!el) return;
-        $(el).on('change', function () {
-            state[key] = el.value || '';
-            applyFilters();
-        });
-    }
-    bindSelect(ufRole,   'role');
-    bindSelect(ufStatus, 'status');
-
-    clearBtn && clearBtn.addEventListener('click', function () {
-        state = { role: '', status: '' };
-        if (ufRole)   { ufRole.value   = ''; if (window.jQuery) $(ufRole).val('').trigger('change.select2'); }
-        if (ufStatus) { ufStatus.value = ''; if (window.jQuery) $(ufStatus).val('').trigger('change.select2'); }
-        applyFilters();
-    });
-}());
+// No auto-submit — user clicks Search button to apply filters.
 </script>
 
 <?= $this->endSection() ?>

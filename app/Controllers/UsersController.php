@@ -8,8 +8,10 @@ class UsersController extends BaseController
 {
     public function index()
     {
-        $model = new UserLogin();
-        $keyword = trim((string) $this->request->getGet('q'));
+        $model        = new UserLogin();
+        $keyword      = trim((string) $this->request->getGet('q'));
+        $filterRole   = trim((string) $this->request->getGet('role'));
+        $filterStatus = trim((string) $this->request->getGet('status'));
 
         if ($keyword !== '') {
             $model
@@ -22,10 +24,20 @@ class UsersController extends BaseController
                 ->groupEnd();
         }
 
-        $data['users'] = $model
-            ->orderBy('user_id', 'DESC')
-            ->findAll();
-        $data['keyword'] = $keyword;
+        if ($filterRole !== '' && in_array($filterRole, ['admin', 'user'], true)) {
+            $model->where('role', $filterRole);
+        }
+
+        if ($filterStatus === 'active') {
+            $model->where('is_active', 1);
+        } elseif ($filterStatus === 'inactive') {
+            $model->where('is_active', 0);
+        }
+
+        $data['users']        = $model->orderBy('user_id', 'DESC')->findAll();
+        $data['keyword']      = $keyword;
+        $data['filterRole']   = $filterRole;
+        $data['filterStatus'] = $filterStatus;
         return view('admin/index', $data);
     }
 

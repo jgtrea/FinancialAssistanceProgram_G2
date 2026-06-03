@@ -36,26 +36,30 @@
         </button>
     </div>
 
-    <!-- Inline filters: search + Status dropdown (no search) + Position Title
-         searchable Select2. Client-side filters via DataTables — no Apply
-         button needed, changes take effect on the next event. -->
-    <div class="d-flex align-items-center gap-2 flex-wrap mb-3">
-        <form method="get" class="d-flex align-items-center gap-2 flex-wrap">
-            <input type="text" name="q" class="vs-input" placeholder="Enter keyword (name, position, etc.)" value="<?= esc((string) ($keyword ?? ''), 'attr') ?>" style="width:340px; max-width:100%">
-            <div style="width:180px">
-                <select id="sfStatus" class="js-filter-select" data-placeholder="Status" data-no-search="1" style="width:100%">
+    <div class="d-flex align-items-center gap-2 mb-3">
+        <form method="get" id="sigSearchForm" style="flex:1;min-width:0;display:flex;align-items:center;gap:0.5rem">
+            <input type="text" name="q" class="vs-input vs-advanced-search-input" placeholder="Enter keyword to search (name, position)" value="<?= esc((string) ($keyword ?? ''), 'attr') ?>" style="flex:1;min-width:0">
+            <div style="width:150px;flex-shrink:0">
+                <select id="sfStatus" name="status" class="js-filter-select" data-placeholder="Status" data-no-search="1" style="width:100%">
                     <option></option>
-                    <option value="selected">Selected</option>
-                    <option value="unselected">Unselected</option>
+                    <option value="selected"   <?= ($filterStatus ?? '') === 'selected'   ? 'selected' : '' ?>>Selected</option>
+                    <option value="unselected" <?= ($filterStatus ?? '') === 'unselected' ? 'selected' : '' ?>>Unselected</option>
                 </select>
             </div>
-            <div style="width:220px">
-                <select id="sfPosition" class="js-filter-select" data-placeholder="Position title" style="width:100%">
+            <div style="width:180px;flex-shrink:0">
+                <select id="sfPosition" name="position" class="js-filter-select" data-placeholder="Position title" style="width:100%">
                     <option></option>
+                    <?php foreach (($allPositions ?? []) as $pos): ?>
+                        <option value="<?= esc($pos) ?>" <?= ($filterPosition ?? '') === $pos ? 'selected' : '' ?>><?= esc($pos) ?></option>
+                    <?php endforeach ?>
                 </select>
             </div>
+            <span style="color:var(--border);font-size:1.2rem;line-height:1;user-select:none;flex-shrink:0">|</span>
+            <button type="submit" class="vs-btn vs-btn-primary" style="flex-shrink:0">Search</button>
+            <a href="<?= site_url('signatories') ?>" class="vs-btn vs-btn-outline" style="flex-shrink:0">Clear</a>
         </form>
-        <div class="ms-auto d-flex gap-2">
+        <span style="color:var(--border);font-size:1.2rem;line-height:1;user-select:none;flex-shrink:0">|</span>
+        <div style="display:flex;gap:0.5rem;flex-shrink:0">
             <button type="button" class="vs-btn vs-btn-primary" id="btnAddSignatory">
                 <?= asset_icon('add', ['stroke-width' => '2.5']) ?>
                 Add Signatory
@@ -70,8 +74,7 @@
                 <a href="#" id="sigSelectAllMatchingLink" style="font-weight:600;margin-left:.5rem;display:none"></a>
                 <a href="#" id="sigClearLink" style="margin-left:.5rem;display:none">Clear</a>
             </div>
-            <table id="signatoriesTable" class="vs-datatable js-data-table"
-                   data-page-search="customSignatoriesSearch"
+            <table id="signatoriesTable" class="vs-datatable js-data-table" data-page-search="customSignatoriesSearch"
                    data-search-placeholder="Search signatories..."
                    data-order='[[6,"asc"]]'
                    data-col-defs='[{"orderData":[6],"targets":[1]},{"visible":false,"targets":[6]}]'
@@ -109,7 +112,7 @@
                     <tr id="sig-row-<?= $sid ?>" data-archived="<?= $isArchived ? '1' : '0' ?>" data-selected="<?= $isSelected ? '1' : '0' ?>"<?= $isArchived ? ' class="vs-row-archived"' : '' ?>>
                         <td><input type="checkbox" class="vs-check sig-row-check" value="<?= $sid ?>"<?= $isArchived ? ' disabled title="Archived signatories cannot be bulk-archived"' : '' ?>></td>
                         <td><?= esc($fullName) ?></td>
-                        <td><?= esc($signatory['position_title']) ?></td>
+                        <td><span class="sig-position-value"><?= esc($signatory['position_title']) ?></span></td>
                         <td>
                             <?php if (!empty($signatory['signature_image'])): ?>
                                 <img src="<?= base_url('signatories/signature/' . $sid) ?>"
@@ -856,66 +859,7 @@
     });
 }());
 
-// ── Inline filters for signatories table ─────────────────────────────────────
-(function initSigSearch() {
-    var table = document.getElementById('signatoriesTable');
-    if (!table || !window.jQuery || !$.fn.DataTable || !$.fn.DataTable.isDataTable(table)) {
-        return setTimeout(initSigSearch, 50);
-    }
-    var dt = $(table).DataTable();
-
-    var sfStatus   = document.getElementById('sfStatus');
-    var sfPosition = document.getElementById('sfPosition');
-
-    // Populate Position Title select from current table data.
-    if (sfPosition) {
-        var posSet = new Set();
-        dt.column(2).data().each(function (val) {
-            var p = (val || '').toString().trim();
-            if (p) posSet.add(p);
-        });
-        Array.from(posSet).sort().forEach(function (p) {
-            var opt = document.createElement('option');
-            opt.value = p;
-            opt.textContent = p;
-            sfPosition.appendChild(opt);
-        });
-    }
-
-    // Init Select2 on the two filter selects (status no-search, position searchable).
-    if (typeof window.initVsSelect2 === 'function') window.initVsSelect2(document);
-
-    // Selected column renders as an icon (no text), so column().search() can't
-    // match it. Read the row's data-selected attr via a custom DataTables
-    // filter — captures statusVal each call so it always reflects the latest
-    // dropdown value without re-pushing search handlers.
-    var statusVal = '';
-    $.fn.dataTable.ext.search.push(function (settings, rowData, rowIdx) {
-        if (settings.nTable.id !== 'signatoriesTable') return true;
-        if (statusVal === '') return true;
-        var row = settings.aoData[rowIdx].nTr;
-        if (!row) return true;
-        var isSel = row.getAttribute('data-selected') === '1';
-        if (statusVal === 'selected'   && !isSel) return false;
-        if (statusVal === 'unselected' &&  isSel) return false;
-        return true;
-    });
-
-    function applyFilters() {
-        statusVal = sfStatus ? sfStatus.value : '';
-        var positionVal = sfPosition ? sfPosition.value : '';
-        dt.column(2).search(positionVal).draw();
-    }
-
-    // jQuery `change` fires for both native select changes AND Select2 selections.
-    if (window.jQuery) {
-        $(sfStatus).on('change', applyFilters);
-        $(sfPosition).on('change', applyFilters);
-    } else {
-        sfStatus   && sfStatus.addEventListener('change',   applyFilters);
-        sfPosition && sfPosition.addEventListener('change', applyFilters);
-    }
-}());
+// Position options are server-rendered from DB — no JS population needed.
 </script>
 
 <?= $this->endSection() ?>

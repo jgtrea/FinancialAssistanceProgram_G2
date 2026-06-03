@@ -21,11 +21,11 @@ class SignatoryController extends BaseController
 
     public function index()
     {
-        $signatoryModel = new SignatoryModel();
-        $keyword = trim((string) $this->request->getGet('q'));
+        $signatoryModel  = new SignatoryModel();
+        $keyword         = trim((string) $this->request->getGet('q'));
+        $filterStatus    = trim((string) $this->request->getGet('status'));
+        $filterPosition  = trim((string) $this->request->getGet('position'));
 
-        // Archived signatories stay visible on this page — they're rendered
-        // with a disabled checkbox and a Restore button instead of Select.
         if ($keyword !== '') {
             $signatoryModel
                 ->groupStart()
@@ -38,17 +38,37 @@ class SignatoryController extends BaseController
                 ->groupEnd();
         }
 
+        if ($filterStatus === 'selected') {
+            $signatoryModel->where('is_selected', 1);
+        } elseif ($filterStatus === 'unselected') {
+            $signatoryModel->where('is_selected', 0);
+        }
+
+        if ($filterPosition !== '') {
+            $signatoryModel->like('position_title', $filterPosition);
+        }
+
+        $allPositions = (new SignatoryModel())
+            ->select('position_title')
+            ->distinct()
+            ->where('position_title !=', '')
+            ->orderBy('position_title', 'ASC')
+            ->findAll();
+
         return view('signatories/index', [
-            'title' => 'Signatories',
-            'signatories' => $signatoryModel
+            'title'          => 'Signatories',
+            'signatories'    => $signatoryModel
                 ->orderBy('is_active', 'DESC')
                 ->orderBy('is_selected', 'DESC')
                 ->orderBy('signatory_id', 'DESC')
                 ->findAll(),
-            'keyword' => $keyword,
-            'prefixOptions' => self::PREFIX_OPTIONS,
-            'suffixOptions' => self::SUFFIX_OPTIONS,
-            'degreeOptions' => self::DEGREE_OPTIONS,
+            'keyword'        => $keyword,
+            'filterStatus'   => $filterStatus,
+            'filterPosition' => $filterPosition,
+            'allPositions'   => array_column($allPositions, 'position_title'),
+            'prefixOptions'  => self::PREFIX_OPTIONS,
+            'suffixOptions'  => self::SUFFIX_OPTIONS,
+            'degreeOptions'  => self::DEGREE_OPTIONS,
         ]);
     }
 
