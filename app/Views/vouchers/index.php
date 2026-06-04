@@ -954,5 +954,5 @@ window.VM_CONFIG = {
 <?= $this->endSection() ?>
 
 <?= $this->section('scripts') ?>
-<script src="<?= base_url('assets/js/custom/voucher-modal.js') ?>"></script>
+<script src="<?= base_url('assets/js/custom/voucher-modal.js') ?>?v=<?= @filemtime(FCPATH . 'assets/js/custom/voucher-modal.js') ?: time() ?>"></script>
 <?= $this->endSection() ?>

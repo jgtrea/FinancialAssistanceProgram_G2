@@ -107,6 +107,15 @@
     html += '</div>';
     voucherModalAlert.innerHTML = html;
   }
+
+  function vmUpdateCsrfToken(token) {
+    if (!token) return;
+    var metaValue = document.querySelector('meta[name="csrf-token-value"]');
+    if (metaValue) metaValue.content = token;
+    document.querySelectorAll('input[name^="csrf"]').forEach(function (input) {
+      input.value = token;
+    });
+  }
   function vmClearAlert() { voucherModalAlert.innerHTML = ''; }
 
   function vmSetFieldValue(el, value) {
@@ -378,6 +387,7 @@
     e.preventDefault();
     vmClearAlert();
 
+    if (typeof refreshCsrfToken === 'function') refreshCsrfToken();
     var fd = new FormData(voucherModalForm);
     var csrf = getCsrfToken && getCsrfToken();
     if (csrf && csrf.name && !fd.get(csrf.name)) fd.append(csrf.name, csrf.token);
@@ -389,6 +399,8 @@
     fetch(saveStudentUrl, ajaxOptions({ method: 'POST', body: fd }))
       .then(function (r) { return r.json(); })
       .then(function (data) {
+        vmUpdateCsrfToken(data.csrf_token);
+        if (typeof refreshCsrfToken === 'function') refreshCsrfToken();
         if (data.status === 'success') { vmClose(); location.reload(); return; }
         vmShowAlert(data.message || 'Save failed.', 'error', data.errors);
       })

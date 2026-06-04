@@ -93,6 +93,7 @@ class StudentController extends BaseController
                 'status' => 'error',
                 'message' => $this->validationErrorMessage($errors, 'Please check the student details.'),
                 'errors' => $errors,
+                'csrf_token' => csrf_hash(),
             ]);
         }
 
@@ -100,6 +101,7 @@ class StudentController extends BaseController
             return $this->response->setJSON([
                 'status' => 'error',
                 'message' => 'Please select a valid junior high school.',
+                'csrf_token' => csrf_hash(),
             ]);
         }
 
@@ -107,6 +109,7 @@ class StudentController extends BaseController
             return $this->response->setJSON([
                 'status' => 'error',
                 'message' => 'Please select a valid senior high school.',
+                'csrf_token' => csrf_hash(),
             ]);
         }
 
@@ -114,6 +117,7 @@ class StudentController extends BaseController
             return $this->response->setJSON([
                 'status' => 'error',
                 'message' => 'Student not found.',
+                'csrf_token' => csrf_hash(),
             ]);
         }
 
@@ -131,7 +135,8 @@ class StudentController extends BaseController
 
         return $this->response->setJSON([
             'status' => 'success',
-            'message' => $message
+            'message' => $message,
+            'csrf_token' => csrf_hash(),
         ]);
     }
 

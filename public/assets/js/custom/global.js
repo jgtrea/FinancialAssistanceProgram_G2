@@ -3,23 +3,33 @@
    ============================================================ */
 
 function getCsrfToken() {
-  const input = document.querySelector('input[name^="csrf"]');
-  if (input) return { name: input.name, token: input.value };
-
   const metaName  = document.querySelector('meta[name="csrf-token-name"]');
   const metaValue = document.querySelector('meta[name="csrf-token-value"]');
+  const cookieMatch = document.cookie.match(/(?:^|;\s*)csrf_cookie_name=([^;]+)/);
+  const cookieToken = cookieMatch ? decodeURIComponent(cookieMatch[1]) : '';
+
   if (metaName && metaValue) {
-    return { name: metaName.content, token: metaValue.content };
+    if (cookieToken && metaValue.content !== cookieToken) {
+      metaValue.content = cookieToken;
+    }
+    return { name: metaName.content, token: cookieToken || metaValue.content };
   }
+
+  const input = document.querySelector('input[name^="csrf"]');
+  if (input) return { name: input.name, token: cookieToken || input.value };
+
   return { name: 'csrf_token', token: '' };
 }
 
 function refreshCsrfToken() {
-  const cookieMatch = document.cookie.match(/csrf_cookie_name=([^;]+)/);
+  const cookieMatch = document.cookie.match(/(?:^|;\s*)csrf_cookie_name=([^;]+)/);
   if (!cookieMatch) return;
   const newToken = decodeURIComponent(cookieMatch[1]);
-  const input = document.querySelector('input[name^="csrf"]');
-  if (input) input.value = newToken;
+  document.querySelectorAll('input[name^="csrf"]').forEach(input => {
+    input.value = newToken;
+  });
+  const metaValue = document.querySelector('meta[name="csrf-token-value"]');
+  if (metaValue) metaValue.content = newToken;
 }
 
 // Each concurrent PDF job gets its OWN toast node, stacked in a shared
@@ -144,6 +154,7 @@ function showAlert(message, type = 'success') {
 }
 
 function ajaxOptions(options = {}) {
+  refreshCsrfToken();
   return {
     ...options,
     headers: {

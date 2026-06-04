@@ -1,5 +1,24 @@
 <?php
 
+if (!function_exists('asset_versioned_url')) {
+    function asset_versioned_url(string $url): string
+    {
+        $path = parse_url($url, PHP_URL_PATH);
+        if (!$path) {
+            return $url;
+        }
+
+        $relative = ltrim($path, '/');
+        $file = FCPATH . str_replace('/', DIRECTORY_SEPARATOR, $relative);
+        if (!is_file($file)) {
+            return $url;
+        }
+
+        $separator = str_contains($url, '?') ? '&' : '?';
+        return $url . $separator . 'v=' . filemtime($file);
+    }
+}
+
 function pre_style($mode = 'default_lay')
 {
     $styles = [];
@@ -34,7 +53,7 @@ function pre_style($mode = 'default_lay')
     }
 
     foreach ($styles as $url) {
-        echo '<link rel="stylesheet" href="' . esc($url, 'attr') . '">' . PHP_EOL;
+        echo '<link rel="stylesheet" href="' . esc(asset_versioned_url($url), 'attr') . '">' . PHP_EOL;
     }
 }
 
@@ -70,7 +89,7 @@ function pre_script($mode = 'default_lay')
     }
 
     foreach ($scripts as $url) {
-        echo '<script src="' . esc($url, 'attr') . '"></script>' . PHP_EOL;
+        echo '<script src="' . esc(asset_versioned_url($url), 'attr') . '"></script>' . PHP_EOL;
     }
 }
 
