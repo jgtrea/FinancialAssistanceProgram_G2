@@ -7,6 +7,7 @@ use App\Models\StudentArchiveModel;
 use App\Models\SchoolOptionModel;
 use App\Models\SignatoryModel;
 use App\Models\GenerationHistoryModel;
+use App\Models\VoucherModel;
 
 class StudentController extends BaseController
 {
@@ -42,7 +43,7 @@ class StudentController extends BaseController
 
     public function getJson($id)
     {
-        $student = (new StudentModel())->find($id);
+        $student = (new VoucherModel())->getStudentById((int) $id);
 
         if (!$student) {
             return $this->response->setStatusCode(404)->setJSON([
@@ -317,8 +318,8 @@ class StudentController extends BaseController
             'rank_no'                      => $rankNo === '' ? null : (int) $rankNo,
             'gwa'                          => $gwa === '' ? null : (float) $gwa,
             'gender'                       => strtoupper($this->cleanText($this->request->getPost('gender'))),
-            'junior_high_school'           => $this->cleanText($this->request->getPost('junior_high_school')),
-            'preferred_senior_high_school' => $this->cleanText($this->request->getPost('preferred_senior_high_school')),
+            'junior_high_school'           => (new SchoolOptionModel())->resolveSchoolId('JHS', $this->request->getPost('junior_high_school'), true),
+            'preferred_senior_high_school' => (new SchoolOptionModel())->resolveSchoolId('SHS', $this->request->getPost('preferred_senior_high_school'), false),
             'contact_number'               => $this->cleanText($this->request->getPost('contact_number')),
             'remarks_status'               => strtoupper($this->cleanText($this->request->getPost('remarks_status'))),
             'school_year'                  => $this->cleanText($this->request->getPost('school_year')),

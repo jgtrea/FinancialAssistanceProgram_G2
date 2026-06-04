@@ -33,7 +33,7 @@ class SchoolOptionModel extends Model
     {
         try {
             return $this->db->table('school')
-                ->select('school_name, acronym')
+                ->select('school_id, school_name, acronym')
                 ->where('school_level', $level)
                 ->where('is_active', 1)
                 ->orderBy('school_name', 'ASC')
@@ -53,33 +53,64 @@ class SchoolOptionModel extends Model
         }
 
         try {
-            return $this->db->table('school')
-                ->where('school_level', $level)
-                ->where('school_name', $this->upper($school))
-                ->countAllResults() > 0;
+            $builder = $this->db->table('school')->where('school_level', $level);
+            if (ctype_digit($school)) {
+                $builder->where('school_id', (int) $school);
+            } else {
+                $builder->where('school_name', $this->upper($school));
+            }
+
+            return $builder->countAllResults() > 0;
         } catch (DatabaseException $e) {
             return true;
         }
     }
 
-    public function addSchool(string $level, string $name): void
+    public function addSchool(string $level, string $name): ?int
     {
         $name = $this->upper(trim($name));
-        if ($name === '') return;
+        if ($name === '') return null;
 
-        $exists = $this->db->table('school')
+        $existing = $this->db->table('school')
+            ->select('school_id')
             ->where('school_level', $level)
             ->where('school_name', $name)
-            ->countAllResults() > 0;
+            ->get()
+            ->getRowArray();
 
-        if (!$exists) {
-            $this->db->table('school')->insert([
-                'school_level' => $level,
-                'school_name'  => $name,
-                'acronym'      => $this->generateAcronym($name),
-                'is_active'    => 1,
-            ]);
+        if ($existing) {
+            return (int) $existing['school_id'];
         }
+
+        $this->db->table('school')->insert([
+            'school_level' => $level,
+            'school_name'  => $name,
+            'acronym'      => $this->generateAcronym($name),
+            'is_active'    => 1,
+        ]);
+
+        return (int) $this->db->insertID();
+    }
+
+    public function resolveSchoolId(string $level, ?string $value, bool $allowEmpty = false): ?int
+    {
+        $value = trim((string) $value);
+        if ($value === '') {
+            return $allowEmpty ? null : 0;
+        }
+
+        if (ctype_digit($value)) {
+            $row = $this->db->table('school')
+                ->select('school_id')
+                ->where('school_level', $level)
+                ->where('school_id', (int) $value)
+                ->get()
+                ->getRowArray();
+
+            return $row ? (int) $row['school_id'] : ($allowEmpty ? null : 0);
+        }
+
+        return $this->addSchool($level, $value);
     }
 
     private function generateAcronym(string $name): string

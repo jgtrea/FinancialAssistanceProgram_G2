@@ -82,23 +82,8 @@ class School extends Controller
         $userId = session()->get('user_id');
 
         if ($id > 0) {
-            $existing = $this->schoolModel->find($id);
-            $oldName  = isset($existing['school_name'])
-                ? (function_exists('mb_strtoupper') ? mb_strtoupper($existing['school_name'], 'UTF-8') : strtoupper($existing['school_name']))
-                : '';
-
             $this->schoolModel->update($id, ['school_name' => $name, 'school_level' => $level, 'acronym' => $acronym]);
             log_action($userId, 'UPDATE_SCHOOL', "Updated school #{$id}: {$name} ({$level})");
-
-            // Propagate the name change to all matching voucher rows.
-            if ($oldName !== '' && $oldName !== $name) {
-                $db = \Config\Database::connect();
-                if ($level === 'JHS') {
-                    $db->table('students')->where('junior_high_school', $oldName)->update(['junior_high_school' => $name]);
-                } else {
-                    $db->table('students')->where('preferred_senior_high_school', $oldName)->update(['preferred_senior_high_school' => $name]);
-                }
-            }
 
             return $this->response->setJSON(['success' => true, 'message' => 'School updated successfully.']);
         }
@@ -256,16 +241,19 @@ class School extends Controller
     {
         $model = new \App\Models\SchoolOptionModel();
 
-        $names = static function (array $rows): array {
-            return array_values(array_filter(
-                array_map(static fn ($r) => trim((string) ($r['school_name'] ?? '')), $rows),
-                static fn ($v) => $v !== ''
-            ));
+        $options = static function (array $rows): array {
+            return array_values(array_filter(array_map(static function ($r): array {
+                return [
+                    'school_id'   => (int) ($r['school_id'] ?? 0),
+                    'school_name' => trim((string) ($r['school_name'] ?? '')),
+                    'acronym'     => trim((string) ($r['acronym'] ?? '')),
+                ];
+            }, $rows), static fn ($r) => $r['school_id'] > 0 && $r['school_name'] !== ''));
         };
 
         return $this->response->setJSON([
-            'jhs' => $names($model->getJuniorHighSchools()),
-            'shs' => $names($model->getSeniorHighSchools()),
+            'jhs' => $options($model->getJuniorHighSchools()),
+            'shs' => $options($model->getSeniorHighSchools()),
         ]);
     }
 

@@ -21,7 +21,14 @@ class GenerationHistoryModel extends Model
 
     public function recordMany(array $students, ?int $userId, ?int $jobId, string $source, ?string $generatedAt = null): void
     {
-        if (empty($students) || !$this->db->tableExists($this->table)) {
+        if (empty($students)) {
+            return;
+        }
+
+        $db = \Config\Database::connect(null, false);
+        try { $db->reconnect(); } catch (\Throwable $_) {}
+
+        if (!$db->tableExists($this->table)) {
             return;
         }
 
@@ -46,7 +53,7 @@ class GenerationHistoryModel extends Model
         }
 
         if (!empty($rows)) {
-            $this->insertBatch($rows);
+            $db->table($this->table)->insertBatch($rows);
         }
     }
 
@@ -60,7 +67,15 @@ class GenerationHistoryModel extends Model
 
         $builder = $this->db->table($this->table . ' gh');
         if ($hasGeneratedBy) {
-            $builder->select("gh.*, TRIM(CONCAT_WS(' ', NULLIF(u.first_name,''), NULLIF(u.middle_name,''), NULLIF(u.last_name,''))) AS full_name")
+            $builder->select("
+                    gh.*,
+                    COALESCE(
+                        NULLIF(TRIM(CONCAT_WS(' ', NULLIF(u.first_name,''), NULLIF(u.middle_name,''), NULLIF(u.last_name,''))), ''),
+                        NULLIF(u.username, ''),
+                        NULLIF(u.email, ''),
+                        CASE WHEN gh.generated_by IS NOT NULL THEN CONCAT('User #', gh.generated_by) ELSE NULL END
+                    ) AS full_name
+                ", false)
                     ->join('users u', 'u.user_id = gh.generated_by', 'left');
         } else {
             $builder->select('gh.*');

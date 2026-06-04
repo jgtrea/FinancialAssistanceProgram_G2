@@ -40,10 +40,8 @@ class SeedTestStudents extends BaseCommand
         'Soriano', 'Navarro', 'Rosales', 'Bernardo', 'Magtanggol',
     ];
 
-    // Fallback school names used only when the `school` table is empty or
-    // missing. Normally the seeder pulls the live active schools from the DB
-    // (see loadActiveSchools()) so seeded students always reference schools
-    // that actually exist in the dropdowns.
+    // Example fallback names kept for reference when manually seeding the
+    // school table before running this command.
     private const JHS_SCHOOLS = [
         'STA. CRUZ NATIONAL HIGH SCHOOL',
         'UNION NATIONAL HIGH SCHOOL',
@@ -83,11 +81,14 @@ class SeedTestStudents extends BaseCommand
         $now        = date('Y-m-d H:i:s');
         $schoolYear = (int) date('Y') . '-' . (int) (date('Y') + 1);
 
-        // Pull the live active schools from the DB so seeded students reference
-        // schools that actually exist. Fall back to the constants if the table
-        // is missing/empty.
-        $jhsSchools = $this->loadActiveSchools($db, 'JHS') ?: self::JHS_SCHOOLS;
-        $shsSchools = $this->loadActiveSchools($db, 'SHS') ?: self::SHS_SCHOOLS;
+        // Pull the live active school IDs from the DB so seeded students store
+        // the same foreign-key values used by the application.
+        $jhsSchools = $this->loadActiveSchools($db, 'JHS');
+        $shsSchools = $this->loadActiveSchools($db, 'SHS');
+        if (empty($jhsSchools) || empty($shsSchools)) {
+            CLI::error("Active JHS and SHS rows are required in the 'school' table before seeding students.");
+            return EXIT_ERROR;
+        }
         CLI::write('Using ' . count($jhsSchools) . ' JHS and ' . count($shsSchools) . ' SHS school(s) from the database.');
 
         CLI::write("Inserting {$count} test students in batches of " . self::BATCH_SIZE . '...');
@@ -142,11 +143,10 @@ class SeedTestStudents extends BaseCommand
     }
 
     /**
-     * Active school names for a level ('JHS'|'SHS') straight from the `school`
-     * table. Returns [] if the table is absent or has no active rows, so the
-     * caller can fall back to the hardcoded constants.
+     * Active school IDs for a level ('JHS'|'SHS') straight from the `school`
+     * table. Returns [] if the table is absent or has no active rows.
      *
-     * @return string[]
+     * @return int[]
      */
     private function loadActiveSchools($db, string $level): array
     {
@@ -155,17 +155,16 @@ class SeedTestStudents extends BaseCommand
         }
 
         $rows = $db->table('school')
-            ->select('school_name')
+            ->select('school_id')
             ->where('school_level', $level)
             ->where('is_active', 1)
-            ->where('school_name IS NOT NULL', null, false)
-            ->where('school_name !=', '')
+            ->where('school_id IS NOT NULL', null, false)
             ->get()
             ->getResultArray();
 
         $names = [];
         foreach ($rows as $row) {
-            $names[] = $row['school_name'];
+            $names[] = (int) $row['school_id'];
         }
 
         return $names;

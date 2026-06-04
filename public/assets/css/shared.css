@@ -359,6 +359,14 @@ canvas {
   color: var(--danger);
   margin-top: 0.3rem;
 }
+.vs-section-title {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--navy);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  margin: 0.75rem 0 0;
+}
 
 /* ── Modal ── */
 .vs-modal-overlay {

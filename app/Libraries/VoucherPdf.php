@@ -109,7 +109,7 @@ class VoucherPdf
 
                 $mpdf->SetFont('Arial', '', self::FONT_SIZE);
                 $mpdf->Text(self::X_VOUCHER_NO, $st + self::Y_VOUCHER_NO, $s['voucher_no'] ?? '');
-                $mpdf->Text(self::X_DATE,        $st + self::Y_VOUCHER_NO, date('m/d/Y', strtotime($s['voucher_date'] ?? 'now')));
+                $mpdf->Text(self::X_DATE,        $st + self::Y_VOUCHER_NO, self::formatVoucherDate($s['voucher_date'] ?? null));
                 $mpdf->Text(self::X_RECIPIENT,   $st + self::Y_RECIPIENT,  self::formatVoucherName($s['full_name'] ?? ''));
                 $mpdf->Text(self::X_SCHOOL,      $st + self::Y_SCHOOL,     $s['preferred_senior_high_school'] ?? '');
 
@@ -120,6 +120,16 @@ class VoucherPdf
 
         // 'S' = return PDF as a string instead of streaming it.
         return $mpdf->Output('', 'S');
+    }
+
+    protected static function formatVoucherDate(?string $date): string
+    {
+        $timestamp = strtotime((string) ($date ?: 'now'));
+        if ($timestamp === false) {
+            $timestamp = time();
+        }
+
+        return date('F j, Y', $timestamp);
     }
 
     /**

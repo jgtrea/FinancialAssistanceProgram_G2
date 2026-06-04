@@ -109,9 +109,9 @@
             </div>
         </div>
         <div class="vs-modal-footer">
-            <button class="vs-btn vs-btn-outline" id="auditFilterClear">Clear All</button>
-            <button class="vs-btn vs-btn-outline" id="auditFilterModalCancel">Cancel</button>
-            <button class="vs-btn vs-btn-primary" id="auditFilterApply">Apply Filters</button>
+            <button type="button" class="vs-btn vs-btn-outline" id="auditFilterClear">Clear All</button>
+            <button type="button" class="vs-btn vs-btn-outline" id="auditFilterModalCancel">Cancel</button>
+            <button type="button" class="vs-btn vs-btn-primary" id="auditFilterApply">Apply Filters</button>
         </div>
     </div>
 </div>
@@ -175,7 +175,7 @@
                 });
             }
             closeFilter();
-            if (filterForm) filterForm.submit();
+            window.location.href = '<?= site_url($resetUrl ?? 'user/audit-logs') ?>';
         });
 }());
 </script>

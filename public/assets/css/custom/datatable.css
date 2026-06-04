@@ -90,6 +90,11 @@ table.js-data-table tbody tr.vs-row-archived img {
   width: 100%;
   min-width: 0;
 }
+.dataTables_wrapper,
+.dataTables_wrapper .table-responsive {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
 .dataTables_wrapper .row {
   min-width: 0;
 }
@@ -205,6 +210,7 @@ table.js-data-table tbody tr.vs-row-archived img {
   .vs-datatable,
   table.js-data-table {
     font-size: 0.82rem;
+    min-width: 680px;
   }
   .vs-datatable thead th,
   table.js-data-table thead th,

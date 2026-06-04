@@ -70,18 +70,21 @@ class ArchiveController extends BaseController
             return [];
         }
         try {
+            $alias = $column === 'junior_high_school' ? 'jhs' : 'shs';
             $rows = \Config\Database::connect()->table('students')
                 ->distinct()
-                ->select($column)
-                ->where($column . ' IS NOT NULL')
-                ->where($column . ' !=', '')
+                ->select("COALESCE({$alias}.school_name, students.{$column}) AS school_name")
+                ->join('school jhs', 'jhs.school_id = students.junior_high_school', 'left', false)
+                ->join('school shs', 'shs.school_id = students.preferred_senior_high_school', 'left', false)
+                ->where('students.' . $column . ' IS NOT NULL', null, false)
+                ->where('students.' . $column . ' !=', '')
                 ->get()
                 ->getResultArray();
         } catch (\Throwable $e) {
             return [];
         }
         return array_values(array_filter(array_map(
-            static fn ($r) => trim((string) ($r[$column] ?? '')),
+            static fn ($r) => trim((string) ($r['school_name'] ?? '')),
             $rows
         ), static fn ($v) => $v !== ''));
     }

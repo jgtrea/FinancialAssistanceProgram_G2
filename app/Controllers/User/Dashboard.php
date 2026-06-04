@@ -16,15 +16,16 @@ class Dashboard extends Controller
         $notEligible  = $db->table('students')->where('eligibility_status', 'not_eligible')->countAllResults();
 
         $recentVouchers = $db->table('students')
+            ->join('school jhs', 'jhs.school_id = students.junior_high_school', 'left', false)
             ->select("
-                voucher_no,
-                first_name, middle_name, last_name,
-                TRIM(CONCAT_WS(' ', NULLIF(last_name,''), NULLIF(first_name,''), NULLIF(middle_name,''))) AS name_sort,
-                junior_high_school,
-                voucher_status,
-                generated_at
+                students.voucher_no,
+                students.first_name, students.middle_name, students.last_name,
+                TRIM(CONCAT_WS(' ', NULLIF(students.last_name,''), NULLIF(students.first_name,''), NULLIF(students.middle_name,''))) AS name_sort,
+                COALESCE(jhs.school_name, students.junior_high_school) AS junior_high_school,
+                students.voucher_status,
+                students.generated_at
             ")
-                        ->orderBy('created_at', 'DESC')
+            ->orderBy('students.created_at', 'DESC')
             ->limit(10)
             ->get()->getResultArray();
 

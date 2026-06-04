@@ -284,7 +284,7 @@
                 if (hidden) hidden.value = '';
             });
             closeFilter();
-            if (filterForm) filterForm.submit();
+            window.location.href = '<?= site_url('archive?type=voucher') ?>';
         });
     }
     // ── Archive Current Data button ───────────────────────────────────────────

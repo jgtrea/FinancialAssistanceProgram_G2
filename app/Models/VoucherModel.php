@@ -32,12 +32,26 @@ class VoucherModel extends Model
         'last_name',
         'suffix',
         'gender',
-        'junior_high_school',
-        'preferred_senior_high_school',
         'contact_number',
         'remarks_status',
         'school_year',
     ];
+
+    protected string $schoolSelect = "
+        students.junior_high_school AS junior_high_school_id,
+        COALESCE(jhs.school_name, students.junior_high_school) AS junior_high_school,
+        jhs.acronym AS jhs_acronym,
+        students.preferred_senior_high_school AS preferred_senior_high_school_id,
+        COALESCE(shs.school_name, students.preferred_senior_high_school) AS preferred_senior_high_school,
+        shs.acronym AS shs_acronym
+    ";
+
+    protected function withSchoolJoins($builder)
+    {
+        return $builder
+            ->join('school jhs', 'jhs.school_id = students.junior_high_school', 'left', false)
+            ->join('school shs', 'shs.school_id = students.preferred_senior_high_school', 'left', false);
+    }
 
     protected function normalizeUppercase(array $data): array
     {
@@ -114,20 +128,20 @@ class VoucherModel extends Model
         // up with a disabled checkbox and an Unarchive-only action. Hard
         // archive (Archive All) deletes the row from this table entirely, so
         // those are gone by virtue of not existing here anymore.
-        $builder = $this->db->table('students')
+        $builder = $this->withSchoolJoins($this->db->table('students'))
             ->select("
-                student_id, voucher_no, voucher_date,
+                students.student_id, voucher_no, voucher_date,
                 first_name, middle_name, last_name, suffix,
                 CONCAT_WS(' ', NULLIF(first_name,''), NULLIF(middle_name,''), NULLIF(last_name,''), NULLIF(suffix,'')) AS full_name,
-                preferred_senior_high_school, school_year,
-                eligibility_status, voucher_status, is_active,
-                gwa, rank_no, gender, junior_high_school,
-                contact_number, remarks_status, created_at, generated_at
+                {$this->schoolSelect},
+                school_year,
+                eligibility_status, voucher_status, students.is_active AS is_active,
+                gwa, rank_no, gender,
+                contact_number, remarks_status, students.created_at AS created_at, students.generated_at AS generated_at
             ");
 
         $keyword = trim($keyword);
         if ($keyword !== '') {
-            $escapedKw = $this->db->escape('%' . $keyword . '%');
             $builder
                 ->groupStart()
                 ->like('voucher_no', $keyword)
@@ -135,25 +149,27 @@ class VoucherModel extends Model
                 ->orLike('middle_name', $keyword)
                 ->orLike('last_name', $keyword)
                 ->orLike('suffix', $keyword)
-                ->orLike('junior_high_school', $keyword)
-                ->orLike('preferred_senior_high_school', $keyword)
+                ->orLike('students.junior_high_school', $keyword)
+                ->orLike('students.preferred_senior_high_school', $keyword)
+                ->orLike('jhs.school_name', $keyword)
+                ->orLike('jhs.acronym', $keyword)
+                ->orLike('shs.school_name', $keyword)
+                ->orLike('shs.acronym', $keyword)
                 ->orLike('school_year', $keyword)
                 ->orLike('gender', $keyword)
                 ->orLike('remarks_status', $keyword)
                 ->orLike('voucher_status', $keyword)
                 ->orLike('contact_number', $keyword)
-                ->orWhere("`junior_high_school` IN (SELECT `school_name` FROM `school` WHERE `acronym` LIKE {$escapedKw})")
-                ->orWhere("`preferred_senior_high_school` IN (SELECT `school_name` FROM `school` WHERE `acronym` LIKE {$escapedKw})")
                 ->groupEnd();
         }
 
         $hasFilter = $this->applyListingFilters($builder, $filters);
 
         $builder
-            ->orderBy('created_at', 'DESC')
-            ->orderBy("CASE WHEN eligibility_status = 'eligible' THEN 0 ELSE 1 END", '', false)
-            ->orderBy('is_active', 'DESC')
-            ->orderBy('student_id', 'DESC');
+            ->orderBy('students.created_at', 'DESC')
+            ->orderBy("CASE WHEN students.eligibility_status = 'eligible' THEN 0 ELSE 1 END", '', false)
+            ->orderBy('students.is_active', 'DESC')
+            ->orderBy('students.student_id', 'DESC');
 
         // Always cap the result set, even with keyword/filter applied. Without
         // this guard, a filter like eligibility=eligible can return tens of
@@ -206,14 +222,14 @@ class VoucherModel extends Model
             2  => 'last_name',          // visible Name column
             3  => 'last_name',          // hidden name_sort column
             4  => 'rank_no',
-            5  => 'junior_high_school',
-            6  => 'preferred_senior_high_school',
+            5  => 'jhs.school_name',
+            6  => 'shs.school_name',
             7  => 'school_year',
             8  => 'eligibility_status',
             9  => 'remarks_status',
             10 => 'generate_count',
-            11 => 'generated_at',
-            12 => 'is_active',
+            11 => 'students.generated_at',
+            12 => 'students.is_active',
         ];
 
         // Total (unfiltered).
@@ -225,7 +241,6 @@ class VoucherModel extends Model
         // 1000-row "recent scope" cap applies (see $noScope below).
         $likeGroup = function ($builder, string $needle): void {
             $escaped      = $this->db->escape('%' . $needle . '%');
-            $escapedAcr   = $this->db->escape('%' . $needle . '%');
             $builder
                 ->groupStart()
                 ->like('voucher_no', $needle)
@@ -233,8 +248,12 @@ class VoucherModel extends Model
                 ->orLike('middle_name', $needle)
                 ->orLike('last_name', $needle)
                 ->orLike('suffix', $needle)
-                ->orLike('junior_high_school', $needle)
-                ->orLike('preferred_senior_high_school', $needle)
+                ->orLike('students.junior_high_school', $needle)
+                ->orLike('students.preferred_senior_high_school', $needle)
+                ->orLike('jhs.school_name', $needle)
+                ->orLike('jhs.acronym', $needle)
+                ->orLike('shs.school_name', $needle)
+                ->orLike('shs.acronym', $needle)
                 ->orLike('school_year', $needle)
                 ->orLike('gender', $needle)
                 ->orLike('remarks_status', $needle)
@@ -245,8 +264,6 @@ class VoucherModel extends Model
                 ->orWhere("CONCAT_WS(' ', `first_name`, `last_name`) LIKE {$escaped}")
                 ->orWhere("CONCAT_WS(', ', `last_name`, `first_name`) LIKE {$escaped}")
                 ->orWhere("CONCAT_WS(', ', `last_name`, CONCAT_WS(' ', `first_name`, `middle_name`, `suffix`)) LIKE {$escaped}")
-                ->orWhere("`junior_high_school` IN (SELECT `school_name` FROM `school` WHERE `acronym` LIKE {$escapedAcr})")
-                ->orWhere("`preferred_senior_high_school` IN (SELECT `school_name` FROM `school` WHERE `acronym` LIKE {$escapedAcr})")
                 ->groupEnd();
         };
 
@@ -283,28 +300,27 @@ class VoucherModel extends Model
             $scopeIds = array_map(static fn($r) => (int) $r['student_id'], $rows);
         }
 
-        $countBuilder = $this->db->table('students');
+        $countBuilder = $this->withSchoolJoins($this->db->table('students'));
         if ($scopeIds !== null && !empty($scopeIds)) {
-            $countBuilder->whereIn('student_id', $scopeIds);
+            $countBuilder->whereIn('students.student_id', $scopeIds);
         }
         $applyWhere($countBuilder);
         $recordsFiltered = (int) $countBuilder->countAllResults();
 
-        $builder = $this->db->table('students')
+        $builder = $this->withSchoolJoins($this->db->table('students'))
             ->select("
-                student_id, voucher_no, voucher_date,
+                students.student_id, voucher_no, voucher_date,
                 first_name, middle_name, last_name, suffix,
                 CONCAT_WS(' ', NULLIF(first_name,''), NULLIF(middle_name,''), NULLIF(last_name,''), NULLIF(suffix,'')) AS full_name,
-                preferred_senior_high_school, school_year,
-                eligibility_status, voucher_status, is_active,
-                gwa, rank_no, gender, junior_high_school,
-                contact_number, remarks_status, created_at, generated_at,
-                generate_count,
-                (SELECT acronym FROM school WHERE school_name = students.junior_high_school LIMIT 1) AS jhs_acronym,
-                (SELECT acronym FROM school WHERE school_name = students.preferred_senior_high_school LIMIT 1) AS shs_acronym
+                {$this->schoolSelect},
+                school_year,
+                eligibility_status, voucher_status, students.is_active AS is_active,
+                gwa, rank_no, gender,
+                contact_number, remarks_status, students.created_at AS created_at, students.generated_at AS generated_at,
+                generate_count
             ");
         if ($scopeIds !== null && !empty($scopeIds)) {
-            $builder->whereIn('student_id', $scopeIds);
+            $builder->whereIn('students.student_id', $scopeIds);
         }
         $applyWhere($builder);
 
@@ -315,7 +331,7 @@ class VoucherModel extends Model
             $builder->orderBy('last_name', 'ASC')->orderBy('first_name', 'ASC');
         }
         // Tiebreak for stable pagination.
-        $builder->orderBy('student_id', 'ASC');
+        $builder->orderBy('students.student_id', 'ASC');
 
         if ($length > 0) {
             $builder->limit($length, $start);
@@ -341,16 +357,16 @@ class VoucherModel extends Model
     public function getListingFilterOptions(): array
     {
         $distinct = function (string $column): array {
-            $rows = $this->db->table('students')
+            $rows = $this->withSchoolJoins($this->db->table('students'))
                 ->distinct()
-                ->select($column)
-                ->where($column . ' IS NOT NULL')
+                ->select($column . ' AS value')
+                ->where($column . ' IS NOT NULL', null, false)
                 ->where($column . ' !=', '')
                 ->orderBy($column, 'ASC')
                 ->get()
                 ->getResultArray();
             return array_values(array_filter(array_map(
-                static fn ($r) => trim((string) ($r[$column] ?? '')),
+                static fn ($r) => trim((string) ($r['value'] ?? '')),
                 $rows
             ), static fn ($v) => $v !== ''));
         };
@@ -359,7 +375,7 @@ class VoucherModel extends Model
         $fromSchoolTable = function (string $level): array {
             try {
                 return $this->db->table('school')
-                    ->select('school_name, acronym')
+                    ->select('school_id, school_name, acronym')
                     ->where('school_level', $level)
                     ->where('is_active', 1)
                     ->get()
@@ -374,12 +390,13 @@ class VoucherModel extends Model
             $seen    = [];
             $out     = [];
             foreach ($schoolRows as $row) {
+                $id   = (int) ($row['school_id'] ?? 0);
                 $name = trim((string) ($row['school_name'] ?? ''));
                 if ($name === '') continue;
                 $key = mb_strtoupper($name);
                 if (isset($seen[$key])) continue;
                 $seen[$key] = true;
-                $out[] = ['school_name' => $name, 'acronym' => trim((string) ($row['acronym'] ?? ''))];
+                $out[] = ['school_id' => $id, 'school_name' => $name, 'acronym' => trim((string) ($row['acronym'] ?? ''))];
             }
             foreach ($nameStrings as $name) {
                 $name = trim((string) $name);
@@ -387,15 +404,15 @@ class VoucherModel extends Model
                 $key = mb_strtoupper($name);
                 if (isset($seen[$key])) continue;
                 $seen[$key] = true;
-                $out[] = ['school_name' => $name, 'acronym' => ''];
+                $out[] = ['school_id' => 0, 'school_name' => $name, 'acronym' => ''];
             }
             usort($out, static fn ($a, $b) => strnatcasecmp($a['school_name'], $b['school_name']));
             return $out;
         };
 
         return [
-            'junior_high_schools' => $mergeSchools($fromSchoolTable('JHS'), $distinct('junior_high_school')),
-            'senior_high_schools' => $mergeSchools($fromSchoolTable('SHS'), $distinct('preferred_senior_high_school')),
+            'junior_high_schools' => $mergeSchools($fromSchoolTable('JHS'), $distinct('jhs.school_name')),
+            'senior_high_schools' => $mergeSchools($fromSchoolTable('SHS'), $distinct('shs.school_name')),
             'school_years'        => $distinct('school_year'),
         ];
     }
@@ -435,11 +452,17 @@ class VoucherModel extends Model
             $applied = true;
         }
         if (($v = $value($filters, 'junior_hs')) !== '') {
-            $builder->where('junior_high_school', $v);
+            $builder->groupStart()
+                ->where('students.junior_high_school', $v)
+                ->orWhere('jhs.school_name', $v)
+                ->groupEnd();
             $applied = true;
         }
         if (($v = $value($filters, 'preferred_hs')) !== '') {
-            $builder->where('preferred_senior_high_school', $v);
+            $builder->groupStart()
+                ->where('students.preferred_senior_high_school', $v)
+                ->orWhere('shs.school_name', $v)
+                ->groupEnd();
             $applied = true;
         }
         if (($v = $value($filters, 'gwa_min')) !== '') {
@@ -451,7 +474,7 @@ class VoucherModel extends Model
             $applied = true;
         }
         if (($v = $value($filters, 'eligibility')) !== '') {
-            $builder->where('eligibility_status', $v);
+            $builder->where('students.eligibility_status', $v);
             $applied = true;
         }
 
@@ -466,12 +489,11 @@ class VoucherModel extends Model
         // No is_archived filter: Archive All sweeps everything in the current
         // listing scope, including soft-archived rows (which would otherwise
         // be skipped and left behind in the students table).
-        $builder = $this->db->table('students')
+        $builder = $this->withSchoolJoins($this->db->table('students'))
             ->select('student_id');
 
         $keyword = trim($keyword);
         if ($keyword !== '') {
-            $escapedKw = $this->db->escape('%' . $keyword . '%');
             $builder
                 ->groupStart()
                 ->like('voucher_no', $keyword)
@@ -479,15 +501,17 @@ class VoucherModel extends Model
                 ->orLike('middle_name', $keyword)
                 ->orLike('last_name', $keyword)
                 ->orLike('suffix', $keyword)
-                ->orLike('junior_high_school', $keyword)
-                ->orLike('preferred_senior_high_school', $keyword)
+                ->orLike('students.junior_high_school', $keyword)
+                ->orLike('students.preferred_senior_high_school', $keyword)
+                ->orLike('jhs.school_name', $keyword)
+                ->orLike('jhs.acronym', $keyword)
+                ->orLike('shs.school_name', $keyword)
+                ->orLike('shs.acronym', $keyword)
                 ->orLike('school_year', $keyword)
                 ->orLike('gender', $keyword)
                 ->orLike('remarks_status', $keyword)
                 ->orLike('voucher_status', $keyword)
                 ->orLike('contact_number', $keyword)
-                ->orWhere("`junior_high_school` IN (SELECT `school_name` FROM `school` WHERE `acronym` LIKE {$escapedKw})")
-                ->orWhere("`preferred_senior_high_school` IN (SELECT `school_name` FROM `school` WHERE `acronym` LIKE {$escapedKw})")
                 ->groupEnd();
         }
 
@@ -501,18 +525,18 @@ class VoucherModel extends Model
 
     public function getStudentById(int $studentId): ?array
     {
-        $row = $this->db->table('students')
+        $row = $this->withSchoolJoins($this->db->table('students'))
             ->select("
-                student_id, voucher_no, voucher_date,
+                students.student_id, voucher_no, voucher_date,
                 first_name, middle_name, last_name, suffix,
                 CONCAT_WS(' ', NULLIF(first_name,''), NULLIF(middle_name,''), NULLIF(last_name,''), NULLIF(suffix,'')) AS full_name,
                 rank_no, gwa, gender,
-                junior_high_school, preferred_senior_high_school,
+                {$this->schoolSelect},
                 contact_number, remarks_status, school_year,
                 eligibility_status, voucher_status,
-                created_at, updated_at
+                students.generated_at AS generated_at, students.created_at AS created_at, students.updated_at AS updated_at
             ")
-            ->where('student_id', $studentId)
+            ->where('students.student_id', $studentId)
             ->get()->getRowArray() ?: null;
 
         return $row ? $this->uppercaseRow($row) : null;
@@ -522,18 +546,18 @@ class VoucherModel extends Model
     {
         if (empty($ids)) return [];
 
-        $rows = $this->db->table('students')
+        $rows = $this->withSchoolJoins($this->db->table('students'))
             ->select("
-                student_id, voucher_no, voucher_date,
+                students.student_id, voucher_no, voucher_date,
                 first_name, middle_name, last_name, suffix,
                 CONCAT_WS(' ', NULLIF(first_name,''), NULLIF(middle_name,''), NULLIF(last_name,''), NULLIF(suffix,'')) AS full_name,
                 rank_no, gwa, gender,
-                junior_high_school, preferred_senior_high_school,
+                {$this->schoolSelect},
                 contact_number, remarks_status, school_year,
                 eligibility_status, voucher_status
             ")
-            ->whereIn('student_id', $ids)
-            ->orderBy('student_id', 'ASC')
+            ->whereIn('students.student_id', $ids)
+            ->orderBy('students.student_id', 'ASC')
             ->get()->getResultArray();
 
         return array_map(fn ($row) => $this->uppercaseRow($row), $rows);

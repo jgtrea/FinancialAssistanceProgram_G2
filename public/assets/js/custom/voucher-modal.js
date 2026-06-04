@@ -227,19 +227,31 @@
     if (vmLastGeneratedByWrap) vmLastGeneratedByWrap.style.display = isView ? ''     : 'none';
   }
 
-  function rebuildSelectOptions(select, names, selected) {
+  function rebuildSelectOptions(select, options, selected) {
     if (!select) return;
     while (select.firstChild) select.removeChild(select.firstChild);
     // Blank option so placeholder shows when nothing selected.
     select.appendChild(document.createElement('option'));
     var seen = {};
-    names.forEach(function (name) {
-      if (!name || seen[name]) return;
-      seen[name] = true;
+    options.forEach(function (item) {
+      var value = '';
+      var label = '';
+      var acronym = '';
+      if (item && typeof item === 'object') {
+        value = String(item.school_id || item.id || item.value || '');
+        label = String(item.school_name || item.text || item.label || '');
+        acronym = String(item.acronym || '');
+      } else {
+        value = String(item || '');
+        label = value;
+      }
+      if (!value || seen[value]) return;
+      seen[value] = true;
       var opt = document.createElement('option');
-      opt.value = name;
-      opt.textContent = name;
-      if (selected && name === selected) opt.selected = true;
+      opt.value = value;
+      opt.textContent = label || value;
+      if (acronym) opt.setAttribute('data-acronym', acronym);
+      if (selected && value === String(selected)) opt.selected = true;
       select.appendChild(opt);
     });
     // If a selected value isn't in the list, add it as a custom option so
@@ -335,8 +347,8 @@
         }
         if (mode !== 'view') {
           loadSchoolOptions(
-            data.student.junior_high_school || '',
-            data.student.preferred_senior_high_school || ''
+            data.student.junior_high_school_id || data.student.junior_high_school || '',
+            data.student.preferred_senior_high_school_id || data.student.preferred_senior_high_school || ''
           );
         }
         vmSetReadOnly(mode === 'view');

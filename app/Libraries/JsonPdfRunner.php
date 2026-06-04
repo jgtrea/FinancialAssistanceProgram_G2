@@ -127,25 +127,25 @@ class JsonPdfRunner
             file_put_contents($dir . $filename, $pdfBytes);
 
             // Reconnect — MySQL may have dropped the connection during mPDF render.
-            $db = \Config\Database::connect();
-            try { $db->reconnect(); } catch (\Throwable $_) {}
             $generatedAt = date('Y-m-d H:i:s');
-            $db->table('students')
-                ->whereIn('student_id', $ids)
-                ->update([
-                    'voucher_status' => 'generated',
-                    'generated_at'   => $generatedAt,
-                ]);
-            $db->query(
-                'UPDATE students SET generate_count = generate_count + 1 WHERE student_id IN (' . implode(',', array_map('intval', $ids)) . ')'
-            );
-            (new GenerationHistoryModel())->recordMany(
-                $students,
-                isset($job['created_by']) ? (int) $job['created_by'] : null,
-                $parentId > 0 ? $parentId : $jobId,
-                'json_queue',
-                $generatedAt
-            );
+            self::withFreshDbRetry(function ($db) use ($ids, $students, $job, $jobId, $parentId, $generatedAt): void {
+                $db->table('students')
+                    ->whereIn('student_id', $ids)
+                    ->update([
+                        'voucher_status' => 'generated',
+                        'generated_at'   => $generatedAt,
+                    ]);
+                $db->query(
+                    'UPDATE students SET generate_count = generate_count + 1 WHERE student_id IN (' . implode(',', array_map('intval', $ids)) . ')'
+                );
+                (new GenerationHistoryModel())->recordMany(
+                    $students,
+                    isset($job['created_by']) ? (int) $job['created_by'] : null,
+                    $parentId > 0 ? $parentId : $jobId,
+                    'json_queue',
+                    $generatedAt
+                );
+            });
 
             JsonPdfQueue::mutateAll(function (array $queue, array $processing, array $finished) use ($jobId, $filename) {
                 $idx = self::findIndex($processing['jobs'] ?? [], $jobId);
@@ -264,6 +264,36 @@ class JsonPdfRunner
         unset($s);
 
         return $students;
+    }
+
+    protected static function withFreshDbRetry(callable $callback): void
+    {
+        $attempts = 0;
+
+        while (true) {
+            $db = \Config\Database::connect(null, false);
+            try {
+                try { $db->reconnect(); } catch (\Throwable $_) {}
+                $callback($db);
+                return;
+            } catch (\Throwable $e) {
+                $attempts++;
+                if ($attempts >= 2 || !self::isDroppedMysqlConnection($e)) {
+                    throw $e;
+                }
+                try { $db->close(); } catch (\Throwable $_) {}
+                usleep(200000);
+            }
+        }
+    }
+
+    protected static function isDroppedMysqlConnection(\Throwable $e): bool
+    {
+        $message = strtolower($e->getMessage());
+
+        return str_contains($message, 'server has gone away')
+            || str_contains($message, 'lost connection')
+            || str_contains($message, 'error while sending query packet');
     }
 
     /**

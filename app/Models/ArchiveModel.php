@@ -42,10 +42,14 @@ class ArchiveModel extends Model
         $builder = $this->db->table('student_archive a')
             ->select("
                 a.*,
+                COALESCE(jhs.school_name, a.junior_high_school) AS junior_high_school,
+                COALESCE(shs.school_name, a.preferred_senior_high_school) AS preferred_senior_high_school,
                 CONCAT_WS(' ', NULLIF(a.first_name,''), NULLIF(a.middle_name,''), NULLIF(a.last_name,''), NULLIF(a.suffix,'')) AS full_name,
                 TRIM(CONCAT_WS(' ', NULLIF(a.last_name,''), NULLIF(a.first_name,''), NULLIF(a.middle_name,''))) AS name_sort,
                 TRIM(CONCAT_WS(' ', NULLIF(u.first_name,''), NULLIF(u.middle_name,''), NULLIF(u.last_name,''))) AS archived_by_name
             ")
+            ->join('school jhs', 'jhs.school_id = a.junior_high_school', 'left', false)
+            ->join('school shs', 'shs.school_id = a.preferred_senior_high_school', 'left', false)
             ->join('users u', 'u.user_id = a.archived_by', 'left');
 
         $keyword = trim($keyword);
@@ -59,6 +63,10 @@ class ArchiveModel extends Model
                 ->orLike('a.suffix', $keyword)
                 ->orLike('a.junior_high_school', $keyword)
                 ->orLike('a.preferred_senior_high_school', $keyword)
+                ->orLike('jhs.school_name', $keyword)
+                ->orLike('jhs.acronym', $keyword)
+                ->orLike('shs.school_name', $keyword)
+                ->orLike('shs.acronym', $keyword)
                 ->orLike('a.school_year', $keyword)
                 ->orLike('a.archive_reason', $keyword)
                 ->orLike('u.first_name', $keyword)
@@ -114,11 +122,17 @@ class ArchiveModel extends Model
             $applied = true;
         }
         if (($v = $value($filters, 'junior_hs')) !== '') {
-            $builder->where('a.junior_high_school', $v);
+            $builder->groupStart()
+                ->where('a.junior_high_school', $v)
+                ->orWhere('jhs.school_name', $v)
+                ->groupEnd();
             $applied = true;
         }
         if (($v = $value($filters, 'preferred_hs')) !== '') {
-            $builder->where('a.preferred_senior_high_school', $v);
+            $builder->groupStart()
+                ->where('a.preferred_senior_high_school', $v)
+                ->orWhere('shs.school_name', $v)
+                ->groupEnd();
             $applied = true;
         }
         if (($v = $value($filters, 'gwa_min')) !== '') {
@@ -163,16 +177,20 @@ class ArchiveModel extends Model
             return [];
         }
 
-        $rows = $this->db->table('student_archive')
-            ->select($column)
+        $alias = $column === 'junior_high_school' ? 'jhs' : 'shs';
+
+        $rows = $this->db->table('student_archive a')
+            ->select("COALESCE({$alias}.school_name, a.{$column}) AS school_name")
             ->distinct()
-            ->where($column . ' IS NOT NULL')
-            ->where($column . ' !=', '')
+            ->join('school jhs', 'jhs.school_id = a.junior_high_school', 'left', false)
+            ->join('school shs', 'shs.school_id = a.preferred_senior_high_school', 'left', false)
+            ->where('a.' . $column . ' IS NOT NULL', null, false)
+            ->where('a.' . $column . ' !=', '')
             ->get()
             ->getResultArray();
 
         return array_values(array_filter(array_map(
-            static fn ($r) => trim((string) ($r[$column] ?? '')),
+            static fn ($r) => trim((string) ($r['school_name'] ?? '')),
             $rows
         ), static fn ($v) => $v !== ''));
     }

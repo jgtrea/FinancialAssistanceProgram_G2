@@ -9,18 +9,21 @@ if (!function_exists('generate_voucher_no')) {
         $jhs = trim($jhs);
         if ($jhs !== '') {
             // Prefer the stored acronym from the school table.
-            $schoolRow = $db->table('school')
-                ->select('acronym')
-                ->where('school_name', strtoupper($jhs))
-                ->limit(1)
-                ->get()->getRow();
+            $schoolBuilder = $db->table('school')->select('acronym, school_name');
+            if (ctype_digit($jhs)) {
+                $schoolBuilder->where('school_id', (int) $jhs);
+            } else {
+                $schoolBuilder->where('school_name', strtoupper($jhs));
+            }
+            $schoolRow = $schoolBuilder->limit(1)->get()->getRow();
             $stored = $schoolRow ? trim((string) ($schoolRow->acronym ?? '')) : '';
 
             if ($stored !== '') {
                 $acronym = strtoupper($stored);
             } else {
                 // Fallback: first letter of each word.
-                $words   = preg_split('/\s+/', $jhs);
+                $schoolName = $schoolRow ? (string) ($schoolRow->school_name ?? $jhs) : $jhs;
+                $words   = preg_split('/\s+/', $schoolName);
                 $acronym = strtoupper(implode('', array_map(fn($w) => $w[0] ?? '', array_filter($words))));
             }
         } else {

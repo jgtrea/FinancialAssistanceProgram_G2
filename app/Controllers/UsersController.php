@@ -149,6 +149,13 @@ class UsersController extends BaseController
             ]);
         }
 
+        if ($this->userFieldTaken('username', $data['username'], $id)) {
+            return $this->response->setJSON([
+                'status' => 'error',
+                'message' => 'Username is already in use.',
+            ]);
+        }
+
         if (!$id) {
             $data['is_active'] = 1;
         }

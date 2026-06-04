@@ -31,17 +31,6 @@ class Voucher extends Controller
 
     protected function validateSchoolOptions(): bool
     {
-        $jhs = trim((string) $this->request->getPost('junior_high_school'));
-        $shs = trim((string) $this->request->getPost('preferred_senior_high_school'));
-
-        if ($jhs !== '') {
-            $this->schoolOptionModel->addSchool('JHS', $jhs);
-        }
-
-        if ($shs !== '') {
-            $this->schoolOptionModel->addSchool('SHS', $shs);
-        }
-
         return true;
     }
 
@@ -87,8 +76,8 @@ class Voucher extends Controller
             'rank_no'                      => $this->nullableInt($this->request->getPost('rank_no')),
             'gwa'                          => $this->nullableFloat($this->request->getPost('gwa')),
             'gender'                       => strtoupper($this->cleanText($this->request->getPost('gender'))),
-            'junior_high_school'           => $this->cleanText($this->request->getPost('junior_high_school')),
-            'preferred_senior_high_school' => $this->cleanText($this->request->getPost('preferred_senior_high_school')),
+            'junior_high_school'           => $this->schoolOptionModel->resolveSchoolId('JHS', $this->request->getPost('junior_high_school'), false),
+            'preferred_senior_high_school' => $this->schoolOptionModel->resolveSchoolId('SHS', $this->request->getPost('preferred_senior_high_school'), false),
             'contact_number'               => $this->cleanText($this->request->getPost('contact_number')),
             'remarks_status'               => strtoupper($this->cleanText($this->request->getPost('remarks_status'))),
             'school_year'                  => $this->cleanText($this->request->getPost('school_year')),
@@ -695,6 +684,9 @@ class Voucher extends Controller
         return $this->response
             ->setHeader('Content-Type', $contentType)
             ->setHeader('Content-Disposition', 'attachment; filename="' . basename($filePath) . '"')
+            ->setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0')
+            ->setHeader('Pragma', 'no-cache')
+            ->setHeader('Expires', '0')
             ->setBody(file_get_contents($filePath));
     }
 
@@ -819,6 +811,9 @@ class Voucher extends Controller
         return $this->response
             ->setHeader('Content-Type', $contentType)
             ->setHeader('Content-Disposition', 'attachment; filename="' . $basename . '"')
+            ->setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0')
+            ->setHeader('Pragma', 'no-cache')
+            ->setHeader('Expires', '0')
             ->setBody($body);
     }
 
@@ -991,8 +986,8 @@ class Voucher extends Controller
                 'rank_no'                      => $r['rank_no']                      ?? null,
                 'gwa'                          => $r['gwa']                          ?? null,
                 'gender'                       => $r['gender']                       ?? null,
-                'junior_high_school'           => $r['junior_high_school']           ?? null,
-                'preferred_senior_high_school' => $r['preferred_senior_high_school'] ?? null,
+                'junior_high_school'           => $this->schoolOptionModel->resolveSchoolId('JHS', $r['junior_high_school'] ?? null, true),
+                'preferred_senior_high_school' => $this->schoolOptionModel->resolveSchoolId('SHS', $r['preferred_senior_high_school'] ?? null, false),
                 'contact_number'               => $r['contact_number']               ?? null,
                 'remarks_status'               => $r['remarks_status']               ?? null,
                 'school_year'                  => $r['school_year']                  ?? null,

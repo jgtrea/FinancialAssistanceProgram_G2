@@ -224,9 +224,9 @@ class VoucherImport extends BaseController
                 return $this->importRowError($i, 'School names must be 200 characters or fewer.');
             }
 
-            // Auto-add new schools to the school table with generated acronym.
-            if ($jhsSchool !== '') $schoolOptions->addSchool('JHS', $jhsSchool);
-            if ($shsSchool !== '') $schoolOptions->addSchool('SHS', $shsSchool);
+            // Auto-add new schools to the school table and store only their IDs on students.
+            $jhsSchoolId = $schoolOptions->resolveSchoolId('JHS', $jhsSchool, false);
+            $shsSchoolId = $schoolOptions->resolveSchoolId('SHS', $shsSchool, false);
 
             $voucherModel->insert([
                 'voucher_no'                   => $voucherNo !== '' ? $voucherNo : null,
@@ -238,8 +238,8 @@ class VoucherImport extends BaseController
                 'rank_no'                      => is_numeric($rankNo) ? (int) $rankNo : null,
                 'gwa'                          => is_numeric($gwa) ? (float) $gwa : null,
                 'gender'                       => $gender,
-                'junior_high_school'           => strtoupper($jhsSchool),
-                'preferred_senior_high_school' => strtoupper($shsSchool),
+                'junior_high_school'           => $jhsSchoolId,
+                'preferred_senior_high_school' => $shsSchoolId,
                 'contact_number'               => $contact,
                 'remarks_status'               => $remarks,
                 'school_year'                  => date('Y'),

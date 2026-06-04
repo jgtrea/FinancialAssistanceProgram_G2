@@ -82,8 +82,8 @@
             <select id="vmJuniorHs" name="junior_high_school" class="vs-input js-school-select vs-uppercase" data-placeholder="- TYPE OR SELECT -" required>
               <option></option>
               <?php foreach ($juniorHighSchools as $school): ?>
-                <?php $sn = is_array($school) ? ($school['school_name'] ?? '') : $school; $sa = is_array($school) ? ($school['acronym'] ?? '') : ''; ?>
-                <option value="<?= esc($sn) ?>" data-acronym="<?= esc($sa) ?>"><?= esc($sn) ?></option>
+                <?php $sid = is_array($school) ? ($school['school_id'] ?? '') : ''; $sn = is_array($school) ? ($school['school_name'] ?? '') : $school; $sa = is_array($school) ? ($school['acronym'] ?? '') : ''; ?>
+                <option value="<?= esc($sid ?: $sn) ?>" data-acronym="<?= esc($sa) ?>"><?= esc($sn) ?></option>
               <?php endforeach ?>
             </select>
           </div>
@@ -92,8 +92,8 @@
             <select id="vmPreferredHs" name="preferred_senior_high_school" class="vs-input js-school-select vs-uppercase" data-placeholder="- TYPE OR SELECT -" required>
               <option></option>
               <?php foreach ($seniorHighSchools as $school): ?>
-                <?php $sn = is_array($school) ? ($school['school_name'] ?? '') : $school; $sa = is_array($school) ? ($school['acronym'] ?? '') : ''; ?>
-                <option value="<?= esc($sn) ?>" data-acronym="<?= esc($sa) ?>"><?= esc($sn) ?></option>
+                <?php $sid = is_array($school) ? ($school['school_id'] ?? '') : ''; $sn = is_array($school) ? ($school['school_name'] ?? '') : $school; $sa = is_array($school) ? ($school['acronym'] ?? '') : ''; ?>
+                <option value="<?= esc($sid ?: $sn) ?>" data-acronym="<?= esc($sa) ?>"><?= esc($sn) ?></option>
               <?php endforeach ?>
             </select>
           </div>

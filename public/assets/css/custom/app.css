@@ -59,6 +59,22 @@
     color: rgba(234, 248, 255, .78) !important;
 }
 
+.topbar-profile-link {
+    color: rgba(234, 248, 255, .86);
+    font-weight: 600;
+    max-width: 220px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    text-decoration: none;
+}
+
+.topbar-profile-link:hover,
+.topbar-profile-link:focus {
+    color: #fff6dd;
+    text-decoration: underline;
+}
+
 .sb-topnav .btn-outline-light {
     border-color: rgba(255, 232, 138, .72);
     color: #fff6dd;
@@ -171,7 +187,8 @@
         margin-right: 0.5rem !important;
     }
 
-    .sb-topnav .ms-auto span {
+    .sb-topnav .ms-auto span,
+    .sb-topnav .topbar-profile-link {
         max-width: 26vw;
         overflow: hidden;
         text-overflow: ellipsis;
@@ -196,17 +213,51 @@
     .container-fluid > .d-flex.align-items-center.gap-2.mb-3 > div {
         flex-wrap: wrap;
     }
+
+    #auditFilterForm,
+    #archiveFilterForm,
+    #vouchersFilterForm {
+        align-items: stretch !important;
+        flex-wrap: wrap;
+        width: 100%;
+    }
+
+    #auditFilterForm > *,
+    #archiveFilterForm > *,
+    #vouchersFilterForm > * {
+        flex: 1 1 100% !important;
+        max-width: none !important;
+    }
+
+    #auditFilterForm .vs-btn,
+    #archiveFilterForm .vs-btn,
+    #vouchersFilterForm .vs-btn {
+        flex: 1 1 calc(50% - 0.5rem) !important;
+    }
+
+    #auditFilterForm > span,
+    #archiveFilterForm > span,
+    #vouchersFilterForm > span {
+        display: none !important;
+    }
 }
 
 @media (max-width: 420px) {
-    .sb-topnav .ms-auto span {
-        display: none;
+    .sb-topnav .ms-auto span,
+    .sb-topnav .topbar-profile-link {
+        max-width: 30vw;
     }
 
     .navbar-logo {
         width: 30px;
         height: 30px;
         max-width: 30px;
+    }
+
+    #auditFilterForm .vs-btn,
+    #archiveFilterForm .vs-btn,
+    #vouchersFilterForm .vs-btn {
+        flex-basis: 100% !important;
     }
 }
 
