@@ -297,6 +297,86 @@ table.js-data-table tbody tr.vs-row-archived img {
   white-space: normal;
 }
 
+@media (min-width: 768px) {
+  .vs-mobile-primary tr.child td.child {
+    background:
+      linear-gradient(90deg, rgba(10, 166, 200, 0.08), transparent 18rem),
+      #fbfeff;
+    padding: 0.85rem 1.15rem 1rem 3.4rem !important;
+  }
+
+  .vs-mobile-primary tr.child ul.dtr-details {
+    align-items: center;
+    background: #ffffff;
+    border: 1px solid #d9eef4;
+    border-left: 4px solid var(--navy-md);
+    border-radius: 8px;
+    box-shadow: 0 8px 22px rgba(7, 59, 120, 0.07);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0;
+    max-width: max-content;
+    padding: 0.35rem 0.45rem;
+  }
+
+  .vs-mobile-primary tr.child ul.dtr-details > li {
+    align-items: center;
+    background: transparent;
+    border: 0;
+    border-radius: 0;
+    display: inline-grid;
+    gap: 0.55rem;
+    grid-template-columns: max-content max-content;
+    min-height: 38px;
+    min-width: 0;
+    padding: 0.3rem 0.85rem;
+    position: relative;
+    width: auto;
+  }
+
+  .vs-mobile-primary tr.child ul.dtr-details > li + li {
+    border-left: 1px solid #e4f2f6;
+  }
+
+  .vs-mobile-primary tr.child ul.dtr-details > li:only-child {
+    min-width: 0;
+  }
+
+  .vs-mobile-primary tr.child ul.dtr-details > li:last-child {
+    border-bottom: 0;
+  }
+
+  .vs-mobile-primary tr.child .dtr-title {
+    color: var(--navy-md);
+    font-size: 0.7rem;
+    font-weight: 800;
+    min-width: 0;
+  }
+
+  .vs-mobile-primary tr.child .dtr-data {
+    align-items: center;
+    display: flex;
+    justify-content: flex-start;
+    min-height: 30px;
+  }
+
+  .vs-mobile-primary tr.child .dtr-data .dropdown,
+  .vs-mobile-primary tr.child .dtr-data .btn-group {
+    display: inline-flex;
+  }
+
+  .vs-mobile-primary tr.child .dtr-data .badge {
+    box-shadow: none;
+  }
+
+  .vs-mobile-primary tr.child .dtr-data .vs-tbl-btn,
+  .vs-mobile-primary tr.child .dtr-data .btn {
+    min-height: 30px;
+    padding-bottom: 0.25rem;
+    padding-top: 0.25rem;
+  }
+}
+
 @media (max-width: 767.98px) {
   .vs-datatable,
   table.js-data-table {
