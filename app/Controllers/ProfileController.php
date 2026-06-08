@@ -2,6 +2,7 @@
 
 namespace App\Controllers;
 
+use App\Libraries\SessionValidator;
 use App\Models\UserLogin;
 
 class ProfileController extends BaseController
@@ -85,8 +86,10 @@ class ProfileController extends BaseController
         $model->update($userId, $data);
 
         $updated = $model->find($userId);
+        $validator = new SessionValidator();
         session()->set([
-            'full_name' => $this->displayName($updated ?: $data),
+            'full_name'      => $validator->fullName($updated ?: $data),
+            'auth_signature' => $updated ? $validator->authSignature($updated) : session()->get('auth_signature'),
         ]);
 
         log_action($userId, 'UPDATE_PROFILE', $auditDescription);
@@ -110,17 +113,6 @@ class ProfileController extends BaseController
             ->where($field, $value)
             ->where('user_id !=', $ignoreId)
             ->first() !== null;
-    }
-
-    private function displayName(array $user): string
-    {
-        $name = trim(implode(' ', array_filter([
-            $user['first_name'] ?? '',
-            $user['middle_name'] ?? '',
-            $user['last_name'] ?? '',
-        ])));
-
-        return $name !== '' ? $name : (string) ($user['username'] ?? $user['email'] ?? 'User');
     }
 
     private function profileAuditDescription(array $before, array $after, bool $passwordChanged): string

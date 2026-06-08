@@ -15,98 +15,158 @@ document.addEventListener('DOMContentLoaded', function () {
   // back to the original client-side init that renders all PHP-rendered rows.
   const datatableUrl = vouchersTable.dataset.datatableUrl || null;
   let dt;
+  let dtMode = null;
 
-  if (datatableUrl) {
-    let filterParams = {};
-    try { filterParams = JSON.parse(vouchersTable.dataset.filterParams || '{}'); } catch (e) {}
+  function voucherTableMode() {
+    return window.VS && window.VS.isMobileTableMode && window.VS.isMobileTableMode(vouchersTable)
+      ? 'mobile'
+      : 'desktop';
+  }
 
-    const initialSearch = vouchersTable.dataset.initialSearch || '';
+  function resetVoucherTableDom() {
+    vouchersTable.querySelectorAll('tbody tr.parent').forEach(row => row.classList.remove('parent'));
+    vouchersTable.querySelectorAll('tbody tr.child').forEach(row => row.remove());
+  }
 
-    // Sync initial page length from the custom input so DT and the UI agree.
-    const lenInputEl = document.getElementById('vouchersLengthInput');
-    const initialPageLen = lenInputEl ? (parseInt(lenInputEl.value, 10) || 10) : 10;
+  function voucherMobileColumnDefs() {
+    return window.VS && window.VS.mobilePrimaryColumnDefs
+      ? window.VS.mobilePrimaryColumnDefs(vouchersTable)
+      : [];
+  }
 
-    dt = $(vouchersTable).DataTable({
-      destroy: true,
-      serverSide: true,
-      processing: true,
-      ajax: {
-        url: datatableUrl,
-        type: 'GET',
-        data: function (d) {
-          Object.assign(d, filterParams);
-          if (initialSearch) d.q = initialSearch;
+  function voucherResponsiveConfig() {
+    return voucherTableMode() === 'mobile' ? false : true;
+  }
+
+  function bindVoucherSearch() {
+    const currentPageSearch = document.getElementById('customStudentsSearch')
+                           || document.getElementById('customVouchersSearch');
+    if (!currentPageSearch || !window.VS) return;
+
+    const cleanSearch = currentPageSearch.cloneNode(true);
+    cleanSearch.value = currentPageSearch.value;
+    cleanSearch.dataset.currentPageSearchBound = '';
+    cleanSearch.dataset.fullTableSearchBound = '';
+    currentPageSearch.parentNode.replaceChild(cleanSearch, currentPageSearch);
+
+    if (datatableUrl && window.VS.bindFullTableSearch) {
+      window.VS.bindFullTableSearch(dt, cleanSearch);
+    } else if (window.VS.bindCurrentPageSearch) {
+      window.VS.bindCurrentPageSearch(dt, cleanSearch);
+    }
+  }
+
+  function decorateVoucherWrapper() {
+    if (!vouchersTable.classList.contains('vs-mobile-primary') || !dt) return;
+    const wrapper = dt.table().container();
+    if (wrapper) wrapper.classList.add('vs-mobile-primary-wrapper');
+  }
+
+  function bindVoucherDtEvents() {
+    if (!dt || typeof syncPageCheckboxes !== 'function') return;
+    dt.off('.vsVoucher');
+    dt.on('draw.dt.vsVoucher page.dt.vsVoucher search.dt.vsVoucher order.dt.vsVoucher', syncPageCheckboxes);
+    if (typeof updateSelectAllBanner === 'function') {
+      dt.on('draw.dt.vsVoucher', updateSelectAllBanner);
+    }
+  }
+
+  function buildVoucherTable(force) {
+    const mode = voucherTableMode();
+    if (dt && dtMode === mode && !force) return dt;
+
+    if (dt) {
+      dt.rows().every(function () {
+        if (this.child && this.child.isShown()) this.child.hide();
+      });
+      dt.destroy();
+      dt = null;
+      resetVoucherTableDom();
+    } else if ($.fn.DataTable.isDataTable(vouchersTable)) {
+      $(vouchersTable).DataTable().destroy();
+      resetVoucherTableDom();
+    }
+
+    dtMode = mode;
+
+    if (datatableUrl) {
+      let filterParams = {};
+      try { filterParams = JSON.parse(vouchersTable.dataset.filterParams || '{}'); } catch (e) {}
+
+      const initialSearch = vouchersTable.dataset.initialSearch || '';
+      const lenInputEl = document.getElementById('vouchersLengthInput');
+      const initialPageLen = lenInputEl ? (parseInt(lenInputEl.value, 10) || 10) : 10;
+
+      dt = $(vouchersTable).DataTable({
+        destroy: true,
+        serverSide: true,
+        processing: true,
+        ajax: {
+          url: datatableUrl,
+          type: 'GET',
+          data: function (d) {
+            Object.assign(d, filterParams);
+            if (initialSearch) d.q = initialSearch;
+          },
         },
-      },
-      // Column order must match the <th>s in vouchers/index.php exactly,
-      // including the hidden name_sort column (3) used so "Name" can sort
-      // by last name instead of by the rendered full-name string.
-      columns: [
-        { data: 'checkbox',       orderable: false },
-        { data: 'voucher_no' },
-        { data: 'name' },
-        { data: 'name_sort',      visible: false },
-        { data: 'rank' },
-        { data: 'jhs' },
-        { data: 'shs' },
-        { data: 'school_year' },
-        { data: 'eligibility' },
-        { data: 'remarks' },
-        { data: 'generate_count' },
-        { data: 'last_generated' },
-        { data: 'status' },
-        { data: 'actions',        orderable: false },
-      ],
-      columnDefs: [
-        { orderData: [3], targets: [2] },
-      ],
-      order: [[3, 'asc']],
-      dom:        window.VS.dtHeaderDom(false) + window.VS.dtBodyDom,
-      pageLength: initialPageLen,
-      lengthMenu: window.VS.dtLengthMenuSS,
-      responsive: true,
-      autoWidth:  false,
-      language:   window.VS.dtLanguage({
-        searchPlaceholder: vouchersTable.dataset.searchPlaceholder || 'Search students...',
-        info:              'Showing _START_ to _END_ of _TOTAL_ matching',
-      }),
-    });
-
-    // Inner search box narrows WITHIN the current scope (1000-row slice OR
-    // outer-filtered set). Hits the server via DataTables' built-in search
-    // string — backend treats `search[value]` as a narrowing LIKE, not a
-    // scope widener.
-    const currentPageSearch = document.getElementById('customStudentsSearch')
-                           || document.getElementById('customVouchersSearch');
-    if (currentPageSearch && window.VS && window.VS.bindFullTableSearch) {
-      window.VS.bindFullTableSearch(dt, currentPageSearch);
+        columns: [
+          { data: 'checkbox',       orderable: false },
+          { data: 'voucher_no' },
+          { data: 'name' },
+          { data: 'name_sort',      visible: false },
+          { data: 'rank' },
+          { data: 'jhs' },
+          { data: 'shs' },
+          { data: 'school_year' },
+          { data: 'eligibility' },
+          { data: 'remarks' },
+          { data: 'generate_count' },
+          { data: 'last_generated' },
+          { data: 'status' },
+          { data: 'actions',        orderable: false },
+        ],
+        columnDefs: [
+          ...voucherMobileColumnDefs(),
+          { orderData: [3], targets: [2] },
+        ],
+        order: [[3, 'asc']],
+        dom:        window.VS.dtHeaderDom(false) + window.VS.dtBodyDom,
+        pageLength: initialPageLen,
+        lengthMenu: window.VS.dtLengthMenuSS,
+        responsive: voucherResponsiveConfig(),
+        autoWidth:  false,
+        language:   window.VS.dtLanguage({
+          searchPlaceholder: vouchersTable.dataset.searchPlaceholder || 'Search students...',
+          info:              'Showing _START_ to _END_ of _TOTAL_ matching',
+        }),
+      });
+    } else {
+      dt = $(vouchersTable).DataTable({
+        destroy: true,
+        dom:        window.VS.dtHeaderDom(false) + window.VS.dtBodyDom,
+        pageLength: 10,
+        lengthMenu: window.VS.dtLengthMenu,
+        responsive: voucherResponsiveConfig(),
+        autoWidth:  false,
+        order: [],
+        columnDefs: [
+          ...voucherMobileColumnDefs(),
+          { orderable: false, targets: [0, -1] },
+        ],
+        language:   window.VS.dtLanguage({
+          searchPlaceholder: vouchersTable.dataset.searchPlaceholder || 'Search vouchers...',
+        }),
+      });
     }
 
-    // The outer advanced-search form is a `<form method="get">` that page-
-    // reloads with ?q=X. The reloaded view re-renders with data-initial-search
-    // already set, so we don't need a JS-side binding for it — leave the
-    // submit/reload flow alone.
-  } else {
-    // Client-side mode for pages that still server-render rows.
-    dt = $(vouchersTable).DataTable({
-      destroy: true,
-      dom:        window.VS.dtHeaderDom(false) + window.VS.dtBodyDom,
-      pageLength: 10,
-      lengthMenu: window.VS.dtLengthMenu,
-      responsive: true,
-      autoWidth:  false,
-      order: [],
-      columnDefs: [{ orderable: false, targets: [0, -1] }],
-      language:   window.VS.dtLanguage({
-        searchPlaceholder: vouchersTable.dataset.searchPlaceholder || 'Search vouchers...',
-      }),
-    });
+    decorateVoucherWrapper();
+    bindVoucherSearch();
+    return dt;
+  }
 
-    const currentPageSearch = document.getElementById('customStudentsSearch')
-                           || document.getElementById('customVouchersSearch');
-    if (currentPageSearch && window.VS && window.VS.bindCurrentPageSearch) {
-      window.VS.bindCurrentPageSearch(dt, currentPageSearch);
-    }
+  buildVoucherTable(true);
+  if (window.VS && window.VS.bindMobilePrimaryDetails) {
+    window.VS.bindMobilePrimaryDetails(vouchersTable, () => dt);
   }
 
   // ── Cross-page selection (Set of string IDs) ──────────────────────────────────
@@ -165,7 +225,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
   // draw.dt fires AFTER AJAX rows are rendered — use it (not page.dt) to
   // re-sync checkboxes so selected rows are highlighted on every page load.
-  dt.on('draw.dt page.dt search.dt order.dt', syncPageCheckboxes);
+  bindVoucherDtEvents();
 
   document.addEventListener('change', function (e) {
     if (!e.target.classList.contains('vs-check-all')) return;
@@ -286,8 +346,26 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   }
 
-  if (dt) {
-    dt.on('draw.dt', updateSelectAllBanner);
+  bindVoucherDtEvents();
+
+  const voucherBreakpoint = window.matchMedia ? window.matchMedia(window.VS.dtMobileQuery) : null;
+  function rebuildVoucherTableForBreakpoint() {
+    const previousMode = dtMode;
+    buildVoucherTable(false);
+    if (dtMode !== previousMode) {
+      bindVoucherDtEvents();
+      syncPageCheckboxes();
+      updateSelectAllBanner();
+    }
+  }
+  if (vouchersTable.classList.contains('vs-mobile-primary')) {
+    if (voucherBreakpoint && voucherBreakpoint.addEventListener) {
+      voucherBreakpoint.addEventListener('change', rebuildVoucherTableForBreakpoint);
+    } else if (voucherBreakpoint && voucherBreakpoint.addListener) {
+      voucherBreakpoint.addListener(rebuildVoucherTableForBreakpoint);
+    } else {
+      window.addEventListener('resize', rebuildVoucherTableForBreakpoint);
+    }
   }
 
   // ── Generate PDF ──────────────────────────────────────────────────────────────

@@ -13,7 +13,7 @@ class UserModel extends Model
         'username',
         'first_name', 'middle_name', 'last_name',
         'email', 'password', 'role',
-        'is_active', 'last_login',
+        'is_active', 'last_login', 'session_token',
     ];
 
     protected $useTimestamps = true;

@@ -43,7 +43,7 @@
       <div class="d-flex align-items-center gap-2 mb-3 flex-wrap">
         <input type="text" id="customVouchersSearch" class="vs-input vs-page-search" placeholder="Enter keyword to search this page" style="max-width:260px">
       </div>
-      <table id="vouchersTable" class="vs-datatable" data-search-placeholder="Search vouchers..." style="width:100%">
+      <table id="vouchersTable" class="vs-datatable vs-mobile-primary" data-mobile-primary="2" data-search-placeholder="Search vouchers..." style="width:100%">
         <thead>
           <tr>
             <th class="vs-th-check"><input type="checkbox" class="vs-check vs-check-all" aria-label="Select all vouchers"></th>

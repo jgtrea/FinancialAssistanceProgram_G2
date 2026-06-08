@@ -74,7 +74,7 @@
                 <a href="#" id="sigSelectAllMatchingLink" style="font-weight:600;margin-left:.5rem;display:none"></a>
                 <a href="#" id="sigClearLink" style="margin-left:.5rem;display:none">Clear</a>
             </div>
-            <table id="signatoriesTable" class="vs-datatable js-data-table" data-page-search="customSignatoriesSearch"
+            <table id="signatoriesTable" class="vs-datatable js-data-table vs-mobile-primary" data-mobile-primary="1" data-page-search="customSignatoriesSearch"
                    data-search-placeholder="Search signatories..."
                    data-order='[[8,"desc"],[7,"asc"]]'
                    data-col-defs='[{"orderData":[7],"targets":[1]},{"visible":false,"targets":7},{"visible":false,"targets":8}]'

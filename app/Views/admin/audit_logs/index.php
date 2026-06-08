@@ -45,7 +45,7 @@
 
     <div class="vs-card">
         <div class="vs-card-body">
-            <table id="adminAuditLogsTable" class="vs-datatable js-data-table" data-page-search="customAuditSearch" data-search-placeholder="Search audit logs..." style="width:100%">
+            <table id="adminAuditLogsTable" class="vs-datatable js-data-table vs-mobile-primary" data-mobile-primary="4" data-page-search="customAuditSearch" data-search-placeholder="Search audit logs..." style="width:100%">
                 <thead>
                     <tr>
                         <th style="width: 170px;">Date/Time</th>

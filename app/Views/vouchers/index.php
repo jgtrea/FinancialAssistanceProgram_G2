@@ -86,7 +86,8 @@
         <a href="#" id="selectAllMatchingLink" style="font-weight:600; margin-left:8px">Select all matching</a>
         <a href="#" id="selectAllClearLink" style="margin-left:8px; display:none">Clear</a>
       </div>
-      <table id="studentsTable" class="vs-datatable"
+      <table id="studentsTable" class="vs-datatable vs-mobile-primary"
+             data-mobile-primary="2"
              data-search-placeholder="Search students..."
              data-datatable-url="<?= site_url($prefix . '/students/datatable') ?>"
              data-matching-ids-url="<?= site_url($prefix . '/students/matching-ids') ?>"

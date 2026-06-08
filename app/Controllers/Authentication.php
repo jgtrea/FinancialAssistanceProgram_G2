@@ -2,6 +2,7 @@
 
 namespace App\Controllers;
 
+use App\Libraries\SessionValidator;
 use App\Models\UserLogin;
 
 class Authentication extends BaseController
@@ -37,21 +38,22 @@ class Authentication extends BaseController
             return redirect()->to('/')->with('error', 'Invalid credentials.');
         }
 
-        $fullName = trim(implode(' ', array_filter([
-            $user['first_name'] ?? '',
-            $user['middle_name'] ?? '',
-            $user['last_name'] ?? '',
-        ])));
+        session()->regenerate(true);
+        $validator = new SessionValidator();
+        $sessionToken = bin2hex(random_bytes(32));
 
         session()->set([
-            'user_id'    => $user['user_id'],
-            'full_name'  => $fullName ?: ($user['username'] ?? $user['email']),
-            'role'       => $user['role'],
-            'isLoggedIn' => true,
+            'user_id'        => $user['user_id'],
+            'full_name'      => $validator->fullName($user),
+            'role'           => $user['role'],
+            'isLoggedIn'     => true,
+            'auth_signature' => $validator->authSignature($user),
+            'session_token'  => $sessionToken,
         ]);
 
         $model->update($user['user_id'], [
-            'last_login' => date('Y-m-d H:i:s'),
+            'last_login'    => date('Y-m-d H:i:s'),
+            'session_token' => $sessionToken,
         ]);
 
         log_action($user['user_id'], 'LOGIN', "User {$input} logged in");
@@ -67,6 +69,16 @@ class Authentication extends BaseController
     {
         $userId   = session()->get('user_id');
         $fullName = session()->get('full_name') ?? 'unknown';
+        $sessionToken = session()->get('session_token');
+
+        if ($userId && $sessionToken) {
+            $model = new UserLogin();
+            $user = $model->find($userId);
+            if ($user && hash_equals((string) ($user['session_token'] ?? ''), (string) $sessionToken)) {
+                $model->update($userId, ['session_token' => null]);
+            }
+        }
+
         log_action($userId, 'LOGOUT', "User {$fullName} logged out");
         session()->destroy();
         return redirect()->to('/');

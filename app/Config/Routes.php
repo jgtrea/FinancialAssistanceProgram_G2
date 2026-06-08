@@ -14,8 +14,8 @@ $routes->get('generate-hash', function () {
 });
 
 // Import / Export
-$routes->post('import_data',     'VoucherImport::import');
-$routes->get('vouchers/export',  'VoucherImport::export');
+$routes->post('import_data',     'VoucherImport::import', ['filter' => 'auth']);
+$routes->get('vouchers/export',  'VoucherImport::export', ['filter' => 'auth']);
 
 // Current user's account
 $routes->get('profile',  'ProfileController::edit',   ['filter' => 'auth']);

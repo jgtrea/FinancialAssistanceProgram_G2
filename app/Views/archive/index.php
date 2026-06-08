@@ -48,7 +48,7 @@
                     Open <strong>Filters</strong> and choose a <strong>School Year</strong> to load archived records.
                 </div>
             <?php else: ?>
-            <table id="archivedVouchersTable" class="vs-datatable js-data-table" data-page-search="customArchiveSearch"
+            <table id="archivedVouchersTable" class="vs-datatable js-data-table vs-mobile-primary" data-mobile-primary="1" data-page-search="customArchiveSearch"
                    data-search-placeholder="Search archived vouchers..."
                    data-order='[[2,"asc"]]'
                    data-col-defs='[{"orderData":[2],"targets":[1]},{"visible":false,"targets":2}]'

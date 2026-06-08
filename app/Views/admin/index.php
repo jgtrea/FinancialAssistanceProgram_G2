@@ -55,7 +55,7 @@
 
     <div class="vs-card">
         <div class="vs-card-body">
-            <table id="userManagementTable" class="vs-datatable js-data-table" data-page-search="customUsersSearch" data-search-placeholder="Search users..." data-order='[[6,"desc"],[1,"asc"]]' data-col-defs='[{"orderable":false,"targets":5},{"visible":false,"targets":6}]' style="width:100%">
+            <table id="userManagementTable" class="vs-datatable js-data-table vs-mobile-primary" data-mobile-primary="0" data-page-search="customUsersSearch" data-search-placeholder="Search users..." data-order='[[6,"desc"],[1,"asc"]]' data-col-defs='[{"orderable":false,"targets":5},{"visible":false,"targets":6}]' style="width:100%">
             <thead>
                 <tr>
                     <th>Full Name</th>
