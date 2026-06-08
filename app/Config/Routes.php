@@ -18,8 +18,9 @@ $routes->post('import_data',     'VoucherImport::import');
 $routes->get('vouchers/export',  'VoucherImport::export');
 
 // Current user's account
-$routes->get('profile',  'ProfileController::edit',   ['filter' => 'auth']);
-$routes->post('profile', 'ProfileController::update', ['filter' => 'auth']);
+$routes->get('profile',      'ProfileController::edit',    ['filter' => 'auth']);
+$routes->get('profile/data', 'ProfileController::apiGet',  ['filter' => 'auth']);
+$routes->post('profile',     'ProfileController::update',  ['filter' => 'auth']);
 
 // ─── Admin ────────────────────────────────────────────────────────────────────
 $routes->group('admin', ['filter' => 'role:admin'], function ($routes) {

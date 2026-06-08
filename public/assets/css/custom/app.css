@@ -59,20 +59,30 @@
     color: rgba(234, 248, 255, .78) !important;
 }
 
-.topbar-profile-link {
-    color: rgba(234, 248, 255, .86);
-    font-weight: 600;
-    max-width: 220px;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    text-decoration: none;
+.topbar-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: #f6c633;
+    color: #073b78;
+    font-weight: 700;
+    font-size: .95rem;
+    border: 2px solid rgba(255, 255, 255, .35);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+    flex-shrink: 0;
+    transition: transform .15s, box-shadow .15s;
+    padding: 0;
 }
 
-.topbar-profile-link:hover,
-.topbar-profile-link:focus {
-    color: #fff6dd;
-    text-decoration: underline;
+.topbar-avatar:hover,
+.topbar-avatar:focus {
+    transform: scale(1.1);
+    box-shadow: 0 0 0 3px rgba(246, 198, 51, .45);
+    outline: none;
 }
 
 .sb-topnav .btn-outline-light {
