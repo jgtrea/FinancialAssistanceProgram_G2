@@ -145,135 +145,10 @@
     </div>
 </div>
 
-<!-- ── Archive Confirmation Modal ─────────────────────────────────────────── -->
-<div class="vs-modal-overlay" id="schoolArchiveModal" style="display:none">
-    <div class="vs-modal">
-        <div class="vs-modal-header">
-            <h5>Archive Schools</h5>
-            <button class="vs-modal-close" id="schoolArchiveModalClose">&times;</button>
-        </div>
-        <div class="vs-modal-body">
-            <p>You are about to archive <strong id="schoolArchiveCount">0</strong> school(s).
-               Archived schools will no longer appear in the voucher school picker.</p>
-        </div>
-        <div class="vs-modal-footer">
-            <button class="vs-btn vs-btn-outline" id="schoolArchiveModalCancel">Cancel</button>
-            <button class="vs-btn vs-btn-danger" id="schoolArchiveConfirm">
-                <span id="schoolArchiveBtnText">Confirm Archive</span>
-                <span id="schoolArchiveBtnSpinner" class="vs-spinner" style="display:none"></span>
-            </button>
-        </div>
-    </div>
-</div>
-
-<!-- ── Export Modal ───────────────────────────────────────────────────────── -->
-<div class="vs-modal-overlay" id="schoolExportModal" style="display:none">
-    <div class="vs-modal">
-        <div class="vs-modal-header">
-            <h5>Export Schools</h5>
-            <button class="vs-modal-close" id="schoolExportModalClose">&times;</button>
-        </div>
-        <div class="vs-modal-body">
-            <p>Choose the file format to export the selected school records.</p>
-            <div class="d-flex gap-3 mt-3">
-                <a href="<?= site_url('admin/schools/export?format=excel') ?>"
-                   id="exportExcelLink"
-                   class="vs-btn vs-btn-outline flex-fill text-center">
-                    Excel (.xlsx)
-                </a>
-                <a href="<?= site_url('admin/schools/export?format=csv') ?>"
-                   id="exportCsvLink"
-                   class="vs-btn vs-btn-outline flex-fill text-center">
-                    CSV (.csv)
-                </a>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- ── Add / Edit Modal ───────────────────────────────────────────────────── -->
-<div class="vs-modal-overlay" id="schoolModal" style="display:none">
-    <div class="vs-modal" style="max-width:480px">
-        <div class="vs-modal-header">
-            <h5 id="schoolModalTitle">Add School</h5>
-            <button class="vs-modal-close" id="schoolModalClose">&times;</button>
-        </div>
-        <form id="schoolModalForm" novalidate>
-            <?= csrf_field() ?>
-            <input type="hidden" name="school_id" id="smSchoolId" value="">
-
-            <div class="vs-modal-body">
-                <div id="schoolModalAlert"></div>
-
-                <div class="vs-form-grid vs-form-grid-4">
-                    <div class="vs-span-2">
-                        <label class="vs-label required" for="smSchoolName">School Name</label>
-                        <input id="smSchoolName" name="school_name" type="text"
-                               class="vs-input vs-uppercase" required
-                               placeholder="e.g. TANDAG NATIONAL HIGH SCHOOL">
-                    </div>
-                    <div class="vs-span-2">
-                        <label class="vs-label">Acronym</label>
-                        <div id="smAcronymDisplay" class="vs-input" style="background:#f9fafb;cursor:default;display:flex;align-items:center;min-height:38px;color:#6b7280">—</div>
-                    </div>
-                    <div class="vs-span-4">
-                        <label class="vs-label required" for="smSchoolLevel">Level</label>
-                        <select id="smSchoolLevel" name="school_level" class="vs-input js-filter-select" data-placeholder="JHS / SHS" data-no-search="1" required>
-                            <option></option>
-                            <option value="JHS">JHS</option>
-                            <option value="SHS">SHS</option>
-                        </select>
-                    </div>
-                </div>
-            </div>
-
-            <div class="vs-modal-footer">
-                <button type="button" class="vs-btn vs-btn-outline" id="schoolModalCancel">Cancel</button>
-                <button type="submit" class="vs-btn vs-btn-primary" id="schoolModalSubmit">
-                    <span id="smSubmitText">Save</span>
-                    <span id="smSubmitSpinner" class="vs-spinner" style="display:none"></span>
-                </button>
-            </div>
-        </form>
-    </div>
-</div>
-
-<!-- ── Import Modal ───────────────────────────────────────────────────────── -->
-<div class="vs-modal-overlay" id="schoolImportModal" style="display:none">
-    <div class="vs-modal" style="max-width:500px">
-        <div class="vs-modal-header">
-            <h5>Import Schools</h5>
-            <button class="vs-modal-close" id="schoolImportClose">&times;</button>
-        </div>
-        <form id="schoolImportForm" novalidate enctype="multipart/form-data">
-            <?= csrf_field() ?>
-            <div class="vs-modal-body">
-                <div id="schoolImportAlert"></div>
-
-                <p class="text-muted" style="font-size:.875rem">
-                    Upload a <strong>.csv</strong>, <strong>.xlsx</strong>, or <strong>.xls</strong> file
-                    with columns: <strong>School Name</strong> and <strong>Level</strong> (JHS or SHS).
-                    Duplicate entries will be skipped automatically.
-                </p>
-                <div class="mt-3">
-                    <label class="vs-label" for="schoolFileInput">File</label>
-                    <input id="schoolFileInput" name="school_file" type="file"
-                           class="vs-input" accept=".csv,.xlsx,.xls" required>
-                </div>
-            </div>
-            <div class="vs-modal-footer">
-                <button type="button" class="vs-btn vs-btn-outline" id="schoolImportCancel">Cancel</button>
-                <button type="submit" class="vs-btn vs-btn-primary" id="schoolImportSubmit">
-                    <span id="siSubmitText">Import</span>
-                    <span id="siSubmitSpinner" class="vs-spinner" style="display:none"></span>
-                </button>
-            </div>
-        </form>
-    </div>
-</div>
+<?= pre_modal('schools') ?>
 
 <script>
-(function () {
+document.addEventListener('vs:modals:ready', function () {
     var csrfName = '<?= csrf_token() ?>';
     var csrfHash = '<?= csrf_hash() ?>';
 
@@ -377,10 +252,8 @@
         updateBar();
     }
 
-    document.addEventListener('DOMContentLoaded', function () {
-        var _schoolTbl = document.getElementById('schoolsTable');
-        if (_schoolTbl && window.jQuery) $(_schoolTbl).on('draw.dt', syncSchoolPageCheckboxes);
-    });
+    var _schoolTbl = document.getElementById('schoolsTable');
+    if (_schoolTbl && window.jQuery) $(_schoolTbl).on('draw.dt', syncSchoolPageCheckboxes);
 
     var checkAll = document.getElementById('schoolCheckAll');
     checkAll && checkAll.addEventListener('change', function () {
@@ -768,7 +641,7 @@ document.getElementById('btnAddSchool')    && document.getElementById('btnAddSch
         });
     });
 
-}());
+});
 
 // Level filtering is handled server-side via SQL (no client-side column filter).
 </script>

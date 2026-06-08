@@ -186,135 +186,10 @@
         </div>
     </div>
 
-<!-- Signatory Archive Confirmation modal -->
-<div class="vs-modal-overlay" id="sigArchiveModal" style="display:none">
-  <div class="vs-modal">
-    <div class="vs-modal-header">
-      <h5>Archive Signatories</h5>
-      <button class="vs-modal-close" id="sigArchiveModalClose">&times;</button>
-    </div>
-    <div class="vs-modal-body">
-      <p>You are about to archive <strong id="sigArchiveCount">0</strong> signatory(ies). This will move them to the archive.</p>
-      <label class="vs-label" for="sigArchiveReason">Reason (optional)</label>
-      <input type="text" id="sigArchiveReason" class="vs-input" placeholder="e.g. End of term">
-    </div>
-    <div class="vs-modal-footer">
-      <button class="vs-btn vs-btn-outline" id="sigArchiveModalCancel">Cancel</button>
-      <button class="vs-btn vs-btn-danger" id="sigArchiveConfirm">
-        <span id="sigArchiveBtnText">Confirm Archive</span>
-        <span id="sigArchiveBtnSpinner" class="vs-spinner" style="display:none"></span>
-      </button>
-    </div>
-  </div>
-</div>
-
-<!-- Signatory Add/Edit modal -->
-<div class="vs-modal-overlay" id="signatoryModal" style="display:none">
-  <div class="vs-modal" style="max-width:780px">
-    <div class="vs-modal-header">
-      <h5 id="signatoryModalTitle">Add Signatory</h5>
-      <button class="vs-modal-close" id="signatoryModalClose">&times;</button>
-    </div>
-    <form id="signatoryModalForm" novalidate enctype="multipart/form-data">
-      <?= csrf_field() ?>
-      <input type="hidden" name="signatory_id" id="smSignatoryId" value="">
-
-      <div class="vs-modal-body">
-        <div id="signatoryModalAlert"></div>
-
-        <div class="vs-form-grid vs-form-grid-4">
-          <!-- Row 1: First Name, Middle Name, Last Name -->
-          <div>
-            <label class="vs-label required" for="smFirstName">First Name</label>
-            <input id="smFirstName" name="first_name" type="text" class="vs-input vs-uppercase" required>
-          </div>
-          <div>
-            <label class="vs-label" for="smMiddleName">Middle Name</label>
-            <input id="smMiddleName" name="middle_name" type="text" class="vs-input vs-uppercase">
-          </div>
-          <div>
-            <label class="vs-label required" for="smLastName">Last Name</label>
-            <input id="smLastName" name="last_name" type="text" class="vs-input vs-uppercase" required>
-          </div>
-          <div></div>
-
-          <!-- Row 2: Prefix, Suffix -->
-          <div>
-            <label class="vs-label" for="smPrefix">Prefix</label>
-            <select id="smPrefix" name="prefix" class="vs-input js-filter-select" data-placeholder="- SELECT -" data-no-search="1">
-              <option></option>
-              <?php foreach ($prefixOptions as $option): if ($option === '') continue; ?>
-                <option value="<?= esc($option) ?>"><?= esc($option) ?></option>
-              <?php endforeach ?>
-            </select>
-          </div>
-          <div>
-            <label class="vs-label" for="smSuffix">Suffix</label>
-            <select id="smSuffix" name="suffix" class="vs-input js-filter-select" data-placeholder="- SELECT -" data-no-search="1">
-              <option></option>
-              <?php foreach ($suffixOptions as $option): if ($option === '') continue; ?>
-                <option value="<?= esc($option) ?>"><?= esc($option) ?></option>
-              <?php endforeach ?>
-            </select>
-          </div>
-          <div></div><div></div>
-
-          <!-- Row 3: Degree, Position Title -->
-          <div>
-            <label class="vs-label" for="smDegree">Degree</label>
-            <select id="smDegree" name="degree" class="vs-input js-filter-select" data-placeholder="- TYPE OR SELECT -">
-              <option></option>
-              <?php foreach ($degreeOptions as $option): ?>
-                <option value="<?= esc($option) ?>"><?= esc($option) ?></option>
-              <?php endforeach ?>
-            </select>
-            <input id="smDegreeOther" name="degree_other" type="text"
-                   class="vs-input mt-2" placeholder="Specify degree" style="display:none">
-          </div>
-
-          <div class="vs-span-2">
-            <label class="vs-label required" for="smPositionTitle">Position Title</label>
-            <input id="smPositionTitle" name="position_title" type="text" class="vs-input vs-uppercase" required>
-          </div>
-
-          <div style="grid-column: 1 / -1">
-            <label class="vs-label" for="smSignatureImage">Signature Image</label>
-            <input id="smSignatureImage" name="signature_image" type="file" class="vs-input" accept="image/png,image/jpeg,image/jpg,image/webp">
-            <small class="text-muted">PNG, JPG, or WEBP — max 2 MB. Leave empty to keep the current image.</small>
-
-            <div class="form-check mt-2">
-              <input class="form-check-input" type="checkbox" name="auto_remove_bg" value="1" id="smAutoRemoveBg" checked>
-              <label class="form-check-label" for="smAutoRemoveBg">
-                Remove background automatically (best for signatures on plain white paper)
-              </label>
-            </div>
-
-            <div id="smCurrentSignatureWrap" class="mt-3" style="display:none">
-              <p class="vs-label mb-1">Current Signature</p>
-              <img id="smCurrentSignaturePreview" src="" alt="Current signature"
-                   style="max-height:80px;background:#fff;padding:4px;border:1px solid #ddd;border-radius:4px;">
-              <div class="form-check mt-2">
-                <input class="form-check-input" type="checkbox" name="remove_signature" value="1" id="smRemoveSignature">
-                <label class="form-check-label" for="smRemoveSignature">Remove current signature</label>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="vs-modal-footer">
-        <button type="button" class="vs-btn vs-btn-outline" id="signatoryModalCancel">Close</button>
-        <button type="submit" class="vs-btn vs-btn-primary" id="signatoryModalSubmit">
-          <span id="smSubmitText">Save</span>
-          <span id="smSubmitSpinner" class="vs-spinner" style="display:none"></span>
-        </button>
-      </div>
-    </form>
-  </div>
-</div>
+<?= pre_modal('signatories') ?>
 
 <script>
-(function () {
+document.addEventListener('vs:modals:ready', function () {
     var csrfName = '<?= csrf_token() ?>';
     var csrfHash = '<?= csrf_hash() ?>';
 
@@ -619,10 +494,8 @@
         updateActionBar();
     }
 
-    document.addEventListener('DOMContentLoaded', function () {
-        var tbl = document.getElementById('signatoriesTable');
-        if (tbl && window.jQuery) $(tbl).on('draw.dt', syncPageCheckboxes);
-    });
+    var _sigTbl = document.getElementById('signatoriesTable');
+    if (_sigTbl && window.jQuery) $(_sigTbl).on('draw.dt', syncPageCheckboxes);
 
     var checkAll = document.getElementById('sigCheckAll');
     checkAll && checkAll.addEventListener('change', function () {
@@ -879,7 +752,7 @@
             if (sigArchSpinner) sigArchSpinner.style.display = 'none';
         });
     });
-}());
+});
 
 // Position options are server-rendered from DB — no JS population needed.
 </script>

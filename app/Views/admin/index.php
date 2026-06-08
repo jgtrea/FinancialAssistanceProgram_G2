@@ -126,80 +126,10 @@
         </div>
     </div>
 
-<!-- Users Filter modal -->
-<!-- User Add/Edit modal -->
-<div class="vs-modal-overlay" id="userModal" style="display:none">
-  <div class="vs-modal" style="max-width:680px">
-    <div class="vs-modal-header">
-      <h5 id="userModalTitle">Add User</h5>
-      <button class="vs-modal-close" id="userModalClose">&times;</button>
-    </div>
-    <form id="userModalForm" novalidate>
-      <?= csrf_field() ?>
-      <input type="hidden" name="user_id" id="umUserId" value="">
-
-      <div class="vs-modal-body">
-        <div id="userModalAlert"></div>
-
-        <div class="vs-form-grid vs-form-grid-4">
-          <!-- Row 1: First Name, Middle Name, Last Name -->
-          <div>
-            <label class="vs-label required" for="umFirstName">First Name</label>
-            <input type="text" id="umFirstName" name="first_name" class="vs-input vs-uppercase" required spellcheck="false">
-          </div>
-          <div>
-            <label class="vs-label" for="umMiddleName">Middle Name</label>
-            <input type="text" id="umMiddleName" name="middle_name" class="vs-input vs-uppercase" spellcheck="false">
-          </div>
-          <div>
-            <label class="vs-label required" for="umLastName">Last Name</label>
-            <input type="text" id="umLastName" name="last_name" class="vs-input vs-uppercase" required spellcheck="false">
-          </div>
-          <div></div>
-
-          <!-- Row 2: Username (login identifier, case-sensitive) -->
-          <div class="vs-span-2">
-            <label class="vs-label required" for="umUsername">Username <span class="vs-label-hint">(used for login)</span></label>
-            <input type="text" id="umUsername" name="username" class="vs-input" required spellcheck="false" autocomplete="off">
-          </div>
-          <div class="vs-span-2"></div>
-
-          <!-- Row 3: Email, Password -->
-          <div class="vs-span-2">
-            <label class="vs-label required" for="umEmail">Email</label>
-            <input type="email" id="umEmail" name="email" class="vs-input" required autocomplete="email" autocapitalize="none" spellcheck="false">
-          </div>
-          <div class="vs-span-2">
-            <label class="vs-label" id="umPasswordLabel" for="umPassword">Password</label>
-            <input type="password" id="umPassword" name="password" class="vs-input" autocomplete="new-password" autocapitalize="none" spellcheck="false">
-          </div>
-
-          <!-- Row 3: Role -->
-          <div class="vs-span-2">
-            <label class="vs-label required" for="umRole">Role</label>
-            <select id="umRole" name="role" class="vs-input js-filter-select" data-placeholder="ADMIN / USER" data-no-search="1" required>
-              <option></option>
-              <option value="admin">ADMIN</option>
-              <option value="user">USER</option>
-            </select>
-          </div>
-          <div class="vs-span-2"></div>
-        </div>
-      </div>
-
-      <div class="vs-modal-footer">
-        <button type="button" class="vs-btn vs-btn-outline" id="userModalCancel">Close</button>
-        <button type="submit" class="vs-btn vs-btn-primary" id="userModalSubmit">
-          <span id="umSubmitText">Save User</span>
-          <span id="umSubmitSpinner" class="vs-spinner" style="display:none"></span>
-        </button>
-      </div>
-    </form>
-  </div>
-</div>
+<?= pre_modal('users') ?>
 
 <script>
-(function () {
+document.addEventListener('vs:modals:ready', function () {
     var csrfName = '<?= csrf_token() ?>';
     var csrfHash = '<?= csrf_hash() ?>';
 
@@ -431,7 +361,7 @@
         });
     });
 
-}());
+});
 
 // No auto-submit — user clicks Search button to apply filters.
 </script>

@@ -94,129 +94,17 @@
         </div>
     </div>
 
-<!-- Archive Current Data confirmation modal -->
-<div class="vs-modal-overlay" id="archiveCurrentModal" style="display:none">
-  <div class="vs-modal" style="max-width:500px">
-    <div class="vs-modal-header">
-      <h5 id="archiveCurrentModalTitle">Archive Current Data</h5>
-      <button class="vs-modal-close" id="archiveCurrentModalClose">&times;</button>
-    </div>
-    <div class="vs-modal-body">
-      <div id="archiveCurrentModalBody"></div>
-      <div class="mt-3">
-        <label class="vs-label" for="archiveCurrentReason">Reason (optional)</label>
-        <input type="text" id="archiveCurrentReason" class="vs-input" placeholder="e.g. End of school year">
-      </div>
-    </div>
-    <div class="vs-modal-footer">
-      <button class="vs-btn vs-btn-outline" id="archiveCurrentModalCancel">Cancel</button>
-      <button class="vs-btn vs-btn-danger" id="archiveCurrentModalConfirm">
-        <span id="archiveCurrentBtnText">Confirm Archive</span>
-        <span id="archiveCurrentBtnSpinner" class="vs-spinner" style="display:none"></span>
-      </button>
-    </div>
-  </div>
-</div>
-
-<div class="vs-modal-overlay" id="archiveFilterModal" style="display:none">
-  <div class="vs-modal" style="max-width:680px">
-    <div class="vs-modal-header">
-      <h5>Advanced Filters</h5>
-      <button class="vs-modal-close" id="archiveFilterClose">&times;</button>
-    </div>
-    <div class="vs-modal-body">
-      <div class="vs-form-grid vs-form-grid-4">
-        <div class="vs-span-2">
-          <label class="vs-label required" for="afSchoolYear">School Year</label>
-          <select id="afSchoolYear" class="vs-input js-filter-select" data-placeholder="- TYPE OR SELECT -">
-            <option></option>
-            <?php foreach ($schoolYears as $sy): ?>
-              <option value="<?= esc($sy) ?>" <?= $f('school_year') === $sy ? 'selected' : '' ?>><?= esc($sy) ?></option>
-            <?php endforeach ?>
-            <?php if ($f('school_year') !== '' && !in_array($f('school_year'), $schoolYears, true)): ?>
-              <option value="<?= esc($f('school_year')) ?>" selected><?= esc($f('school_year')) ?></option>
-            <?php endif ?>
-          </select>
-        </div>
-        <div class="vs-span-2">
-          <label class="vs-label" for="afGender">Sex</label>
-          <select id="afGender" class="vs-input js-filter-select" data-placeholder="MALE / FEMALE" data-no-search="1">
-            <option></option>
-            <option value="MALE"   <?= $f('gender') === 'MALE'   ? 'selected' : '' ?>>MALE</option>
-            <option value="FEMALE" <?= $f('gender') === 'FEMALE' ? 'selected' : '' ?>>FEMALE</option>
-          </select>
-        </div>
-        <div class="vs-span-2">
-          <label class="vs-label" for="afRemarks">Remarks</label>
-          <select id="afRemarks" class="vs-input js-filter-select" data-placeholder="PASSED / FOR REVIEW / FAILED" data-no-search="1">
-            <option></option>
-            <option value="PASSED"     <?= $f('remarks') === 'PASSED'     ? 'selected' : '' ?>>PASSED</option>
-            <option value="FOR REVIEW" <?= $f('remarks') === 'FOR REVIEW' ? 'selected' : '' ?>>FOR REVIEW</option>
-            <option value="FAILED"     <?= $f('remarks') === 'FAILED'     ? 'selected' : '' ?>>FAILED</option>
-          </select>
-        </div>
-        <div class="vs-span-2">
-          <label class="vs-label" for="afVoucherStatus">Voucher Status</label>
-          <select id="afVoucherStatus" class="vs-input js-filter-select" data-placeholder="GENERATED / NOT GENERATED" data-no-search="1">
-            <option></option>
-            <option value="generated"     <?= $f('voucher_status') === 'generated'     ? 'selected' : '' ?>>generated</option>
-            <option value="not_generated" <?= $f('voucher_status') === 'not_generated' ? 'selected' : '' ?>>not_generated</option>
-          </select>
-        </div>
-        <div class="vs-span-2">
-          <label class="vs-label" for="afDateFrom">Voucher Date From</label>
-          <input type="date" id="afDateFrom" class="vs-input" value="<?= esc($f('date_from'), 'attr') ?>">
-        </div>
-        <div class="vs-span-2">
-          <label class="vs-label" for="afDateTo">Voucher Date To</label>
-          <input type="date" id="afDateTo" class="vs-input" value="<?= esc($f('date_to'), 'attr') ?>">
-        </div>
-        <div class="vs-span-2">
-          <label class="vs-label" for="afJuniorHs">Junior High School</label>
-          <select id="afJuniorHs" class="vs-input js-filter-select" data-placeholder="- TYPE OR SELECT -">
-            <option></option>
-            <?php $jhsNames = array_map(static fn($s) => $s['school_name'] ?? '', $juniorHighSchools); ?>
-            <?php foreach ($jhsNames as $schoolName): ?>
-              <option value="<?= esc($schoolName) ?>" <?= $f('junior_hs') === $schoolName ? 'selected' : '' ?>><?= esc($schoolName) ?></option>
-            <?php endforeach ?>
-            <?php if ($f('junior_hs') !== '' && !in_array($f('junior_hs'), $jhsNames, true)): ?>
-              <option value="<?= esc($f('junior_hs')) ?>" selected><?= esc($f('junior_hs')) ?></option>
-            <?php endif ?>
-          </select>
-        </div>
-        <div class="vs-span-2">
-          <label class="vs-label" for="afPreferredHs">Preferred Senior HS</label>
-          <select id="afPreferredHs" class="vs-input js-filter-select" data-placeholder="- TYPE OR SELECT -">
-            <option></option>
-            <?php $shsNames = array_map(static fn($s) => $s['school_name'] ?? '', $seniorHighSchools); ?>
-            <?php foreach ($shsNames as $schoolName): ?>
-              <option value="<?= esc($schoolName) ?>" <?= $f('preferred_hs') === $schoolName ? 'selected' : '' ?>><?= esc($schoolName) ?></option>
-            <?php endforeach ?>
-            <?php if ($f('preferred_hs') !== '' && !in_array($f('preferred_hs'), $shsNames, true)): ?>
-              <option value="<?= esc($f('preferred_hs')) ?>" selected><?= esc($f('preferred_hs')) ?></option>
-            <?php endif ?>
-          </select>
-        </div>
-        <div class="vs-span-2">
-          <label class="vs-label" for="afGwaMin">GWA Min</label>
-          <input type="number" step="0.01" id="afGwaMin" class="vs-input" placeholder="e.g. 80" value="<?= esc($f('gwa_min'), 'attr') ?>">
-        </div>
-        <div class="vs-span-2">
-          <label class="vs-label" for="afGwaMax">GWA Max</label>
-          <input type="number" step="0.01" id="afGwaMax" class="vs-input" placeholder="e.g. 100" value="<?= esc($f('gwa_max'), 'attr') ?>">
-        </div>
-      </div>
-    </div>
-    <div class="vs-modal-footer">
-      <button type="button" class="vs-btn vs-btn-outline" id="archiveFilterClear">Clear All</button>
-      <button type="button" class="vs-btn vs-btn-outline" id="archiveFilterCancel">Cancel</button>
-      <button type="button" class="vs-btn vs-btn-primary" id="archiveFilterApply">Apply Filters</button>
-    </div>
-  </div>
-</div>
+<?= pre_modal('archive') ?>
+<script>
+window.__VS.pageData = {
+    schoolYears:       <?= json_encode($schoolYears) ?>,
+    juniorHighSchools: <?= json_encode($juniorHighSchools) ?>,
+    seniorHighSchools: <?= json_encode($seniorHighSchools) ?>,
+};
+</script>
 
 <script>
-(function () {
+document.addEventListener('vs:modals:ready', function () {
     // Filter modal wiring runs unconditionally — the page may be in its empty
     // state (no school year selected) where the table isn't rendered at all,
     // but the user still needs to open Filters to pick a year.
@@ -398,7 +286,7 @@
             if (archCurrentSpinner) archCurrentSpinner.style.display = 'none';
         });
     });
-}());
+});
 </script>
 
 <?= $this->endSection() ?>
