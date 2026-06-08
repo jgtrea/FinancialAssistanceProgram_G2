@@ -8,9 +8,13 @@
     </button>
 
     <div class="ms-auto me-3 d-flex align-items-center gap-3 text-white-50 small">
-        <a class="topbar-profile-link" href="<?= site_url('profile') ?>">
-            <?= esc(session('full_name') ?? 'User') ?>
-        </a>
+        <?php
+            $fullName = session('full_name') ?? 'User';
+            $initial  = strtoupper(mb_substr(trim($fullName), 0, 1) ?: 'U');
+        ?>
+        <button class="topbar-avatar" id="btnOpenAccountModal" type="button" title="<?= esc($fullName) ?>">
+            <?= esc($initial) ?>
+        </button>
         <a class="btn btn-outline-light btn-sm" href="<?= site_url('logout') ?>">Logout</a>
     </div>
 </nav>
