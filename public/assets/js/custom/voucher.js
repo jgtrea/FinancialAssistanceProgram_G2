@@ -359,8 +359,18 @@ document.addEventListener('DOMContentLoaded', function () {
       try {
         const res  = await fetch(url, ajaxOptions({ method: 'GET' }));
         const data = await res.json();
-        (data.ids || []).forEach(id => selectedIds.add(String(id)));
-        _selectableCount = data.count ?? (data.ids || []).length;
+        let ids = data.ids || [];
+        _selectableCount = data.count ?? ids.length;
+
+        // Cap the select-all at MAX_BATCH — you can't generate more than that in
+        // one go, so don't let the selection exceed it. Take the first MAX_BATCH
+        // matching ids and tell the user the rest were left out.
+        if (ids.length > MAX_BATCH) {
+          ids = ids.slice(0, MAX_BATCH);
+          showAlert('You can select up to ' + MAX_BATCH + ' at a time. Selected the first ' + MAX_BATCH + ' of ' + _selectableCount + ' matching; narrow your filters to reach the rest.', 'warning');
+        }
+
+        ids.forEach(id => selectedIds.add(String(id)));
         syncPageCheckboxes();
         updateSelectAllBanner();
       } catch (err) {
@@ -421,7 +431,7 @@ document.addEventListener('DOMContentLoaded', function () {
   const btnGeneratePdf = document.getElementById('btnGeneratePdf');
   const pdfForm        = document.getElementById('pdfForm');
 
-  const MAX_BATCH = 70000;
+  const MAX_BATCH = 100000;
 
   if (btnGeneratePdf && pdfForm) {
     btnGeneratePdf.addEventListener('click', async function () {
