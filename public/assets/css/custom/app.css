@@ -271,6 +271,261 @@
     }
 }
 
+@media (max-width: 767.98px) {
+    .vs-vouchers-toolbar {
+        gap: 0.6rem !important;
+    }
+
+    #vouchersFilterForm .vs-advanced-search-input {
+        flex: 1 1 100% !important;
+        width: 100%;
+    }
+
+    #vouchersFilterForm .vs-btn {
+        flex: 1 1 0 !important;
+        min-width: 0;
+        padding-left: 0.65rem;
+        padding-right: 0.65rem;
+        white-space: nowrap;
+    }
+
+    .vs-vouchers-actions {
+        width: 100%;
+    }
+
+    .vs-vouchers-actions .vs-btn {
+        flex: 1 1 0 !important;
+        min-width: 0;
+    }
+}
+
+@media (max-width: 767.98px) {
+    .vs-signatories-toolbar {
+        align-items: flex-start !important;
+        display: grid !important;
+        gap: 0.55rem !important;
+        grid-template-columns: repeat(8, minmax(0, 1fr));
+    }
+
+    .vs-signatories-filter-form {
+        display: contents !important;
+    }
+
+    .vs-signatories-filter-form .vs-advanced-search-input {
+        grid-column: 1 / -1;
+        width: 100%;
+        min-width: 0;
+    }
+
+    .vs-signatories-status-filter {
+        grid-column: span 4;
+        width: auto !important;
+        min-width: 0;
+    }
+
+    .vs-signatories-position-filter {
+        grid-column: span 4;
+        width: auto !important;
+        min-width: 0;
+    }
+
+    .vs-signatories-status-filter .select2-container,
+    .vs-signatories-position-filter .select2-container {
+        width: 100% !important;
+        min-width: 0;
+    }
+
+    .vs-signatories-separator {
+        display: none !important;
+    }
+
+    .vs-signatories-search-btn,
+    .vs-signatories-clear-btn {
+        grid-column: span 2;
+        min-width: 0;
+        padding-left: 0.55rem;
+        padding-right: 0.55rem;
+        white-space: nowrap;
+    }
+
+    .vs-signatories-actions {
+        display: contents !important;
+    }
+
+    .vs-signatories-actions .vs-btn {
+        grid-column: span 4;
+        min-width: 0;
+        padding-left: 0.55rem;
+        padding-right: 0.55rem;
+        white-space: nowrap;
+    }
+}
+
+@media (max-width: 767.98px) {
+    .vs-schools-toolbar {
+        align-items: flex-start !important;
+        display: grid !important;
+        gap: 0.55rem !important;
+        grid-template-columns: repeat(8, minmax(0, 1fr));
+    }
+
+    .vs-schools-filter-form {
+        display: contents !important;
+    }
+
+    .vs-schools-filter-form .vs-advanced-search-input {
+        grid-column: 1 / -1;
+        width: 100%;
+        min-width: 0;
+    }
+
+    .vs-schools-level-filter {
+        grid-column: span 4;
+        width: auto !important;
+        min-width: 0;
+    }
+
+    .vs-schools-level-filter .select2-container {
+        width: 100% !important;
+        min-width: 0;
+    }
+
+    .vs-schools-separator {
+        display: none !important;
+    }
+
+    .vs-schools-search-btn,
+    .vs-schools-clear-btn {
+        grid-column: span 2;
+        min-width: 0;
+        padding-left: 0.55rem;
+        padding-right: 0.55rem;
+        white-space: nowrap;
+    }
+
+    .vs-schools-actions {
+        display: contents !important;
+    }
+
+    .vs-schools-actions .vs-btn {
+        grid-column: span 4;
+        min-width: 0;
+        padding-left: 0.65rem;
+        padding-right: 0.65rem;
+        white-space: nowrap;
+    }
+}
+
+@media (max-width: 767.98px) {
+    .vs-users-toolbar {
+        align-items: flex-start !important;
+        display: grid !important;
+        gap: 0.55rem !important;
+        grid-template-columns: repeat(8, minmax(0, 1fr));
+    }
+
+    .vs-users-filter-form {
+        display: contents !important;
+    }
+
+    .vs-users-filter-form .vs-advanced-search-input {
+        grid-column: 1 / -1;
+        width: 100%;
+        min-width: 0;
+    }
+
+    .vs-users-role-filter,
+    .vs-users-status-filter {
+        grid-column: span 4;
+        width: auto !important;
+        min-width: 0;
+    }
+
+    .vs-users-role-filter .select2-container,
+    .vs-users-status-filter .select2-container {
+        width: 100% !important;
+        min-width: 0;
+    }
+
+    .vs-users-separator {
+        display: none !important;
+    }
+
+    .vs-users-search-btn,
+    .vs-users-clear-btn {
+        grid-column: span 2;
+        min-width: 0;
+        padding-left: 0.55rem;
+        padding-right: 0.55rem;
+        white-space: nowrap;
+    }
+
+    .vs-users-actions {
+        display: contents !important;
+    }
+
+    .vs-users-actions .vs-btn {
+        grid-column: span 4;
+        min-width: 0;
+        padding-left: 0.65rem;
+        padding-right: 0.65rem;
+        white-space: nowrap;
+    }
+}
+
+@media (max-width: 767.98px) {
+    .vs-archive-toolbar {
+        align-items: flex-start !important;
+        display: grid !important;
+        gap: 0.55rem !important;
+        grid-template-columns: repeat(8, minmax(0, 1fr));
+    }
+
+    .vs-archive-filter-form {
+        display: contents !important;
+    }
+
+    .vs-archive-filter-form .vs-advanced-search-input {
+        grid-column: 1 / -1;
+        width: 100%;
+        min-width: 0;
+    }
+
+    .vs-archive-separator {
+        display: none !important;
+    }
+
+    .vs-archive-filter-btn,
+    .vs-archive-search-btn,
+    .vs-archive-clear-btn {
+        grid-column: span 2;
+        min-width: 0;
+        padding-left: 0.55rem;
+        padding-right: 0.55rem;
+        white-space: nowrap;
+    }
+
+    .vs-archive-actions {
+        display: contents !important;
+    }
+
+    .vs-archive-actions .vs-btn {
+        grid-column: span 2;
+        min-width: 0;
+        padding-left: 0.55rem;
+        padding-right: 0.55rem;
+        white-space: nowrap;
+    }
+}
+
+.vs-archive-empty-message {
+    display: block;
+    line-height: 1.55;
+    text-align: left;
+    white-space: normal;
+    word-break: normal;
+}
+
 .border-left-primary {
     border-left: .25rem solid #0aa6c8 !important;
 }
