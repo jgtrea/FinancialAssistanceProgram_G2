@@ -126,80 +126,10 @@
         </div>
     </div>
 
-<!-- Users Filter modal -->
-<!-- User Add/Edit modal -->
-<div class="vs-modal-overlay" id="userModal" style="display:none">
-  <div class="vs-modal" style="max-width:680px">
-    <div class="vs-modal-header">
-      <h5 id="userModalTitle">Add User</h5>
-      <button class="vs-modal-close" id="userModalClose">&times;</button>
-    </div>
-    <form id="userModalForm" novalidate>
-      <?= csrf_field() ?>
-      <input type="hidden" name="user_id" id="umUserId" value="">
-
-      <div class="vs-modal-body">
-        <div id="userModalAlert"></div>
-
-        <div class="vs-form-grid vs-form-grid-4">
-          <!-- Row 1: First Name, Middle Name, Last Name -->
-          <div>
-            <label class="vs-label required" for="umFirstName">First Name</label>
-            <input type="text" id="umFirstName" name="first_name" class="vs-input vs-uppercase" required spellcheck="false">
-          </div>
-          <div>
-            <label class="vs-label" for="umMiddleName">Middle Name</label>
-            <input type="text" id="umMiddleName" name="middle_name" class="vs-input vs-uppercase" spellcheck="false">
-          </div>
-          <div>
-            <label class="vs-label required" for="umLastName">Last Name</label>
-            <input type="text" id="umLastName" name="last_name" class="vs-input vs-uppercase" required spellcheck="false">
-          </div>
-          <div></div>
-
-          <!-- Row 2: Username (login identifier, case-sensitive) -->
-          <div class="vs-span-2">
-            <label class="vs-label required" for="umUsername">Username <span class="vs-label-hint">(used for login)</span></label>
-            <input type="text" id="umUsername" name="username" class="vs-input" required spellcheck="false" autocomplete="off">
-          </div>
-          <div class="vs-span-2"></div>
-
-          <!-- Row 3: Email, Password -->
-          <div class="vs-span-2">
-            <label class="vs-label required" for="umEmail">Email</label>
-            <input type="email" id="umEmail" name="email" class="vs-input" required autocomplete="email" autocapitalize="none" spellcheck="false">
-          </div>
-          <div class="vs-span-2">
-            <label class="vs-label" id="umPasswordLabel" for="umPassword">Password</label>
-            <input type="password" id="umPassword" name="password" class="vs-input" autocomplete="new-password" autocapitalize="none" spellcheck="false">
-          </div>
-
-          <!-- Row 3: Role -->
-          <div class="vs-span-2">
-            <label class="vs-label required" for="umRole">Role</label>
-            <select id="umRole" name="role" class="vs-input js-filter-select" data-placeholder="ADMIN / USER" data-no-search="1" required>
-              <option></option>
-              <option value="admin">ADMIN</option>
-              <option value="user">USER</option>
-            </select>
-          </div>
-          <div class="vs-span-2"></div>
-        </div>
-      </div>
-
-      <div class="vs-modal-footer">
-        <button type="button" class="vs-btn vs-btn-outline" id="userModalCancel">Close</button>
-        <button type="submit" class="vs-btn vs-btn-primary" id="userModalSubmit">
-          <span id="umSubmitText">Save User</span>
-          <span id="umSubmitSpinner" class="vs-spinner" style="display:none"></span>
-        </button>
-      </div>
-    </form>
-  </div>
-</div>
+<?= pre_modal('users') ?>
 
 <script>
-(function () {
+document.addEventListener('vs:modals:ready', function () {
     var csrfName = '<?= csrf_token() ?>';
     var csrfHash = '<?= csrf_hash() ?>';
 
@@ -277,9 +207,9 @@
             umPasswordLabel.innerHTML = 'Password <span class="vs-label-hint">(leave blank to keep current)</span>';
             umPassword.required = false;
         } else {
-            umPasswordLabel.classList.add('required');
-            umPasswordLabel.textContent = 'Password';
-            umPassword.required = true;
+            umPasswordLabel.classList.remove('required');
+            umPasswordLabel.innerHTML = 'Password <span class="vs-label-hint">(leave blank for default: pass123)</span>';
+            umPassword.required = false;
         }
     }
 
@@ -370,68 +300,117 @@
     // ── Activate / Deactivate toggle ──────────────────────────────────────
     var toggleUrl = '<?= base_url('admin/user_management/toggle') ?>';
 
+    var deactivateOverlay  = document.getElementById('deactivateModal');
+    var deactivateConfirm  = document.getElementById('deactivateModalConfirm');
+    var deactivateCancel   = document.getElementById('deactivateModalCancel');
+    var deactivateClose    = document.getElementById('deactivateModalClose');
+    var deactivateBtnText  = document.getElementById('deactivateBtnText');
+    var deactivateSpinner  = document.getElementById('deactivateBtnSpinner');
+    var _pendingToggleBtn  = null;
+
+    function closeDeactivateModal() {
+        if (deactivateOverlay) deactivateOverlay.style.display = 'none';
+        if (_pendingToggleBtn) { _pendingToggleBtn.disabled = false; _pendingToggleBtn = null; }
+    }
+
+    deactivateClose  && deactivateClose.addEventListener('click',  closeDeactivateModal);
+    deactivateCancel && deactivateCancel.addEventListener('click', closeDeactivateModal);
+    deactivateOverlay && deactivateOverlay.addEventListener('click', function (e) {
+        if (e.target === deactivateOverlay) closeDeactivateModal();
+    });
+
+    function doToggle(btn, id) {
+        var csrf = getCsrf();
+        btn.disabled = true;
+
+        fetch(toggleUrl + '/' + id, {
+            method:  'POST',
+            headers: { 'X-Requested-With': 'XMLHttpRequest', 'Content-Type': 'application/x-www-form-urlencoded' },
+            body:    csrf.name + '=' + csrf.token,
+        })
+        .then(function (r) { return r.json(); })
+        .then(function (data) {
+            if (data.status !== 'success') {
+                showAlert(data.message || 'Failed.', 'error');
+                btn.disabled = false;
+                return;
+            }
+
+            var nowActive = data.is_active === 1 || data.is_active === true;
+            var badge = document.getElementById('user-status-badge-' + id);
+            var row   = document.getElementById('user-row-' + id);
+
+            btn.setAttribute('data-active', nowActive ? '1' : '0');
+            btn.textContent = nowActive ? 'Deactivate' : 'Activate';
+            btn.classList.toggle('text-danger', nowActive);
+
+            if (row) {
+                row.setAttribute('data-active', nowActive ? '1' : '0');
+                if (nowActive) row.classList.remove('vs-row-archived');
+                else           row.classList.add('vs-row-archived');
+                if (window.jQuery && $.fn.DataTable) {
+                    var tbl = document.getElementById('userManagementTable');
+                    if (tbl && $.fn.DataTable.isDataTable(tbl)) {
+                        var dt = $(tbl).DataTable();
+                        dt.cell(row, 6).data(nowActive ? '1' : '0').draw(false);
+                    }
+                }
+            }
+
+            if (badge) {
+                badge.innerHTML   = nowActive ? userStatusIcons.active : userStatusIcons.inactive;
+                badge.style.color = nowActive ? '#16a34a' : '#9ca3af';
+                badge.title       = nowActive ? 'Active' : 'Inactive';
+                badge.setAttribute('aria-label', nowActive ? 'Active' : 'Inactive');
+            }
+
+            var metaEl = document.querySelector('meta[name="csrf-token-value"]');
+            if (metaEl && data.csrf_token) metaEl.setAttribute('content', data.csrf_token);
+
+            btn.disabled = false;
+        })
+        .catch(function () {
+            showAlert('An error occurred.', 'error');
+            btn.disabled = false;
+        });
+    }
+
+    deactivateConfirm && deactivateConfirm.addEventListener('click', function () {
+        if (!_pendingToggleBtn) return;
+        var btn = _pendingToggleBtn;
+        var id  = btn.getAttribute('data-id');
+        _pendingToggleBtn = null;
+
+        if (deactivateOverlay) deactivateOverlay.style.display = 'none';
+        if (deactivateBtnText)  deactivateBtnText.style.display  = 'none';
+        if (deactivateSpinner)  deactivateSpinner.style.display  = 'inline-block';
+        deactivateConfirm.disabled = true;
+
+        doToggle(btn, id);
+
+        if (deactivateBtnText)  deactivateBtnText.style.display  = 'inline';
+        if (deactivateSpinner)  deactivateSpinner.style.display  = 'none';
+        deactivateConfirm.disabled = false;
+    });
+
     document.querySelectorAll('.js-user-toggle').forEach(function (btn) {
         btn.addEventListener('click', function () {
             var id     = btn.getAttribute('data-id');
             var active = btn.getAttribute('data-active') === '1';
-            var csrf   = getCsrf();
 
-            btn.disabled = true;
-
-            fetch(toggleUrl + '/' + id, {
-                method:  'POST',
-                headers: { 'X-Requested-With': 'XMLHttpRequest', 'Content-Type': 'application/x-www-form-urlencoded' },
-                body:    csrf.name + '=' + csrf.token,
-            })
-            .then(function (r) { return r.json(); })
-            .then(function (data) {
-                if (data.status !== 'success') {
-                    showAlert(data.message || 'Failed.', 'error');
-                    btn.disabled = false;
-                    return;
-                }
-
-                var nowActive = data.is_active === 1 || data.is_active === true;
-                var badge = document.getElementById('user-status-badge-' + id);
-                var row   = document.getElementById('user-row-' + id);
-
-                btn.setAttribute('data-active', nowActive ? '1' : '0');
-                btn.textContent = nowActive ? 'Deactivate' : 'Activate';
-                btn.classList.toggle('text-danger', nowActive);
-
-                if (row) {
-                    row.setAttribute('data-active', nowActive ? '1' : '0');
-                    if (nowActive) row.classList.remove('vs-row-archived');
-                    else           row.classList.add('vs-row-archived');
-                    // Update hidden is_active sort cell and redraw DT.
-                    var sortCell = row.cells[row.cells.length - 1];
-                    if (sortCell) sortCell.textContent = nowActive ? '1' : '0';
-                    if (window.jQuery && $.fn.DataTable) {
-                        var tbl = document.getElementById('userManagementTable');
-                        if (tbl && $.fn.DataTable.isDataTable(tbl)) $(tbl).DataTable().draw(false);
-                    }
-                }
-
-                if (badge) {
-                    badge.innerHTML   = nowActive ? userStatusIcons.active : userStatusIcons.inactive;
-                    badge.style.color = nowActive ? '#16a34a' : '#9ca3af';
-                    badge.title       = nowActive ? 'Active' : 'Inactive';
-                    badge.setAttribute('aria-label', nowActive ? 'Active' : 'Inactive');
-                }
-
-                var metaEl = document.querySelector('meta[name="csrf-token-value"]');
-                if (metaEl && data.csrf_token) metaEl.setAttribute('content', data.csrf_token);
-
-                btn.disabled = false;
-            })
-            .catch(function () {
-                showAlert('An error occurred.', 'error');
-                btn.disabled = false;
-            });
+            if (active) {
+                // Deactivating — show confirmation modal
+                _pendingToggleBtn = btn;
+                btn.disabled = true;
+                if (deactivateOverlay) deactivateOverlay.style.display = 'flex';
+            } else {
+                // Activating — no confirmation needed
+                doToggle(btn, id);
+            }
         });
     });
 
-}());
+});
 
 // No auto-submit — user clicks Search button to apply filters.
 </script>

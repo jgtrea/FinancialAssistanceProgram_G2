@@ -80,44 +80,13 @@
         </div>
     </div>
 
-<div class="vs-modal-overlay" id="auditFilterModal" style="display:none">
-    <div class="vs-modal" style="max-width:680px">
-        <div class="vs-modal-header">
-            <h5>Advanced Filters</h5>
-            <button class="vs-modal-close" id="auditFilterModalClose">&times;</button>
-        </div>
-        <div class="vs-modal-body">
-            <div class="vs-form-grid vs-form-grid-4">
-                <div class="vs-span-4">
-                    <label class="vs-label" for="auditFilterAction">Action</label>
-                    <select id="auditFilterAction" class="vs-input js-filter-select" data-placeholder="- TYPE OR SELECT -">
-                        <option></option>
-                        <?php foreach ($actionOptions as $option): ?>
-                            <?php $val = is_array($option) ? ($option['action'] ?? '') : $option ?>
-                            <option value="<?= esc($val) ?>" <?= (string) $filterValues['action'] === $val ? 'selected' : '' ?>><?= esc($val) ?></option>
-                        <?php endforeach ?>
-                    </select>
-                </div>
-                <div class="vs-span-2">
-                    <label class="vs-label" for="auditFilterDateFrom">Date From</label>
-                    <input type="date" id="auditFilterDateFrom" class="vs-input" value="<?= esc((string) $filterValues['date_from'], 'attr') ?>">
-                </div>
-                <div class="vs-span-2">
-                    <label class="vs-label" for="auditFilterDateTo">Date To</label>
-                    <input type="date" id="auditFilterDateTo" class="vs-input" value="<?= esc((string) $filterValues['date_to'], 'attr') ?>">
-                </div>
-            </div>
-        </div>
-        <div class="vs-modal-footer">
-            <button type="button" class="vs-btn vs-btn-outline" id="auditFilterClear">Clear All</button>
-            <button type="button" class="vs-btn vs-btn-outline" id="auditFilterModalCancel">Cancel</button>
-            <button type="button" class="vs-btn vs-btn-primary" id="auditFilterApply">Apply Filters</button>
-        </div>
-    </div>
-</div>
+<?= pre_modal('audit') ?>
+<script>
+window.__VS.pageData = { actionOptions: <?= json_encode($actionOptions) ?> };
+</script>
 
 <script>
-(function () {
+document.addEventListener('vs:modals:ready', function () {
     var filterForm = document.getElementById('auditFilterForm');
     var fields = {
         action:   document.getElementById('auditFilterAction'),
@@ -177,7 +146,7 @@
             closeFilter();
             window.location.href = '<?= site_url($resetUrl ?? 'user/audit-logs') ?>';
         });
-}());
+});
 </script>
 
 <?= $this->endSection() ?>

@@ -30,7 +30,7 @@
     <span class="vs-action-bar-count"><span id="selectedCount">0</span> selected</span>
     <div class="vs-action-bar-buttons d-flex gap-2 ms-auto align-items-center">
       <button class="vs-btn vs-btn-dark-green" id="btnGeneratePdf">
-        <?= asset_icon('voucher-add') ?>
+        <?= asset_icon('voucher_add') ?>
         Generate Voucher
       </button>
       <button type="button" class="vs-btn vs-btn-success" id="btnOpenExport">
@@ -123,229 +123,19 @@
     </div>
   </div>
 
-<!-- Archive modal -->
-<div class="vs-modal-overlay" id="archiveModal" style="display:none">
-  <div class="vs-modal">
-    <div class="vs-modal-header">
-      <h5>Archive Students</h5>
-      <button class="vs-modal-close" id="archiveModalClose">&times;</button>
-    </div>
-    <div class="vs-modal-body">
-      <p>You are about to archive <strong id="archiveCount">0</strong> student(s). This will move them to the archive.</p>
-      <label class="vs-label" for="archiveReason">Reason (optional)</label>
-      <input type="text" id="archiveReason" class="vs-input" placeholder="e.g. End of school year">
-    </div>
-    <div class="vs-modal-footer">
-      <button class="vs-btn vs-btn-outline" id="archiveModalCancel">Cancel</button>
-      <button class="vs-btn vs-btn-danger" id="archiveConfirm">
-        <span id="archiveBtnText">Confirm Archive</span>
-        <span id="archiveBtnSpinner" class="vs-spinner" style="display:none"></span>
-      </button>
-    </div>
-  </div>
-</div>
-
 <form id="pdfForm" method="POST" action="<?= site_url($prefix . '/vouchers/json-generate-pdf') ?>" style="display:none">
   <?= csrf_field() ?>
 </form>
-
-<!-- Status modal now lives in layouts/main.php so the toast Status button works on every page. -->
 
 <form id="archiveForm" action="<?= site_url($prefix . '/vouchers/archive') ?>" style="display:none">
   <?= csrf_field() ?>
 </form>
 
-<!-- Generic info/error modal -->
-<div class="vs-modal-overlay" id="infoModal" style="display:none">
-  <div class="vs-modal" style="max-width:420px">
-    <div class="vs-modal-header">
-      <h5 id="infoModalTitle">Notice</h5>
-      <button class="vs-modal-close" id="infoModalClose">&times;</button>
-    </div>
-    <div class="vs-modal-body">
-      <p id="infoModalMessage" class="mb-0"></p>
-    </div>
-    <div class="vs-modal-footer">
-      <button class="vs-btn vs-btn-primary" id="infoModalOk">OK</button>
-    </div>
-  </div>
-</div>
+<?= pre_modal('vouchers') ?>
 
-<!-- Bulk-All confirm modal (Activate / Deactivate / Archive All) -->
-<div class="vs-modal-overlay" id="bulkAllModal" style="display:none">
-  <div class="vs-modal">
-    <div class="vs-modal-header">
-      <h5 id="bulkAllTitle">Confirm</h5>
-      <button class="vs-modal-close" id="bulkAllModalClose">&times;</button>
-    </div>
-    <div class="vs-modal-body">
-      <p id="bulkAllMessage">You are about to update <strong id="bulkAllCount">0</strong> student(s) matching the current search/filters.</p>
-      <div id="bulkAllReasonWrap" style="display:none">
-        <label class="vs-label" for="bulkAllReason">Reason (optional)</label>
-        <input type="text" id="bulkAllReason" class="vs-input" placeholder="e.g. End of school year">
-      </div>
-    </div>
-    <div class="vs-modal-footer">
-      <button class="vs-btn vs-btn-outline" id="bulkAllCancel">Cancel</button>
-      <button class="vs-btn vs-btn-primary" id="bulkAllConfirm">
-        <span id="bulkAllBtnText">Confirm</span>
-        <span id="bulkAllBtnSpinner" class="vs-spinner" style="display:none"></span>
-      </button>
-    </div>
-  </div>
-</div>
-
-<!-- Import modal -->
-<div class="vs-modal-overlay" id="importModal" style="display:none">
-  <div class="vs-modal">
-    <div class="vs-modal-header">
-      <h5>Import Students</h5>
-      <button class="vs-modal-close" id="importModalClose">&times;</button>
-    </div>
-    <div class="vs-modal-body">
-      <p class="text-muted small mb-3">
-        Upload an <strong>.xlsx</strong>, <strong>.xls</strong>, or <strong>.csv</strong> file.<br>
-        Columns must be in this exact order:
-        <em>Voucher No., Voucher Date, Full Name, Rank No., GWA, Sex, Junior High School, Preferred Senior High School, Contact Number, Remarks</em>
-      </p>
-      <label class="vs-label" for="importFile">File</label>
-      <input type="file" id="importFile" class="vs-input" accept=".xlsx,.xls,.csv">
-    </div>
-    <div class="vs-modal-footer">
-      <button class="vs-btn vs-btn-outline" id="importModalCancel">Cancel</button>
-      <button class="vs-btn vs-btn-primary" id="importConfirm">
-        <span id="importBtnText">Import</span>
-        <span id="importBtnSpinner" class="vs-spinner" style="display:none"></span>
-      </button>
-    </div>
-  </div>
-</div>
-
-<?= $this->include('vouchers/_voucher_modal') ?>
-
-<!-- Advanced Filters modal -->
-<div class="vs-modal-overlay" id="filterModal" style="display:none">
-  <div class="vs-modal" style="max-width:680px">
-    <div class="vs-modal-header">
-      <h5>Advanced Filters</h5>
-      <button class="vs-modal-close" id="filterModalClose">&times;</button>
-    </div>
-    <div class="vs-modal-body">
-      <div class="vs-form-grid vs-form-grid-4">
-        <div class="vs-span-2">
-          <label class="vs-label" for="filterSchoolYear">School Year</label>
-          <select id="filterSchoolYear" class="vs-input js-filter-select" data-placeholder="- TYPE OR SELECT -">
-            <option></option>
-            <?php foreach (($filterOptions['school_years'] ?? []) as $sy): ?>
-              <option value="<?= esc($sy) ?>" <?= $f('school_year') === $sy ? 'selected' : '' ?>><?= esc($sy) ?></option>
-            <?php endforeach ?>
-          </select>
-        </div>
-        <div class="vs-span-2">
-          <label class="vs-label" for="filterGender">Sex</label>
-          <select id="filterGender" class="vs-input js-filter-select" data-placeholder="MALE / FEMALE" data-no-search="1">
-            <option></option>
-            <option value="MALE"   <?= $f('gender') === 'MALE'   ? 'selected' : '' ?>>MALE</option>
-            <option value="FEMALE" <?= $f('gender') === 'FEMALE' ? 'selected' : '' ?>>FEMALE</option>
-          </select>
-        </div>
-        <div class="vs-span-2">
-          <label class="vs-label" for="filterRemarks">Remarks</label>
-          <select id="filterRemarks" class="vs-input js-filter-select" data-placeholder="PASSED / FOR REVIEW / FAILED" data-no-search="1">
-            <option></option>
-            <option value="PASSED"     <?= $f('remarks') === 'PASSED'     ? 'selected' : '' ?>>PASSED</option>
-            <option value="FOR REVIEW" <?= $f('remarks') === 'FOR REVIEW' ? 'selected' : '' ?>>FOR REVIEW</option>
-            <option value="FAILED"     <?= $f('remarks') === 'FAILED'     ? 'selected' : '' ?>>FAILED</option>
-          </select>
-        </div>
-        <div class="vs-span-2">
-          <label class="vs-label" for="filterVoucherStatus">Voucher Status</label>
-          <select id="filterVoucherStatus" class="vs-input js-filter-select" data-placeholder="GENERATED / NOT GENERATED" data-no-search="1">
-            <option></option>
-            <option value="generated"     <?= $f('voucher_status') === 'generated'     ? 'selected' : '' ?>>generated</option>
-            <option value="not_generated" <?= $f('voucher_status') === 'not_generated' ? 'selected' : '' ?>>not_generated</option>
-          </select>
-        </div>
-        <div class="vs-span-2">
-          <label class="vs-label" for="filterDateFrom">Voucher Date From</label>
-          <input type="date" id="filterDateFrom" class="vs-input" value="<?= esc($f('date_from'), 'attr') ?>">
-        </div>
-        <div class="vs-span-2">
-          <label class="vs-label" for="filterDateTo">Voucher Date To</label>
-          <input type="date" id="filterDateTo" class="vs-input" value="<?= esc($f('date_to'), 'attr') ?>">
-        </div>
-        <div class="vs-span-2">
-          <label class="vs-label" for="filterJuniorHs">Junior High School</label>
-          <select id="filterJuniorHs" class="vs-input js-filter-select" data-placeholder="- TYPE OR SELECT -">
-            <option></option>
-            <?php foreach (($filterOptions['junior_high_schools'] ?? []) as $school): ?>
-              <?php $sid = is_array($school) ? (string) ($school['school_id'] ?? '') : ''; $sn = is_array($school) ? ($school['school_name'] ?? '') : $school; $sa = is_array($school) ? ($school['acronym'] ?? '') : ''; $sv = $sid !== '' ? $sid : $sn; ?>
-              <option value="<?= esc($sv) ?>" data-acronym="<?= esc($sa) ?>" <?= $f('junior_hs') === $sv ? 'selected' : '' ?>><?= esc($sn) ?></option>
-            <?php endforeach ?>
-            <?php if ($f('junior_hs') !== '' && !in_array($f('junior_hs'), $filterOptions['junior_high_schools'] ?? [], true)): ?>
-              <option value="<?= esc($f('junior_hs')) ?>" selected><?= esc($f('junior_hs')) ?></option>
-            <?php endif ?>
-          </select>
-        </div>
-        <div class="vs-span-2">
-          <label class="vs-label" for="filterPreferredHs">Preferred Senior HS</label>
-          <select id="filterPreferredHs" class="vs-input js-filter-select" data-placeholder="- TYPE OR SELECT -">
-            <option></option>
-            <?php foreach (($filterOptions['senior_high_schools'] ?? []) as $school): ?>
-              <?php $sid = is_array($school) ? (string) ($school['school_id'] ?? '') : ''; $sn = is_array($school) ? ($school['school_name'] ?? '') : $school; $sa = is_array($school) ? ($school['acronym'] ?? '') : ''; $sv = $sid !== '' ? $sid : $sn; ?>
-              <option value="<?= esc($sv) ?>" data-acronym="<?= esc($sa) ?>" <?= $f('preferred_hs') === $sv ? 'selected' : '' ?>><?= esc($sn) ?></option>
-            <?php endforeach ?>
-            <?php if ($f('preferred_hs') !== '' && !in_array($f('preferred_hs'), $filterOptions['senior_high_schools'] ?? [], true)): ?>
-              <option value="<?= esc($f('preferred_hs')) ?>" selected><?= esc($f('preferred_hs')) ?></option>
-            <?php endif ?>
-          </select>
-        </div>
-        <div class="vs-span-2">
-          <label class="vs-label" for="filterGwaMin">GWA Min</label>
-          <input type="number" step="0.01" id="filterGwaMin" class="vs-input" placeholder="e.g. 80" value="<?= esc($f('gwa_min'), 'attr') ?>">
-        </div>
-        <div class="vs-span-2">
-          <label class="vs-label" for="filterGwaMax">GWA Max</label>
-          <input type="number" step="0.01" id="filterGwaMax" class="vs-input" placeholder="e.g. 100" value="<?= esc($f('gwa_max'), 'attr') ?>">
-        </div>
-        <div class="vs-span-2">
-          <label class="vs-label" for="filterEligibility">Eligibility Status</label>
-          <select id="filterEligibility" class="vs-input js-filter-select" data-placeholder="ELIGIBLE / NOT ELIGIBLE" data-no-search="1">
-            <option></option>
-            <option value="eligible"     <?= $f('eligibility') === 'eligible'     ? 'selected' : '' ?>>eligible</option>
-            <option value="not_eligible" <?= $f('eligibility') === 'not_eligible' ? 'selected' : '' ?>>not_eligible</option>
-          </select>
-        </div>
-      </div>
-    </div>
-    <div class="vs-modal-footer">
-      <button type="button" class="vs-btn vs-btn-outline" id="filterClear">Clear All</button>
-      <button type="button" class="vs-btn vs-btn-outline" id="filterModalCancel">Cancel</button>
-      <button type="button" class="vs-btn vs-btn-primary" id="filterApply">Apply Filters</button>
-    </div>
-  </div>
-</div>
-
-<!-- Export modal -->
-<div class="vs-modal-overlay" id="exportModal" style="display:none">
-  <div class="vs-modal">
-    <div class="vs-modal-header">
-      <h5>Export Students</h5>
-      <button class="vs-modal-close" id="exportModalClose">&times;</button>
-    </div>
-    <div class="vs-modal-body">
-      <p>Choose the file format to export the selected student records.</p>
-      <div class="d-flex gap-3 mt-3">
-        <a href="<?= site_url('vouchers/export?format=xlsx') ?>" data-export-format="xlsx" class="vs-btn vs-btn-outline flex-fill text-center">
-          Excel (.xlsx)
-        </a>
-        <a href="<?= site_url('vouchers/export?format=csv') ?>" data-export-format="csv" class="vs-btn vs-btn-outline flex-fill text-center">
-          CSV (.csv)
-        </a>
-      </div>
-    </div>
-  </div>
-</div>
+<script>
+window.__VS.pageData = { filterOptions: <?= json_encode($filterOptions) ?> };
+</script>
 
 <script>
 window.VM_CONFIG = {
@@ -356,7 +146,7 @@ window.VM_CONFIG = {
 </script>
 
 <script>
-(function () {
+document.addEventListener('vs:modals:ready', function () {
   var csrfName = '<?= csrf_token() ?>';
   var csrfHash = '<?= csrf_hash() ?>';
   var schoolOptionsUrl = '<?= site_url($prefix . '/schools/options') ?>';
@@ -386,7 +176,8 @@ window.VM_CONFIG = {
     }
 
     var fd = new FormData();
-    fd.append(csrfName, csrfHash);
+    var _importCsrf = (typeof getCsrfToken === 'function') ? getCsrfToken() : { name: csrfName, token: csrfHash };
+    fd.append(_importCsrf.name, _importCsrf.token);
     fd.append('excel_file', importFile.files[0]);
 
     importBtn.disabled = true;
@@ -949,11 +740,11 @@ window.VM_CONFIG = {
       })
       .catch(function () { btnRestoreAllArchive.disabled = false; showInfo('An error occurred. Please try again.', 'Error'); });
   });
-}());
+});
 </script>
 
 <?= $this->endSection() ?>
 
 <?= $this->section('scripts') ?>
-<script src="<?= base_url('assets/js/custom/voucher-modal.js') ?>?v=<?= @filemtime(FCPATH . 'assets/js/custom/voucher-modal.js') ?: time() ?>"></script>
+<script src="<?= base_url('assets/js/custom/voucher_modal.js') ?>?v=<?= @filemtime(FCPATH . 'assets/js/custom/voucher_modal.js') ?: time() ?>"></script>
 <?= $this->endSection() ?>

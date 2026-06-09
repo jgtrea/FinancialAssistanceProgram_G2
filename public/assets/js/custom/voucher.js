@@ -67,7 +67,11 @@ document.addEventListener('DOMContentLoaded', function () {
     dt.off('.vsVoucher');
     dt.on('draw.dt.vsVoucher page.dt.vsVoucher search.dt.vsVoucher order.dt.vsVoucher', syncPageCheckboxes);
     if (typeof updateSelectAllBanner === 'function') {
-      dt.on('draw.dt.vsVoucher', updateSelectAllBanner);
+      dt.on('draw.dt.vsVoucher', function () {
+        // Reset selectable count on every draw — filter/search scope may have changed.
+        if (typeof _selectableCount !== 'undefined') _selectableCount = null;
+        updateSelectAllBanner();
+      });
     }
   }
 
@@ -280,6 +284,11 @@ document.addEventListener('DOMContentLoaded', function () {
   const selectAllMatchingLink= document.getElementById('selectAllMatchingLink');
   const selectAllClearLink   = document.getElementById('selectAllClearLink');
 
+  // Tracks the selectable count returned by matching-ids (eligible rows only).
+  // null means "not yet fetched" — banner falls back to recordsDisplay.
+  // Reset to null whenever the table redraws (new search/filter changes scope).
+  let _selectableCount = null;
+
   function getFilterQueryString() {
     let filterParams = {};
     try { filterParams = JSON.parse(vouchersTable.dataset.filterParams || '{}'); } catch (e) {}
@@ -295,6 +304,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
     const info       = dt && dt.page ? dt.page.info() : null;
     const totalMatch = info ? info.recordsDisplay : 0;
+    // Use selectable count when known; otherwise fall back to full recordsDisplay.
+    const selectable = _selectableCount !== null ? _selectableCount : totalMatch;
     const selSize    = selectedIds.size;
 
     if (selSize === 0 || totalMatch === 0) {
@@ -302,9 +313,9 @@ document.addEventListener('DOMContentLoaded', function () {
       return;
     }
 
-    if (selSize >= totalMatch) {
+    if (selSize >= selectable && selectable > 0) {
       selectAllBanner.style.display       = 'block';
-      selectAllBannerText.textContent     = 'All ' + totalMatch + ' matching row(s) selected.';
+      selectAllBannerText.textContent     = 'All ' + selectable + ' matching row(s) selected.';
       selectAllMatchingLink.style.display = 'none';
       selectAllClearLink.style.display    = 'inline';
       return;
@@ -328,6 +339,7 @@ document.addEventListener('DOMContentLoaded', function () {
         const res  = await fetch(url, ajaxOptions({ method: 'GET' }));
         const data = await res.json();
         (data.ids || []).forEach(id => selectedIds.add(String(id)));
+        _selectableCount = data.count ?? (data.ids || []).length;
         syncPageCheckboxes();
         updateSelectAllBanner();
       } catch (err) {
@@ -340,6 +352,7 @@ document.addEventListener('DOMContentLoaded', function () {
   if (selectAllClearLink) {
     selectAllClearLink.addEventListener('click', function (e) {
       e.preventDefault();
+      _selectableCount = null;
       selectedIds.clear();
       syncPageCheckboxes();
       updateSelectAllBanner();

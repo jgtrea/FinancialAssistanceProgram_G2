@@ -1,5 +1,5 @@
 /* Voucher Add / View / Edit modal — loaded via scripts section after pre_script */
-(function () {
+document.addEventListener('DOMContentLoaded', function () {
   var cfg              = window.VM_CONFIG || {};
   var saveStudentUrl   = cfg.saveUrl          || '';
   var fetchStudentUrl  = cfg.fetchUrl         || '';
@@ -413,4 +413,4 @@
         vmSubmitSpinner.style.display = 'none';
       });
   });
-}());
+});

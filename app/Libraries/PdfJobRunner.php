@@ -57,7 +57,8 @@ class PdfJobRunner
      */
     public static function process(int $jobId): bool
     {
-        $db  = \Config\Database::connect();
+        $db = \Config\Database::connect();
+        try { $db->reconnect(); } catch (\Throwable $_) {}
         $job = $db->table('pdf_jobs')->where('job_id', $jobId)->get()->getRow();
 
         if (!$job) {

@@ -22,7 +22,7 @@
   <div class="vs-action-bar" id="actionBar" style="display:none">
     <span class="vs-action-bar-count"><span id="selectedCount">0</span> selected</span>
     <button class="vs-btn vs-btn-blue" id="btnGeneratePdf">
-      <?= asset_icon('voucher-add') ?>
+      <?= asset_icon('voucher_add') ?>
       Generate
     </button>
     <button type="button" class="vs-btn vs-btn-outline" id="btnOpenStatus">
@@ -103,27 +103,6 @@
   <?= csrf_field() ?>
 </form>
 
-<!-- Status modal now lives in layouts/main.php so the toast Status button works on every page. -->
-
-<!-- Export modal -->
-<div class="vs-modal-overlay" id="exportModal" style="display:none">
-  <div class="vs-modal">
-    <div class="vs-modal-header">
-      <h5>Export Selected Students</h5>
-      <button class="vs-modal-close" id="exportModalClose">&times;</button>
-    </div>
-    <div class="vs-modal-body">
-      <p>Choose the file format to export the selected student records.</p>
-      <div class="d-flex gap-3 mt-3">
-        <a href="<?= site_url('vouchers/export?format=xlsx') ?>" data-export-format="xlsx" class="vs-btn vs-btn-outline flex-fill text-center">
-          Excel (.xlsx)
-        </a>
-        <a href="<?= site_url('vouchers/export?format=csv') ?>" data-export-format="csv" class="vs-btn vs-btn-outline flex-fill text-center">
-          CSV (.csv)
-        </a>
-      </div>
-    </div>
-  </div>
-</div>
+<?= pre_modal('generate') ?>
 
 <?= $this->endSection() ?>

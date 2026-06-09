@@ -226,18 +226,14 @@ class Voucher extends Controller
             $ids = array_values(array_intersect($ids, $scopeIds));
         }
 
-        // Exclude rows the user can't actually check (disabled checkboxes for
-        // not-eligible / inactive rows).
+
+        // Exclude not_eligible rows — their checkboxes are disabled in the UI.
         if (!empty($ids)) {
             $db  = \Config\Database::connect();
             $ids = $db->table('students')
                 ->select('student_id')
                 ->whereIn('student_id', $ids)
                 ->where('eligibility_status', 'eligible')
-                ->groupStart()
-                    ->where('is_active', 1)
-                    ->orWhere('is_active IS NULL', null, false)
-                ->groupEnd()
                 ->get()
                 ->getResultArray();
             $ids = array_map(static fn($r) => (int) $r['student_id'], $ids);
