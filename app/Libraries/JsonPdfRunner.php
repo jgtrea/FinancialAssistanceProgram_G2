@@ -383,7 +383,7 @@ class JsonPdfRunner
             if (!is_dir($dir)) {
                 mkdir($dir, 0755, true);
             }
-            $stamp = date('Ymd_His');
+            $dateStr = date('Y-m-d');
 
             if ($failedChunk) {
                 throw new \RuntimeException('Chunk failed: ' . ($failedChunk['error_message'] ?? 'unknown'));
@@ -393,13 +393,15 @@ class JsonPdfRunner
             usort($chunks, static fn($a, $b) => ((int) $a['chunk_index']) <=> ((int) $b['chunk_index']));
 
             if (count($chunks) === 1) {
-                $finalName  = 'vouchers_json_job' . $parentId . '_' . $stamp . '.pdf';
+                // Vouchers_YYYY-MM-DD.pdf, with a _N counter if the same date
+                // already produced a file (so same-day batches don't collide).
+                $finalName  = self::uniqueFinalName($dir, 'Vouchers_' . $dateStr, '.pdf');
                 $sourcePath = $dir . $chunks[0]['file_path'];
                 if (!is_file($sourcePath) || !copy($sourcePath, $dir . $finalName)) {
                     throw new \RuntimeException('Failed to copy chunk PDF for parent ' . $parentId);
                 }
             } else {
-                $finalName = 'vouchers_json_job' . $parentId . '_' . $stamp . '.zip';
+                $finalName = self::uniqueFinalName($dir, 'Vouchers_' . $dateStr, '.zip');
                 $zipPath   = $dir . $finalName;
 
                 // Build the ZIP in batches. ZipArchive::addFile() defers opening
@@ -429,7 +431,8 @@ class JsonPdfRunner
                             @unlink($zipPath);
                             throw new \RuntimeException('Missing chunk file: ' . $chunk['file_path']);
                         }
-                        $entry = 'vouchers_chunk_' . str_pad((string) $chunk['chunk_index'], 3, '0', STR_PAD_LEFT) . '.pdf';
+                        $entry = 'Vouchers_' . $dateStr . '_part'
+                            . str_pad((string) $chunk['chunk_index'], 3, '0', STR_PAD_LEFT) . '.pdf';
                         $zip->addFile($sourcePath, $entry);
                     }
                     if ($zip->close() !== true) {
@@ -517,5 +520,21 @@ class JsonPdfRunner
             }
         }
         return null;
+    }
+
+    /**
+     * Build a filename "$base$ext" inside $dir that doesn't already exist,
+     * appending "_2", "_3", … on collision. Lets multiple same-day batches
+     * (which share the same date-based base) each get a distinct file.
+     */
+    protected static function uniqueFinalName(string $dir, string $base, string $ext): string
+    {
+        $name = $base . $ext;
+        $n    = 1;
+        while (is_file($dir . $name)) {
+            $n++;
+            $name = $base . '_' . $n . $ext;
+        }
+        return $name;
     }
 }
