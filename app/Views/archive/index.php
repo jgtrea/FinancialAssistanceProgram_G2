@@ -45,7 +45,7 @@
     <div class="vs-card">
         <div class="vs-card-body">
             <?php if (!$hasResults): ?>
-                <div class="vs-alert vs-alert-info vs-archive-empty-message mb-0">
+                <div class="vs-alert vs-alert-info vs-alert-static vs-archive-empty-message mb-0">
                     <?php if (!$hasSchoolYear): ?>
                         Open <strong>Filters</strong> and choose a <strong>School Year</strong> to load archived records.
                     <?php else: ?>
