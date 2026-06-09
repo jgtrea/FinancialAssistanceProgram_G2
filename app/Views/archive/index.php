@@ -278,11 +278,21 @@ document.addEventListener('vs:modals:ready', function () {
         .then(function (r) { return r.json(); })
         .then(function (data) {
             closeArchCurrentModal();
-            if (data.success) {
-                location.reload();
-            } else {
+            if (!data.success) {
                 alert(data.message || 'Archive failed.');
+                return;
             }
+            // Archiving runs on the background worker now — show a live progress
+            // toast (like generate) and reload when it finishes so the listing
+            // reflects the moved rows.
+            if (data.queued && data.status_url && typeof trackArchiveJob === 'function') {
+                trackArchiveJob(data.status_url, data.count || 0, {
+                    onDone:  function () { location.reload(); },
+                    onError: function (msg) { alert('Archive failed: ' + msg); },
+                });
+                return;
+            }
+            location.reload();
         })
         .catch(function () { alert('An error occurred.'); })
         .finally(function () {

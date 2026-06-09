@@ -199,51 +199,16 @@ class Voucher extends AdminVoucher
     public function archive()
     {
         $ids    = $this->parseVoucherIds($this->request->getPost('voucher_ids'));
-        $userId = session()->get('user_id');
-        $reason = $this->request->getPost('archive_reason') ?? 'Archived by user';
+        $reason = $this->request->getPost('archive_reason') ?: 'Archived by user';
 
         if (empty($ids)) {
             return $this->response->setJSON(['success' => false, 'message' => 'No students selected.']);
         }
 
-        $students = $this->voucherModel->getVouchersByIds($ids);
-        $now      = date('Y-m-d H:i:s');
-        $archived = 0;
-
-        foreach ($students as $s) {
-            // Snapshot into archived_students so the archive survives later
-            // edits/deletes of the live row.
-            $this->archiveModel->insert([
-                'student_id'                   => $s['student_id'],
-                'voucher_no'                   => $s['voucher_no'],
-                'voucher_date'                 => $s['voucher_date'],
-                'first_name'                   => $s['first_name'],
-                'middle_name'                  => $s['middle_name'],
-                'last_name'                    => $s['last_name'],
-                'suffix'                       => $s['suffix'],
-                'rank_no'                      => $s['rank_no'],
-                'gwa'                          => $s['gwa'],
-                'gender'                       => $s['gender'],
-                'junior_high_school'           => $s['junior_high_school'],
-                'preferred_senior_high_school' => $s['preferred_senior_high_school'],
-                'contact_number'               => $s['contact_number'],
-                'remarks_status'               => $s['remarks_status'],
-                'school_year'                  => $s['school_year'],
-                'eligibility_status'           => $s['eligibility_status'],
-                'voucher_status'               => $s['voucher_status'],
-                'archive_reason'               => $reason,
-                'archived_by'                  => $userId,
-                'archived_at'                  => $now,
-            ]);
-
-            $this->voucherModel->delete((int) $s['student_id']);
-            $archived++;
-        }
-
-        return $this->response->setJSON([
-            'success' => true,
-            'message' => "{$archived} student(s) archived successfully.",
-        ]);
+        // Queue the archive for the background worker (ArchiveRunner) instead of
+        // looping inline — same path as Admin. enqueueArchiveJob() picks the
+        // 'user/' status prefix from the session role.
+        return $this->enqueueArchiveJob($ids, $reason);
     }
 
     // ── Preview archive scope: count + distinct school years ─────────────────

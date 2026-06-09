@@ -817,6 +817,32 @@ class Voucher extends Controller
             ->setBody($body);
     }
 
+    // ── Enqueue an archive job for the background worker ──────────────────────
+    // Archiving used to run inline in the request — copy-to-archive + delete for
+    // every matching student — which timed out the session on large batches.
+    // Now it's queued into the JSON file queue ('archive' type) and drained in
+    // chunks by `spark run:json-pdf-queue` (ArchiveRunner). The request returns
+    // instantly with a job to poll. Used by archive() / archiveAll() /
+    // archiveByFilter() below; User\Voucher reuses this too (prefix follows the
+    // session role).
+    protected function enqueueArchiveJob(array $ids, string $reason)
+    {
+        $userId = $this->getCurrentUserId();
+        $prefix = session()->get('role') === 'admin' ? 'admin' : 'user';
+
+        $jobId = \App\Libraries\JsonPdfQueue::enqueueChunked('archive', $ids, $userId, self::CHUNK_SIZE, ['reason' => $reason]);
+
+        log_action($userId, 'QUEUE_ARCHIVE', 'Queued archive for ' . \count($ids) . ' student(s) (job #' . $jobId . ')');
+
+        return $this->response->setJSON([
+            'success'    => true,
+            'queued'     => true,
+            'job_id'     => $jobId,
+            'count'      => \count($ids),
+            'status_url' => site_url("{$prefix}/jobs/status/{$jobId}"),
+        ]);
+    }
+
     // ── Archive selected students (hard — copies to student_archive, deletes from students) ─
     public function archive()
     {
@@ -826,13 +852,9 @@ class Voucher extends Controller
             return $this->response->setJSON(['success' => false, 'message' => 'No students selected.']);
         }
 
-        $reason   = $this->request->getPost('archive_reason') ?: 'Bulk archive (selected)';
-        $archived = $this->archiveStudentsByIds($ids, $reason);
+        $reason = $this->request->getPost('archive_reason') ?: 'Bulk archive (selected)';
 
-        return $this->response->setJSON([
-            'success' => true,
-            'message' => "{$archived} student(s) archived.",
-        ]);
+        return $this->enqueueArchiveJob($ids, $reason);
     }
 
     // ── Bulk archive everything matching the current search + filter scope ────
@@ -856,12 +878,7 @@ class Voucher extends Controller
             ]);
         }
 
-        $archived = $this->archiveStudentsByIds($ids, $reason, true);
-
-        return $this->response->setJSON([
-            'success' => true,
-            'message' => "{$archived} student(s) archived successfully.",
-        ]);
+        return $this->enqueueArchiveJob($ids, $reason);
     }
 
     // ── Archive all students matching the archive-page filter (GET params) ───
@@ -883,12 +900,7 @@ class Voucher extends Controller
             ]);
         }
 
-        $archived = $this->archiveStudentsByIds($ids, $reason, true);
-
-        return $this->response->setJSON([
-            'success' => true,
-            'message' => "{$archived} student(s) archived successfully.",
-        ]);
+        return $this->enqueueArchiveJob($ids, $reason);
     }
 
     // ── Bulk activate everything matching the current search + filter scope ───

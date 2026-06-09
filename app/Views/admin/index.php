@@ -48,8 +48,7 @@
     <div class="vs-users-actions" style="display:flex;gap:0.5rem;flex-shrink:0">
         <button type="button" class="vs-btn vs-btn-primary" id="btnAddUser">
             <?= asset_icon('add', ['stroke-width' => '2.5']) ?>
-            Add User
-        </button>
+            Add User        </button>
     </div>
 </div>
 
@@ -220,7 +219,7 @@ document.addEventListener('vs:modals:ready', function () {
         umResetForm();
 
         if (mode === 'add') {
-            userModalTitle.textContent = 'Add User';
+            userModalTitle.textContent = 'Add Userz';
             umSubmitText.textContent = 'Save User';
             umSetPasswordMode(false);
             userModal.style.display = 'flex';

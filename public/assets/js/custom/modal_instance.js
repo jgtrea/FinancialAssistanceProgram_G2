@@ -333,7 +333,7 @@ var ModalInstance = (function () {
                 '<div class="vs-modal-overlay" id="userModal" style="display:none">' +
                 '  <div class="vs-modal" style="max-width:680px">' +
                 '    <div class="vs-modal-header">' +
-                '      <h5 id="userModalTitle">Add User</h5>' +
+                '      <h5 id="userModalTitle">Add Userz</h5>' +
                 '      <button class="vs-modal-close" id="userModalClose">&times;</button>' +
                 '    </div>' +
                 '    <form id="userModalForm" novalidate>' +

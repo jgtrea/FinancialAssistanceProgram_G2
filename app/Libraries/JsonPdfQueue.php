@@ -209,17 +209,56 @@ class JsonPdfQueue
     }
 
     /**
+     * Fill a job record with defaults, overlaying the given fields. Centralises
+     * the record shape so every enqueue path writes the same keys (type/payload/
+     * progress/result included), and any in-flight legacy record missing these
+     * keys still reads back sanely.
+     */
+    protected static function newRecord(array $over): array
+    {
+        return array_merge([
+            'job_id'        => 0,
+            'parent_job_id' => null,
+            'chunk_index'   => null,
+            'total_chunks'  => 0,
+            'type'          => 'pdf',
+            'voucher_ids'   => [],
+            'payload'       => [],
+            'progress'      => null,
+            'result'        => null,
+            'created_by'    => 0,
+            'created_at'    => date('Y-m-d H:i:s'),
+            'status'        => 'pending',
+            'file_path'     => null,
+            'completed_at'  => null,
+            'error_message' => null,
+        ], $over);
+    }
+
+    /**
      * Enqueue one parent job + N chunk jobs. Returns the parent job_id.
-     * $ids = full list of student_ids. Chunks split by $chunkSize.
+     * Back-compat wrapper — generates PDF jobs ($type = 'pdf').
      */
     public static function enqueueJob(array $ids, int $userId, int $chunkSize): int
     {
+        return self::enqueueChunked('pdf', $ids, $userId, $chunkSize);
+    }
+
+    /**
+     * Enqueue a chunked job of the given $type: one parent record + N chunk
+     * records split by $chunkSize. $payload is type-specific data (e.g. the
+     * archive reason) and is copied onto BOTH the parent and every chunk so a
+     * worker processing a chunk in isolation has everything it needs.
+     * Returns the parent job_id.
+     */
+    public static function enqueueChunked(string $type, array $ids, int $userId, int $chunkSize, array $payload = []): int
+    {
         $ids         = array_values($ids);
-        $chunks      = array_chunk($ids, $chunkSize);
+        $chunks      = array_chunk($ids, max(1, $chunkSize));
         $totalChunks = count($chunks);
         $now         = date('Y-m-d H:i:s');
 
-        return self::mutate(self::FILE_QUEUE, function (array $queue) use ($ids, $userId, $now, $chunks, $totalChunks) {
+        return self::mutate(self::FILE_QUEUE, function (array $queue) use ($type, $ids, $userId, $now, $chunks, $totalChunks, $payload) {
             // next_job_id ticks ONCE per generation (parent). Chunk records get
             // a derived ID parent_id * CHUNK_ID_OFFSET + chunk_index so they
             // stay unique without bloating the counter the user sees.
@@ -228,34 +267,34 @@ class JsonPdfQueue
 
             $parentId       = $nextId++;
             $queue['jobs']  = $queue['jobs'] ?? [];
-            $queue['jobs'][] = [
+            // Parent intentionally does NOT carry the full id list — the chunks
+            // own their ids, and nothing reads the parent's. Storing all N ids
+            // here meant every chunk claim re-encoded a queue.json holding tens
+            // of thousands of ints (huge cost on large batches).
+            $queue['jobs'][] = self::newRecord([
                 'job_id'        => $parentId,
                 'parent_job_id' => null,
                 'chunk_index'   => null,
                 'total_chunks'  => $totalChunks,
-                'voucher_ids'   => $ids,
+                'type'          => $type,
+                'voucher_ids'   => [],
+                'payload'       => $payload,
                 'created_by'    => $userId,
                 'created_at'    => $now,
-                'status'        => 'pending',
-                'file_path'     => null,
-                'completed_at'  => null,
-                'error_message' => null,
-            ];
+            ]);
 
             foreach ($chunks as $idx => $chunkIds) {
-                $queue['jobs'][] = [
+                $queue['jobs'][] = self::newRecord([
                     'job_id'        => $parentId * self::CHUNK_ID_OFFSET + ($idx + 1),
                     'parent_job_id' => $parentId,
                     'chunk_index'   => $idx + 1,
                     'total_chunks'  => $totalChunks,
+                    'type'          => $type,
                     'voucher_ids'   => array_values($chunkIds),
+                    'payload'       => $payload,
                     'created_by'    => $userId,
                     'created_at'    => $now,
-                    'status'        => 'pending',
-                    'file_path'     => null,
-                    'completed_at'  => null,
-                    'error_message' => null,
-                ];
+                ]);
             }
 
             $queue['next_job_id'] = $nextId;

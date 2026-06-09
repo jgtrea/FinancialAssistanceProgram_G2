@@ -90,6 +90,9 @@ $routes->group('admin', ['filter' => 'role:admin'], function ($routes) {
     // Archive & Logs
     $routes->get('archive', 'ArchiveController::index');
     $routes->get('logs',    'Admin\Report::logs');
+
+    // Background job status (archive, etc.) — polled by the browser after enqueue.
+    $routes->get('jobs/status/(:num)', 'JobController::status/$1');
 });
 
 // ─── User / Staff ─────────────────────────────────────────────────────────────
@@ -148,6 +151,9 @@ $routes->group('user', ['filter' => 'auth'], function ($routes) {
     $routes->post('schools/import',               'Admin\School::importSchools');
     $routes->get('schools/import-template',       'Admin\School::importTemplate');
     $routes->get('schools/options',               'Admin\School::optionsJson');
+
+    // Background job status (archive, etc.) — polled by the browser after enqueue.
+    $routes->get('jobs/status/(:num)', 'JobController::status/$1');
 });
 
 // ─── Students (madridbranch) ──────────────────────────────────────────────────

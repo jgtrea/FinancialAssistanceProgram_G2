@@ -105,7 +105,9 @@ class ProcessJsonPdfQueue extends BaseCommand
         $failed    = 0;
 
         while (true) {
-            $result = JsonPdfRunner::processOne();
+            // Type-agnostic: JobRunner claims the next pending chunk of ANY type
+            // (pdf, archive, ...) and dispatches it to the matching runner.
+            $result = \App\Libraries\JobRunner::processOne();
             if ($result === null) {
                 break; // No more claimable chunks
             }
@@ -121,13 +123,9 @@ class ProcessJsonPdfQueue extends BaseCommand
         }
 
         // Attempt to finalize any parent that's still in queue.json but whose
-        // chunks all moved to finished.json (no more pending chunks).
-        $queue = JsonPdfQueue::read(JsonPdfQueue::FILE_QUEUE);
-        foreach (($queue['jobs'] ?? []) as $job) {
-            if (empty($job['parent_job_id']) && ($job['status'] ?? '') === 'pending') {
-                JsonPdfRunner::tryFinalizeParent((int) $job['job_id']);
-            }
-        }
+        // chunks all moved to finished.json (no more pending chunks). Dispatched
+        // to the right runner by job type.
+        \App\Libraries\JobRunner::finalizePendingParents();
 
         // Sweep stale finished records every drain so finished.json + the
         // writable/pdfs/ dir don't grow without bound.

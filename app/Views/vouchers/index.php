@@ -723,6 +723,16 @@ document.addEventListener('vs:modals:ready', function () {
           showInfo(data.message || (action + ' failed.'), 'Error');
           return;
         }
+        // Archive All now queues a background job — show a live progress toast
+        // (like generate) and reload when it finishes. Activate/Deactivate All
+        // stay synchronous (no status_url).
+        if (data.queued && data.status_url) {
+          trackArchiveJob(data.status_url, data.count || 0, {
+            onDone:  function () { location.reload(); },
+            onError: function (msg) { showInfo('Archive failed: ' + msg, 'Error'); },
+          });
+          return;
+        }
         flashSuccess(data.message || (action + ' successful.'));
         location.reload();
       })

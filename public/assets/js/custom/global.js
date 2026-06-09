@@ -43,11 +43,15 @@ function refreshCsrfToken() {
 // job, so clicking Status on one toast opens the modal for THAT job rather than
 // whichever job happens to be newest. May be set later via the returned
 // setJob() once the job_id is known (the generate request returns it async).
-function showPdfToast(message, key, job) {
+function showPdfToast(message, key, job, opts) {
   // How long a finished toast lingers before auto-removing, so the user can
   // still hit the manual Download link if the automatic download didn't fire.
   const FINISHED_LINGER_MS = 5 * 60 * 1000;
   let currentJob = job || null;
+  // opts.hideStatus / opts.hideDownload — hide the PDF-only buttons so the same
+  // toast can show progress for non-PDF jobs (e.g. archive) without a Status
+  // button that would open the empty PDF-status modal.
+  opts = opts || {};
 
   let stack = document.getElementById('pdfToastStack');
   if (!stack) {
@@ -74,29 +78,18 @@ function showPdfToast(message, key, job) {
     stack.appendChild(toast);
   }
   toast.style.opacity = '1';
+  // No Status button — both the generate and archive toasts now just show the
+  // message + (for downloads) a Download link + close. The Download anchor uses
+  // margin-left:auto so it sits flush right when revealed.
   toast.innerHTML =
     '<div class="vs-spinner" style="width:16px;height:16px;flex-shrink:0"></div>' +
     '<span class="pdfToastMsg">' + message + '</span>' +
     '<a class="pdfToastDownload" style="display:none;margin-left:auto;background:#16a34a;color:#fff;border-radius:6px;padding:4px 10px;font-size:12px;text-decoration:none;cursor:pointer">Download</a>' +
-    '<button type="button" class="pdfToastStatusBtn" style="margin-left:auto;background:#334155;color:#f8fafc;border:1px solid #475569;border-radius:6px;padding:4px 10px;font-size:12px;cursor:pointer">Status</button>' +
-    '<button type="button" class="pdfToastClose" style="background:none;color:#94a3b8;border:none;font-size:16px;line-height:1;cursor:pointer;padding:0 2px">&times;</button>';
+    '<button type="button" class="pdfToastClose" style="margin-left:auto;background:none;color:#94a3b8;border:none;font-size:16px;line-height:1;cursor:pointer;padding:0 2px">&times;</button>';
 
-  // The Download anchor sits left of the Status button; once a download link is
-  // set, push Status to the right with the auto-margin so layout stays stable.
-  const statusBtn = toast.querySelector('.pdfToastStatusBtn');
-  if (statusBtn) {
-    statusBtn.addEventListener('click', function () {
-      const modal = document.getElementById('pdfStatusModal');
-      if (!modal) return;
-      modal.style.display = 'flex';
-      // Scope the modal to THIS toast's job when known; else fall back to the
-      // modal's default newest-pending pick.
-      if (currentJob && typeof window.openPdfStatusFor === 'function') {
-        window.openPdfStatusFor(currentJob);
-      } else if (typeof window.refreshPdfStatusModal === 'function') {
-        window.refreshPdfStatusModal();
-      }
-    });
+  if (opts.hideDownload) {
+    const db = toast.querySelector('.pdfToastDownload');
+    if (db) db.remove();
   }
 
   function removeToast() {

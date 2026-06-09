@@ -597,23 +597,39 @@ document.addEventListener('DOMContentLoaded', function () {
       formData.append('archive_reason', archiveReason ? archiveReason.value : '');
       formData.append('voucher_ids', ids.join(','));
 
+      const removeArchivedRows = function () {
+        ids.forEach(function (id) {
+          var row = document.getElementById('row-' + id);
+          if (row) dt.row(row).remove();
+          selectedIds.delete(id);
+        });
+        dt.draw(false);
+        syncPageCheckboxes();
+      };
+
       try {
         const res  = await fetch(archiveUrl, ajaxOptions({ method: 'POST', body: formData }));
         const data = await res.json();
         closeArchiveModal();
 
-        if (data.success) {
-          ids.forEach(function (id) {
-            var row = document.getElementById('row-' + id);
-            if (row) dt.row(row).remove();
-            selectedIds.delete(id);
-          });
-          dt.draw(false);
-          syncPageCheckboxes();
-          showAlert(data.message || 'Archived successfully.', 'success');
-        } else {
+        if (!data.success) {
           showAlert(data.message || 'Archive failed.', 'error');
+          return;
         }
+
+        // Archiving now runs on the background worker — show a live progress
+        // toast (like the generate flow) and drop the rows when it finishes.
+        if (data.queued && data.status_url) {
+          trackArchiveJob(data.status_url, data.count || ids.length, {
+            onDone:  function () { removeArchivedRows(); },
+            onError: function (msg) { showAlert('Archive failed: ' + msg, 'error'); },
+          });
+          return;
+        }
+
+        // Fallback: synchronous response (legacy).
+        removeArchivedRows();
+        showAlert(data.message || 'Archived successfully.', 'success');
       } catch (err) {
         showAlert('An error occurred. Please try again.', 'error');
         console.error(err);
