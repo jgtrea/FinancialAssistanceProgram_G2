@@ -156,6 +156,13 @@ class UsersController extends BaseController
             'role'        => $role,
         ];
 
+        if (strtolower($data['username']) === $data['email']) {
+            return $this->response->setJSON([
+                'status' => 'error',
+                'message' => 'Username and email must be different.',
+            ]);
+        }
+
         if ($this->userFieldTaken('email', $data['email'], $id)) {
             return $this->response->setJSON([
                 'status' => 'error',
