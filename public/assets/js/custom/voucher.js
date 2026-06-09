@@ -386,7 +386,7 @@ document.addEventListener('DOMContentLoaded', function () {
   const btnGeneratePdf = document.getElementById('btnGeneratePdf');
   const pdfForm        = document.getElementById('pdfForm');
 
-  const MAX_BATCH = 50000;
+  const MAX_BATCH = 70000;
 
   if (btnGeneratePdf && pdfForm) {
     btnGeneratePdf.addEventListener('click', async function () {

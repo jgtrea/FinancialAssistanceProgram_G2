@@ -49,6 +49,16 @@ class SessionValidator
             $session->set('auth_signature', $currentSignature);
         }
 
+        // Heartbeat: refresh the session lock so it stays held while the user is
+        // active. Throttled to once a minute to avoid a DB write on every
+        // request. Once activity stops for longer than the session expiration,
+        // session_last_active goes stale and a fresh login elsewhere is allowed
+        // (see Authentication::authenticate()).
+        $lastActive = $user['session_last_active'] ?? null;
+        if ($lastActive === null || (time() - strtotime((string) $lastActive)) >= 60) {
+            $model->update($userId, ['session_last_active' => date('Y-m-d H:i:s')]);
+        }
+
         $role = (string) ($user['role'] ?? '');
         if ($allowedRoles && !in_array($role, $allowedRoles, true)) {
             $fallback = $role === 'admin' ? 'admin/dashboard' : 'user/dashboard';
