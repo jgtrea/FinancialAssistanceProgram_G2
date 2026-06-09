@@ -69,7 +69,8 @@ document.addEventListener('DOMContentLoaded', function () {
     if (typeof updateSelectAllBanner === 'function') {
       dt.on('draw.dt.vsVoucher', function () {
         // Reset selectable count on every draw — filter/search scope may have changed.
-        if (typeof _selectableCount !== 'undefined') _selectableCount = null;
+        if (typeof _selectableCount    !== 'undefined') _selectableCount    = null;
+        if (typeof _fetchingSelectable !== 'undefined') _fetchingSelectable = false;
         updateSelectAllBanner();
       });
     }
@@ -199,6 +200,7 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
   function updateActionBar() {
+    if (!dt) return;
     const count         = selectedIds.size;
     const totalFiltered = dt.rows({ search: 'applied' }).count();
     if (countLabel) countLabel.textContent = count;
@@ -210,12 +212,13 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
   function syncPageCheckboxes() {
+    if (!dt) return;
     const pageNodes = dt.rows({ page: 'current' }).nodes().toArray();
     const pageIds = [];
     pageNodes.forEach(function (row) {
       const cb = row.querySelector('.vs-row-check');
       if (!cb) return;
-      cb.checked = selectedIds.has(cb.value);
+      cb.checked = !cb.disabled && selectedIds.has(cb.value);
       row.classList.toggle('vs-row-selected', cb.checked);
       if (!cb.disabled) pageIds.push(cb.value);
     });
@@ -284,10 +287,10 @@ document.addEventListener('DOMContentLoaded', function () {
   const selectAllMatchingLink= document.getElementById('selectAllMatchingLink');
   const selectAllClearLink   = document.getElementById('selectAllClearLink');
 
-  // Tracks the selectable count returned by matching-ids (eligible rows only).
-  // null means "not yet fetched" — banner falls back to recordsDisplay.
-  // Reset to null whenever the table redraws (new search/filter changes scope).
-  let _selectableCount = null;
+  // Tracks the selectable (eligible + active) count from matching-ids endpoint.
+  // null = not yet fetched. Reset to null on every draw so filter/search changes pick up fresh count.
+  let _selectableCount    = null;
+  let _fetchingSelectable = false;
 
   function getFilterQueryString() {
     let filterParams = {};
@@ -299,19 +302,37 @@ document.addEventListener('DOMContentLoaded', function () {
     return usp.toString();
   }
 
+  function fetchSelectableCount() {
+    if (_fetchingSelectable || !matchingIdsUrl) return;
+    _fetchingSelectable = true;
+    const qs  = getFilterQueryString();
+    const url = matchingIdsUrl + (qs ? ('?' + qs) : '');
+    fetch(url, ajaxOptions({ method: 'GET' }))
+      .then(function (r) { return r.json(); })
+      .then(function (data) {
+        _selectableCount    = data.count ?? (data.ids || []).length;
+        _fetchingSelectable = false;
+        updateSelectAllBanner();
+      })
+      .catch(function () { _fetchingSelectable = false; });
+  }
+
   function updateSelectAllBanner() {
     if (!selectAllBanner || !matchingIdsUrl) return;
 
     const info       = dt && dt.page ? dt.page.info() : null;
     const totalMatch = info ? info.recordsDisplay : 0;
-    // Use selectable count when known; otherwise fall back to full recordsDisplay.
-    const selectable = _selectableCount !== null ? _selectableCount : totalMatch;
     const selSize    = selectedIds.size;
 
     if (selSize === 0 || totalMatch === 0) {
       selectAllBanner.style.display = 'none';
       return;
     }
+
+    // Fetch selectable count in background if not yet known.
+    if (_selectableCount === null) fetchSelectableCount();
+
+    const selectable = _selectableCount !== null ? _selectableCount : totalMatch;
 
     if (selSize >= selectable && selectable > 0) {
       selectAllBanner.style.display       = 'block';
@@ -322,8 +343,8 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     selectAllBanner.style.display       = 'block';
-    selectAllBannerText.textContent     = selSize + ' selected. ' + totalMatch + ' total matching.';
-    selectAllMatchingLink.textContent   = 'Select all ' + totalMatch + ' matching across all pages';
+    selectAllBannerText.textContent     = selSize + ' selected. ' + selectable + ' total matching.';
+    selectAllMatchingLink.textContent   = 'Select all ' + selectable + ' matching across all pages';
     selectAllMatchingLink.style.display = 'inline';
     selectAllClearLink.style.display    = 'inline';
   }
@@ -352,7 +373,8 @@ document.addEventListener('DOMContentLoaded', function () {
   if (selectAllClearLink) {
     selectAllClearLink.addEventListener('click', function (e) {
       e.preventDefault();
-      _selectableCount = null;
+      _selectableCount    = null;
+      _fetchingSelectable = false;
       selectedIds.clear();
       syncPageCheckboxes();
       updateSelectAllBanner();

@@ -37,31 +37,52 @@
                     </div>
                 </div>
 
+                <?php $lockedNotice = $lockedNotice ?? ''; ?>
+
                 <?php if (session()->getFlashdata('error')): ?>
                     <div class="alert alert-danger small py-2">
                         <?= esc(session()->getFlashdata('error')) ?>
                     </div>
                 <?php endif; ?>
 
-                <form class="login-form-modern" action="<?= base_url('auth_login') ?>" method="POST">
-                    <?= csrf_field() ?>
-
-                    <div class="mb-3">
-                        <label for="username" class="form-label">Username or Email</label>
-                        <input id="username" type="text" name="username" class="form-control"
-                            placeholder="email address or username" required autocomplete="username" autocapitalize="none" spellcheck="false">
+                <?php if ($lockedNotice !== ''): ?>
+                    <div class="alert alert-warning small py-2">
+                        <?= esc($lockedNotice) ?> If that was you, you can log out the other device and continue here.
                     </div>
 
-                    <div class="mb-3">
-                        <label for="password" class="form-label">Password</label>
-                        <input id="password" type="password" name="password" class="form-control"
-                            placeholder="enter your password" required autocomplete="current-password" autocapitalize="none" spellcheck="false">
-                    </div>
+                    <form class="login-form-modern" action="<?= base_url('auth_login') ?>" method="POST">
+                        <?= csrf_field() ?>
+                        <input type="hidden" name="username" value="<?= esc($prefillUser ?? '', 'attr') ?>">
+                        <input type="hidden" name="password" value="<?= esc($prefillPass ?? '', 'attr') ?>">
+                        <input type="hidden" name="force_login" value="1">
 
-                    <button type="submit" class="btn btn-primary w-100 login-submit mt-3">
-                        Login
-                    </button>
-                </form>
+                        <button type="submit" class="btn btn-primary w-100 login-submit mt-3">
+                            Log out the other device &amp; continue
+                        </button>
+                    </form>
+
+                    <a href="<?= base_url('/') ?>" class="btn btn-link w-100 mt-2">Cancel</a>
+                <?php else: ?>
+                    <form class="login-form-modern" action="<?= base_url('auth_login') ?>" method="POST">
+                        <?= csrf_field() ?>
+
+                        <div class="mb-3">
+                            <label for="username" class="form-label">Username or Email</label>
+                            <input id="username" type="text" name="username" class="form-control"
+                                placeholder="email address or username" required autocomplete="username" autocapitalize="none" spellcheck="false">
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="password" class="form-label">Password</label>
+                            <input id="password" type="password" name="password" class="form-control"
+                                placeholder="enter your password" required autocomplete="current-password" autocapitalize="none" spellcheck="false">
+                        </div>
+
+                        <button type="submit" class="btn btn-primary w-100 login-submit mt-3">
+                            Login
+                        </button>
+                    </form>
+                <?php endif; ?>
             </div>
         </section>
     </main>

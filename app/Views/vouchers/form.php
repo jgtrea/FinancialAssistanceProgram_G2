@@ -19,18 +19,17 @@
   <a href="<?= site_url($prefix . '/students') ?>" class="vs-btn vs-btn-outline">Back to Vouchers</a>
 </div>
 
-<?php if (isset($validation) && $validation->getErrors()): ?>
-  <div class="vs-alert vs-alert-error mb-3">
-    <ul>
-      <?php foreach ($validation->getErrors() as $error): ?>
-        <li><?= esc($error) ?></li>
-      <?php endforeach ?>
-    </ul>
-  </div>
-<?php endif ?>
-
 <div class="vs-card">
   <div class="vs-card-body">
+    <?php if (isset($validation) && $validation->getErrors()): ?>
+      <div class="vs-alert vs-alert-error mb-3">
+        <ul>
+          <?php foreach ($validation->getErrors() as $error): ?>
+            <li><?= esc($error) ?></li>
+          <?php endforeach ?>
+        </ul>
+      </div>
+    <?php endif ?>
     <form method="POST" action="<?= esc($action) ?>">
       <?= csrf_field() ?>
 

@@ -97,6 +97,7 @@
                             </span>
                         </td>
                         <td class="actions-cell">
+                            <?php if (!$isSelf): ?>
                             <div class="dropdown">
                                 <button type="button" class="vs-tbl-btn vs-tbl-btn-actions dropdown-toggle"
                                         data-bs-toggle="dropdown" aria-expanded="false">Actions</button>
@@ -117,6 +118,7 @@
                                     </li>
                                 </ul>
                             </div>
+                            <?php endif ?>
                         </td>
                         <td style="display:none"><?= $isActive ? '1' : '0' ?></td>
                     </tr>

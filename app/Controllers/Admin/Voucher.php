@@ -227,13 +227,14 @@ class Voucher extends Controller
         }
 
 
-        // Exclude not_eligible rows — their checkboxes are disabled in the UI.
+        // Exclude not_eligible and inactive rows — their checkboxes are disabled in the UI.
         if (!empty($ids)) {
             $db  = \Config\Database::connect();
             $ids = $db->table('students')
                 ->select('student_id')
                 ->whereIn('student_id', $ids)
                 ->where('eligibility_status', 'eligible')
+                ->where('is_active', 1)
                 ->get()
                 ->getResultArray();
             $ids = array_map(static fn($r) => (int) $r['student_id'], $ids);
@@ -313,9 +314,11 @@ class Voucher extends Controller
         $isActive    = !isset($v['is_active']) || !empty($v['is_active']);
         $elig        = (string) ($v['eligibility_status'] ?? '');
 
+        $disabledReason = $notEligible ? 'Not eligible — cannot be selected'
+                        : (!$isActive   ? 'Deactivated — cannot be selected' : '');
         $checkbox = '<input type="checkbox" class="vs-check vs-row-check" value="'
             . esc($studentId, 'attr') . '"'
-            . ($notEligible ? ' disabled title="Not eligible — cannot be selected"' : '')
+            . ($disabledReason !== '' ? ' disabled title="' . esc($disabledReason, 'attr') . '"' : '')
             . '>';
 
         $voucherNo  = '<span class="js-voucher-no">' . esc($v['voucher_no'] ?: '-') . '</span>';
@@ -362,7 +365,8 @@ class Voucher extends Controller
             . '</ul></div></div>';
 
         return [
-            'DT_RowId'   => 'row-' . $studentId,
+            'DT_RowId'    => 'row-' . $studentId,
+            'DT_RowClass' => $isActive ? '' : 'vs-row-archived',
             'DT_RowAttr' => [
                 'data-gender'         => (string) ($v['gender'] ?? ''),
                 'data-remarks'        => (string) ($v['remarks_status'] ?? ''),
