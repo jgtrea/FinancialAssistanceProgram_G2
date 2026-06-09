@@ -99,7 +99,7 @@
 .vs-dashboard-table-wrap {
   max-width: 100%;
   min-width: 0;
-  overflow-x: auto;
+  overflow-x: hidden;
   width: 100%;
 }
 
@@ -112,8 +112,14 @@
   border-collapse: separate !important;
   border-spacing: 0;
   max-width: 100%;
-  table-layout: auto;
+  table-layout: fixed;
   width: 100% !important;
+}
+.vs-dashboard-table thead th,
+.vs-dashboard-table tbody td {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .vs-dashboard-table thead th {
