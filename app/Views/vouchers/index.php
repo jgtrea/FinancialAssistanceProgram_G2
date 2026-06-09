@@ -517,6 +517,11 @@ document.addEventListener('vs:modals:ready', function () {
         }
         btn.textContent = newElig === 'not_eligible' ? 'Mark Eligible' : 'Mark Not Eligible';
         btn.setAttribute('data-eligibility', newElig);
+        if (data.remarks_status && rowEl) {
+          var remarksSpan = rowEl.querySelector('.js-remarks-cell');
+          if (remarksSpan) remarksSpan.textContent = data.remarks_status;
+          rowEl.setAttribute('data-remarks', data.remarks_status);
+        }
         flashSuccess(data.message || 'Eligibility updated.');
       })
       .catch(function () { btn.disabled = false; alert('An error occurred. Please try again.'); });

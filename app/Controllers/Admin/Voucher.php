@@ -332,7 +332,7 @@ class Voucher extends Controller
         $jhs        = esc($v['junior_high_school'] ?: '-');
         $shs        = esc($v['preferred_senior_high_school'] ?? '');
         $schoolYear = esc($v['school_year'] ?? '');
-        $remarks    = esc($v['remarks_status'] ?: '-');
+        $remarks    = '<span class="js-remarks-cell">' . esc($v['remarks_status'] ?: '-') . '</span>';
 
         if ($elig === 'eligible' || $elig === 'not_eligible') {
             $color    = $elig === 'eligible' ? '#16a34a' : '#9ca3af';
@@ -1212,7 +1212,10 @@ class Voucher extends Controller
 
         $current = $student['eligibility_status'] ?? '';
         $newEligibility = ($current === 'not_eligible') ? 'eligible' : 'not_eligible';
-        $this->voucherModel->update($id, ['eligibility_status' => $newEligibility]);
+
+        $updateData = ['eligibility_status' => $newEligibility];
+        $updateData['remarks_status'] = $newEligibility === 'not_eligible' ? 'FOR REVIEW' : 'PASSED';
+        $this->voucherModel->update($id, $updateData);
 
         $userId = $this->getCurrentUserId();
         log_action($userId, 'UPDATE_ELIGIBILITY', "Set student #{$id} eligibility to {$newEligibility}");
@@ -1220,6 +1223,7 @@ class Voucher extends Controller
         return $this->response->setJSON([
             'success'            => true,
             'eligibility_status' => $newEligibility,
+            'remarks_status'     => $updateData['remarks_status'] ?? null,
             'message'            => 'Eligibility updated.',
             'csrf_token'         => csrf_hash(),
         ]);
