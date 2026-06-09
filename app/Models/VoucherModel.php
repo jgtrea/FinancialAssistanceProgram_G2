@@ -324,6 +324,9 @@ class VoucherModel extends Model
         }
         $applyWhere($builder);
 
+        // Always float active students above inactive regardless of column sort.
+        $builder->orderBy('students.is_active', 'DESC');
+
         $orderColumn = $columnMap[(int) $orderCol] ?? null;
         if ($orderColumn !== null) {
             $builder->orderBy($orderColumn, $orderDir);

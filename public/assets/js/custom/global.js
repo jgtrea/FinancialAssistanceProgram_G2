@@ -174,7 +174,7 @@ function initPasswordToggles() {
 }
 
 function initAlertDismiss() {
-  document.querySelectorAll('.vs-alert').forEach(el => {
+  document.querySelectorAll('.vs-alert:not(.vs-alert-static)').forEach(el => {
     setTimeout(() => el.remove(), 4000);
   });
 }

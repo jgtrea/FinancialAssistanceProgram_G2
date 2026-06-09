@@ -276,8 +276,9 @@ function initGenericDataTables() {
 // ── Shared DataTable config — consume in voucher.js and any future table ──────
 
 // Body + footer DOM (table rows + info/pagination). Same for all tables.
+// vs-dt-table-row gets overflow-x:auto so only the table scrolls, not the search header.
 window.VS.dtBodyDom =
-  "<'row'<'col-sm-12'tr>>" +
+  "<'vs-dt-table-row row'<'col-sm-12'tr>>" +
   "<'row align-items-center mt-3'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7'p>>";
 
 // Header DOM: with page-search slot (left) + show-entries (right),

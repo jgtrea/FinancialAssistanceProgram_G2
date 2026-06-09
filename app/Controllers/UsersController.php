@@ -76,6 +76,13 @@ class UsersController extends BaseController
 
     public function getJson($id)
     {
+        if ((int) $id === (int) session()->get('user_id')) {
+            return $this->response->setStatusCode(403)->setJSON([
+                'status'  => 'error',
+                'message' => 'You cannot edit your own account here.',
+            ]);
+        }
+
         $user = (new UserLogin())->find($id);
 
         if (!$user) {
@@ -97,6 +104,13 @@ class UsersController extends BaseController
     {
         $model = new UserLogin();
         $id = $this->request->getPost('user_id');
+
+        if ($id && (int) $id === (int) session()->get('user_id')) {
+            return $this->response->setJSON([
+                'status'  => 'error',
+                'message' => 'You cannot edit your own account here.',
+            ]);
+        }
         $password = $this->request->getPost('password');
         $role = strtolower(trim((string) $this->request->getPost('role')));
 

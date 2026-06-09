@@ -682,9 +682,13 @@ document.addEventListener('vs:modals:ready', function () {
         if (!row) return;
         row.classList.add('vs-row-archived');
         row.setAttribute('data-archived', '1');
-        // Update hidden is_active sort cell to 0 so DT re-sorts to bottom.
-        var lastCell = row.cells[row.cells.length - 1];
-        if (lastCell) lastCell.textContent = '0';
+        // Col 8 (is_active sort) is hidden — use DT API so Actions cell isn't clobbered.
+        if (window.jQuery && $.fn.DataTable) {
+            var tbl = document.getElementById('signatoriesTable');
+            if (tbl && $.fn.DataTable.isDataTable(tbl)) {
+                $(tbl).DataTable().cell(row, 8).data('0');
+            }
+        }
         var cb = row.querySelector('.sig-row-check');
         if (cb) { cb.disabled = true; cb.checked = false; }
         var badge = document.getElementById('sig-badge-' + id);
