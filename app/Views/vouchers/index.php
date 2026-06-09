@@ -45,7 +45,7 @@
 
   <div id="studentsAlertBox"></div>
 
-  <div class="vs-page-toolbar d-flex align-items-center gap-2 mb-3">
+  <div class="vs-page-toolbar vs-vouchers-toolbar d-flex align-items-center gap-2 mb-3">
     <form method="get" id="vouchersFilterForm" class="vs-page-filter-form" style="flex:1;min-width:0;display:flex;align-items:center;gap:0.5rem">
       <input type="text" name="q" class="vs-input vs-advanced-search-input" placeholder="Enter keyword to search (voucher no, name)" value="<?= esc((string) ($keyword ?? ''), 'attr') ?>" style="flex:1;min-width:0">
       <button type="button" class="vs-btn vs-btn-outline" id="btnOpenFilter" style="flex-shrink:0">
@@ -60,7 +60,7 @@
       <a href="<?= site_url($prefix . '/students') ?>" class="vs-btn vs-btn-outline" style="flex-shrink:0">Clear</a>
     </form>
     <span class="vs-toolbar-separator" style="color:var(--border);font-size:1.2rem;line-height:1;user-select:none;flex-shrink:0">|</span>
-    <div class="vs-page-action-buttons" style="display:flex;gap:0.5rem;flex-shrink:0">
+    <div class="vs-page-action-buttons vs-vouchers-actions" style="display:flex;gap:0.5rem;flex-shrink:0">
       <button type="button" class="vs-btn vs-btn-primary" id="btnAddVoucher" data-mode="add">
         <?= asset_icon('add', ['stroke-width' => '2.5']) ?>
         Add Voucher

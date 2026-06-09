@@ -36,17 +36,17 @@
         </button>
     </div>
 
-    <div class="d-flex align-items-center gap-2 mb-3">
-        <form method="get" id="sigSearchForm" style="flex:1;min-width:0;display:flex;align-items:center;gap:0.5rem">
+    <div class="vs-signatories-toolbar d-flex align-items-center gap-2 mb-3">
+        <form method="get" id="sigSearchForm" class="vs-signatories-filter-form" style="flex:1;min-width:0;display:flex;align-items:center;gap:0.5rem">
             <input type="text" name="q" class="vs-input vs-advanced-search-input" placeholder="Enter keyword to search (name, position)" value="<?= esc((string) ($keyword ?? ''), 'attr') ?>" style="flex:1;min-width:0">
-            <div style="width:150px;flex-shrink:0">
+            <div class="vs-signatories-status-filter" style="width:150px;flex-shrink:0">
                 <select id="sfStatus" name="status" class="js-filter-select" data-placeholder="SELECTED / UNSELECTED" data-no-search="1" style="width:100%">
                     <option></option>
                     <option value="selected"   <?= ($filterStatus ?? '') === 'selected'   ? 'selected' : '' ?>>Selected</option>
                     <option value="unselected" <?= ($filterStatus ?? '') === 'unselected' ? 'selected' : '' ?>>Unselected</option>
                 </select>
             </div>
-            <div style="width:180px;flex-shrink:0">
+            <div class="vs-signatories-position-filter" style="width:180px;flex-shrink:0">
                 <select id="sfPosition" name="position" class="js-filter-select" data-placeholder="- TYPE OR SELECT -" style="width:100%">
                     <option></option>
                     <?php foreach (($allPositions ?? []) as $pos): ?>
@@ -54,12 +54,12 @@
                     <?php endforeach ?>
                 </select>
             </div>
-            <span style="color:var(--border);font-size:1.2rem;line-height:1;user-select:none;flex-shrink:0">|</span>
-            <button type="submit" class="vs-btn vs-btn-primary" style="flex-shrink:0">Search</button>
-            <a href="<?= site_url('signatories') ?>" class="vs-btn vs-btn-outline" style="flex-shrink:0">Clear</a>
+            <span class="vs-signatories-separator" style="color:var(--border);font-size:1.2rem;line-height:1;user-select:none;flex-shrink:0">|</span>
+            <button type="submit" class="vs-btn vs-btn-primary vs-signatories-search-btn" style="flex-shrink:0">Search</button>
+            <a href="<?= site_url('signatories') ?>" class="vs-btn vs-btn-outline vs-signatories-clear-btn" style="flex-shrink:0">Clear</a>
         </form>
-        <span style="color:var(--border);font-size:1.2rem;line-height:1;user-select:none;flex-shrink:0">|</span>
-        <div style="display:flex;gap:0.5rem;flex-shrink:0">
+        <span class="vs-signatories-separator" style="color:var(--border);font-size:1.2rem;line-height:1;user-select:none;flex-shrink:0">|</span>
+        <div class="vs-signatories-actions" style="display:flex;gap:0.5rem;flex-shrink:0">
             <button type="button" class="vs-btn vs-btn-primary" id="btnAddSignatory">
                 <?= asset_icon('add', ['stroke-width' => '2.5']) ?>
                 Add Signatory

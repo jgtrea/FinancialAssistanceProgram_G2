@@ -20,24 +20,24 @@
         </div>
     </div>
 
-    <div class="d-flex align-items-center gap-2 mb-3">
-        <form method="get" id="archiveFilterForm" style="flex:1;min-width:0;display:flex;align-items:center;gap:0.5rem">
+    <div class="vs-archive-toolbar d-flex align-items-center gap-2 mb-3">
+        <form method="get" id="archiveFilterForm" class="vs-archive-filter-form" style="flex:1;min-width:0;display:flex;align-items:center;gap:0.5rem">
             <input type="text" name="q" class="vs-input vs-advanced-search-input" placeholder="Enter keyword to search (name, school)" value="<?= esc((string) ($keyword ?? ''), 'attr') ?>" style="flex:1;min-width:0">
-            <button type="button" class="vs-btn vs-btn-outline" id="btnOpenArchiveFilter" style="flex-shrink:0">
+            <button type="button" class="vs-btn vs-btn-outline vs-archive-filter-btn" id="btnOpenArchiveFilter" style="flex-shrink:0">
                 Filters
                 <span id="archiveFilterBadge" class="badge bg-primary" style="display:<?= $activeFilterCount > 0 ? 'inline-block' : 'none' ?>;margin-left:.35rem"><?= $activeFilterCount > 0 ? esc($activeFilterCount) : '' ?></span>
             </button>
             <?php foreach ($filterKeys as $k): ?>
               <input type="hidden" name="<?= esc($k, 'attr') ?>" value="<?= esc($f($k), 'attr') ?>">
             <?php endforeach ?>
-            <span style="color:var(--border);font-size:1.2rem;line-height:1;user-select:none;flex-shrink:0">|</span>
-            <button type="submit" class="vs-btn vs-btn-primary" style="flex-shrink:0">Search</button>
-            <a href="<?= site_url('admin/archive') ?>" class="vs-btn vs-btn-outline" style="flex-shrink:0">Clear</a>
+            <span class="vs-archive-separator" style="color:var(--border);font-size:1.2rem;line-height:1;user-select:none;flex-shrink:0">|</span>
+            <button type="submit" class="vs-btn vs-btn-primary vs-archive-search-btn" style="flex-shrink:0">Search</button>
+            <a href="<?= site_url('admin/archive') ?>" class="vs-btn vs-btn-outline vs-archive-clear-btn" style="flex-shrink:0">Clear</a>
         </form>
-        <span style="color:var(--border);font-size:1.2rem;line-height:1;user-select:none;flex-shrink:0">|</span>
-        <div style="display:flex;gap:0.5rem;flex-shrink:0">
+        <span class="vs-archive-separator" style="color:var(--border);font-size:1.2rem;line-height:1;user-select:none;flex-shrink:0">|</span>
+        <div class="vs-archive-actions" style="display:flex;gap:0.5rem;flex-shrink:0">
             <button type="button" class="vs-btn vs-btn-danger" id="btnArchiveCurrentData">
-                Archive Current Data
+                Archive
             </button>
         </div>
     </div>
@@ -45,7 +45,7 @@
     <div class="vs-card">
         <div class="vs-card-body">
             <?php if (!$hasResults): ?>
-                <div class="vs-alert vs-alert-info mb-0">
+                <div class="vs-alert vs-alert-info vs-archive-empty-message mb-0">
                     <?php if (!$hasSchoolYear): ?>
                         Open <strong>Filters</strong> and choose a <strong>School Year</strong> to load archived records.
                     <?php else: ?>
