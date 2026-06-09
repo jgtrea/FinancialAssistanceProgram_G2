@@ -37,9 +37,6 @@
         <?= asset_icon('export') ?>
         Export
       </button>
-      <button type="button" class="vs-btn vs-btn-outline" id="btnOpenStatus">
-        Status
-      </button>
     </div>
   </div>
 
