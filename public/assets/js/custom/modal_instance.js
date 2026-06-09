@@ -390,6 +390,29 @@ var ModalInstance = (function () {
             );
         },
 
+        deactivateModal: function () {
+            return (
+                '<div class="vs-modal-overlay" id="deactivateModal" style="display:none">' +
+                '  <div class="vs-modal" style="max-width:460px">' +
+                '    <div class="vs-modal-header">' +
+                '      <h5>Deactivate User</h5>' +
+                '      <button class="vs-modal-close" id="deactivateModalClose">&times;</button>' +
+                '    </div>' +
+                '    <div class="vs-modal-body">' +
+                '      <p>You are about to deactivate 1 user(s). This will move them to the archive.</p>' +
+                '    </div>' +
+                '    <div class="vs-modal-footer">' +
+                '      <button class="vs-btn vs-btn-outline" id="deactivateModalCancel">Cancel</button>' +
+                '      <button class="vs-btn vs-btn-danger" id="deactivateModalConfirm">' +
+                '        <span id="deactivateBtnText">Deactivate</span>' +
+                '        <span id="deactivateBtnSpinner" class="vs-spinner" style="display:none"></span>' +
+                '      </button>' +
+                '    </div>' +
+                '  </div>' +
+                '</div>'
+            );
+        },
+
         archiveCurrentModal: function () {
             return (
                 '<div class="vs-modal-overlay" id="archiveCurrentModal" style="display:none">' +
@@ -651,8 +674,6 @@ var ModalInstance = (function () {
                 '    </div>' +
                 '    <div class="vs-modal-body">' +
                 '      <p>You are about to archive <strong id="sigArchiveCount">0</strong> signatory(ies). This will move them to the archive.</p>' +
-                '      <label class="vs-label" for="sigArchiveReason">Reason (optional)</label>' +
-                '      <input type="text" id="sigArchiveReason" class="vs-input" placeholder="e.g. End of term">' +
                 '    </div>' +
                 '    <div class="vs-modal-footer">' +
                 '      <button class="vs-btn vs-btn-outline" id="sigArchiveModalCancel">Cancel</button>' +
@@ -1010,6 +1031,7 @@ var ModalInstance = (function () {
         overlay.addEventListener('click', function (e) { if (e.target === overlay) _close(); });
 
         saveBtn.addEventListener('click', function () {
+            if (typeof refreshCsrfToken === 'function') refreshCsrfToken();
             saveBtn.disabled = true;
             saveBtn.textContent = 'Saving…';
             fetch(updateUrl, {

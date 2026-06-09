@@ -10,6 +10,7 @@
     $f                 = static fn (string $k) => (string) ($filters[$k] ?? '');
     $activeFilterCount = count(array_filter($filterKeys, fn ($k) => $f($k) !== ''));
     $hasSchoolYear     = $f('school_year') !== '';
+    $hasResults        = $hasSchoolYear && !empty($vouchers);
 ?>
 
 <div class="vs-page-header mb-3">
@@ -43,9 +44,13 @@
 
     <div class="vs-card">
         <div class="vs-card-body">
-            <?php if (!$hasSchoolYear): ?>
+            <?php if (!$hasResults): ?>
                 <div class="vs-alert vs-alert-info mb-0">
-                    Open <strong>Filters</strong> and choose a <strong>School Year</strong> to load archived records.
+                    <?php if (!$hasSchoolYear): ?>
+                        Open <strong>Filters</strong> and choose a <strong>School Year</strong> to load archived records.
+                    <?php else: ?>
+                        No archived records found for <strong><?= esc($f('school_year')) ?></strong>. Try a different school year or adjust your filters.
+                    <?php endif ?>
                 </div>
             <?php else: ?>
             <table id="archivedVouchersTable" class="vs-datatable js-data-table vs-mobile-primary" data-mobile-primary="1" data-page-search="customArchiveSearch"

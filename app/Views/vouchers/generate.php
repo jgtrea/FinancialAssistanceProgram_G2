@@ -22,7 +22,7 @@
   <div class="vs-action-bar" id="actionBar" style="display:none">
     <span class="vs-action-bar-count"><span id="selectedCount">0</span> selected</span>
     <button class="vs-btn vs-btn-blue" id="btnGeneratePdf">
-      <?= asset_icon('voucher-add') ?>
+      <?= asset_icon('voucher_add') ?>
       Generate
     </button>
     <button type="button" class="vs-btn vs-btn-outline" id="btnOpenStatus">

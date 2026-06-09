@@ -30,7 +30,7 @@
     <span class="vs-action-bar-count"><span id="selectedCount">0</span> selected</span>
     <div class="vs-action-bar-buttons d-flex gap-2 ms-auto align-items-center">
       <button class="vs-btn vs-btn-dark-green" id="btnGeneratePdf">
-        <?= asset_icon('voucher-add') ?>
+        <?= asset_icon('voucher_add') ?>
         Generate Voucher
       </button>
       <button type="button" class="vs-btn vs-btn-success" id="btnOpenExport">
@@ -176,7 +176,8 @@ document.addEventListener('vs:modals:ready', function () {
     }
 
     var fd = new FormData();
-    fd.append(csrfName, csrfHash);
+    var _importCsrf = (typeof getCsrfToken === 'function') ? getCsrfToken() : { name: csrfName, token: csrfHash };
+    fd.append(_importCsrf.name, _importCsrf.token);
     fd.append('excel_file', importFile.files[0]);
 
     importBtn.disabled = true;
@@ -745,5 +746,5 @@ document.addEventListener('vs:modals:ready', function () {
 <?= $this->endSection() ?>
 
 <?= $this->section('scripts') ?>
-<script src="<?= base_url('assets/js/custom/voucher-modal.js') ?>?v=<?= @filemtime(FCPATH . 'assets/js/custom/voucher-modal.js') ?: time() ?>"></script>
+<script src="<?= base_url('assets/js/custom/voucher_modal.js') ?>?v=<?= @filemtime(FCPATH . 'assets/js/custom/voucher_modal.js') ?: time() ?>"></script>
 <?= $this->endSection() ?>

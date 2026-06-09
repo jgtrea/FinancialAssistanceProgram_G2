@@ -103,6 +103,10 @@ class JsonPdfRunner
         $jobId    = (int) $job['job_id'];
         $parentId = (int) ($job['parent_job_id'] ?? 0);
 
+        // Reconnect before any DB query — the worker may have slept long enough
+        // for MySQL to drop the connection (wait_timeout).
+        try { \Config\Database::connect()->reconnect(); } catch (\Throwable $_) {}
+
         try {
             $ids      = $job['voucher_ids'] ?? [];
             $students = (new VoucherModel())->getVouchersByIds($ids);

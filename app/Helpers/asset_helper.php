@@ -47,8 +47,8 @@ function pre_style($mode = 'default_lay')
                 base_url('assets/css/custom/dashboard.css'),
                 base_url('assets/css/custom/form.css'),
                 base_url('assets/css/custom/login.css'),
-                base_url('assets/css/custom/audit-logs.css'),
-                base_url('assets/css/custom/voucher-print.css'),
+                base_url('assets/css/custom/audit_logs.css'),
+                base_url('assets/css/custom/voucher_print.css'),
                 base_url('assets/css/custom/app.css'),
             ];
             break;
@@ -86,12 +86,12 @@ function pre_script($mode = 'default_lay')
                 base_url('assets/js/scripts.js'),
                 base_url('assets/js/custom/global.js'),
                 base_url('assets/js/custom/datatable.js'),
-                base_url('assets/js/custom/pdf-tracking.js'),
+                base_url('assets/js/custom/pdf_tracking.js'),
                 base_url('assets/js/custom/layout.js'),
                 base_url('assets/js/custom/modal_instance.js'),
-                base_url('assets/js/custom/users-page.js'),
+                base_url('assets/js/custom/users_page.js'),
                 base_url('assets/js/custom/voucher.js'),
-                base_url('assets/js/custom/pdf-status.js'),
+                base_url('assets/js/custom/pdf_status.js'),
                 base_url('assets/js/custom/users.js'),
                 base_url('assets/js/custom/students.js'),
             ];
@@ -122,7 +122,7 @@ if (!function_exists('pre_modal')) {
             case 'generate':
                 return modal_assets('exportVoucher');
             case 'users':
-                return modal_assets('userModal');
+                return modal_assets('userModal', 'deactivateModal');
             case 'archive':
                 return modal_assets('archiveCurrentModal', 'archiveFilterModal');
             case 'audit':

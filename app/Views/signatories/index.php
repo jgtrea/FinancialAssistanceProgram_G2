@@ -624,7 +624,6 @@ document.addEventListener('vs:modals:ready', function () {
     var sigArchCancel  = document.getElementById('sigArchiveModalCancel');
     var sigArchClose   = document.getElementById('sigArchiveModalClose');
     var sigArchCount   = document.getElementById('sigArchiveCount');
-    var sigArchReason  = document.getElementById('sigArchiveReason');
     var sigArchBtnText = document.getElementById('sigArchiveBtnText');
     var sigArchSpinner = document.getElementById('sigArchiveBtnSpinner');
 
@@ -632,7 +631,6 @@ document.addEventListener('vs:modals:ready', function () {
 
     function closeSigArchModal() {
         if (sigArchModal) sigArchModal.style.display = 'none';
-        if (sigArchReason) sigArchReason.value = '';
         pendingSigArchiveId = null;
     }
 
@@ -710,12 +708,10 @@ document.addEventListener('vs:modals:ready', function () {
     }
 
     sigArchConfirm && sigArchConfirm.addEventListener('click', function () {
-        var reason = sigArchReason ? sigArchReason.value.trim() : '';
         var csrf = getCsrf();
         var body = csrf.name + '=' + csrf.token;
         var idsToArchive = pendingSigArchiveId ? [pendingSigArchiveId] : Array.from(selectedIds);
         idsToArchive.forEach(function (id) { body += '&ids[]=' + id; });
-        if (reason) body += '&reason=' + encodeURIComponent(reason);
 
         sigArchConfirm.disabled = true;
         if (sigArchBtnText) sigArchBtnText.style.display = 'none';

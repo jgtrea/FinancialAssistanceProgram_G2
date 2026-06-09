@@ -130,12 +130,11 @@ class ProfileController extends BaseController
 
         $updated = $model->find($userId);
         $validator = new SessionValidator();
+        $fullName = $validator->fullName($updated ?: $data);
         session()->set([
-            'full_name'      => $validator->fullName($updated ?: $data),
+            'full_name'      => $fullName,
             'auth_signature' => $updated ? $validator->authSignature($updated) : session()->get('auth_signature'),
         ]);
-        $fullName = $this->displayName($updated ?: $data);
-        session()->set(['full_name' => $fullName]);
 
         log_action($userId, 'UPDATE_PROFILE', $auditDescription);
 

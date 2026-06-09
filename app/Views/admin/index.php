@@ -207,9 +207,9 @@ document.addEventListener('vs:modals:ready', function () {
             umPasswordLabel.innerHTML = 'Password <span class="vs-label-hint">(leave blank to keep current)</span>';
             umPassword.required = false;
         } else {
-            umPasswordLabel.classList.add('required');
-            umPasswordLabel.textContent = 'Password';
-            umPassword.required = true;
+            umPasswordLabel.classList.remove('required');
+            umPasswordLabel.innerHTML = 'Password <span class="vs-label-hint">(leave blank for default: pass123)</span>';
+            umPassword.required = false;
         }
     }
 
@@ -300,64 +300,113 @@ document.addEventListener('vs:modals:ready', function () {
     // ── Activate / Deactivate toggle ──────────────────────────────────────
     var toggleUrl = '<?= base_url('admin/user_management/toggle') ?>';
 
+    var deactivateOverlay  = document.getElementById('deactivateModal');
+    var deactivateConfirm  = document.getElementById('deactivateModalConfirm');
+    var deactivateCancel   = document.getElementById('deactivateModalCancel');
+    var deactivateClose    = document.getElementById('deactivateModalClose');
+    var deactivateBtnText  = document.getElementById('deactivateBtnText');
+    var deactivateSpinner  = document.getElementById('deactivateBtnSpinner');
+    var _pendingToggleBtn  = null;
+
+    function closeDeactivateModal() {
+        if (deactivateOverlay) deactivateOverlay.style.display = 'none';
+        if (_pendingToggleBtn) { _pendingToggleBtn.disabled = false; _pendingToggleBtn = null; }
+    }
+
+    deactivateClose  && deactivateClose.addEventListener('click',  closeDeactivateModal);
+    deactivateCancel && deactivateCancel.addEventListener('click', closeDeactivateModal);
+    deactivateOverlay && deactivateOverlay.addEventListener('click', function (e) {
+        if (e.target === deactivateOverlay) closeDeactivateModal();
+    });
+
+    function doToggle(btn, id) {
+        var csrf = getCsrf();
+        btn.disabled = true;
+
+        fetch(toggleUrl + '/' + id, {
+            method:  'POST',
+            headers: { 'X-Requested-With': 'XMLHttpRequest', 'Content-Type': 'application/x-www-form-urlencoded' },
+            body:    csrf.name + '=' + csrf.token,
+        })
+        .then(function (r) { return r.json(); })
+        .then(function (data) {
+            if (data.status !== 'success') {
+                showAlert(data.message || 'Failed.', 'error');
+                btn.disabled = false;
+                return;
+            }
+
+            var nowActive = data.is_active === 1 || data.is_active === true;
+            var badge = document.getElementById('user-status-badge-' + id);
+            var row   = document.getElementById('user-row-' + id);
+
+            btn.setAttribute('data-active', nowActive ? '1' : '0');
+            btn.textContent = nowActive ? 'Deactivate' : 'Activate';
+            btn.classList.toggle('text-danger', nowActive);
+
+            if (row) {
+                row.setAttribute('data-active', nowActive ? '1' : '0');
+                if (nowActive) row.classList.remove('vs-row-archived');
+                else           row.classList.add('vs-row-archived');
+                if (window.jQuery && $.fn.DataTable) {
+                    var tbl = document.getElementById('userManagementTable');
+                    if (tbl && $.fn.DataTable.isDataTable(tbl)) {
+                        var dt = $(tbl).DataTable();
+                        dt.cell(row, 6).data(nowActive ? '1' : '0').draw(false);
+                    }
+                }
+            }
+
+            if (badge) {
+                badge.innerHTML   = nowActive ? userStatusIcons.active : userStatusIcons.inactive;
+                badge.style.color = nowActive ? '#16a34a' : '#9ca3af';
+                badge.title       = nowActive ? 'Active' : 'Inactive';
+                badge.setAttribute('aria-label', nowActive ? 'Active' : 'Inactive');
+            }
+
+            var metaEl = document.querySelector('meta[name="csrf-token-value"]');
+            if (metaEl && data.csrf_token) metaEl.setAttribute('content', data.csrf_token);
+
+            btn.disabled = false;
+        })
+        .catch(function () {
+            showAlert('An error occurred.', 'error');
+            btn.disabled = false;
+        });
+    }
+
+    deactivateConfirm && deactivateConfirm.addEventListener('click', function () {
+        if (!_pendingToggleBtn) return;
+        var btn = _pendingToggleBtn;
+        var id  = btn.getAttribute('data-id');
+        _pendingToggleBtn = null;
+
+        if (deactivateOverlay) deactivateOverlay.style.display = 'none';
+        if (deactivateBtnText)  deactivateBtnText.style.display  = 'none';
+        if (deactivateSpinner)  deactivateSpinner.style.display  = 'inline-block';
+        deactivateConfirm.disabled = true;
+
+        doToggle(btn, id);
+
+        if (deactivateBtnText)  deactivateBtnText.style.display  = 'inline';
+        if (deactivateSpinner)  deactivateSpinner.style.display  = 'none';
+        deactivateConfirm.disabled = false;
+    });
+
     document.querySelectorAll('.js-user-toggle').forEach(function (btn) {
         btn.addEventListener('click', function () {
             var id     = btn.getAttribute('data-id');
             var active = btn.getAttribute('data-active') === '1';
-            var csrf   = getCsrf();
 
-            btn.disabled = true;
-
-            fetch(toggleUrl + '/' + id, {
-                method:  'POST',
-                headers: { 'X-Requested-With': 'XMLHttpRequest', 'Content-Type': 'application/x-www-form-urlencoded' },
-                body:    csrf.name + '=' + csrf.token,
-            })
-            .then(function (r) { return r.json(); })
-            .then(function (data) {
-                if (data.status !== 'success') {
-                    showAlert(data.message || 'Failed.', 'error');
-                    btn.disabled = false;
-                    return;
-                }
-
-                var nowActive = data.is_active === 1 || data.is_active === true;
-                var badge = document.getElementById('user-status-badge-' + id);
-                var row   = document.getElementById('user-row-' + id);
-
-                btn.setAttribute('data-active', nowActive ? '1' : '0');
-                btn.textContent = nowActive ? 'Deactivate' : 'Activate';
-                btn.classList.toggle('text-danger', nowActive);
-
-                if (row) {
-                    row.setAttribute('data-active', nowActive ? '1' : '0');
-                    if (nowActive) row.classList.remove('vs-row-archived');
-                    else           row.classList.add('vs-row-archived');
-                    // Update hidden is_active sort cell and redraw DT.
-                    var sortCell = row.cells[row.cells.length - 1];
-                    if (sortCell) sortCell.textContent = nowActive ? '1' : '0';
-                    if (window.jQuery && $.fn.DataTable) {
-                        var tbl = document.getElementById('userManagementTable');
-                        if (tbl && $.fn.DataTable.isDataTable(tbl)) $(tbl).DataTable().draw(false);
-                    }
-                }
-
-                if (badge) {
-                    badge.innerHTML   = nowActive ? userStatusIcons.active : userStatusIcons.inactive;
-                    badge.style.color = nowActive ? '#16a34a' : '#9ca3af';
-                    badge.title       = nowActive ? 'Active' : 'Inactive';
-                    badge.setAttribute('aria-label', nowActive ? 'Active' : 'Inactive');
-                }
-
-                var metaEl = document.querySelector('meta[name="csrf-token-value"]');
-                if (metaEl && data.csrf_token) metaEl.setAttribute('content', data.csrf_token);
-
-                btn.disabled = false;
-            })
-            .catch(function () {
-                showAlert('An error occurred.', 'error');
-                btn.disabled = false;
-            });
+            if (active) {
+                // Deactivating — show confirmation modal
+                _pendingToggleBtn = btn;
+                btn.disabled = true;
+                if (deactivateOverlay) deactivateOverlay.style.display = 'flex';
+            } else {
+                // Activating — no confirmation needed
+                doToggle(btn, id);
+            }
         });
     });
 

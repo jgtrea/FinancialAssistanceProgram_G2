@@ -106,7 +106,7 @@ class UsersController extends BaseController
             'first_name' => 'required|max_length[100]',
             'last_name'  => 'required|max_length[100]',
             'email'      => 'required|valid_email|max_length[150]',
-            'password'   => ($id ? 'permit_empty' : 'required') . '|min_length[8]|max_length[255]',
+            'password'   => 'permit_empty|min_length[8]|max_length[255]',
             'role'       => 'required|in_list[admin,user]',
         ]);
 
@@ -160,6 +160,9 @@ class UsersController extends BaseController
             $data['is_active'] = 1;
         }
 
+        if (!$id && empty($password)) {
+            $password = 'pass123';
+        }
         if (!empty($password)) {
             $data['password'] = password_hash($password, PASSWORD_ARGON2ID);
         }
