@@ -65,9 +65,19 @@ class Authentication extends BaseController
             && $lastActive !== null
             && (time() - strtotime((string) $lastActive)) < $lockTtl;
 
-        if ($lockAlive) {
+        // The real owner (correct password, above) may have just closed the
+        // browser without logging out and now can't get back in. Offer a force
+        // override: re-rendering the login view with a "log out the other device
+        // and continue" button. Submitting that (force_login=1) falls through
+        // and takes over the session, kicking the stale/other device.
+        $forceLogin = $this->request->getPost('force_login') === '1';
+        if ($lockAlive && !$forceLogin) {
             log_action($user['user_id'], 'LOGIN_BLOCKED', "Login blocked for \"{$input}\"; account active on another device.");
-            return redirect()->to('/')->with('error', 'This account is already logged in on another device. Please log out there first, or wait for that session to expire.');
+            return view('auth/login', [
+                'lockedNotice' => 'This account is already logged in on another device.',
+                'prefillUser'  => $input,
+                'prefillPass'  => (string) $password,
+            ]);
         }
 
         session()->regenerate(true);

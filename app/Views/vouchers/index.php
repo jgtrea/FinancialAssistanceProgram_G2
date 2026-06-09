@@ -307,22 +307,34 @@ document.addEventListener('vs:modals:ready', function () {
   var filterApply       = document.getElementById('filterApply');
   var filterClear       = document.getElementById('filterClear');
 
-  function rebuildSelectKeepingSelection(select, names) {
+  function rebuildSelectKeepingSelection(select, items) {
     if (!select) return;
     var current = select.value;
     while (select.firstChild) select.removeChild(select.firstChild);
     select.appendChild(document.createElement('option')); // placeholder
     var seen = {};
-    names.forEach(function (name) {
-      if (!name || seen[name]) return;
-      seen[name] = true;
+    var currentSeen = false;
+    // Items are {school_id, school_name} objects from /schools/options. The
+    // option VALUE must be school_id (the filter matches students.junior_high_school,
+    // an FK) while the visible label is school_name. (Falls back to plain strings
+    // for any legacy caller.)
+    items.forEach(function (item) {
+      var id, label;
+      if (item && typeof item === 'object') {
+        id    = String(item.school_id != null ? item.school_id : (item.id != null ? item.id : ''));
+        label = item.school_name != null ? item.school_name : (item.name != null ? item.name : id);
+      } else {
+        id = label = (item == null ? '' : String(item));
+      }
+      if (!id || seen[id]) return;
+      seen[id] = true;
       var opt = document.createElement('option');
-      opt.value = name;
-      opt.textContent = name;
-      if (current === name) opt.selected = true;
+      opt.value = id;
+      opt.textContent = label;
+      if (current === id) { opt.selected = true; currentSeen = true; }
       select.appendChild(opt);
     });
-    if (current && !seen[current]) {
+    if (current && !currentSeen) {
       var opt = document.createElement('option');
       opt.value = current;
       opt.textContent = current;
