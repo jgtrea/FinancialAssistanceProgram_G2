@@ -77,7 +77,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     if (!vmGenerationHistoryDetails || !vmGenerationHistoryList) return;
 
-    vmGenerationHistoryDetails.style.display = history.length > 1 ? '' : 'none';
+    vmGenerationHistoryDetails.style.display = history.length > 0 ? '' : 'none';
     vmGenerationHistoryDetails.open = false;
 
     if (!history.length) {

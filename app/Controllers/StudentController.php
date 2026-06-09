@@ -52,7 +52,7 @@ class StudentController extends BaseController
             ]);
         }
 
-        $history = (new GenerationHistoryModel())->getRecentForStudent((int) $id);
+        $history = (new GenerationHistoryModel())->getRecentForStudent((int) $id, 0); // 0 = all
         $latest  = $history[0] ?? null;
 
         $student['last_generated_by'] = $latest['full_name'] ?? null;

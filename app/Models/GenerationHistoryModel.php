@@ -57,6 +57,7 @@ class GenerationHistoryModel extends Model
         }
     }
 
+    // $limit <= 0 returns every record for this student (no cap).
     public function getRecentForStudent(int $studentId, int $limit = 5): array
     {
         if (!$this->db->tableExists($this->table)) {
@@ -81,12 +82,14 @@ class GenerationHistoryModel extends Model
             $builder->select('gh.*');
         }
 
-        return $builder
-            ->where('gh.student_id', $studentId)
+        $builder->where('gh.student_id', $studentId)
             ->orderBy('gh.generated_at', 'DESC')
-            ->orderBy('gh.generation_history_id', 'DESC')
-            ->limit($limit)
-            ->get()
-            ->getResultArray();
+            ->orderBy('gh.generation_history_id', 'DESC');
+
+        if ($limit > 0) {
+            $builder->limit($limit);
+        }
+
+        return $builder->get()->getResultArray();
     }
 }
