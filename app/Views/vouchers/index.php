@@ -457,6 +457,10 @@ document.addEventListener('vs:modals:ready', function () {
         btn.setAttribute('data-active', isActive ? '1' : '0');
         btn.classList.toggle('text-danger', isActive);
         flashSuccess(data.message || 'Student ' + (isActive ? 'activated' : 'deactivated') + '.');
+        if (window.jQuery && $.fn.DataTable) {
+          var tbl = document.getElementById('studentsTable');
+          if (tbl && $.fn.DataTable.isDataTable(tbl)) $(tbl).DataTable().draw(false);
+        }
       })
       .catch(function () { btn.disabled = false; alert('An error occurred. Please try again.'); });
   }

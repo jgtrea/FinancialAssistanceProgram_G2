@@ -378,8 +378,13 @@ document.addEventListener('vs:modals:ready', function () {
         if (!row) return;
         row.classList.add('vs-row-archived');
         row.setAttribute('data-active', '0');
-        var sortCell = row.cells[row.cells.length - 1];
-        if (sortCell) sortCell.textContent = '0';
+        // Col 6 (is_active sort) is hidden — use DT API so Actions cell isn't clobbered.
+        if (window.jQuery && $.fn.DataTable) {
+            var tbl = document.getElementById('schoolsTable');
+            if (tbl && $.fn.DataTable.isDataTable(tbl)) {
+                $(tbl).DataTable().cell(row, 6).data('0');
+            }
+        }
         var cb = row.querySelector('.school-row-check');
         if (cb) { cb.disabled = true; cb.checked = false; }
         var actionsCell = row.querySelector('.actions-cell');

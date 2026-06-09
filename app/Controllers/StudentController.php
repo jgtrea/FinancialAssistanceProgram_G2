@@ -128,6 +128,7 @@ class StudentController extends BaseController
             $this->writeAuditLog('VOUCHER_UPDATED', 'Updated student ' . $this->formatStudentName($data) . ' (ID #' . $studentId . ').', null, (int) $studentId);
             $message = 'Student updated successfully.';
         } else {
+            $data['is_active'] = 1;
             $newStudentId = $studentModel->insert($data);
             $this->writeAuditLog('VOUCHER_CREATED', 'Created voucher for ' . $this->formatStudentName($data) . ' (ID #' . $newStudentId . ').', null, $newStudentId ? (int) $newStudentId : null);
             $message = 'Student added successfully.';

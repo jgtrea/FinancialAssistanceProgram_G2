@@ -90,7 +90,8 @@ table.js-data-table tbody tr.vs-row-archived img {
   width: 100%;
   min-width: 0;
 }
-.dataTables_wrapper,
+/* Only the table body row scrolls horizontally — not the search/length header. */
+.vs-dt-table-row,
 .dataTables_wrapper .table-responsive {
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
