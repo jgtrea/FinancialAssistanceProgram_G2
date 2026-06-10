@@ -157,6 +157,16 @@ class Voucher extends Controller
     // ── List all students / vouchers ───────────────────────────────────────────
     public function index()
     {
+        return $this->renderListing('Vouchers', true, 'vouchers');
+    }
+
+    public function students()
+    {
+        return $this->renderListing('Students', false, 'students');
+    }
+
+    protected function renderListing(string $title, bool $allowGenerate, string $listingPath)
+    {
         $keyword = trim((string) $this->request->getGet('q'));
         $filters = $this->getListingFilters();
 
@@ -165,9 +175,11 @@ class Voucher extends Controller
         // table renders empty and rows arrive via AJAX, so we skip the upfront
         // 1000-row query that the old client-side mode relied on.
         return view('vouchers/index', [
-            'title'         => 'Vouchers',
+            'title'         => $title,
             'vouchers'      => [],
             'role'          => session()->get('role') ?: 'admin',
+            'allowGenerate' => $allowGenerate,
+            'listingPath'   => $listingPath,
             'keyword'       => $keyword,
             'filters'       => $filters,
             'filterOptions' => $this->voucherModel->getListingFilterOptions(),

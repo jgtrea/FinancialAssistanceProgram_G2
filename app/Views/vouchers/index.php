@@ -4,6 +4,9 @@
 
 <?php $role = $role ?? 'admin' ?>
 <?php $prefix = $role === 'admin' ? 'admin' : 'user' ?>
+<?php $listingPath = $listingPath ?? 'vouchers' ?>
+<?php $listingUrl = site_url($prefix . '/' . $listingPath) ?>
+<?php $allowGenerate = (bool) ($allowGenerate ?? true) ?>
 <?php $juniorHighSchools = $juniorHighSchools ?? [] ?>
 <?php $seniorHighSchools = $seniorHighSchools ?? [] ?>
 <?php $filterOptions = $filterOptions ?? ['junior_high_schools' => [], 'senior_high_schools' => [], 'school_years' => []] ?>
@@ -29,10 +32,12 @@
   <div class="vs-action-bar" id="actionBar" style="display:none">
     <span class="vs-action-bar-count"><span id="selectedCount">0</span> selected</span>
     <div class="vs-action-bar-buttons d-flex gap-2 ms-auto align-items-center">
-      <button class="vs-btn vs-btn-dark-green" id="btnGeneratePdf">
-        <?= asset_icon('voucher_add') ?>
-        Generate Voucher
-      </button>
+      <?php if ($allowGenerate): ?>
+        <button class="vs-btn vs-btn-dark-green" id="btnGeneratePdf">
+          <?= asset_icon('voucher_add') ?>
+          Generate Voucher
+        </button>
+      <?php endif ?>
       <button type="button" class="vs-btn vs-btn-success" id="btnOpenExport">
         <?= asset_icon('export') ?>
         Export
@@ -54,11 +59,11 @@
       <?php endforeach ?>
       <span class="vs-toolbar-separator" style="color:var(--border);font-size:1.2rem;line-height:1;user-select:none;flex-shrink:0">|</span>
       <button type="submit" class="vs-btn vs-btn-primary" style="flex-shrink:0">Search</button>
-      <a href="<?= site_url($prefix . '/students') ?>" class="vs-btn vs-btn-outline" style="flex-shrink:0">Clear</a>
+      <a href="<?= $listingUrl ?>" class="vs-btn vs-btn-danger" style="flex-shrink:0">Clear</a>
     </form>
     <span class="vs-toolbar-separator" style="color:var(--border);font-size:1.2rem;line-height:1;user-select:none;flex-shrink:0">|</span>
     <div class="vs-page-action-buttons vs-vouchers-actions" style="display:flex;gap:0.5rem;flex-shrink:0">
-      <button type="button" class="vs-btn vs-btn-primary" id="btnAddVoucher" data-mode="add">
+      <button type="button" class="vs-btn vs-btn-success" id="btnAddVoucher" data-mode="add">
         <?= asset_icon('add', ['stroke-width' => '2.5']) ?>
         Add Voucher
       </button>
@@ -101,7 +106,6 @@
             <th>Junior High School</th>
             <th>Preferred School</th>
             <th>School Year</th>
-            <th>Eligibility</th>
             <th>Remarks</th>
             <th>Generate Count</th>
             <th>Last Generated</th>
@@ -112,7 +116,7 @@
         <tbody>
           <!-- Rows loaded by DataTables via AJAX from the data-datatable-url endpoint. -->
           <!-- Schema matches the <th>s above: checkbox, voucher_no, name, name_sort (hidden),
-               rank, jhs, shs, school_year, eligibility, remarks, generate_count,
+               rank, jhs, shs, school_year, remarks, generate_count,
                last_generated, status, actions. Server-side cell HTML lives in
                Admin\Voucher::renderStudentRowForDatatable(). -->
         </tbody>
@@ -120,9 +124,11 @@
     </div>
   </div>
 
-<form id="pdfForm" method="POST" action="<?= site_url($prefix . '/vouchers/json-generate-pdf') ?>" style="display:none">
-  <?= csrf_field() ?>
-</form>
+<?php if ($allowGenerate): ?>
+  <form id="pdfForm" method="POST" action="<?= site_url($prefix . '/vouchers/json-generate-pdf') ?>" style="display:none">
+    <?= csrf_field() ?>
+  </form>
+<?php endif ?>
 
 <form id="archiveForm" action="<?= site_url($prefix . '/vouchers/archive') ?>" style="display:none">
   <?= csrf_field() ?>
@@ -397,7 +403,7 @@ document.addEventListener('vs:modals:ready', function () {
       });
     }
     closeFilter();
-    window.location.href = '<?= site_url($prefix . '/students') ?>';
+    window.location.href = '<?= $listingUrl ?>';
   });
   }
 

@@ -30,6 +30,25 @@ class Voucher extends AdminVoucher
             'title'         => 'Vouchers',
             'vouchers'      => [],
             'role'          => 'user',
+            'allowGenerate' => true,
+            'listingPath'   => 'vouchers',
+            'keyword'       => $keyword,
+            'filters'       => $filters,
+            'filterOptions' => $this->voucherModel->getListingFilterOptions(),
+        ] + $this->getSchoolDropdownData());
+    }
+
+    public function students()
+    {
+        $keyword = trim((string) $this->request->getGet('q'));
+        $filters = $this->getListingFilters();
+
+        return view('vouchers/index', [
+            'title'         => 'Students',
+            'vouchers'      => [],
+            'role'          => 'user',
+            'allowGenerate' => false,
+            'listingPath'   => 'students',
             'keyword'       => $keyword,
             'filters'       => $filters,
             'filterOptions' => $this->voucherModel->getListingFilterOptions(),

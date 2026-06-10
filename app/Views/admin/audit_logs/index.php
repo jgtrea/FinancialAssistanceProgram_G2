@@ -40,7 +40,7 @@
         <input type="date" name="date_to"   id="auditFilterDateTo"   class="vs-input" value="<?= esc((string) $filterValues['date_to'],   'attr') ?>" style="flex:0 0 150px" title="Date To">
         <span style="color:var(--border);font-size:1.2rem;line-height:1;user-select:none;flex-shrink:0">|</span>
         <button type="submit" class="vs-btn vs-btn-primary" style="flex-shrink:0">Search</button>
-        <a href="<?= site_url('admin/audit-logs') ?>" class="vs-btn vs-btn-outline" style="flex-shrink:0">Clear</a>
+        <a href="<?= site_url('admin/audit-logs') ?>" class="vs-btn vs-btn-danger" style="flex-shrink:0">Clear</a>
     </form>
 
     <div class="vs-card">

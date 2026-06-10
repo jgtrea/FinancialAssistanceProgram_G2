@@ -32,7 +32,7 @@
             <?php endforeach ?>
             <span class="vs-archive-separator" style="color:var(--border);font-size:1.2rem;line-height:1;user-select:none;flex-shrink:0">|</span>
             <button type="submit" class="vs-btn vs-btn-primary vs-archive-search-btn" style="flex-shrink:0">Search</button>
-            <a href="<?= site_url('admin/archive') ?>" class="vs-btn vs-btn-outline vs-archive-clear-btn" style="flex-shrink:0">Clear</a>
+            <a href="<?= site_url('admin/archive') ?>" class="vs-btn vs-btn-danger vs-archive-clear-btn" style="flex-shrink:0">Clear</a>
         </form>
         <span class="vs-archive-separator" style="color:var(--border);font-size:1.2rem;line-height:1;user-select:none;flex-shrink:0">|</span>
         <div class="vs-archive-actions" style="display:flex;gap:0.5rem;flex-shrink:0">

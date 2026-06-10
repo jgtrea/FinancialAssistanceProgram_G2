@@ -42,13 +42,14 @@
         </div>
         <span class="vs-users-separator" style="color:var(--border);font-size:1.2rem;line-height:1;user-select:none;flex-shrink:0">|</span>
         <button type="submit" class="vs-btn vs-btn-primary vs-users-search-btn" style="flex-shrink:0">Search</button>
-        <a href="<?= site_url('admin/users') ?>" class="vs-btn vs-btn-outline vs-users-clear-btn" id="userFilterClear" style="flex-shrink:0">Clear</a>
+        <a href="<?= site_url('admin/user_management') ?>" class="vs-btn vs-btn-danger vs-users-clear-btn" id="userFilterClear" style="flex-shrink:0">Clear</a>
     </form>
     <span class="vs-users-separator" style="color:var(--border);font-size:1.2rem;line-height:1;user-select:none;flex-shrink:0">|</span>
     <div class="vs-users-actions" style="display:flex;gap:0.5rem;flex-shrink:0">
-        <button type="button" class="vs-btn vs-btn-primary" id="btnAddUser">
+        <button type="button" class="vs-btn vs-btn-success" id="btnAddUser">
             <?= asset_icon('add', ['stroke-width' => '2.5']) ?>
-            Add User        </button>
+            Add User
+        </button>
     </div>
 </div>
 
@@ -219,7 +220,7 @@ document.addEventListener('vs:modals:ready', function () {
         umResetForm();
 
         if (mode === 'add') {
-            userModalTitle.textContent = 'Add Userz';
+            userModalTitle.textContent = 'Add User';
             umSubmitText.textContent = 'Save User';
             umSetPasswordMode(false);
             userModal.style.display = 'flex';

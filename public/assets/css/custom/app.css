@@ -335,6 +335,11 @@
         min-width: 0;
     }
 
+    .vs-signatories-status-filter .select2-selection__rendered,
+    .vs-signatories-position-filter .select2-selection__rendered {
+        padding-right: 1.6rem !important;
+    }
+
     .vs-signatories-separator {
         display: none !important;
     }

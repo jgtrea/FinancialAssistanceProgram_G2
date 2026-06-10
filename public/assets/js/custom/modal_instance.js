@@ -189,7 +189,7 @@ var ModalInstance = (function () {
                 '      </div>' +
                 '    </div>' +
                 '    <div class="vs-modal-footer">' +
-                '      <button type="button" class="vs-btn vs-btn-outline" id="filterClear">Clear All</button>' +
+                '      <button type="button" class="vs-btn vs-btn-danger" id="filterClear">Clear All</button>' +
                 '      <button type="button" class="vs-btn vs-btn-outline" id="filterModalCancel">Cancel</button>' +
                 '      <button type="button" class="vs-btn vs-btn-primary" id="filterApply">Apply Filters</button>' +
                 '    </div>' +
@@ -333,7 +333,7 @@ var ModalInstance = (function () {
                 '<div class="vs-modal-overlay" id="userModal" style="display:none">' +
                 '  <div class="vs-modal" style="max-width:680px">' +
                 '    <div class="vs-modal-header">' +
-                '      <h5 id="userModalTitle">Add Userz</h5>' +
+                '      <h5 id="userModalTitle">Add User</h5>' +
                 '      <button class="vs-modal-close" id="userModalClose">&times;</button>' +
                 '    </div>' +
                 '    <form id="userModalForm" novalidate>' +
@@ -356,7 +356,7 @@ var ModalInstance = (function () {
                 '          </div>' +
                 '          <div></div>' +
                 '          <div class="vs-span-2">' +
-                '            <label class="vs-label required" for="umUsername">Username <span class="vs-label-hint">(used for login)</span></label>' +
+                '            <label class="vs-label required" for="umUsername">Username</label>' +
                 '            <input type="text" id="umUsername" name="username" class="vs-input" required spellcheck="false" autocomplete="off">' +
                 '          </div>' +
                 '          <div class="vs-span-2"></div>' +
@@ -499,7 +499,7 @@ var ModalInstance = (function () {
                 '      </div>' +
                 '    </div>' +
                 '    <div class="vs-modal-footer">' +
-                '      <button type="button" class="vs-btn vs-btn-outline" id="archiveFilterClear">Clear All</button>' +
+                '      <button type="button" class="vs-btn vs-btn-danger" id="archiveFilterClear">Clear All</button>' +
                 '      <button type="button" class="vs-btn vs-btn-outline" id="archiveFilterCancel">Cancel</button>' +
                 '      <button type="button" class="vs-btn vs-btn-primary" id="archiveFilterApply">Apply Filters</button>' +
                 '    </div>' +
@@ -533,7 +533,7 @@ var ModalInstance = (function () {
                 '            </div>' +
                 '        </div>' +
                 '        <div class="vs-modal-footer">' +
-                '            <button type="button" class="vs-btn vs-btn-outline" id="auditFilterClear">Clear All</button>' +
+                '            <button type="button" class="vs-btn vs-btn-danger" id="auditFilterClear">Clear All</button>' +
                 '            <button type="button" class="vs-btn vs-btn-outline" id="auditFilterModalCancel">Cancel</button>' +
                 '            <button type="button" class="vs-btn vs-btn-primary" id="auditFilterApply">Apply Filters</button>' +
                 '        </div>' +

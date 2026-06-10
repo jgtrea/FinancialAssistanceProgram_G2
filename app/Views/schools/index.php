@@ -47,11 +47,11 @@
         </div>
         <span class="vs-schools-separator" style="color:var(--border);font-size:1.2rem;line-height:1;user-select:none;flex-shrink:0">|</span>
         <button type="submit" class="vs-btn vs-btn-primary vs-schools-search-btn" style="flex-shrink:0">Search</button>
-        <a href="<?= site_url('admin/schools') ?>" class="vs-btn vs-btn-outline vs-schools-clear-btn" style="flex-shrink:0">Clear</a>
+        <a href="<?= site_url('admin/schools') ?>" class="vs-btn vs-btn-danger vs-schools-clear-btn" style="flex-shrink:0">Clear</a>
     </form>
     <span class="vs-schools-separator" style="color:var(--border);font-size:1.2rem;line-height:1;user-select:none;flex-shrink:0">|</span>
     <div class="vs-schools-actions" style="display:flex;gap:0.5rem;flex-shrink:0">
-        <button type="button" class="vs-btn vs-btn-primary" id="btnAddSchool">
+        <button type="button" class="vs-btn vs-btn-success" id="btnAddSchool">
             <?= asset_icon('add', ['stroke-width' => '2.5']) ?>
             Add School
         </button>

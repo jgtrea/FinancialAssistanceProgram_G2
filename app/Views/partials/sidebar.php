@@ -25,19 +25,23 @@ $icon = static fn (string $name): string => asset_icon($name, ['class' => 'vs-si
                     <div class="sb-nav-link-icon"><?= $icon('dashboard') ?></div>
                     Dashboard
                 </a>
-                <a class="nav-link <?= $isActive(['admin/students', 'admin/vouchers']) ?>" href="<?= site_url('admin/students') ?>">
+                <a class="nav-link <?= $isActive('admin/students') ?>" href="<?= site_url('admin/students') ?>">
+                    <div class="sb-nav-link-icon"><?= $icon('users') ?></div>
+                    Students
+                </a>
+                <a class="nav-link <?= $isActive('admin/vouchers') ?>" href="<?= site_url('admin/vouchers') ?>">
                     <div class="sb-nav-link-icon"><?= $icon('voucher') ?></div>
                     Vouchers
-                </a>
-                <a class="nav-link <?= $isActive('signatories') ?>" href="<?= site_url('signatories') ?>">
-                    <div class="sb-nav-link-icon"><?= $icon('sign') ?></div>
-                    Signatories
                 </a>
 
                 <div class="sb-sidenav-menu-heading">Manage</div>
                 <a class="nav-link <?= $isActive('admin/schools') ?>" href="<?= site_url('admin/schools') ?>">
                     <div class="sb-nav-link-icon"><?= $icon('school') ?></div>
                     Schools
+                </a>
+                <a class="nav-link <?= $isActive('signatories') ?>" href="<?= site_url('signatories') ?>">
+                    <div class="sb-nav-link-icon"><?= $icon('sign') ?></div>
+                    Signatories
                 </a>
                 <a class="nav-link <?= $isActive('admin/user_management') ?>" href="<?= site_url('admin/user_management') ?>">
                     <div class="sb-nav-link-icon"><?= $icon('users') ?></div>
@@ -56,7 +60,11 @@ $icon = static fn (string $name): string => asset_icon($name, ['class' => 'vs-si
                     <div class="sb-nav-link-icon"><?= $icon('dashboard') ?></div>
                     Dashboard
                 </a>
-                <a class="nav-link <?= $isActive(['user/students', 'user/vouchers']) ?>" href="<?= site_url('user/students') ?>">
+                <a class="nav-link <?= $isActive('user/students') ?>" href="<?= site_url('user/students') ?>">
+                    <div class="sb-nav-link-icon"><?= $icon('users') ?></div>
+                    Students
+                </a>
+                <a class="nav-link <?= $isActive('user/vouchers') ?>" href="<?= site_url('user/vouchers') ?>">
                     <div class="sb-nav-link-icon"><?= $icon('voucher') ?></div>
                     Vouchers
                 </a>

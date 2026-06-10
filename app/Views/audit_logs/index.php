@@ -31,7 +31,7 @@
         <?php endforeach ?>
         <span style="color:var(--border);font-size:1.2rem;line-height:1;user-select:none;flex-shrink:0">|</span>
         <button type="submit" class="vs-btn vs-btn-primary" style="flex-shrink:0">Search</button>
-        <a href="<?= site_url('user/audit-logs') ?>" class="vs-btn vs-btn-outline" style="flex-shrink:0">Clear</a>
+        <a href="<?= site_url('user/audit-logs') ?>" class="vs-btn vs-btn-danger" style="flex-shrink:0">Clear</a>
     </form>
 
     <div class="vs-card">
