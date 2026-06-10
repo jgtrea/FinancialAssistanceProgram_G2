@@ -23,11 +23,11 @@
     <!-- Inline audit filters (Action select + date range). Auto-submits on
          change so the user sees results immediately, matching the Schools
          page quick-filter pattern. -->
-    <form method="get" id="auditFilterForm" style="display:flex;align-items:center;gap:0.5rem;margin-bottom:1rem">
-        <input type="text" name="q" class="vs-input vs-advanced-search-input" placeholder="Enter keyword to search (action, description)" value="<?= esc((string) ($keyword ?? ''), 'attr') ?>" style="flex:1;min-width:0">
-        <!-- Wrapper carries the flex sizing; Select2 replaces the inner <select>
-             with a container that picks up width:100% from this div. -->
-        <div style="flex:0 0 200px; min-width:0">
+    <form method="get" id="auditFilterForm" class="row g-2 align-items-center mb-3">
+        <div class="col-12 col-md-4">
+            <input type="text" name="q" class="vs-input vs-advanced-search-input w-100" placeholder="Enter keyword to search (action, description)" value="<?= esc((string) ($keyword ?? ''), 'attr') ?>">
+        </div>
+        <div class="col-6 col-md-2">
             <select name="action" id="auditFilterAction" class="js-filter-select" data-placeholder="- TYPE OR SELECT -" style="width:100%">
                 <option></option>
                 <?php foreach ($actionOptions as $option): ?>
@@ -36,11 +36,16 @@
                 <?php endforeach ?>
             </select>
         </div>
-        <input type="date" name="date_from" id="auditFilterDateFrom" class="vs-input" value="<?= esc((string) $filterValues['date_from'], 'attr') ?>" style="flex:0 0 150px" title="Date From">
-        <input type="date" name="date_to"   id="auditFilterDateTo"   class="vs-input" value="<?= esc((string) $filterValues['date_to'],   'attr') ?>" style="flex:0 0 150px" title="Date To">
-        <span style="color:var(--border);font-size:1.2rem;line-height:1;user-select:none;flex-shrink:0">|</span>
-        <button type="submit" class="vs-btn vs-btn-primary" style="flex-shrink:0">Search</button>
-        <a href="<?= site_url('admin/audit-logs') ?>" class="vs-btn vs-btn-outline" style="flex-shrink:0">Clear</a>
+        <div class="col-6 col-md-2">
+            <input type="date" name="date_from" id="auditFilterDateFrom" class="vs-input w-100" value="<?= esc((string) $filterValues['date_from'], 'attr') ?>" title="Date From">
+        </div>
+        <div class="col-6 col-md-2">
+            <input type="date" name="date_to" id="auditFilterDateTo" class="vs-input w-100" value="<?= esc((string) $filterValues['date_to'], 'attr') ?>" title="Date To">
+        </div>
+        <div class="col-6 col-md-2 d-flex gap-2">
+            <button type="submit" class="vs-btn vs-btn-primary flex-fill">Search</button>
+            <a href="<?= site_url('admin/audit-logs') ?>" class="vs-btn vs-btn-outline flex-fill">Clear</a>
+        </div>
     </form>
 
     <div class="vs-card">

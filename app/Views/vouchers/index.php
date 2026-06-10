@@ -45,32 +45,34 @@
 
   <div id="studentsAlertBox"></div>
 
-  <div class="vs-page-toolbar d-flex align-items-center gap-2 mb-3">
-    <form method="get" id="vouchersFilterForm" class="vs-page-filter-form" style="flex:1;min-width:0;display:flex;align-items:center;gap:0.5rem">
-      <input type="text" name="q" class="vs-input vs-advanced-search-input" placeholder="Enter keyword to search (voucher no, name)" value="<?= esc((string) ($keyword ?? ''), 'attr') ?>" style="flex:1;min-width:0">
-      <button type="button" class="vs-btn vs-btn-outline" id="btnOpenFilter" style="flex-shrink:0">
+  <form method="get" id="vouchersFilterForm" class="vs-page-toolbar row g-2 align-items-center mb-3">
+    <?php foreach ($filterKeys as $k): ?>
+      <input type="hidden" name="<?= esc($k, 'attr') ?>" value="<?= esc($f($k), 'attr') ?>">
+    <?php endforeach ?>
+    <div class="col-12 col-md-6">
+      <input type="text" name="q" class="vs-input vs-advanced-search-input w-100" placeholder="Enter keyword to search (voucher no, name)" value="<?= esc((string) ($keyword ?? ''), 'attr') ?>">
+    </div>
+    <div class="col-6 col-md-2">
+      <button type="button" class="vs-btn vs-btn-outline w-100" id="btnOpenFilter">
         Filters
         <span id="filterBadge" class="badge bg-primary" style="display:<?= $activeFilterCount > 0 ? 'inline-block' : 'none' ?>;margin-left:.35rem"><?= $activeFilterCount > 0 ? esc($activeFilterCount) : '' ?></span>
       </button>
-      <?php foreach ($filterKeys as $k): ?>
-        <input type="hidden" name="<?= esc($k, 'attr') ?>" value="<?= esc($f($k), 'attr') ?>">
-      <?php endforeach ?>
-      <span class="vs-toolbar-separator" style="color:var(--border);font-size:1.2rem;line-height:1;user-select:none;flex-shrink:0">|</span>
-      <button type="submit" class="vs-btn vs-btn-primary" style="flex-shrink:0">Search</button>
-      <a href="<?= site_url($prefix . '/students') ?>" class="vs-btn vs-btn-outline" style="flex-shrink:0">Clear</a>
-    </form>
-    <span class="vs-toolbar-separator" style="color:var(--border);font-size:1.2rem;line-height:1;user-select:none;flex-shrink:0">|</span>
-    <div class="vs-page-action-buttons" style="display:flex;gap:0.5rem;flex-shrink:0">
-      <button type="button" class="vs-btn vs-btn-primary" id="btnAddVoucher" data-mode="add">
+    </div>
+    <div class="col-6 col-md-2 d-flex gap-2">
+      <button type="submit" class="vs-btn vs-btn-primary flex-fill">Search</button>
+      <a href="<?= site_url($prefix . '/students') ?>" class="vs-btn vs-btn-outline flex-fill">Clear</a>
+    </div>
+    <div class="col-12 col-md-2 d-flex gap-2">
+      <button type="button" class="vs-btn vs-btn-primary flex-fill" id="btnAddVoucher" data-mode="add">
         <?= asset_icon('add', ['stroke-width' => '2.5']) ?>
         Add Voucher
       </button>
-      <button type="button" class="vs-btn vs-btn-outline" id="btnOpenImport">
+      <button type="button" class="vs-btn vs-btn-outline flex-fill" id="btnOpenImport">
         <?= asset_icon('import') ?>
         Import
       </button>
     </div>
-  </div>
+  </form>
 
   <div class="vs-card">
     <div class="vs-card-body">

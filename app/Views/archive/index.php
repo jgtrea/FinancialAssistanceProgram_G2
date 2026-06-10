@@ -20,27 +20,29 @@
         </div>
     </div>
 
-    <div class="d-flex align-items-center gap-2 mb-3">
-        <form method="get" id="archiveFilterForm" style="flex:1;min-width:0;display:flex;align-items:center;gap:0.5rem">
-            <input type="text" name="q" class="vs-input vs-advanced-search-input" placeholder="Enter keyword to search (name, school)" value="<?= esc((string) ($keyword ?? ''), 'attr') ?>" style="flex:1;min-width:0">
-            <button type="button" class="vs-btn vs-btn-outline" id="btnOpenArchiveFilter" style="flex-shrink:0">
+    <form method="get" id="archiveFilterForm" class="row g-2 align-items-center mb-3">
+        <?php foreach ($filterKeys as $k): ?>
+          <input type="hidden" name="<?= esc($k, 'attr') ?>" value="<?= esc($f($k), 'attr') ?>">
+        <?php endforeach ?>
+        <div class="col-12 col-md-6">
+            <input type="text" name="q" class="vs-input vs-advanced-search-input w-100" placeholder="Enter keyword to search (name, school)" value="<?= esc((string) ($keyword ?? ''), 'attr') ?>">
+        </div>
+        <div class="col-6 col-md-2">
+            <button type="button" class="vs-btn vs-btn-outline w-100" id="btnOpenArchiveFilter">
                 Filters
                 <span id="archiveFilterBadge" class="badge bg-primary" style="display:<?= $activeFilterCount > 0 ? 'inline-block' : 'none' ?>;margin-left:.35rem"><?= $activeFilterCount > 0 ? esc($activeFilterCount) : '' ?></span>
             </button>
-            <?php foreach ($filterKeys as $k): ?>
-              <input type="hidden" name="<?= esc($k, 'attr') ?>" value="<?= esc($f($k), 'attr') ?>">
-            <?php endforeach ?>
-            <span style="color:var(--border);font-size:1.2rem;line-height:1;user-select:none;flex-shrink:0">|</span>
-            <button type="submit" class="vs-btn vs-btn-primary" style="flex-shrink:0">Search</button>
-            <a href="<?= site_url('admin/archive') ?>" class="vs-btn vs-btn-outline" style="flex-shrink:0">Clear</a>
-        </form>
-        <span style="color:var(--border);font-size:1.2rem;line-height:1;user-select:none;flex-shrink:0">|</span>
-        <div style="display:flex;gap:0.5rem;flex-shrink:0">
-            <button type="button" class="vs-btn vs-btn-danger" id="btnArchiveCurrentData">
+        </div>
+        <div class="col-6 col-md-2 d-flex gap-2">
+            <button type="submit" class="vs-btn vs-btn-primary flex-fill">Search</button>
+            <a href="<?= site_url('admin/archive') ?>" class="vs-btn vs-btn-outline flex-fill">Clear</a>
+        </div>
+        <div class="col-12 col-md-2">
+            <button type="button" class="vs-btn vs-btn-danger w-100" id="btnArchiveCurrentData">
                 Archive Current Data
             </button>
         </div>
-    </div>
+    </form>
 
     <div class="vs-card">
         <div class="vs-card-body">

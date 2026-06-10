@@ -33,34 +33,34 @@
 </div>
 
 <!-- Search + Level quick filter + action buttons -->
-<div class="d-flex align-items-center gap-2 mb-3">
-    <form method="get" id="schoolSearchForm" style="flex:1;min-width:0;display:flex;align-items:center;gap:0.5rem">
-        <input type="text" name="q" class="vs-input vs-advanced-search-input"
+<form method="get" id="schoolSearchForm" class="row g-2 align-items-center mb-3">
+    <div class="col-12 col-md-6">
+        <input type="text" name="q" class="vs-input vs-advanced-search-input w-100"
                placeholder="Enter keyword to search (name, acronym, level)"
-               value="<?= esc($keyword, 'attr') ?>" style="flex:1;min-width:0">
-        <div style="width:110px;flex-shrink:0">
-            <select id="schoolLevelFilter" name="level" class="js-filter-select" data-placeholder="JHS / SHS" data-no-search="1" style="width:100%">
-                <option value="" <?= $filterLevel === ''    ? 'selected' : '' ?>></option>
-                <option value="JHS" <?= $filterLevel === 'JHS' ? 'selected' : '' ?>>JHS</option>
-                <option value="SHS" <?= $filterLevel === 'SHS' ? 'selected' : '' ?>>SHS</option>
-            </select>
-        </div>
-        <span style="color:var(--border);font-size:1.2rem;line-height:1;user-select:none;flex-shrink:0">|</span>
-        <button type="submit" class="vs-btn vs-btn-primary" style="flex-shrink:0">Search</button>
-        <a href="<?= site_url('admin/schools') ?>" class="vs-btn vs-btn-outline" style="flex-shrink:0">Clear</a>
-    </form>
-    <span style="color:var(--border);font-size:1.2rem;line-height:1;user-select:none;flex-shrink:0">|</span>
-    <div style="display:flex;gap:0.5rem;flex-shrink:0">
-        <button type="button" class="vs-btn vs-btn-primary" id="btnAddSchool">
+               value="<?= esc($keyword, 'attr') ?>">
+    </div>
+    <div class="col-6 col-md-2">
+        <select id="schoolLevelFilter" name="level" class="js-filter-select" data-placeholder="JHS / SHS" data-no-search="1" style="width:100%">
+            <option value="" <?= $filterLevel === ''    ? 'selected' : '' ?>></option>
+            <option value="JHS" <?= $filterLevel === 'JHS' ? 'selected' : '' ?>>JHS</option>
+            <option value="SHS" <?= $filterLevel === 'SHS' ? 'selected' : '' ?>>SHS</option>
+        </select>
+    </div>
+    <div class="col-6 col-md-2 d-flex gap-2">
+        <button type="submit" class="vs-btn vs-btn-primary flex-fill">Search</button>
+        <a href="<?= site_url('admin/schools') ?>" class="vs-btn vs-btn-outline flex-fill">Clear</a>
+    </div>
+    <div class="col-12 col-md-2 d-flex gap-2">
+        <button type="button" class="vs-btn vs-btn-primary flex-fill" id="btnAddSchool">
             <?= asset_icon('add', ['stroke-width' => '2.5']) ?>
             Add School
         </button>
-        <button type="button" class="vs-btn vs-btn-outline" id="btnOpenImport">
+        <button type="button" class="vs-btn vs-btn-outline flex-fill" id="btnOpenImport">
             <?= asset_icon('import') ?>
             Import
         </button>
     </div>
-</div>
+</form>
 
 <div class="vs-card">
     <div class="vs-card-body">
