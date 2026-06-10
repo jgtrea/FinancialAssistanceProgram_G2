@@ -54,7 +54,8 @@
     <div class="col-6 col-md-2">
         <button type="button" class="vs-btn vs-btn-primary w-100" id="btnAddUser">
             <?= asset_icon('add', ['stroke-width' => '2.5']) ?>
-            Add User        </button>
+            Add User
+        </button>
     </div>
 </form>
 
@@ -225,7 +226,7 @@ document.addEventListener('vs:modals:ready', function () {
         umResetForm();
 
         if (mode === 'add') {
-            userModalTitle.textContent = 'Add Userz';
+            userModalTitle.textContent = 'Add User';
             umSubmitText.textContent = 'Save User';
             umSetPasswordMode(false);
             userModal.style.display = 'flex';

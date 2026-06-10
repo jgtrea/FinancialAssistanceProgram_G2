@@ -123,7 +123,6 @@ document.addEventListener('DOMContentLoaded', function () {
           { data: 'jhs' },
           { data: 'shs' },
           { data: 'school_year' },
-          { data: 'eligibility' },
           { data: 'remarks' },
           { data: 'generate_count' },
           { data: 'last_generated' },

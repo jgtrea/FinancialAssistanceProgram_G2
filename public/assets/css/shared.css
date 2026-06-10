@@ -17,8 +17,8 @@
   --card-bg: #ffffff;
   --muted: #5f7185;
   --border: #c8e4ee;
-  --danger: #c93131;
-  --success: #16956f;
+  --danger: var(--bs-danger, #dc3545);
+  --success: var(--bs-success, #198754);
   --sidebar-w: 240px;
   --topbar-h: 56px;
   --font: "DM Sans", sans-serif;
@@ -141,19 +141,19 @@ canvas {
   cursor: not-allowed;
 }
 .vs-btn-primary {
-  background: linear-gradient(135deg, var(--navy-md), var(--teal));
+  background: var(--bs-primary, #0d6efd);
   color: #fff;
 }
 .vs-btn-primary:hover {
-  background: linear-gradient(135deg, var(--navy), var(--navy-md));
+  background: var(--bs-primary-hover, #0b5ed7);
   color: #fff;
 }
 .vs-btn-blue {
-  background: var(--navy-md);
+  background: var(--bs-primary, #0d6efd);
   color: #fff;
 }
 .vs-btn-blue:hover {
-  background: var(--navy);
+  background: var(--bs-primary-hover, #0b5ed7);
   color: #fff;
 }
 .vs-btn-danger {
@@ -161,7 +161,7 @@ canvas {
   color: #fff;
 }
 .vs-btn-danger:hover {
-  background: #9f2323;
+  background: #bb2d3b;
   color: #fff;
 }
 .vs-btn-outline {
@@ -186,7 +186,7 @@ canvas {
   color: #fff;
 }
 .vs-btn-success:hover {
-  background: #0f7458;
+  background: #157347;
   color: #fff;
 }
 .vs-btn-dark-green {
