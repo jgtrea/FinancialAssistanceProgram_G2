@@ -49,7 +49,7 @@
     <?php foreach ($filterKeys as $k): ?>
       <input type="hidden" name="<?= esc($k, 'attr') ?>" value="<?= esc($f($k), 'attr') ?>">
     <?php endforeach ?>
-    <div class="col-12 col-md-6">
+    <div class="col-12 col-md-5">
       <input type="text" name="q" class="vs-input vs-advanced-search-input w-100" placeholder="Enter keyword to search (voucher no, name)" value="<?= esc((string) ($keyword ?? ''), 'attr') ?>">
     </div>
     <div class="col-6 col-md-2">
@@ -58,9 +58,15 @@
         <span id="filterBadge" class="badge bg-primary" style="display:<?= $activeFilterCount > 0 ? 'inline-block' : 'none' ?>;margin-left:.35rem"><?= $activeFilterCount > 0 ? esc($activeFilterCount) : '' ?></span>
       </button>
     </div>
+    <div class="col-auto d-none d-md-flex align-items-center">
+      <span style="color:var(--border);font-size:1.2rem;line-height:1;user-select:none">|</span>
+    </div>
     <div class="col-6 col-md-2 d-flex gap-2">
       <button type="submit" class="vs-btn vs-btn-primary flex-fill">Search</button>
       <a href="<?= site_url($prefix . '/students') ?>" class="vs-btn vs-btn-outline flex-fill">Clear</a>
+    </div>
+    <div class="col-auto d-none d-md-flex align-items-center">
+      <span style="color:var(--border);font-size:1.2rem;line-height:1;user-select:none">|</span>
     </div>
     <div class="col-12 col-md-2 d-flex gap-2">
       <button type="button" class="vs-btn vs-btn-primary flex-fill" id="btnAddVoucher" data-mode="add">
@@ -80,9 +86,6 @@
         <input type="text" id="customStudentsSearch" class="vs-input vs-page-search" placeholder="Enter keyword to search this page" style="max-width:260px">
         <label class="vs-length-label ms-auto">Show <input type="number" id="vouchersLengthInput" class="vs-length-input" value="10" min="1" max="500"> entries</label>
       </div>
-      <!-- Cross-page select banner — appears when user checks the page header
-           checkbox in server-side mode so they can extend the selection to
-           every matching row across all pages, not just the visible page. -->
       <div id="selectAllBanner" style="display:none; margin-bottom:8px; padding:8px 12px; background:#fef3c7; border:1px solid #fcd34d; border-radius:6px">
         <span id="selectAllBannerText"></span>
         <a href="#" id="selectAllMatchingLink" style="font-weight:600; margin-left:8px">Select all matching</a>

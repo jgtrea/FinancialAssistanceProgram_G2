@@ -24,7 +24,7 @@
     <div id="userAlertBox"></div>
 
 <form method="get" class="row g-2 align-items-center mb-3">
-    <div class="col-12 col-md-4">
+    <div class="col-12 col-md-3">
         <input type="text" name="q" class="vs-input vs-advanced-search-input w-100" placeholder="Enter keyword to search (name, email)" value="<?= esc((string) ($keyword ?? ''), 'attr') ?>">
     </div>
     <div class="col-6 col-md-2">
@@ -41,9 +41,15 @@
             <option value="inactive" <?= ($filterStatus ?? '') === 'inactive' ? 'selected' : '' ?>>Inactive</option>
         </select>
     </div>
+    <div class="col-auto d-none d-md-flex align-items-center">
+        <span style="color:var(--border);font-size:1.2rem;line-height:1;user-select:none">|</span>
+    </div>
     <div class="col-6 col-md-2 d-flex gap-2">
         <button type="submit" class="vs-btn vs-btn-primary flex-fill">Search</button>
         <a href="<?= site_url('admin/users') ?>" class="vs-btn vs-btn-outline flex-fill" id="userFilterClear">Clear</a>
+    </div>
+    <div class="col-auto d-none d-md-flex align-items-center">
+        <span style="color:var(--border);font-size:1.2rem;line-height:1;user-select:none">|</span>
     </div>
     <div class="col-6 col-md-2">
         <button type="button" class="vs-btn vs-btn-primary w-100" id="btnAddUser">

@@ -24,7 +24,7 @@
          change so the user sees results immediately, matching the Schools
          page quick-filter pattern. -->
     <form method="get" id="auditFilterForm" class="row g-2 align-items-center mb-3">
-        <div class="col-12 col-md-4">
+        <div class="col-12 col-md-3">
             <input type="text" name="q" class="vs-input vs-advanced-search-input w-100" placeholder="Enter keyword to search (action, description)" value="<?= esc((string) ($keyword ?? ''), 'attr') ?>">
         </div>
         <div class="col-6 col-md-2">
@@ -41,6 +41,9 @@
         </div>
         <div class="col-6 col-md-2">
             <input type="date" name="date_to" id="auditFilterDateTo" class="vs-input w-100" value="<?= esc((string) $filterValues['date_to'], 'attr') ?>" title="Date To">
+        </div>
+        <div class="col-auto d-none d-md-flex align-items-center">
+            <span style="color:var(--border);font-size:1.2rem;line-height:1;user-select:none">|</span>
         </div>
         <div class="col-6 col-md-2 d-flex gap-2">
             <button type="submit" class="vs-btn vs-btn-primary flex-fill">Search</button>

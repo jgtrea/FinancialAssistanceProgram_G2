@@ -24,7 +24,7 @@
         <?php foreach ($filterKeys as $k): ?>
             <input type="hidden" name="<?= esc($k, 'attr') ?>" value="<?= esc((string) $filterValues[$k], 'attr') ?>">
         <?php endforeach ?>
-        <div class="col-12 col-md-8">
+        <div class="col-12 col-md-7">
             <input type="text" name="q" class="vs-input vs-advanced-search-input w-100" placeholder="Enter keyword to search (action, description)" value="<?= esc((string) ($keyword ?? ''), 'attr') ?>">
         </div>
         <div class="col-6 col-md-2">
@@ -32,6 +32,9 @@
                 Filters
                 <span id="auditFilterBadge" class="badge bg-primary" style="display:<?= $activeFilterCount > 0 ? 'inline-block' : 'none' ?>;margin-left:.35rem"><?= $activeFilterCount > 0 ? esc($activeFilterCount) : '' ?></span>
             </button>
+        </div>
+        <div class="col-auto d-none d-md-flex align-items-center">
+            <span style="color:var(--border);font-size:1.2rem;line-height:1;user-select:none">|</span>
         </div>
         <div class="col-6 col-md-2 d-flex gap-2">
             <button type="submit" class="vs-btn vs-btn-primary flex-fill">Search</button>

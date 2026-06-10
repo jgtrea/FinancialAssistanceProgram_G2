@@ -24,7 +24,7 @@
         <?php foreach ($filterKeys as $k): ?>
           <input type="hidden" name="<?= esc($k, 'attr') ?>" value="<?= esc($f($k), 'attr') ?>">
         <?php endforeach ?>
-        <div class="col-12 col-md-6">
+        <div class="col-12 col-md-5">
             <input type="text" name="q" class="vs-input vs-advanced-search-input w-100" placeholder="Enter keyword to search (name, school)" value="<?= esc((string) ($keyword ?? ''), 'attr') ?>">
         </div>
         <div class="col-6 col-md-2">
@@ -33,9 +33,15 @@
                 <span id="archiveFilterBadge" class="badge bg-primary" style="display:<?= $activeFilterCount > 0 ? 'inline-block' : 'none' ?>;margin-left:.35rem"><?= $activeFilterCount > 0 ? esc($activeFilterCount) : '' ?></span>
             </button>
         </div>
+        <div class="col-auto d-none d-md-flex align-items-center">
+            <span style="color:var(--border);font-size:1.2rem;line-height:1;user-select:none">|</span>
+        </div>
         <div class="col-6 col-md-2 d-flex gap-2">
             <button type="submit" class="vs-btn vs-btn-primary flex-fill">Search</button>
             <a href="<?= site_url('admin/archive') ?>" class="vs-btn vs-btn-outline flex-fill">Clear</a>
+        </div>
+        <div class="col-auto d-none d-md-flex align-items-center">
+            <span style="color:var(--border);font-size:1.2rem;line-height:1;user-select:none">|</span>
         </div>
         <div class="col-12 col-md-2">
             <button type="button" class="vs-btn vs-btn-danger w-100" id="btnArchiveCurrentData">

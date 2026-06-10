@@ -34,7 +34,7 @@
 
 <!-- Search + Level quick filter + action buttons -->
 <form method="get" id="schoolSearchForm" class="row g-2 align-items-center mb-3">
-    <div class="col-12 col-md-6">
+    <div class="col-12 col-md-5">
         <input type="text" name="q" class="vs-input vs-advanced-search-input w-100"
                placeholder="Enter keyword to search (name, acronym, level)"
                value="<?= esc($keyword, 'attr') ?>">
@@ -46,9 +46,15 @@
             <option value="SHS" <?= $filterLevel === 'SHS' ? 'selected' : '' ?>>SHS</option>
         </select>
     </div>
+    <div class="col-auto d-none d-md-flex align-items-center">
+        <span style="color:var(--border);font-size:1.2rem;line-height:1;user-select:none">|</span>
+    </div>
     <div class="col-6 col-md-2 d-flex gap-2">
         <button type="submit" class="vs-btn vs-btn-primary flex-fill">Search</button>
         <a href="<?= site_url('admin/schools') ?>" class="vs-btn vs-btn-outline flex-fill">Clear</a>
+    </div>
+    <div class="col-auto d-none d-md-flex align-items-center">
+        <span style="color:var(--border);font-size:1.2rem;line-height:1;user-select:none">|</span>
     </div>
     <div class="col-12 col-md-2 d-flex gap-2">
         <button type="button" class="vs-btn vs-btn-primary flex-fill" id="btnAddSchool">
