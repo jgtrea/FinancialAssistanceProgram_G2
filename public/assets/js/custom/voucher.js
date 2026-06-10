@@ -35,7 +35,7 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
   function voucherResponsiveConfig() {
-    return voucherTableMode() === 'mobile' ? false : true;
+    return false;
   }
 
   function bindVoucherSearch() {
@@ -115,19 +115,18 @@ document.addEventListener('DOMContentLoaded', function () {
           },
         },
         columns: [
-          { data: 'checkbox',       orderable: false },
-          { data: 'voucher_no' },
-          { data: 'name' },
+          { data: 'checkbox',       orderable: false, width: '3%' },
+          { data: 'voucher_no',     width: '9%' },
+          { data: 'name',           width: '16%' },
           { data: 'name_sort',      visible: false },
-          { data: 'rank' },
-          { data: 'jhs' },
-          { data: 'shs' },
-          { data: 'school_year' },
-          { data: 'remarks' },
-          { data: 'generate_count' },
-          { data: 'last_generated' },
-          { data: 'status' },
-          { data: 'actions',        orderable: false },
+          { data: 'rank',           width: '5%' },
+          { data: 'jhs',            width: '7%' },
+          { data: 'shs',            width: '7%' },
+          { data: 'remarks',        width: '9%' },
+          { data: 'generate_count', width: '9%' },
+          { data: 'last_generated', width: '10%' },
+          { data: 'status',         width: '6%' },
+          { data: 'actions',        orderable: false, width: '10%' },
         ],
         columnDefs: [
           ...voucherMobileColumnDefs(),

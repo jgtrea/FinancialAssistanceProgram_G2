@@ -16,7 +16,7 @@
 <div class="vs-page-header mb-3">
         <div>
             <h4 class="vs-page-title">Archive</h4>
-            <p class="vs-page-sub">View Archived Student Records. Use <strong>Filters</strong> To Narrow By School Year.</p>
+            <p class="vs-page-sub">View Archived Student Records. Use <strong>Filters</strong> To Narrow By SY.</p>
         </div>
     </div>
 
@@ -38,7 +38,7 @@
         </div>
         <div class="col-6 col-md-2 d-flex gap-2">
             <button type="submit" class="vs-btn vs-btn-primary flex-fill">Search</button>
-            <a href="<?= site_url('admin/archive') ?>" class="vs-btn vs-btn-outline flex-fill">Clear</a>
+            <a href="<?= site_url('admin/archive') ?>" class="vs-btn vs-btn-danger flex-fill">Clear</a>
         </div>
         <div class="col-auto d-none d-md-flex align-items-center">
             <span style="color:var(--border);font-size:1.2rem;line-height:1;user-select:none">|</span>
@@ -55,9 +55,9 @@
             <?php if (!$hasResults): ?>
                 <div class="vs-alert vs-alert-info vs-alert-static vs-archive-empty-message mb-0">
                     <?php if (!$hasSchoolYear): ?>
-                        Open <strong>Filters</strong> and choose a <strong>School Year</strong> to load archived records.
+                        Open <strong>Filters</strong> and choose an <strong>SY</strong> to load archived records.
                     <?php else: ?>
-                        No archived records found for <strong><?= esc($f('school_year')) ?></strong>. Try a different school year or adjust your filters.
+                        No archived records found for <strong><?= esc($f('school_year')) ?></strong>. Try a different SY or adjust your filters.
                     <?php endif ?>
                 </div>
             <?php else: ?>
@@ -73,9 +73,9 @@
                         <th style="display:none">Name Sort</th>
                         <th>Junior High School</th>
                         <th>Preferred School</th>
-                        <th>School Year</th>
+                        <th>SY</th>
                         <th>Remarks</th>
-                        <th>Generate Count</th>
+                        <th>Printed</th>
                         <th>Last Generated</th>
                         <th>Archived At</th>
                     </tr>

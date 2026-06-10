@@ -26,6 +26,48 @@ table.js-data-table tbody td {
   border-bottom: 1px solid var(--border) !important;
   vertical-align: middle !important;
 }
+
+@media (min-width: 768px) {
+  .vs-dt-table-row,
+  .dataTables_wrapper .table-responsive {
+    overflow-x: hidden;
+  }
+
+  .vs-datatable,
+  table.js-data-table {
+    table-layout: fixed;
+  }
+
+  .vs-datatable thead th,
+  table.js-data-table thead th,
+  .vs-datatable tbody td,
+  table.js-data-table tbody td {
+    overflow: hidden;
+    overflow-wrap: normal;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    word-break: normal;
+  }
+
+  #studentsTable {
+    font-size: clamp(0.68rem, 0.58rem + 0.18vw, 0.82rem);
+  }
+
+  #studentsTable thead th,
+  #studentsTable tbody td {
+    padding-left: clamp(0.25rem, 0.18rem + 0.25vw, 0.55rem) !important;
+    padding-right: clamp(0.25rem, 0.18rem + 0.25vw, 0.55rem) !important;
+  }
+
+  #studentsTable .vs-check,
+  #studentsTable .js-status-icon {
+    overflow: visible;
+  }
+
+  #studentsTable .dropdown {
+    overflow: visible;
+  }
+}
 .vs-datatable tbody tr:last-child td,
 table.js-data-table tbody tr:last-child td {
   border-bottom: none !important;

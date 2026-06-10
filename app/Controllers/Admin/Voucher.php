@@ -51,7 +51,6 @@ class Voucher extends Controller
             'preferred_senior_high_school' => 'required|max_length[200]',
             'contact_number'               => 'permit_empty|max_length[30]|regex_match[/^[0-9+().\\-\\s]+$/]',
             'remarks_status'               => 'permit_empty|in_list[COMPLETE,INCOMPLETE,OTHERS]',
-            'school_year'                  => 'required|max_length[20]|regex_match[/^\\d{4}(-\\d{4})?$/]',
             'eligibility_status'           => 'required|in_list[eligible,not_eligible]',
         ];
 
@@ -84,7 +83,6 @@ class Voucher extends Controller
             'preferred_senior_high_school' => $this->schoolOptionModel->resolveSchoolId('SHS', $this->request->getPost('preferred_senior_high_school'), false),
             'contact_number'               => $this->cleanText($this->request->getPost('contact_number')),
             'remarks_status'               => strtoupper($this->cleanText($this->request->getPost('remarks_status'))),
-            'school_year'                  => $this->cleanText($this->request->getPost('school_year')),
             'eligibility_status'           => $this->request->getPost('eligibility_status') ?: 'eligible',
         ];
 
@@ -110,6 +108,16 @@ class Voucher extends Controller
     {
         $value = trim((string) $value);
         return $value === '' ? null : (float) $value;
+    }
+
+    protected function archiveSchoolYearLabel(?string $archivedAt = null): string
+    {
+        $timestamp = strtotime($archivedAt ?: 'now') ?: time();
+        $year      = (int) date('Y', $timestamp);
+        $month     = (int) date('n', $timestamp);
+        $startYear = $month >= 6 ? $year : $year - 1;
+
+        return $startYear . '-' . ($startYear + 1);
     }
 
     protected function getFallbackUserId(): int
@@ -345,9 +353,12 @@ class Voucher extends Controller
         $name       = esc($lastName !== '' ? $lastName . ($firstMid !== '' ? ', ' . $firstMid : '') : $firstMid);
         $nameSort   = esc(trim($lastName . ' ' . $firstName . ' ' . $middleName));
         $rank       = ($v['rank_no'] ?? null) !== null && (string) $v['rank_no'] !== '' ? esc((string) $v['rank_no']) : '-';
-        $jhs        = esc($v['junior_high_school'] ?: '-');
-        $shs        = esc($v['preferred_senior_high_school'] ?? '');
-        $schoolYear = esc($v['school_year'] ?? '');
+        $jhsName    = (string) ($v['junior_high_school'] ?: '-');
+        $shsName    = (string) ($v['preferred_senior_high_school'] ?? '-');
+        $jhsAcr     = trim((string) ($v['jhs_acronym'] ?? ''));
+        $shsAcr     = trim((string) ($v['shs_acronym'] ?? ''));
+        $jhs        = '<span title="' . esc($jhsName, 'attr') . '">' . esc($jhsAcr !== '' ? $jhsAcr : $jhsName) . '</span>';
+        $shs        = '<span title="' . esc($shsName, 'attr') . '">' . esc($shsAcr !== '' ? $shsAcr : $shsName) . '</span>';
         $remarks    = '<span class="js-remarks-cell">' . esc($v['remarks_status'] ?: '-') . '</span>';
 
         if ($elig === 'eligible' || $elig === 'not_eligible') {
@@ -403,7 +414,6 @@ class Voucher extends Controller
             'rank'          => $rank,
             'jhs'           => $jhs,
             'shs'           => $shs,
-            'school_year'   => $schoolYear,
             'eligibility'   => $eligCell,
             'remarks'       => $remarks,
             'generate_count'=> $genCount,
@@ -1044,7 +1054,7 @@ class Voucher extends Controller
                 'contact_number'               => $r['contact_number']               ?? null,
                 'remarks_status'               => $r['remarks_status']               ?? null,
                 'evaluated_by'                 => $r['evaluated_by']                 ?? null,
-                'school_year'                  => $r['school_year']                  ?? null,
+                'school_year'                  => null,
                 'eligibility_status'           => $r['eligibility_status']           ?? 'eligible',
                 'voucher_status'               => $r['voucher_status']               ?? 'not_generated',
                 'is_active'                    => 1,
@@ -1096,6 +1106,7 @@ class Voucher extends Controller
         $students = $this->voucherModel->getVouchersByIds($ids);
         $userId   = $this->getCurrentUserId();
         $now      = date('Y-m-d H:i:s');
+        $schoolYear = $this->archiveSchoolYearLabel($now);
         $archived = 0;
 
         $db = \Config\Database::connect();
@@ -1116,7 +1127,7 @@ class Voucher extends Controller
                 'preferred_senior_high_school' => $s['preferred_senior_high_school'],
                 'contact_number'               => $s['contact_number'],
                 'remarks_status'               => $s['remarks_status'],
-                'school_year'                  => $s['school_year'],
+                'school_year'                  => $schoolYear,
                 'eligibility_status'           => $s['eligibility_status'],
                 'voucher_status'               => $s['voucher_status'],
                 'archive_reason'               => $reason,
@@ -1308,7 +1319,7 @@ class Voucher extends Controller
         return $this->voucherModel->getVouchersByIds($ids);
     }
 
-    // ── Preview archive scope: count + distinct school years ─────────────────
+    // ── Preview archive scope: count + auto archive SY ───────────────────────
     public function archivePreview()
     {
         $keyword = trim((string) $this->request->getGet('q'));
@@ -1327,19 +1338,10 @@ class Voucher extends Controller
             ]);
         }
 
-        $rows = \Config\Database::connect()
-            ->table('students')
-            ->select('school_year')
-            ->distinct()
-            ->whereIn('student_id', $ids)
-            ->where('school_year !=', '')
-            ->orderBy('school_year', 'ASC')
-            ->get()->getResultArray();
-
         return $this->response->setJSON([
             'success'     => true,
             'count'       => count($ids),
-            'schoolYears' => array_column($rows, 'school_year'),
+            'schoolYears' => [$this->archiveSchoolYearLabel()],
         ]);
     }
 }

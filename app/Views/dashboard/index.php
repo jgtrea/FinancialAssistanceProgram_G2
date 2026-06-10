@@ -74,7 +74,7 @@
                                 <th></th>
                                 <th>Voucher No</th>
                                 <th>Student Name</th>
-                                <th>Junior High School</th>
+                                <th>JHS</th>
                                 <th>Status</th>
                                 <th>Last Generated</th>
                                 <th style="display:none">Name Sort</th>
@@ -127,7 +127,7 @@ document.addEventListener('DOMContentLoaded', function () {
     function mobileDetailsHtml(data) {
         var items = [
             ['Voucher No', data[1] || '-'],
-            ['Junior High School', data[3] || '-'],
+            ['JHS', data[3] || '-'],
             ['Status', data[4] || '-'],
             ['Last Generated', data[5] || '-'],
         ];
@@ -187,10 +187,16 @@ document.addEventListener('DOMContentLoaded', function () {
             searching: false,
             info:      false,
             ordering:  true,
-            responsive: !mobile,
+            responsive: false,
             autoWidth: false,
             order:     [[5, 'desc']],
-            columnDefs: buildColumnDefs(mobile),
+            columnDefs: buildColumnDefs(mobile).concat([
+                { width: '10%', targets: 1 },
+                { width: '24%', targets: 2 },
+                { width: '34%', targets: 3 },
+                { width: '14%', targets: 4 },
+                { width: '18%', targets: 5 },
+            ]),
         });
     }
 

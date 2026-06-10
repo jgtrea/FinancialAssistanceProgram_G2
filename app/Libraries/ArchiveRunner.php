@@ -123,6 +123,7 @@ class ArchiveRunner
         $archiveModel = new ArchiveModel();
         $db           = \Config\Database::connect();
         $now          = date('Y-m-d H:i:s');
+        $schoolYear   = self::archiveSchoolYearLabel($now);
 
         if (empty($students)) {
             // No live rows matched (e.g. already archived) — nothing to copy, but
@@ -157,7 +158,7 @@ class ArchiveRunner
                 'contact_number'               => $s['contact_number'],
                 'remarks_status'               => $s['remarks_status'],
                 'evaluated_by'                 => $s['evaluated_by'] ?? null,
-                'school_year'                  => $s['school_year'],
+                'school_year'                  => $schoolYear,
                 'eligibility_status'           => $s['eligibility_status'],
                 'voucher_status'               => $s['voucher_status'],
                 'archive_reason'               => $reason,
@@ -180,6 +181,16 @@ class ArchiveRunner
         $db->table('students')->whereIn('student_id', $ids)->delete();
 
         return $archived;
+    }
+
+    protected static function archiveSchoolYearLabel(?string $archivedAt = null): string
+    {
+        $timestamp = strtotime($archivedAt ?: 'now') ?: time();
+        $year      = (int) date('Y', $timestamp);
+        $month     = (int) date('n', $timestamp);
+        $startYear = $month >= 6 ? $year : $year - 1;
+
+        return $startYear . '-' . ($startYear + 1);
     }
 
     /**

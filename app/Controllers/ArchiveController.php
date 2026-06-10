@@ -17,7 +17,7 @@ class ArchiveController extends BaseController
 
         $archiveModel = new ArchiveModel();
 
-        // The archive table is gated on School Year — no data loads until the
+        // The archive table is gated on SY; no data loads until the
         // user picks one. This keeps the initial view fast and forces an
         // explicit scope (the archive can grow indefinitely).
         $hasSchoolYear = trim((string) ($filters['school_year'] ?? '')) !== '';

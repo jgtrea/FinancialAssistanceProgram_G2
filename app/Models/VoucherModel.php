@@ -112,7 +112,7 @@ class VoucherModel extends Model
 
     // Supported filter keys (also the GET param names used by the listing view).
     public const LISTING_FILTER_KEYS = [
-        'school_year', 'gender', 'remarks', 'voucher_status',
+        'gender', 'remarks', 'voucher_status',
         'date_from', 'date_to', 'junior_hs', 'preferred_hs',
         'gwa_min', 'gwa_max', 'eligibility',
     ];
@@ -157,7 +157,6 @@ class VoucherModel extends Model
                 ->orLike('jhs.acronym', $keyword)
                 ->orLike('shs.school_name', $keyword)
                 ->orLike('shs.acronym', $keyword)
-                ->orLike('school_year', $keyword)
                 ->orLike('gender', $keyword)
                 ->orLike('remarks_status', $keyword)
                 ->orLike('voucher_status', $keyword)
@@ -224,14 +223,12 @@ class VoucherModel extends Model
             2  => 'last_name',          // visible Name column
             3  => 'last_name',          // hidden name_sort column
             4  => 'rank_no',
-            5  => 'jhs.school_name',
-            6  => 'shs.school_name',
-            7  => 'school_year',
-            8  => 'eligibility_status',
-            9  => 'remarks_status',
-            10 => 'generate_count',
-            11 => 'students.generated_at',
-            12 => 'students.is_active',
+            5  => 'jhs.acronym',
+            6  => 'shs.acronym',
+            7  => 'remarks_status',
+            8  => 'generate_count',
+            9  => 'students.generated_at',
+            10 => 'students.is_active',
         ];
 
         // Total (unfiltered).
@@ -256,7 +253,6 @@ class VoucherModel extends Model
                 ->orLike('jhs.acronym', $needle)
                 ->orLike('shs.school_name', $needle)
                 ->orLike('shs.acronym', $needle)
-                ->orLike('school_year', $needle)
                 ->orLike('gender', $needle)
                 ->orLike('remarks_status', $needle)
                 ->orLike('voucher_status', $needle)
@@ -418,7 +414,6 @@ class VoucherModel extends Model
         return [
             'junior_high_schools' => $mergeSchools($fromSchoolTable('JHS'), $distinct('jhs.school_name')),
             'senior_high_schools' => $mergeSchools($fromSchoolTable('SHS'), $distinct('shs.school_name')),
-            'school_years'        => $distinct('school_year'),
         ];
     }
 
@@ -432,10 +427,6 @@ class VoucherModel extends Model
 
         $applied = false;
 
-        if (($v = $value($filters, 'school_year')) !== '') {
-            $builder->where('school_year', $v);
-            $applied = true;
-        }
         if (($v = $value($filters, 'gender')) !== '') {
             $builder->where('gender', $v);
             $applied = true;
@@ -512,7 +503,6 @@ class VoucherModel extends Model
                 ->orLike('jhs.acronym', $keyword)
                 ->orLike('shs.school_name', $keyword)
                 ->orLike('shs.acronym', $keyword)
-                ->orLike('school_year', $keyword)
                 ->orLike('gender', $keyword)
                 ->orLike('remarks_status', $keyword)
                 ->orLike('voucher_status', $keyword)

@@ -9,9 +9,9 @@
 <?php $allowGenerate = (bool) ($allowGenerate ?? true) ?>
 <?php $juniorHighSchools = $juniorHighSchools ?? [] ?>
 <?php $seniorHighSchools = $seniorHighSchools ?? [] ?>
-<?php $filterOptions = $filterOptions ?? ['junior_high_schools' => [], 'senior_high_schools' => [], 'school_years' => []] ?>
+<?php $filterOptions = $filterOptions ?? ['junior_high_schools' => [], 'senior_high_schools' => []] ?>
 <?php $filters = $filters ?? [] ?>
-<?php $filterKeys = ['school_year','gender','remarks','voucher_status','date_from','date_to','junior_hs','preferred_hs','gwa_min','gwa_max','eligibility'] ?>
+<?php $filterKeys = ['gender','remarks','voucher_status','date_from','date_to','junior_hs','preferred_hs','gwa_min','gwa_max','eligibility'] ?>
 <?php $f = static fn (string $k) => (string) ($filters[$k] ?? '') ?>
 <?php $activeFilterCount = count(array_filter($filterKeys, fn ($k) => $f($k) !== '')) ?>
 
@@ -65,17 +65,17 @@
     </div>
     <div class="col-6 col-md-2 d-flex gap-2">
       <button type="submit" class="vs-btn vs-btn-primary flex-fill">Search</button>
-      <a href="<?= site_url($prefix . '/students') ?>" class="vs-btn vs-btn-outline flex-fill">Clear</a>
+      <a href="<?= $listingUrl ?>" class="vs-btn vs-btn-danger flex-fill">Clear</a>
     </div>
     <div class="col-auto d-none d-md-flex align-items-center">
       <span style="color:var(--border);font-size:1.2rem;line-height:1;user-select:none">|</span>
     </div>
     <div class="col-12 col-md-2 d-flex gap-2">
-      <button type="button" class="vs-btn vs-btn-primary flex-fill" id="btnAddVoucher" data-mode="add">
+      <button type="button" class="vs-btn vs-btn-success flex-fill" id="btnAddVoucher" data-mode="add">
         <?= asset_icon('add', ['stroke-width' => '2.5']) ?>
         Add Voucher
       </button>
-      <button type="button" class="vs-btn vs-btn-outline flex-fill" id="btnOpenImport">
+      <button type="button" class="vs-btn vs-btn-info flex-fill" id="btnOpenImport">
         <?= asset_icon('import') ?>
         Import
       </button>
@@ -108,11 +108,10 @@
             <th>Name</th>
             <th style="display:none">Name Sort</th>
             <th>Rank</th>
-            <th>Junior High School</th>
-            <th>Preferred School</th>
-            <th>School Year</th>
+            <th>JHS</th>
+            <th>SHS</th>
             <th>Remarks</th>
-            <th>Generate Count</th>
+            <th>Printed</th>
             <th>Last Generated</th>
             <th>Status</th>
             <th>Actions</th>
@@ -121,7 +120,7 @@
         <tbody>
           <!-- Rows loaded by DataTables via AJAX from the data-datatable-url endpoint. -->
           <!-- Schema matches the <th>s above: checkbox, voucher_no, name, name_sort (hidden),
-               rank, jhs, shs, school_year, remarks, generate_count,
+               rank, jhs, shs, remarks, generate_count,
                last_generated, status, actions. Server-side cell HTML lives in
                Admin\Voucher::renderStudentRowForDatatable(). -->
         </tbody>
@@ -272,7 +271,6 @@ document.addEventListener('vs:modals:ready', function () {
   var dt = $(studentsTable).DataTable();
 
   var fields = {
-    schoolYear:     document.getElementById('filterSchoolYear'),
     gender:         document.getElementById('filterGender'),
     remarks:        document.getElementById('filterRemarks'),
     voucherStatus:  document.getElementById('filterVoucherStatus'),
@@ -290,7 +288,6 @@ document.addEventListener('vs:modals:ready', function () {
   // Map of modal field id → form hidden-input name. Used to copy values from
   // modal → form on Apply, and to clear both on Clear All.
   var filterFieldToParam = {
-    schoolYear:    'school_year',
     gender:        'gender',
     remarks:       'remarks',
     voucherStatus: 'voucher_status',
@@ -303,7 +300,7 @@ document.addEventListener('vs:modals:ready', function () {
     eligibility:   'eligibility',
   };
 
-  // School Year / JHS / SHS dropdowns are fully populated server-side from
+  // JHS / SHS dropdowns are fully populated server-side from
   // DISTINCT values in the students table (see VoucherModel::getListingFilterOptions).
 
   // Hide the DT header row (length control) — replaced by custom row above.

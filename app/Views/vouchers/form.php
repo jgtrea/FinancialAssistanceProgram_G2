@@ -167,14 +167,6 @@
         </div>
 
         <div>
-          <label class="vs-label required" for="school_year">School Year</label>
-          <input id="school_year" name="school_year" type="text"
-                 class="vs-input vs-uppercase <?= ($validation && $validation->hasError('school_year')) ? 'vs-input-error' : '' ?>"
-                 value="<?= old('school_year', $voucher['school_year'] ?? '') ?>"
-                 placeholder="e.g. 2025-2026" required>
-        </div>
-
-        <div>
           <label class="vs-label" for="eligibility_status">Eligibility</label>
           <?php $eligibility = old('eligibility_status', $voucher['eligibility_status'] ?? '') ?>
           <select id="eligibility_status" name="eligibility_status" class="vs-input js-filter-select" data-placeholder="ELIGIBLE / NOT ELIGIBLE" data-no-search="1">

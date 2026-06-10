@@ -47,7 +47,7 @@
         </div>
         <div class="col-6 col-md-2 d-flex gap-2">
             <button type="submit" class="vs-btn vs-btn-primary flex-fill">Search</button>
-            <a href="<?= site_url('admin/audit-logs') ?>" class="vs-btn vs-btn-outline flex-fill">Clear</a>
+            <a href="<?= site_url('admin/audit-logs') ?>" class="vs-btn vs-btn-danger flex-fill">Clear</a>
         </div>
     </form>
 

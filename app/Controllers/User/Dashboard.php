@@ -21,7 +21,7 @@ class Dashboard extends Controller
                 students.voucher_no,
                 students.first_name, students.middle_name, students.last_name,
                 TRIM(CONCAT_WS(' ', NULLIF(students.last_name,''), NULLIF(students.first_name,''), NULLIF(students.middle_name,''))) AS name_sort,
-                COALESCE(jhs.school_name, students.junior_high_school) AS junior_high_school,
+                COALESCE(NULLIF(jhs.acronym, ''), jhs.school_name, students.junior_high_school) AS junior_high_school,
                 students.voucher_status,
                 students.generated_at
             ")

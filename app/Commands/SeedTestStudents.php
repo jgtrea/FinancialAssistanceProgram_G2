@@ -79,7 +79,6 @@ class SeedTestStudents extends BaseCommand
         }
 
         $now        = date('Y-m-d H:i:s');
-        $schoolYear = (int) date('Y') . '-' . (int) (date('Y') + 1);
 
         // Pull the live active school IDs from the DB so seeded students store
         // the same foreign-key values used by the application.
@@ -121,7 +120,7 @@ class SeedTestStudents extends BaseCommand
                     'preferred_senior_high_school' => $shsSchools[array_rand($shsSchools)],
                     'contact_number'               => '09' . str_pad((string) mt_rand(100000000, 999999999), 9, '0', STR_PAD_LEFT),
                     'remarks_status'               => self::REMARKS[array_rand(self::REMARKS)],
-                    'school_year'                  => $schoolYear,
+                    'school_year'                  => null,
                     'eligibility_status'           => 'eligible',
                     'voucher_status'               => 'not_generated',
                     'is_active'                    => 1,

@@ -117,8 +117,8 @@
 }
 .vs-dashboard-table thead th,
 .vs-dashboard-table tbody td {
-  overflow: hidden;
-  text-overflow: ellipsis;
+  overflow: visible;
+  text-overflow: clip;
   white-space: nowrap;
 }
 
@@ -137,8 +137,28 @@
   color: var(--navy);
   font-weight: 700;
   line-height: 1.35;
-  overflow-wrap: anywhere;
-  white-space: normal;
+  overflow-wrap: normal;
+  white-space: nowrap;
+}
+
+@media (min-width: 768px) {
+  .vs-dashboard-table {
+    font-size: clamp(0.72rem, 0.64rem + 0.18vw, 0.86rem);
+  }
+
+  .vs-dashboard-table thead th,
+  .vs-dashboard-table tbody td {
+    padding-left: clamp(0.35rem, 0.25rem + 0.25vw, 0.75rem) !important;
+    padding-right: clamp(0.35rem, 0.25rem + 0.25vw, 0.75rem) !important;
+  }
+
+  .vs-dashboard-table th:nth-child(1) { width: 0; }
+  .vs-dashboard-table th:nth-child(2) { width: 10%; }
+  .vs-dashboard-table th:nth-child(3) { width: 24%; }
+  .vs-dashboard-table th:nth-child(4) { width: 34%; }
+  .vs-dashboard-table th:nth-child(5) { width: 14%; }
+  .vs-dashboard-table th:nth-child(6) { width: 18%; }
+  .vs-dashboard-table th:nth-child(7) { width: 0; }
 }
 
 .vs-dashboard-table tbody tr:hover td {

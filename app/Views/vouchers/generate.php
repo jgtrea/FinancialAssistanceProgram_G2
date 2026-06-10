@@ -51,9 +51,8 @@
             <th>Name</th>
             <th style="display:none">Name Sort</th>
             <th>Preferred School</th>
-            <th>School Year</th>
             <th>Eligibility</th>
-            <th>Generate Count</th>
+            <th>Printed</th>
             <th>Date</th>
             <th>Actions</th>
           </tr>
@@ -73,7 +72,6 @@
             <td><?= esc($gDn) ?></td>
             <td style="display:none"><?= esc(trim($gLn . ' ' . $gFm)) ?></td>
             <td><?= esc($v['preferred_senior_high_school']) ?></td>
-            <td><?= esc($v['school_year']) ?></td>
             <td>
               <?php $elig = (string) ($v['eligibility_status'] ?? '') ?>
               <?php $eligLabel = $elig === 'eligible' ? 'Eligible' : ($elig === 'not_eligible' ? 'Not eligible' : '—') ?>

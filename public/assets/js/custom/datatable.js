@@ -225,7 +225,7 @@ function initGenericDataTables() {
         dom:        window.VS.dtHeaderDom(hasPageSearch) + window.VS.dtBodyDom,
         pageLength: 10,
         lengthMenu: window.VS.dtLengthMenu,
-        responsive: !mobile,
+        responsive: false,
         autoWidth:  false,
         processing: true,
         order,

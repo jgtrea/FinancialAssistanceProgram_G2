@@ -46,13 +46,13 @@
     </div>
     <div class="col-6 col-md-2 d-flex gap-2">
         <button type="submit" class="vs-btn vs-btn-primary flex-fill">Search</button>
-        <a href="<?= site_url('admin/users') ?>" class="vs-btn vs-btn-outline flex-fill" id="userFilterClear">Clear</a>
+        <a href="<?= site_url('admin/user_management') ?>" class="vs-btn vs-btn-danger flex-fill" id="userFilterClear">Clear</a>
     </div>
     <div class="col-auto d-none d-md-flex align-items-center">
         <span style="color:var(--border);font-size:1.2rem;line-height:1;user-select:none">|</span>
     </div>
     <div class="col-6 col-md-2">
-        <button type="button" class="vs-btn vs-btn-primary w-100" id="btnAddUser">
+        <button type="button" class="vs-btn vs-btn-success w-100" id="btnAddUser">
             <?= asset_icon('add', ['stroke-width' => '2.5']) ?>
             Add User
         </button>

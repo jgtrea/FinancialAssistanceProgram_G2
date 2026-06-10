@@ -19,7 +19,6 @@ document.addEventListener('DOMContentLoaded', function () {
   var vmVoucherNoWrap       = document.getElementById('vmVoucherNoWrap');
   var vmVoucherNoDisplay    = document.getElementById('vmVoucherNoDisplay');
   var vmVoucherDateWrap     = document.getElementById('vmVoucherDateWrap');
-  var vmSchoolYearWrap      = document.getElementById('vmSchoolYearWrap');
   var vmLastGeneratedByWrap = document.getElementById('vmLastGeneratedByWrap');
   var vmLastGeneratedByEl   = document.getElementById('vmLastGeneratedBy');
   var vmLastGeneratedAtEl   = document.getElementById('vmLastGeneratedAt');
@@ -29,7 +28,7 @@ document.addEventListener('DOMContentLoaded', function () {
   var vmFieldIds = [
     'vmControlNo', 'vmVoucherDate', 'vmFirstName', 'vmMiddleName', 'vmLastName',
     'vmSuffix', 'vmGender', 'vmGwa', 'vmRankNo', 'vmContactNumber',
-    'vmJuniorHs', 'vmPreferredHs', 'vmRemarks', 'vmEvaluatedBy', 'vmSchoolYear', 'vmEligibility',
+    'vmJuniorHs', 'vmPreferredHs', 'vmRemarks', 'vmEvaluatedBy', 'vmEligibility',
   ];
   var vmFieldToName = {
     vmControlNo:     'control_no',
@@ -46,7 +45,6 @@ document.addEventListener('DOMContentLoaded', function () {
     vmJuniorHs:      'junior_high_school',
     vmPreferredHs:   'preferred_senior_high_school',
     vmRemarks:       'remarks_status',
-    vmSchoolYear:    'school_year',
     vmEligibility:   'eligibility_status',
   };
 
@@ -234,7 +232,6 @@ document.addEventListener('DOMContentLoaded', function () {
     var isView = mode === 'view';
     if (vmVoucherNoWrap)       vmVoucherNoWrap.style.display       = isView ? ''     : 'none';
     if (vmVoucherDateWrap)     vmVoucherDateWrap.style.display     = isView ? 'none' : '';
-    if (vmSchoolYearWrap)      vmSchoolYearWrap.style.visibility   = isView ? 'hidden' : '';
     if (vmLastGeneratedByWrap) vmLastGeneratedByWrap.style.display = isView ? ''     : 'none';
   }
 
@@ -314,7 +311,7 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
   // Init Select2 for the non-school dropdowns inside the modal (Suffix, Sex,
-  // Remarks, School Year, Eligibility). Idempotent — safe to call every open.
+  // Remarks, Eligibility). Idempotent — safe to call every open.
   function initModalExtraSelects() {
     if (typeof window.initVsSelect2 === 'function') {
       window.initVsSelect2(voucherModal);

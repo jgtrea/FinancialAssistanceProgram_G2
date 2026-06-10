@@ -107,7 +107,7 @@ var ModalInstance = (function () {
                 </div>
                 <div class="vs-modal-footer">
                   <button class="vs-btn vs-btn-outline" id="importModalCancel">Cancel</button>
-                  <button class="vs-btn vs-btn-primary" id="importConfirm">
+                  <button class="vs-btn vs-btn-info" id="importConfirm">
                     <span id="importBtnText">Import</span>
                     <span id="importBtnSpinner" class="vs-spinner" style="display:none"></span>
                   </button>
@@ -125,10 +125,6 @@ var ModalInstance = (function () {
                 </div>  
                 <div class="vs-modal-body">
                   <div class="row g-3">
-                    <div class="col-6">
-                      <label class="vs-label" for="filterSchoolYear">School Year</label>
-                      <select id="filterSchoolYear" class="vs-input js-filter-select" data-placeholder="- TYPE OR SELECT -"><option></option></select>
-                    </div>
                     <div class="col-6">
                       <label class="vs-label" for="filterGender">Sex</label>
                       <select id="filterGender" class="vs-input js-filter-select" data-placeholder="MALE / FEMALE" data-no-search="1">
@@ -180,7 +176,7 @@ var ModalInstance = (function () {
                   </div>
                 </div>
                 <div class="vs-modal-footer">
-                  <button type="button" class="vs-btn vs-btn-outline" id="filterClear">Clear All</button>
+                  <button type="button" class="vs-btn vs-btn-danger" id="filterClear">Clear All</button>
                   <button type="button" class="vs-btn vs-btn-outline" id="filterModalCancel">Cancel</button>
                   <button type="button" class="vs-btn vs-btn-primary" id="filterApply">Apply Filters</button>
                 </div>
@@ -419,7 +415,7 @@ var ModalInstance = (function () {
                 <div class="vs-modal-body">
                   <div class="row g-3">
                     <div class="col-12 col-lg-6">
-                      <label class="vs-label required" for="afSchoolYear">School Year</label>
+                      <label class="vs-label required" for="afSchoolYear">SY</label>
                       <select id="afSchoolYear" class="vs-input js-filter-select" data-placeholder="- TYPE OR SELECT -"><option></option></select>
                     </div>
                     <div class="col-12 col-lg-6">
@@ -467,7 +463,7 @@ var ModalInstance = (function () {
                   </div>
                 </div>
                 <div class="vs-modal-footer">
-                  <button type="button" class="vs-btn vs-btn-outline" id="archiveFilterClear">Clear All</button>
+                  <button type="button" class="vs-btn vs-btn-danger" id="archiveFilterClear">Clear All</button>
                   <button type="button" class="vs-btn vs-btn-outline" id="archiveFilterCancel">Cancel</button>
                   <button type="button" class="vs-btn vs-btn-primary" id="archiveFilterApply">Apply Filters</button>
                 </div>
@@ -499,7 +495,7 @@ var ModalInstance = (function () {
                         </div>
                     </div>
                     <div class="vs-modal-footer">
-                        <button type="button" class="vs-btn vs-btn-outline" id="auditFilterClear">Clear All</button>
+                        <button type="button" class="vs-btn vs-btn-danger" id="auditFilterClear">Clear All</button>
                         <button type="button" class="vs-btn vs-btn-outline" id="auditFilterModalCancel">Cancel</button>
                         <button type="button" class="vs-btn vs-btn-primary" id="auditFilterApply">Apply Filters</button>
                     </div>
@@ -565,8 +561,8 @@ var ModalInstance = (function () {
                                     <input id="smSchoolName" name="school_name" type="text" class="vs-input vs-uppercase" required placeholder="e.g. TANDAG NATIONAL HIGH SCHOOL">
                                 </div>
                                 <div class="col-6">
-                                    <label class="vs-label">Acronym</label>
-                                    <div id="smAcronymDisplay" class="vs-input" style="background:#f9fafb;cursor:default;display:flex;align-items:center;min-height:38px;color:#6b7280">—</div>
+                                    <label class="vs-label required" for="smAcronym">Acronym</label>
+                                    <input id="smAcronym" name="acronym" type="text" class="vs-input vs-uppercase" required placeholder="e.g. TNHS">
                                 </div>
                                 <div class="col-6">
                                     <label class="vs-label required" for="smSchoolLevel">Level</label>
@@ -601,7 +597,7 @@ var ModalInstance = (function () {
                             <div id="schoolImportAlert"></div>
                             <p class="text-muted" style="font-size:.875rem">
                                 Upload a <strong>.csv</strong>, <strong>.xlsx</strong>, or <strong>.xls</strong> file
-                                with columns: <strong>School Name</strong> and <strong>Level</strong> (JHS or SHS).
+                                with columns: <strong>School Name</strong>, <strong>Acronym</strong>, and <strong>Level</strong> (JHS or SHS).
                                 Duplicate entries will be skipped automatically.
                             </p>
                             <div class="mt-3">
@@ -611,7 +607,7 @@ var ModalInstance = (function () {
                         </div>
                         <div class="vs-modal-footer">
                             <button type="button" class="vs-btn vs-btn-outline" id="schoolImportCancel">Cancel</button>
-                            <button type="submit" class="vs-btn vs-btn-primary" id="schoolImportSubmit">
+                            <button type="submit" class="vs-btn vs-btn-info" id="schoolImportSubmit">
                                 <span id="siSubmitText">Import</span>
                                 <span id="siSubmitSpinner" class="vs-spinner" style="display:none"></span>
                             </button>
@@ -754,63 +750,85 @@ var ModalInstance = (function () {
 
         accountModal: function () {
             return `<div class="vs-modal-overlay" id="accountModal" style="display:none">
-                <div class="vs-modal" style="max-width:680px">
-                    <div class="vs-modal-header">
-                        <h5>My Account</h5>
+                <div class="vs-modal" style="max-width:920px">
+                    <div class="vs-modal-header align-items-start">
+                        <div>
+                            <h5 class="mb-1">My Account</h5>
+                            <p class="mb-0 text-muted small">Update your profile details and password.</p>
+                        </div>
                         <button class="vs-modal-close" id="accountModalClose">&times;</button>
                     </div>
                     <div class="vs-modal-body">
                         <div id="accountModalMsg" class="mb-3" style="display:none"></div>
                         <form id="accountModalForm" autocomplete="off">
                             <input type="hidden" id="amCsrf" name="${_csrf.name}" value="${_csrf.hash}">
-                            <div class="row g-3">
-                                <div class="col-12 col-md-6 col-lg-3">
-                                    <label class="vs-label required">Username</label>
-                                    <input id="amUsername" name="username" type="text" class="vs-input" required>
-                                </div>
-                                <div class="col-12 col-md-6 col-lg-3">
-                                    <label class="vs-label required">Email</label>
-                                    <input id="amEmail" name="email" type="email" class="vs-input" required>
-                                </div>
-                                <div class="col-12 col-md-6 col-lg-3">
-                                    <label class="vs-label">Role</label>
-                                    <div id="amRole" class="vs-input" style="background:#f9fafb;cursor:default"></div>
-                                </div>
-                                <div class="col-12 col-md-6 col-lg-3"></div>
-                                <div class="col-12 col-md-6 col-lg-3">
-                                    <label class="vs-label required">First Name</label>
-                                    <input id="amFirstName" name="first_name" type="text" class="vs-input vs-uppercase" required>
-                                </div>
-                                <div class="col-12 col-md-6 col-lg-3">
-                                    <label class="vs-label">Middle Name</label>
-                                    <input id="amMiddleName" name="middle_name" type="text" class="vs-input vs-uppercase">
-                                </div>
-                                <div class="col-12 col-md-6 col-lg-3">
-                                    <label class="vs-label required">Last Name</label>
-                                    <input id="amLastName" name="last_name" type="text" class="vs-input vs-uppercase" required>
-                                </div>
-                                <div class="col-12 col-md-6 col-lg-3"></div>
+                            <div class="row g-4">
                                 <div class="col-12">
-                                    <h2 class="vs-section-title">Change Password</h2>
+                                    <div class="bg-light border rounded-2 p-3 p-md-4">
+                                        <div class="d-flex align-items-center justify-content-between gap-3 mb-3">
+                                            <div>
+                                                <h6 class="mb-1 fw-bold">Profile Information</h6>
+                                                <p class="mb-0 text-muted small">This information appears in logs and account activity.</p>
+                                            </div>
+                                        </div>
+                                        <div class="row g-3">
+                                            <div class="col-12 col-lg-6">
+                                                <label class="form-label fw-semibold small text-uppercase" for="amUsername">Username</label>
+                                                <input id="amUsername" name="username" type="text" class="form-control" required>
+                                            </div>
+                                            <div class="col-12 col-lg-6">
+                                                <label class="form-label fw-semibold small text-uppercase" for="amEmail">Email</label>
+                                                <input id="amEmail" name="email" type="email" class="form-control" required>
+                                            </div>
+                                            <div class="col-12 col-md-4">
+                                                <label class="form-label fw-semibold small text-uppercase" for="amFirstName">First Name</label>
+                                                <input id="amFirstName" name="first_name" type="text" class="form-control vs-uppercase" required>
+                                            </div>
+                                            <div class="col-12 col-md-4">
+                                                <label class="form-label fw-semibold small text-uppercase" for="amMiddleName">Middle Name</label>
+                                                <input id="amMiddleName" name="middle_name" type="text" class="form-control vs-uppercase">
+                                            </div>
+                                            <div class="col-12 col-md-4">
+                                                <label class="form-label fw-semibold small text-uppercase" for="amLastName">Last Name</label>
+                                                <input id="amLastName" name="last_name" type="text" class="form-control vs-uppercase" required>
+                                            </div>
+                                            <div class="col-12 col-md-4">
+                                                <label class="form-label fw-semibold small text-uppercase" for="amRole">Account Level</label>
+                                                <div id="amRole" class="form-control bg-white text-muted" style="cursor:default"></div>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
-                                <div class="col-12 col-md-6 col-lg-3">
-                                    <label class="vs-label">Current Password</label>
-                                    <input id="amCurrentPw" name="current_password" type="password" class="vs-input" autocomplete="current-password">
-                                </div>
-                                <div class="col-12 col-md-6 col-lg-3">
-                                    <label class="vs-label">New Password</label>
-                                    <input id="amNewPw" name="new_password" type="password" class="vs-input" autocomplete="new-password">
-                                </div>
-                                <div class="col-12 col-md-6 col-lg-3">
-                                    <label class="vs-label">Confirm Password</label>
-                                    <input id="amConfirmPw" name="confirm_password" type="password" class="vs-input" autocomplete="new-password">
+                                <div class="col-12">
+                                    <div class="border rounded-2 p-3 p-md-4">
+                                        <div class="d-flex align-items-center justify-content-between gap-3 mb-3">
+                                            <div>
+                                                <h6 class="mb-1 fw-bold">Change Password</h6>
+                                                <p class="mb-0 text-muted small">Leave these fields blank if you do not want to change your password.</p>
+                                            </div>
+                                        </div>
+                                        <div class="row g-3">
+                                            <div class="col-12 col-lg-4">
+                                                <label class="form-label fw-semibold small text-uppercase" for="amCurrentPw">Current Password</label>
+                                                <input id="amCurrentPw" name="current_password" type="password" class="form-control" autocomplete="current-password">
+                                            </div>
+                                            <div class="col-12 col-lg-4">
+                                                <label class="form-label fw-semibold small text-uppercase" for="amNewPw">New Password</label>
+                                                <input id="amNewPw" name="new_password" type="password" class="form-control" autocomplete="new-password">
+                                            </div>
+                                            <div class="col-12 col-lg-4">
+                                                <label class="form-label fw-semibold small text-uppercase" for="amConfirmPw">Confirm Password</label>
+                                                <input id="amConfirmPw" name="confirm_password" type="password" class="form-control" autocomplete="new-password">
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </form>
                     </div>
-                    <div class="vs-modal-footer">
-                        <button type="button" class="vs-btn vs-btn-outline" id="accountModalCancel">Cancel</button>
-                        <button type="button" class="vs-btn vs-btn-primary" id="accountModalSave">Save Account</button>
+                    <div class="vs-modal-footer d-flex justify-content-end gap-2">
+                        <button type="button" class="btn btn-outline-secondary" id="accountModalCancel">Cancel</button>
+                        <button type="button" class="btn btn-primary px-4" id="accountModalSave">Save Account</button>
                     </div>
                 </div>
             </div>`;
@@ -864,21 +882,11 @@ var ModalInstance = (function () {
         switch (name) {
 
             case 'filterModal':
-                _buildOpts('filterSchoolYear', fo.school_years, function(s){return s;}, function(s){return s;}, _urlParam('school_year'));
                 _buildOpts('filterJuniorHs',  fo.junior_high_schools, _schoolVal, _schoolTxt, _urlParam('junior_hs'));
                 _buildOpts('filterPreferredHs', fo.senior_high_schools, _schoolVal, _schoolTxt, _urlParam('preferred_hs'));
                 break;
 
             case 'voucherModal':
-                var datalist = document.getElementById('vmSchoolYear-list');
-                if (datalist) {
-                    datalist.innerHTML = '';
-                    (fo.school_years || []).forEach(function(sy) {
-                        var opt = document.createElement('option');
-                        opt.value = sy;
-                        datalist.appendChild(opt);
-                    });
-                }
                 _buildOpts('vmJuniorHs',   fo.junior_high_schools, _schoolVal, _schoolTxt, null);
                 _buildOpts('vmPreferredHs', fo.senior_high_schools, _schoolVal, _schoolTxt, null);
                 break;

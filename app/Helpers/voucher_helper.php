@@ -21,10 +21,7 @@ if (!function_exists('generate_voucher_no')) {
             if ($stored !== '') {
                 $acronym = strtoupper($stored);
             } else {
-                // Fallback: first letter of each word.
-                $schoolName = $schoolRow ? (string) ($schoolRow->school_name ?? $jhs) : $jhs;
-                $words   = preg_split('/\s+/', $schoolName);
-                $acronym = strtoupper(implode('', array_map(fn($w) => $w[0] ?? '', array_filter($words))));
+                $acronym = 'VOU';
             }
         } else {
             $acronym = 'VOU';

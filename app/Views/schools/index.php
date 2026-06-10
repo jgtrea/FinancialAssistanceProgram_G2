@@ -51,17 +51,17 @@
     </div>
     <div class="col-6 col-md-2 d-flex gap-2">
         <button type="submit" class="vs-btn vs-btn-primary flex-fill">Search</button>
-        <a href="<?= site_url('admin/schools') ?>" class="vs-btn vs-btn-outline flex-fill">Clear</a>
+        <a href="<?= site_url('admin/schools') ?>" class="vs-btn vs-btn-danger flex-fill">Clear</a>
     </div>
     <div class="col-auto d-none d-md-flex align-items-center">
         <span style="color:var(--border);font-size:1.2rem;line-height:1;user-select:none">|</span>
     </div>
     <div class="col-12 col-md-2 d-flex gap-2">
-        <button type="button" class="vs-btn vs-btn-primary flex-fill" id="btnAddSchool">
+        <button type="button" class="vs-btn vs-btn-success flex-fill" id="btnAddSchool">
             <?= asset_icon('add', ['stroke-width' => '2.5']) ?>
             Add School
         </button>
-        <button type="button" class="vs-btn vs-btn-outline flex-fill" id="btnOpenImport">
+        <button type="button" class="vs-btn vs-btn-info flex-fill" id="btnOpenImport">
             <?= asset_icon('import') ?>
             Import
         </button>
@@ -517,8 +517,7 @@ document.addEventListener('vs:modals:ready', function () {
     function smReset() {
         schoolForm.reset();
         document.getElementById('smSchoolId').value = '';
-        var acDisp = document.getElementById('smAcronymDisplay');
-        if (acDisp) acDisp.textContent = '—';
+        document.getElementById('smAcronym').value = '';
         smClearAlert();
     }
 
@@ -544,8 +543,7 @@ document.addEventListener('vs:modals:ready', function () {
             document.getElementById('smSchoolId').value    = s.school_id;
             document.getElementById('smSchoolName').value  = s.school_name  || '';
             document.getElementById('smSchoolLevel').value = s.school_level || '';
-            var acDisp = document.getElementById('smAcronymDisplay');
-            if (acDisp) acDisp.textContent = s.acronym || '—';
+            document.getElementById('smAcronym').value = s.acronym || '';
         })
         .catch(function () { smOpenAlert('Failed to load school.'); });
     }

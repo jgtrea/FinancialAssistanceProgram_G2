@@ -164,6 +164,8 @@ class StudentController extends BaseController
 
         $userId = session()->get('user_id') ?? 1;
 
+        $now = date('Y-m-d H:i:s');
+
         $archiveModel->insert([
             'student_id' => $student['student_id'],
             'voucher_no' => $student['voucher_no'],
@@ -179,11 +181,12 @@ class StudentController extends BaseController
             'preferred_senior_high_school' => $student['preferred_senior_high_school'],
             'contact_number' => $student['contact_number'],
             'remarks_status' => $student['remarks_status'],
-            'school_year' => $student['school_year'],
+            'school_year' => $this->archiveSchoolYearLabel($now),
             'eligibility_status' => $student['eligibility_status'],
             'voucher_status' => $student['voucher_status'],
             'archive_reason' => 'Manually archived',
             'archived_by' => $userId,
+            'archived_at' => $now,
         ]);
 
         $db = \Config\Database::connect();
@@ -303,7 +306,6 @@ class StudentController extends BaseController
             'preferred_senior_high_school' => 'required|max_length[200]',
             'contact_number'               => 'permit_empty|max_length[30]|regex_match[/^[0-9+().\\-\\s]+$/]',
             'remarks_status'               => 'permit_empty|in_list[COMPLETE,INCOMPLETE,OTHERS]',
-            'school_year'                  => 'required|max_length[20]|regex_match[/^\\d{4}(-\\d{4})?$/]',
             'eligibility_status'           => 'required|in_list[eligible,not_eligible]',
             'voucher_status'               => 'permit_empty|in_list[not_generated,generated]',
         ];
@@ -328,7 +330,6 @@ class StudentController extends BaseController
             'preferred_senior_high_school' => (new SchoolOptionModel())->resolveSchoolId('SHS', $this->request->getPost('preferred_senior_high_school'), false),
             'contact_number'               => $this->cleanText($this->request->getPost('contact_number')),
             'remarks_status'               => strtoupper($this->cleanText($this->request->getPost('remarks_status'))),
-            'school_year'                  => $this->cleanText($this->request->getPost('school_year')),
             'eligibility_status'           => $this->request->getPost('eligibility_status') ?: 'eligible',
             'voucher_status'               => $this->request->getPost('voucher_status') ?: 'not_generated',
         ];
@@ -337,6 +338,16 @@ class StudentController extends BaseController
     private function cleanText($value): string
     {
         return trim((string) $value);
+    }
+
+    private function archiveSchoolYearLabel(?string $archivedAt = null): string
+    {
+        $timestamp = strtotime($archivedAt ?: 'now') ?: time();
+        $year      = (int) date('Y', $timestamp);
+        $month     = (int) date('n', $timestamp);
+        $startYear = $month >= 6 ? $year : $year - 1;
+
+        return $startYear . '-' . ($startYear + 1);
     }
 
     private function validationErrorMessage(array $errors, string $fallback): string

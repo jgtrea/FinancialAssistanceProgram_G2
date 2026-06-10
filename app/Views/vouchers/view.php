@@ -81,11 +81,6 @@
       </div>
 
       <div>
-        <label class="vs-label">School Year</label>
-        <div class="vs-readonly-field"><?= esc($voucher['school_year']) ?></div>
-      </div>
-
-      <div>
         <label class="vs-label">Eligibility</label>
         <div class="vs-readonly-field"><?= esc(ucfirst(str_replace('_', ' ', $voucher['eligibility_status']))) ?></div>
       </div>

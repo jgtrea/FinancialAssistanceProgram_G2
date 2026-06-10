@@ -234,7 +234,7 @@ class Voucher extends AdminVoucher
         return $this->enqueueArchiveJob($ids, $reason);
     }
 
-    // ── Preview archive scope: count + distinct school years ─────────────────
+    // ── Preview archive scope: count + auto archive SY ───────────────────────
     public function archivePreview()
     {
         $keyword = trim((string) $this->request->getGet('q'));
@@ -253,19 +253,10 @@ class Voucher extends AdminVoucher
             ]);
         }
 
-        $rows = \Config\Database::connect()
-            ->table('students')
-            ->select('school_year')
-            ->distinct()
-            ->whereIn('student_id', $ids)
-            ->where('school_year !=', '')
-            ->orderBy('school_year', 'ASC')
-            ->get()->getResultArray();
-
         return $this->response->setJSON([
             'success'     => true,
             'count'       => count($ids),
-            'schoolYears' => array_column($rows, 'school_year'),
+            'schoolYears' => [$this->archiveSchoolYearLabel()],
         ]);
     }
 }

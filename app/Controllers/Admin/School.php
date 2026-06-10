@@ -59,9 +59,6 @@ class School extends Controller
             : strtoupper(trim((string) $this->request->getPost('school_name')));
         $level   = strtoupper(trim((string) $this->request->getPost('school_level')));
         $acronym = strtoupper(trim((string) $this->request->getPost('acronym')));
-        if ($acronym === '') {
-            $acronym = $this->generateAcronym($name);
-        }
 
         if ($name === '') {
             return $this->response->setJSON(['success' => false, 'message' => 'School name is required.']);
@@ -69,6 +66,10 @@ class School extends Controller
 
         if (!in_array($level, ['JHS', 'SHS'], true)) {
             return $this->response->setJSON(['success' => false, 'message' => 'School level must be JHS or SHS.']);
+        }
+
+        if ($acronym === '') {
+            return $this->response->setJSON(['success' => false, 'message' => 'School acronym is required.']);
         }
 
         $excludeId = $id > 0 ? $id : null;
@@ -186,16 +187,16 @@ class School extends Controller
             return $this->response->setJSON(['success' => false, 'message' => 'The file is empty.']);
         }
 
-        // Validate header row (must contain "school name" and "level")
+        // Validate header row (must contain "school name", "acronym", and "level")
         $header    = array_map(static fn ($v) => strtolower(trim((string) $v)), $sheetData[0]);
         $nameIdx   = array_search('school name', $header, true);
         $levelIdx  = array_search('level', $header, true);
-        $acronymIdx = array_search('acronym', $header, true); // optional
+        $acronymIdx = array_search('acronym', $header, true);
 
-        if ($nameIdx === false || $levelIdx === false) {
+        if ($nameIdx === false || $levelIdx === false || $acronymIdx === false) {
             return $this->response->setJSON([
                 'success' => false,
-                'message' => 'Expected column headers: "School Name" and "Level" (JHS or SHS). "Acronym" is optional.',
+                'message' => 'Expected column headers: "School Name", "Acronym", and "Level" (JHS or SHS).',
             ]);
         }
 
@@ -210,7 +211,9 @@ class School extends Controller
                 : strtoupper(trim((string) ($row[$nameIdx] ?? '')));
             $level = strtoupper(trim((string) ($row[$levelIdx] ?? '')));
 
-            if ($name === '' || !in_array($level, ['JHS', 'SHS'], true)) {
+            $acronym = strtoupper(trim((string) ($row[$acronymIdx] ?? '')));
+
+            if ($name === '' || $acronym === '' || !in_array($level, ['JHS', 'SHS'], true)) {
                 $skipped++;
                 continue;
             }
@@ -219,10 +222,6 @@ class School extends Controller
                 $skipped++;
                 continue;
             }
-
-            $acronym = $acronymIdx !== false
-                ? strtoupper(trim((string) ($row[$acronymIdx] ?? '')))
-                : $this->generateAcronym($name);
 
             $this->schoolModel->insert(['school_name' => $name, 'school_level' => $level, 'is_active' => 1, 'acronym' => $acronym]);
             log_action($userId, 'IMPORT_SCHOOL', "Imported school: {$name} ({$level}, {$acronym})");
@@ -261,9 +260,9 @@ class School extends Controller
 
     public function importTemplate()
     {
-        $csv = "School Name,Level\n"
-             . "Sample Junior High School,JHS\n"
-             . "Sample Senior High School,SHS\n";
+        $csv = "School Name,Acronym,Level\n"
+             . "Sample Junior High School,SJHS,JHS\n"
+             . "Sample Senior High School,SSHS,SHS\n";
 
         return $this->response
             ->setHeader('Content-Type', 'text/csv')
@@ -357,19 +356,6 @@ class School extends Controller
             ->setHeader('Content-Disposition', 'attachment; filename="' . $filename . '"')
             ->setHeader('Cache-Control', 'max-age=0')
             ->setBody($csv);
-    }
-
-    private function generateAcronym(string $name): string
-    {
-        $skip  = ['AND', 'THE', 'OF', 'A', 'AN', 'OR', 'FOR'];
-        $parts = preg_split('/[\s\-]+/', $name, -1, PREG_SPLIT_NO_EMPTY) ?: [];
-        $initials = '';
-        foreach ($parts as $word) {
-            $word = strtoupper(preg_replace('/[^A-Za-z0-9]/', '', $word));
-            if ($word === '' || in_array($word, $skip, true)) continue;
-            $initials .= $word[0];
-        }
-        return $initials;
     }
 
     private function parseCsv(string $path): array

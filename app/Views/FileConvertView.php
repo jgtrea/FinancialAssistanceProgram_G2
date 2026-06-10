@@ -19,7 +19,7 @@
             <label for="excel_file" class="form-label">Excel File</label>
             <input type="file" class="form-control" id="excel_file" name="excel_file" accept=".xlsx,.xls,.csv" required>
         </div>
-        <button type="submit" class="btn btn-primary" id="standaloneImportBtn">Import</button>
+        <button type="submit" class="btn btn-info" id="standaloneImportBtn">Import</button>
         <a href="<?= site_url('admin/vouchers') ?>" class="btn btn-secondary">Cancel</a>
     </form>
 </div>

@@ -6,6 +6,8 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <title>City Education Office - Login</title>
+    <link rel="icon" type="image/png" href="<?= base_url('assets/img/city_education_office_seal.png') ?>">
+    <link rel="shortcut icon" type="image/png" href="<?= base_url('assets/img/city_education_office_seal.png') ?>">
 
     <?php pre_style('default_lay'); ?>
 </head>

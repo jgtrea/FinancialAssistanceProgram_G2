@@ -7,6 +7,8 @@
     <meta name="csrf-token-name" content="<?= csrf_token() ?>">
     <meta name="csrf-token-value" content="<?= csrf_hash() ?>">
     <title><?= esc($title ?? 'Voucher System') ?></title>
+    <link rel="icon" type="image/png" href="<?= base_url('assets/img/city_education_office_seal.png') ?>">
+    <link rel="shortcut icon" type="image/png" href="<?= base_url('assets/img/city_education_office_seal.png') ?>">
     <?php pre_style('app'); ?>
     <script>
     window.__VS = {

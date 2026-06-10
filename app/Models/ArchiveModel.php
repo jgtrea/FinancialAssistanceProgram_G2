@@ -148,8 +148,8 @@ class ArchiveModel extends Model
     }
 
     // Distinct school years that exist in the archive. Used to populate the
-    // School Year dropdown on the listing page — the archive is gated on
-    // school_year selection, so this list is what the user actually chooses
+    // SY dropdown on the listing page — the archive is gated on school_year
+    // selection, so this list is what the user actually chooses.
     // from to load data.
     public function getDistinctSchoolYears(): array
     {
