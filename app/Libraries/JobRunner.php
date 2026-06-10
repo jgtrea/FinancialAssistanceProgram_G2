@@ -19,19 +19,40 @@ class JobRunner
      */
     public static function processOne(): ?bool
     {
+        // Chunked work first (pdf, archive) — claim the next pending chunk.
         $claimed = JsonPdfRunner::claimNextChunk();
-        if ($claimed === null) {
+        if ($claimed !== null) {
+            $type = $claimed['type'] ?? 'pdf';
+            switch ($type) {
+                case 'archive':
+                    return ArchiveRunner::processClaimed($claimed);
+                case 'pdf':
+                default:
+                    return JsonPdfRunner::processClaimed($claimed);
+            }
+        }
+
+        // No chunks left — claim the next single (non-chunked) job: import/export.
+        $single = JsonPdfQueue::claimNextSingle();
+        if ($single === null) {
             return null;
         }
 
-        $type = $claimed['type'] ?? 'pdf';
-
+        $type = $single['type'] ?? '';
         switch ($type) {
-            case 'archive':
-                return ArchiveRunner::processClaimed($claimed);
-            case 'pdf':
+            case 'import':
+                return ImportRunner::processClaimed($single);
+            case 'export':
+                return ExportRunner::processClaimed($single);
             default:
-                return JsonPdfRunner::processClaimed($claimed);
+                // Unknown single-job type — fail it so it doesn't loop forever.
+                JsonPdfQueue::finishSingle((int) $single['job_id'], static function (array $rec) use ($type) {
+                    $rec['status']        = 'failed';
+                    $rec['error_message'] = 'Unknown job type: ' . $type;
+                    $rec['completed_at']  = date('Y-m-d H:i:s');
+                    return $rec;
+                });
+                return false;
         }
     }
 

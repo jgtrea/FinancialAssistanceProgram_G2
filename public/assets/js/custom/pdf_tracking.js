@@ -166,32 +166,99 @@ function jobProgressText(verb, data) {
   return verb + '…';
 }
 
-// Show a live progress toast for a background ARCHIVE job and poll it to the
-// end — same spinner + percentage UX as the generate toast, minus the PDF-only
-// Status/Download buttons. callbacks.onDone(data) fires when finished (e.g. to
-// reload or remove rows); callbacks.onError(msg) on failure.
-function trackArchiveJob(statusUrl, count, callbacks) {
-  callbacks = callbacks || {};
-  var total = Number(count) || 0;
-  var key   = 'arch-' + Date.now();
+// Show a live progress toast for any background job and poll it to the end —
+// same spinner + percentage UX as the generate toast. Options:
+//   verb         — toast label, e.g. 'Archiving' / 'Importing' / 'Exporting'
+//   count        — known total for the initial 0% line (optional)
+//   download     — if true, reveal a Download link + auto-download on done
+//   doneLabel(d) — returns the finished-toast text (defaults to a generic line)
+//   onDone(d) / onError(msg) — caller hooks (reload, remove rows, alert, ...)
+// Persisted store for downloadable background jobs (export). Lets the toast +
+// auto-download survive page navigation/reload, exactly like the PDF generate
+// flow — resumed on every page load (see DOMContentLoaded below).
+var DOWNLOAD_JOBS_KEY = 'pendingDownloadJobs';
+function getPendingDownloadJobs() {
+  try { var r = localStorage.getItem(DOWNLOAD_JOBS_KEY); return r ? JSON.parse(r) : []; }
+  catch (e) { return []; }
+}
+function savePendingDownloadJob(job) {
+  var list = getPendingDownloadJobs().filter(function (j) { return j.jobId !== job.jobId; });
+  list.push(job);
+  try { localStorage.setItem(DOWNLOAD_JOBS_KEY, JSON.stringify(list)); } catch (e) {}
+}
+function removePendingDownloadJob(jobId) {
+  var list = getPendingDownloadJobs().filter(function (j) { return j.jobId !== jobId; });
+  if (list.length) { try { localStorage.setItem(DOWNLOAD_JOBS_KEY, JSON.stringify(list)); } catch (e) {} }
+  else            { localStorage.removeItem(DOWNLOAD_JOBS_KEY); }
+}
+
+function trackJob(verb, statusUrl, opts) {
+  opts = opts || {};
+  var total = Number(opts.count) || 0;
+  // Persisted (download) jobs key by jobId so a reload reuses the same toast
+  // node instead of stacking a new one each page load.
+  var key   = (opts.persist && opts.jobId)
+    ? 'job-' + opts.jobId
+    : 'job-' + Date.now() + '-' + Math.random().toString(36).slice(2, 7);
   var toast = (typeof showPdfToast === 'function')
-    ? showPdfToast(jobProgressText('Archiving', { progress: { done: 0, total: total } }),
-        key, null, { hideStatus: true, hideDownload: true })
+    ? showPdfToast(jobProgressText(verb, { progress: { done: 0, total: total } }),
+        key, null, { hideStatus: true, hideDownload: ! opts.download })
     : null;
+
+  if (opts.persist && opts.jobId) {
+    savePendingDownloadJob({ jobId: opts.jobId, statusUrl: statusUrl, verb: verb });
+  }
 
   pollJob(statusUrl, {
     onProgress: function (data) {
-      if (toast) toast.update(jobProgressText('Archiving', data));
+      if (toast) toast.update(jobProgressText(verb, data));
     },
     onDone: function (data) {
-      var n = (data && data.result && typeof data.result.archived === 'number') ? data.result.archived : total;
-      if (toast) toast.update((Number(n) || 0).toLocaleString() + ' student(s) archived.', true);
-      if (callbacks.onDone) callbacks.onDone(data);
+      if (opts.persist && opts.jobId) removePendingDownloadJob(opts.jobId);
+      var text = opts.doneLabel ? opts.doneLabel(data) : (verb + ' complete.');
+      if (opts.download && data && data.download_url) {
+        // Reveal a manual Download link + linger ~5 min (showPdfToast), then
+        // auto-download — same as the generate flow.
+        if (toast) toast.update(text, true, data.download_url);
+        window.location.href = data.download_url;
+      } else if (toast) {
+        toast.update(text, true);
+      }
+      if (opts.onDone) opts.onDone(data);
     },
     onError: function (msg, data) {
+      if (opts.persist && opts.jobId) removePendingDownloadJob(opts.jobId);
       if (toast) toast.remove();
-      if (callbacks.onError) callbacks.onError(msg, data);
+      if (opts.onError) opts.onError(msg, data);
     },
+  });
+}
+
+// Resume any downloadable jobs left pending by a prior page (mirrors the PDF
+// generate resume below) so an export auto-downloads whenever it finishes,
+// even across navigation/reload.
+document.addEventListener('DOMContentLoaded', function () {
+  getPendingDownloadJobs().forEach(function (job) {
+    trackJob(job.verb || 'Exporting', job.statusUrl, {
+      download:  true,
+      persist:   true,
+      jobId:     job.jobId,
+      doneLabel: function () { return (job.verb || 'Export') + ' ready — downloading…'; },
+    });
+  });
+});
+
+// Archive-specific convenience wrapper (kept for existing callers).
+function trackArchiveJob(statusUrl, count, callbacks) {
+  callbacks = callbacks || {};
+  trackJob('Archiving', statusUrl, {
+    count: count,
+    doneLabel: function (data) {
+      var n = (data && data.result && typeof data.result.archived === 'number') ? data.result.archived : count;
+      return (Number(n) || 0).toLocaleString() + ' student(s) archived.';
+    },
+    onDone:  callbacks.onDone,
+    onError: callbacks.onError,
   });
 }
 

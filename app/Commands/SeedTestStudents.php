@@ -60,7 +60,7 @@ class SeedTestStudents extends BaseCommand
 
     private const SUFFIXES   = ['', '', '', '', '', '', '', 'JR.', 'SR.', 'II', 'III'];
     private const GENDERS    = ['MALE', 'FEMALE'];
-    private const REMARKS    = ['PASSED', 'PASSED', 'PASSED', 'FOR REVIEW'];
+    private const REMARKS    = ['COMPLETE', 'COMPLETE', 'COMPLETE', 'INCOMPLETE'];
     private const BATCH_SIZE = 1000;
 
     public function run(array $params)

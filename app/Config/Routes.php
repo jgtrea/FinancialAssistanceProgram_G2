@@ -92,7 +92,8 @@ $routes->group('admin', ['filter' => 'role:admin'], function ($routes) {
     $routes->get('logs',    'Admin\Report::logs');
 
     // Background job status (archive, etc.) — polled by the browser after enqueue.
-    $routes->get('jobs/status/(:num)', 'JobController::status/$1');
+    $routes->get('jobs/status/(:num)',   'JobController::status/$1');
+    $routes->get('jobs/download/(:num)', 'JobController::download/$1');
 });
 
 // ─── User / Staff ─────────────────────────────────────────────────────────────
@@ -153,7 +154,8 @@ $routes->group('user', ['filter' => 'auth'], function ($routes) {
     $routes->get('schools/options',               'Admin\School::optionsJson');
 
     // Background job status (archive, etc.) — polled by the browser after enqueue.
-    $routes->get('jobs/status/(:num)', 'JobController::status/$1');
+    $routes->get('jobs/status/(:num)',   'JobController::status/$1');
+    $routes->get('jobs/download/(:num)', 'JobController::download/$1');
 });
 
 // ─── Students (madridbranch) ──────────────────────────────────────────────────

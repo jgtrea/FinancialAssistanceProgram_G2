@@ -145,9 +145,9 @@ var ModalInstance = (function () {
                 '          </select>' +
                 '        </div>' +
                 '        <div class="vs-span-2">' +
-                '          <label class="vs-label" for="filterRemarks">Remarks</label>' +
-                '          <select id="filterRemarks" class="vs-input js-filter-select" data-placeholder="PASSED / FOR REVIEW / FAILED" data-no-search="1">' +
-                '            <option></option><option value="PASSED">PASSED</option><option value="FOR REVIEW">FOR REVIEW</option><option value="FAILED">FAILED</option>' +
+                '          <label class="vs-label" for="filterRemarks">Remarks / Status</label>' +
+                '          <select id="filterRemarks" class="vs-input js-filter-select" data-placeholder="COMPLETE / INCOMPLETE / OTHERS" data-no-search="1">' +
+                '            <option></option><option value="COMPLETE">COMPLETE</option><option value="INCOMPLETE">INCOMPLETE</option><option value="OTHERS">OTHERS</option>' +
                 '          </select>' +
                 '        </div>' +
                 '        <div class="vs-span-2">' +
@@ -232,6 +232,11 @@ var ModalInstance = (function () {
                 '      <div class="vs-modal-body">' +
                 '        <div id="voucherModalAlert"></div>' +
                 '        <div class="vs-form-grid vs-form-grid-4">' +
+                '          <div>' +
+                '            <label class="vs-label" for="vmControlNo">Control No.</label>' +
+                '            <input id="vmControlNo" name="control_no" type="text" class="vs-input vs-uppercase">' +
+                '          </div>' +
+                '          <div></div><div></div><div></div>' +
                 '          <div id="vmVoucherNoWrap" class="vs-span-4" style="display:none">' +
                 '            <label class="vs-label">Voucher No.</label>' +
                 '            <div id="vmVoucherNoDisplay" class="vs-input" style="background:#f9fafb;min-height:38px;display:flex;align-items:center;cursor:default;max-width:220px">—</div>' +
@@ -277,7 +282,7 @@ var ModalInstance = (function () {
                 '          </div>' +
                 '          <div>' +
                 '            <label class="vs-label" for="vmRankNo">Rank No.</label>' +
-                '            <input id="vmRankNo" name="rank_no" type="number" class="vs-input">' +
+                '            <input id="vmRankNo" name="rank_no" type="number" step="any" class="vs-input">' +
                 '          </div>' +
                 '          <div></div><div></div>' +
                 '          <div>' +
@@ -301,12 +306,16 @@ var ModalInstance = (function () {
                 '            </select>' +
                 '          </div>' +
                 '          <div>' +
-                '            <label class="vs-label required" for="vmRemarks">Remarks</label>' +
-                '            <select id="vmRemarks" name="remarks_status" class="vs-input js-school-select vs-uppercase" data-placeholder="PASSED / FOR REVIEW / FAILED" data-no-search="1" required>' +
-                '              <option></option><option value="PASSED">PASSED</option><option value="FOR REVIEW">FOR REVIEW</option><option value="FAILED">FAILED</option>' +
+                '            <label class="vs-label" for="vmRemarks">Remarks / Status</label>' +
+                '            <select id="vmRemarks" name="remarks_status" class="vs-input js-school-select vs-uppercase" data-placeholder="COMPLETE / INCOMPLETE / OTHERS" data-no-search="1">' +
+                '              <option></option><option value="COMPLETE">COMPLETE</option><option value="INCOMPLETE">INCOMPLETE</option><option value="OTHERS">OTHERS</option>' +
                 '            </select>' +
                 '          </div>' +
-                '          <div></div><div></div>' +
+                '          <div>' +
+                '            <label class="vs-label" for="vmEvaluatedBy">Evaluated By</label>' +
+                '            <input id="vmEvaluatedBy" name="evaluated_by" type="text" class="vs-input vs-uppercase">' +
+                '          </div>' +
+                '          <div></div>' +
                 '        </div>' +
                 '      </div>' +
                 '      <div class="vs-modal-footer">' +
@@ -461,9 +470,9 @@ var ModalInstance = (function () {
                 '          </select>' +
                 '        </div>' +
                 '        <div class="vs-span-2">' +
-                '          <label class="vs-label" for="afRemarks">Remarks</label>' +
-                '          <select id="afRemarks" class="vs-input js-filter-select" data-placeholder="PASSED / FOR REVIEW / FAILED" data-no-search="1">' +
-                '            <option></option><option value="PASSED">PASSED</option><option value="FOR REVIEW">FOR REVIEW</option><option value="FAILED">FAILED</option>' +
+                '          <label class="vs-label" for="afRemarks">Remarks / Status</label>' +
+                '          <select id="afRemarks" class="vs-input js-filter-select" data-placeholder="COMPLETE / INCOMPLETE / OTHERS" data-no-search="1">' +
+                '            <option></option><option value="COMPLETE">COMPLETE</option><option value="INCOMPLETE">INCOMPLETE</option><option value="OTHERS">OTHERS</option>' +
                 '          </select>' +
                 '        </div>' +
                 '        <div class="vs-span-2">' +

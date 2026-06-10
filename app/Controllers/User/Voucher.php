@@ -174,6 +174,10 @@ class Voucher extends AdminVoucher
             return $this->response->setJSON(['success' => false, 'message' => 'No students selected.']);
         }
 
+        if ($resp = $this->missingPreferredResponse($ids)) {
+            return $resp;
+        }
+
         $students = $this->prepareStudentsForGeneration($ids);
         if (empty($students)) {
             return $this->response->setJSON(['success' => false, 'message' => 'No valid students found.']);

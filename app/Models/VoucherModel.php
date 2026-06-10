@@ -10,12 +10,13 @@ class VoucherModel extends Model
     protected $primaryKey    = 'student_id';
     protected $returnType    = 'array';
     protected $allowedFields = [
-        'voucher_no', 'voucher_date',
+        'control_no', 'voucher_no', 'voucher_date',
         'first_name', 'middle_name', 'last_name', 'suffix',
         'rank_no', 'gwa', 'gender',
         'junior_high_school', 'preferred_senior_high_school',
         'contact_number', 'remarks_status', 'school_year',
         'eligibility_status', 'voucher_status', 'is_active',
+        'evaluated_by',
     ];
 
     protected $useTimestamps = true;
@@ -26,6 +27,7 @@ class VoucherModel extends Model
     protected $afterFind      = ['normalizeUppercaseResult'];
 
     protected array $uppercaseFields = [
+        'control_no',
         'voucher_no',
         'first_name',
         'middle_name',
@@ -130,14 +132,14 @@ class VoucherModel extends Model
         // those are gone by virtue of not existing here anymore.
         $builder = $this->withSchoolJoins($this->db->table('students'))
             ->select("
-                students.student_id, voucher_no, voucher_date,
+                students.student_id, control_no, voucher_no, voucher_date,
                 first_name, middle_name, last_name, suffix,
                 CONCAT_WS(' ', NULLIF(first_name,''), NULLIF(middle_name,''), NULLIF(last_name,''), NULLIF(suffix,'')) AS full_name,
                 {$this->schoolSelect},
                 school_year,
                 eligibility_status, voucher_status, students.is_active AS is_active,
                 gwa, rank_no, gender,
-                contact_number, remarks_status, students.created_at AS created_at, students.generated_at AS generated_at
+                contact_number, remarks_status, evaluated_by, students.created_at AS created_at, students.generated_at AS generated_at
             ");
 
         $keyword = trim($keyword);
@@ -309,14 +311,14 @@ class VoucherModel extends Model
 
         $builder = $this->withSchoolJoins($this->db->table('students'))
             ->select("
-                students.student_id, voucher_no, voucher_date,
+                students.student_id, control_no, voucher_no, voucher_date,
                 first_name, middle_name, last_name, suffix,
                 CONCAT_WS(' ', NULLIF(first_name,''), NULLIF(middle_name,''), NULLIF(last_name,''), NULLIF(suffix,'')) AS full_name,
                 {$this->schoolSelect},
                 school_year,
                 eligibility_status, voucher_status, students.is_active AS is_active,
                 gwa, rank_no, gender,
-                contact_number, remarks_status, students.created_at AS created_at, students.generated_at AS generated_at,
+                contact_number, remarks_status, evaluated_by, students.created_at AS created_at, students.generated_at AS generated_at,
                 generate_count
             ");
         if ($scopeIds !== null && !empty($scopeIds)) {
@@ -530,13 +532,13 @@ class VoucherModel extends Model
     {
         $row = $this->withSchoolJoins($this->db->table('students'))
             ->select("
-                students.student_id, voucher_no, voucher_date,
+                students.student_id, control_no, voucher_no, voucher_date,
                 first_name, middle_name, last_name, suffix,
                 CONCAT_WS(' ', NULLIF(first_name,''), NULLIF(middle_name,''), NULLIF(last_name,''), NULLIF(suffix,'')) AS full_name,
                 rank_no, gwa, gender,
                 {$this->schoolSelect},
                 contact_number, remarks_status, school_year,
-                eligibility_status, voucher_status,
+                eligibility_status, voucher_status, evaluated_by,
                 students.generated_at AS generated_at, students.created_at AS created_at, students.updated_at AS updated_at
             ")
             ->where('students.student_id', $studentId)
@@ -545,19 +547,41 @@ class VoucherModel extends Model
         return $row ? $this->uppercaseRow($row) : null;
     }
 
+    /**
+     * Of the given ids, return those with NO preferred senior high school set
+     * (NULL or 0). Each row has student_id + full_name. Used to block voucher
+     * generation for students missing a preferred school.
+     */
+    public function getMissingPreferredSchool(array $ids): array
+    {
+        if (empty($ids)) {
+            return [];
+        }
+
+        return $this->db->table('students')
+            ->select("student_id, TRIM(CONCAT_WS(' ', NULLIF(last_name,''), NULLIF(first_name,''), NULLIF(middle_name,''))) AS full_name")
+            ->whereIn('student_id', $ids)
+            ->groupStart()
+                ->where('preferred_senior_high_school IS NULL', null, false)
+                ->orWhere('preferred_senior_high_school', 0)
+            ->groupEnd()
+            ->orderBy('last_name', 'ASC')
+            ->get()->getResultArray();
+    }
+
     public function getVouchersByIds(array $ids): array
     {
         if (empty($ids)) return [];
 
         $rows = $this->withSchoolJoins($this->db->table('students'))
             ->select("
-                students.student_id, voucher_no, voucher_date,
+                students.student_id, control_no, voucher_no, voucher_date,
                 first_name, middle_name, last_name, suffix,
                 CONCAT_WS(' ', NULLIF(first_name,''), NULLIF(middle_name,''), NULLIF(last_name,''), NULLIF(suffix,'')) AS full_name,
                 rank_no, gwa, gender,
                 {$this->schoolSelect},
                 contact_number, remarks_status, school_year,
-                eligibility_status, voucher_status
+                eligibility_status, voucher_status, evaluated_by
             ")
             ->whereIn('students.student_id', $ids)
             ->orderBy('students.student_id', 'ASC')
