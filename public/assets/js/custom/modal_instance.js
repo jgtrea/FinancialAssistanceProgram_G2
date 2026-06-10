@@ -130,17 +130,11 @@ var ModalInstance = (function () {
                       <select id="filterGender" class="vs-input js-filter-select" data-placeholder="MALE / FEMALE" data-no-search="1">
                         <option></option><option value="MALE">MALE</option><option value="FEMALE">FEMALE</option>
                       </select>
-                    </div>
-                    <div class="col-6">
-                      <label class="vs-label" for="filterRemarks">Remarks</label>
-                      <select id="filterRemarks" class="vs-input js-filter-select" data-placeholder="PASSED / FOR REVIEW / FAILED" data-no-search="1">
-                        <option></option><option value="PASSED">PASSED</option><option value="FOR REVIEW">FOR REVIEW</option><option value="FAILED">FAILED</option>
-                      </select>
-                    </div>
+                    </div>                    
                     <div class="col-6">
                       <label class="vs-label" for="filterVoucherStatus">Voucher Status</label>
                       <select id="filterVoucherStatus" class="vs-input js-filter-select" data-placeholder="GENERATED / NOT GENERATED" data-no-search="1">
-                        <option></option><option value="generated">generated</option><option value="not_generated">not_generated</option>
+                        <option></option><option value="generated">GENERATED</option><option value="not_generated">NOT GENERATED</option>
                       </select>
                     </div>
                     <div class="col-6">
@@ -153,24 +147,30 @@ var ModalInstance = (function () {
                     </div>
                     <div class="col-6">
                       <label class="vs-label" for="filterJuniorHs">Junior High School</label>
-                      <select id="filterJuniorHs" class="vs-input js-filter-select" data-placeholder="- TYPE OR SELECT -"><option></option></select>
+                      <select id="filterJuniorHs" class="vs-input js-filter-select" data-placeholder="TYPE OR SELECT"><option></option></select>
                     </div>
                     <div class="col-6">
                       <label class="vs-label" for="filterPreferredHs">Preferred Senior HS</label>
-                      <select id="filterPreferredHs" class="vs-input js-filter-select" data-placeholder="- TYPE OR SELECT -"><option></option></select>
+                      <select id="filterPreferredHs" class="vs-input js-filter-select" data-placeholder="TYPE OR SELECT"><option></option></select>
                     </div>
                     <div class="col-6">
                       <label class="vs-label" for="filterGwaMin">GWA Min</label>
-                      <input type="number" step="0.01" id="filterGwaMin" class="vs-input" placeholder="e.g. 80">
+                      <input type="number" step="0.01" id="filterGwaMin" class="vs-input" placeholder="E.G. 80">
                     </div>
                     <div class="col-6">
                       <label class="vs-label" for="filterGwaMax">GWA Max</label>
-                      <input type="number" step="0.01" id="filterGwaMax" class="vs-input" placeholder="e.g. 100">
+                      <input type="number" step="0.01" id="filterGwaMax" class="vs-input" placeholder="E.G. 100">
                     </div>
-                    <div class="col-6">
+                    <!-- <div class="col-6">
                       <label class="vs-label" for="filterEligibility">Eligibility Status</label>
                       <select id="filterEligibility" class="vs-input js-filter-select" data-placeholder="ELIGIBLE / NOT ELIGIBLE" data-no-search="1">
                         <option></option><option value="eligible">eligible</option><option value="not_eligible">not_eligible</option>
+                      </select>
+                    </div> -->
+                    <div class="col-6">
+                      <label class="vs-label" for="filterRemarks">Remarks</label>
+                      <select id="filterRemarks" class="vs-input js-filter-select" data-placeholder="PASSED / FOR REVIEW / FAILED" data-no-search="1">
+                        <option></option><option value="PASSED">PASSED</option><option value="FOR REVIEW">FOR REVIEW</option><option value="FAILED">FAILED</option>
                       </select>
                     </div>
                   </div>
@@ -216,11 +216,11 @@ var ModalInstance = (function () {
                     <div id="voucherModalAlert"></div>
                     <div class="row g-3">
                       <div class="col-6">
-                        <label class="vs-label required" for="vmFirstName">Control No.</label>
-                        <input id="vmFirstName" name="first_name" type="text" class="vs-input vs-uppercase" required>
-                      </div>                    
+                        <label class="vs-label" for="vmControlNo">Control No.</label>
+                        <input id="vmControlNo" name="control_no" type="text" class="vs-input vs-uppercase">
+                      </div>
                       <div id="vmVoucherDateWrap" class="col-6">
-                        <label class="vs-label required" for="vmVoucherDate">Voucher Date</label>
+                        <label class="vs-label" for="vmVoucherDate">Voucher Date</label>
                         <input id="vmVoucherDate" name="voucher_date" type="date" class="vs-input"  >
                       </div>
                       <div class="col-4">
@@ -261,23 +261,23 @@ var ModalInstance = (function () {
                         <input id="vmRankNo" name="rank_no" type="number" class="vs-input">
                       </div>
                       <div class="col-6">
-                        <label class="vs-label required" for="vmJuniorHs">Junior High School</label>
-                        <select id="vmJuniorHs" name="junior_high_school" class="vs-input js-school-select vs-uppercase" data-placeholder="- TYPE OR SELECT -" required><option></option></select>
+                        <label class="vs-label" for="vmJuniorHs">Junior High School</label>
+                        <select id="vmJuniorHs" name="junior_high_school" class="vs-input js-school-select vs-uppercase" data-placeholder="TYPE OR SELECT"><option></option></select>
                       </div>
                       <div class="col-6">
-                        <label class="vs-label required" for="vmPreferredHs">Preferred Senior High School</label>
-                        <select id="vmPreferredHs" name="preferred_senior_high_school" class="vs-input js-school-select vs-uppercase" data-placeholder="- TYPE OR SELECT -" required><option></option></select>
+                        <label class="vs-label" for="vmPreferredHs">Preferred Senior High School</label>
+                        <select id="vmPreferredHs" name="preferred_senior_high_school" class="vs-input js-school-select vs-uppercase" data-placeholder="TYPE OR SELECT"><option></option></select>
                       </div>
-                      <div class="col-6">
+                      <!-- <div class="col-6">
                         <label class="vs-label required" for="vmEligibility">Eligibility</label>
                         <select id="vmEligibility" name="eligibility_status" class="vs-input js-school-select" data-placeholder="ELIGIBLE / NOT ELIGIBLE" data-no-search="1" required>
                           <option></option><option value="eligible">ELIGIBLE</option><option value="not_eligible">NOT ELIGIBLE</option>
                         </select>
-                      </div>
+                      </div> -->
                       <div class="col-6 ">
-                        <label class="vs-label required" for="vmRemarks">Remarks</label>
-                        <select id="vmRemarks" name="remarks_status" class="vs-input js-school-select vs-uppercase" data-placeholder="PASSED / FOR REVIEW / FAILED" data-no-search="1" required>
-                          <option></option><option value="PASSED">PASSED</option><option value="FOR REVIEW">FOR REVIEW</option><option value="FAILED">FAILED</option>
+                        <label class="vs-label" for="vmRemarks">Remarks</label>
+                        <select id="vmRemarks" name="remarks_status" class="vs-input js-school-select vs-uppercase" data-placeholder="COMPLETE / INCOMPLETE / OTHERS" data-no-search="1">
+                          <option></option><option value="COMPLETE">COMPLETE</option><option value="INCOMPLETE">INCOMPLETE</option><option value="OTHERS">OTHERS</option>
                         </select>
                       </div>
                       <div class="col-4"></div><div class="col-4"></div>
@@ -416,7 +416,7 @@ var ModalInstance = (function () {
                   <div class="row g-3">
                     <div class="col-12 col-lg-6">
                       <label class="vs-label required" for="afSchoolYear">SY</label>
-                      <select id="afSchoolYear" class="vs-input js-filter-select" data-placeholder="- TYPE OR SELECT -"><option></option></select>
+                      <select id="afSchoolYear" class="vs-input js-filter-select" data-placeholder="TYPE OR SELECT"><option></option></select>
                     </div>
                     <div class="col-12 col-lg-6">
                       <label class="vs-label" for="afGender">Sex</label>
@@ -446,11 +446,11 @@ var ModalInstance = (function () {
                     </div>
                     <div class="col-12 col-lg-6">
                       <label class="vs-label" for="afJuniorHs">Junior High School</label>
-                      <select id="afJuniorHs" class="vs-input js-filter-select" data-placeholder="- TYPE OR SELECT -"><option></option></select>
+                      <select id="afJuniorHs" class="vs-input js-filter-select" data-placeholder="TYPE OR SELECT"><option></option></select>
                     </div>
                     <div class="col-12 col-lg-6">
                       <label class="vs-label" for="afPreferredHs">Preferred Senior HS</label>
-                      <select id="afPreferredHs" class="vs-input js-filter-select" data-placeholder="- TYPE OR SELECT -"><option></option></select>
+                      <select id="afPreferredHs" class="vs-input js-filter-select" data-placeholder="TYPE OR SELECT"><option></option></select>
                     </div>
                     <div class="col-12 col-lg-6">
                       <label class="vs-label" for="afGwaMin">GWA Min</label>
@@ -482,7 +482,7 @@ var ModalInstance = (function () {
                         <div class="row g-3">
                             <div class="col-12">
                                 <label class="vs-label" for="auditFilterAction">Action</label>
-                                <select id="auditFilterAction" class="vs-input js-filter-select" data-placeholder="- TYPE OR SELECT -"><option></option></select>
+                                <select id="auditFilterAction" class="vs-input js-filter-select" data-placeholder="TYPE OR SELECT"><option></option></select>
                             </div>
                             <div class="col-12 col-lg-6">
                                 <label class="vs-label" for="auditFilterDateFrom">Date From</label>
@@ -685,7 +685,7 @@ var ModalInstance = (function () {
                       </div>
                       <div class="col-6">
                         <label class="vs-label" for="smDegree">Degree</label>
-                        <select id="smDegree" name="degree" class="vs-input js-filter-select" data-placeholder="- TYPE OR SELECT -">
+                        <select id="smDegree" name="degree" class="vs-input js-filter-select" data-placeholder="TYPE OR SELECT">
                           <option></option>${_staticOpts(degreeOpts)}
                         </select>
                         <input id="smDegreeOther" name="degree_other" type="text" class="vs-input mt-2" placeholder="Specify degree" style="display:none">
@@ -929,7 +929,7 @@ var ModalInstance = (function () {
             filterGender:        'gender',
             filterRemarks:       'remarks',
             filterVoucherStatus: 'voucher_status',
-            filterEligibility:   'eligibility',
+            // filterEligibility:   'eligibility',
             afGender:            'gender',
             afRemarks:           'remarks',
             afVoucherStatus:     'voucher_status',

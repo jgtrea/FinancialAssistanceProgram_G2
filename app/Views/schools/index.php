@@ -34,35 +34,35 @@
 
 <!-- Search + Level quick filter + action buttons -->
 <form method="get" id="schoolSearchForm" class="row g-2 align-items-center mb-3">
-    <div class="col-12 col-md-5">
-        <input type="text" name="q" class="vs-input vs-advanced-search-input w-100"
+    <div class="col-6 col-md-6">
+        <input type="text" name="q" class="vs-input vs-advanced-search-input"
                placeholder="Enter keyword to search (name, acronym, level)"
                value="<?= esc($keyword, 'attr') ?>">
     </div>
-    <div class="col-6 col-md-2">
-        <select id="schoolLevelFilter" name="level" class="js-filter-select" data-placeholder="JHS / SHS" data-no-search="1" style="width:100%">
+    <div class="col-auto col-md-2">
+        <select id="schoolLevelFilter" name="level" class="js-filter-select" data-placeholder="Select Level" data-no-search="1" style="width:100%">
             <option value="" <?= $filterLevel === ''    ? 'selected' : '' ?>></option>
             <option value="JHS" <?= $filterLevel === 'JHS' ? 'selected' : '' ?>>JHS</option>
             <option value="SHS" <?= $filterLevel === 'SHS' ? 'selected' : '' ?>>SHS</option>
         </select>
     </div>
-    <div class="col-auto d-none d-md-flex align-items-center">
+    <div class="col-auto">
         <span style="color:var(--border);font-size:1.2rem;line-height:1;user-select:none">|</span>
     </div>
-    <div class="col-6 col-md-2 d-flex gap-2">
-        <button type="submit" class="vs-btn vs-btn-primary flex-fill">Search</button>
-        <a href="<?= site_url('admin/schools') ?>" class="vs-btn vs-btn-danger flex-fill">Clear</a>
+    <div class="col-auto">
+        <button type="submit" class="vs-btn vs-btn-primary">Search</button>
+        <a href="<?= site_url('admin/schools') ?>" class="vs-btn vs-btn-danger">Clear</a>
     </div>
-    <div class="col-auto d-none d-md-flex align-items-center">
+    <div class="col-auto">
         <span style="color:var(--border);font-size:1.2rem;line-height:1;user-select:none">|</span>
     </div>
-    <div class="col-12 col-md-2 d-flex gap-2">
+    <div class="col-auto">
         <button type="button" class="vs-btn vs-btn-success flex-fill" id="btnAddSchool">
-            <?= asset_icon('add', ['stroke-width' => '2.5']) ?>
+            <?= asset_icon('add', ['width' => '20', 'height' => '20', 'stroke-width' => '2.5']) ?>
             Add School
         </button>
         <button type="button" class="vs-btn vs-btn-info flex-fill" id="btnOpenImport">
-            <?= asset_icon('import') ?>
+            <?= asset_icon('import', ['width' => '20', 'height' => '20']) ?>
             Import
         </button>
     </div>
@@ -124,7 +124,7 @@
                             <?php if ($isActive): ?>
                                 <div class="dropdown">
                                     <button type="button" class="vs-tbl-btn vs-tbl-btn-actions dropdown-toggle"
-                                            data-bs-toggle="dropdown" aria-expanded="false">Actions</button>
+                                            data-bs-toggle="dropdown" data-bs-popper-config='{"strategy":"fixed"}' aria-expanded="false">Actions</button>
                                     <ul class="dropdown-menu dropdown-menu-end">
                                         <li><button type="button" class="dropdown-item js-school-edit" data-id="<?= $sid ?>">Edit</button></li>
                                         <li><hr class="dropdown-divider"></li>
@@ -134,7 +134,7 @@
                             <?php else: ?>
                                 <div class="dropdown">
                                     <button type="button" class="vs-tbl-btn vs-tbl-btn-actions dropdown-toggle"
-                                            data-bs-toggle="dropdown" aria-expanded="false">Actions</button>
+                                            data-bs-toggle="dropdown" data-bs-popper-config='{"strategy":"fixed"}' aria-expanded="false">Actions</button>
                                     <ul class="dropdown-menu dropdown-menu-end">
                                         <li><button type="button" class="dropdown-item js-school-edit" data-id="<?= $sid ?>">Edit</button></li>
                                         <li><hr class="dropdown-divider"></li>
@@ -397,7 +397,7 @@ document.addEventListener('vs:modals:ready', function () {
         if (actionsCell) {
             actionsCell.innerHTML =
                 '<div class="dropdown">' +
-                '<button type="button" class="vs-tbl-btn vs-tbl-btn-actions dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">Actions</button>' +
+                '<button type="button" class="vs-tbl-btn vs-tbl-btn-actions dropdown-toggle" data-bs-toggle="dropdown" data-bs-popper-config=\'{"strategy":"fixed"}\' aria-expanded="false">Actions</button>' +
                 '<ul class="dropdown-menu dropdown-menu-end">' +
                 '<li><button type="button" class="dropdown-item js-school-edit" data-id="' + id + '">Edit</button></li>' +
                 '<li><hr class="dropdown-divider"></li>' +
@@ -476,7 +476,7 @@ document.addEventListener('vs:modals:ready', function () {
                     if (actionsCell) {
                         actionsCell.innerHTML =
                             '<div class="dropdown">' +
-                            '<button type="button" class="vs-tbl-btn vs-tbl-btn-actions dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">Actions</button>' +
+                            '<button type="button" class="vs-tbl-btn vs-tbl-btn-actions dropdown-toggle" data-bs-toggle="dropdown" data-bs-popper-config=\'{"strategy":"fixed"}\' aria-expanded="false">Actions</button>' +
                             '<ul class="dropdown-menu dropdown-menu-end">' +
                             '<li><button type="button" class="dropdown-item js-school-edit" data-id="' + id + '">Edit</button></li>' +
                             '<li><hr class="dropdown-divider"></li>' +

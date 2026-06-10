@@ -182,7 +182,7 @@ class StudentController extends BaseController
             'contact_number' => $student['contact_number'],
             'remarks_status' => $student['remarks_status'],
             'school_year' => $this->archiveSchoolYearLabel($now),
-            'eligibility_status' => $student['eligibility_status'],
+            // 'eligibility_status' => $student['eligibility_status'],
             'voucher_status' => $student['voucher_status'],
             'archive_reason' => 'Manually archived',
             'archived_by' => $userId,
@@ -294,7 +294,8 @@ class StudentController extends BaseController
     {
         return [
             'voucher_no'                   => 'permit_empty|max_length[50]',
-            'voucher_date'                 => 'required|valid_date[Y-m-d]',
+            'control_no'                   => 'permit_empty|max_length[50]',
+            'voucher_date'                 => 'permit_empty|valid_date[Y-m-d]',
             'first_name'                   => 'required|max_length[100]',
             'middle_name'                  => 'permit_empty|max_length[100]',
             'last_name'                    => 'required|max_length[100]',
@@ -303,10 +304,10 @@ class StudentController extends BaseController
             'gwa'                          => 'permit_empty|decimal|greater_than_equal_to[0]|less_than_equal_to[100]',
             'gender'                       => 'permit_empty|in_list[MALE,FEMALE]',
             'junior_high_school'           => 'permit_empty|max_length[200]',
-            'preferred_senior_high_school' => 'required|max_length[200]',
+            'preferred_senior_high_school' => 'permit_empty|max_length[200]',
             'contact_number'               => 'permit_empty|max_length[30]|regex_match[/^[0-9+().\\-\\s]+$/]',
             'remarks_status'               => 'permit_empty|in_list[COMPLETE,INCOMPLETE,OTHERS]',
-            'eligibility_status'           => 'required|in_list[eligible,not_eligible]',
+            // 'eligibility_status'           => 'required|in_list[eligible,not_eligible]',
             'voucher_status'               => 'permit_empty|in_list[not_generated,generated]',
         ];
     }
@@ -318,7 +319,8 @@ class StudentController extends BaseController
 
         return [
             'voucher_no'                   => $this->cleanText($this->request->getPost('voucher_no')) ?: null,
-            'voucher_date'                 => $this->request->getPost('voucher_date'),
+            'control_no'                   => $this->cleanText($this->request->getPost('control_no')) ?: null,
+            'voucher_date'                 => $this->request->getPost('voucher_date') ?: null,
             'first_name'                   => $this->cleanText($this->request->getPost('first_name')),
             'middle_name'                  => $this->cleanText($this->request->getPost('middle_name')),
             'last_name'                    => $this->cleanText($this->request->getPost('last_name')),
@@ -327,10 +329,10 @@ class StudentController extends BaseController
             'gwa'                          => $gwa === '' ? null : (float) $gwa,
             'gender'                       => strtoupper($this->cleanText($this->request->getPost('gender'))),
             'junior_high_school'           => (new SchoolOptionModel())->resolveSchoolId('JHS', $this->request->getPost('junior_high_school'), true),
-            'preferred_senior_high_school' => (new SchoolOptionModel())->resolveSchoolId('SHS', $this->request->getPost('preferred_senior_high_school'), false),
+            'preferred_senior_high_school' => (new SchoolOptionModel())->resolveSchoolId('SHS', $this->request->getPost('preferred_senior_high_school'), true),
             'contact_number'               => $this->cleanText($this->request->getPost('contact_number')),
             'remarks_status'               => strtoupper($this->cleanText($this->request->getPost('remarks_status'))),
-            'eligibility_status'           => $this->request->getPost('eligibility_status') ?: 'eligible',
+            // 'eligibility_status'           => $this->request->getPost('eligibility_status') ?: 'eligible',
             'voucher_status'               => $this->request->getPost('voucher_status') ?: 'not_generated',
         ];
     }

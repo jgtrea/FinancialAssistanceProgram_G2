@@ -28,7 +28,7 @@ document.addEventListener('DOMContentLoaded', function () {
   var vmFieldIds = [
     'vmControlNo', 'vmVoucherDate', 'vmFirstName', 'vmMiddleName', 'vmLastName',
     'vmSuffix', 'vmGender', 'vmGwa', 'vmRankNo', 'vmContactNumber',
-    'vmJuniorHs', 'vmPreferredHs', 'vmRemarks', 'vmEvaluatedBy', 'vmEligibility',
+    'vmJuniorHs', 'vmPreferredHs', 'vmRemarks', 'vmEvaluatedBy', /* 'vmEligibility', */
   ];
   var vmFieldToName = {
     vmControlNo:     'control_no',
@@ -45,7 +45,7 @@ document.addEventListener('DOMContentLoaded', function () {
     vmJuniorHs:      'junior_high_school',
     vmPreferredHs:   'preferred_senior_high_school',
     vmRemarks:       'remarks_status',
-    vmEligibility:   'eligibility_status',
+    // vmEligibility:   'eligibility_status',
   };
 
   function escapeHtml(v) {
@@ -136,6 +136,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
   }
 
+  /*
   var remarksOptionsByEligibility = {
     eligible:     ['COMPLETE'],
     not_eligible: ['INCOMPLETE', 'OTHERS'],
@@ -182,14 +183,15 @@ document.addEventListener('DOMContentLoaded', function () {
     }
   }
   bindEligibilityChange();
+  */
 
   function vmClearFields() {
     document.getElementById('vmStudentId').value = '';
     vmFieldIds.forEach(function (id) {
       vmSetFieldValue(document.getElementById(id), '');
     });
-    document.getElementById('vmEligibility').value = '';
-    vmUpdateRemarksOptions('');
+    // document.getElementById('vmEligibility').value = '';
+    // vmUpdateRemarksOptions('');
     if (vmLastGeneratedByEl) vmLastGeneratedByEl.textContent = '-';
     if (vmLastGeneratedAtEl) vmLastGeneratedAtEl.textContent = '';
     if (vmGenerationHistoryDetails) vmGenerationHistoryDetails.open = false;
@@ -198,14 +200,15 @@ document.addEventListener('DOMContentLoaded', function () {
 
   function vmPopulateFields(student) {
     document.getElementById('vmStudentId').value = student.student_id || '';
-    // Set eligibility first so remarks options update correctly before remarks value is set.
+    /* Set eligibility first so remarks options update correctly before remarks value is set.
     var eligEl = document.getElementById('vmEligibility');
     if (eligEl) {
       vmSetFieldValue(eligEl, student.eligibility_status || '');
       vmUpdateRemarksOptions(eligEl.value);
     }
+    */
     vmFieldIds.forEach(function (id) {
-      if (id === 'vmEligibility') return; // already handled above
+      // if (id === 'vmEligibility') return; // already handled above
       var el = document.getElementById(id);
       if (!el) return;
       vmSetFieldValue(el, student[vmFieldToName[id]]);
@@ -330,7 +333,7 @@ document.addEventListener('DOMContentLoaded', function () {
       document.getElementById('vmVoucherDate').value = new Date().toISOString().slice(0, 10);
       loadSchoolOptions('', '');
       initModalExtraSelects();
-      vmUpdateRemarksOptions('');
+      // vmUpdateRemarksOptions('');
       voucherModal.style.display = 'flex';
       return;
     }

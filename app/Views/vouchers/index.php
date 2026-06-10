@@ -11,7 +11,7 @@
 <?php $seniorHighSchools = $seniorHighSchools ?? [] ?>
 <?php $filterOptions = $filterOptions ?? ['junior_high_schools' => [], 'senior_high_schools' => []] ?>
 <?php $filters = $filters ?? [] ?>
-<?php $filterKeys = ['gender','remarks','voucher_status','date_from','date_to','junior_hs','preferred_hs','gwa_min','gwa_max','eligibility'] ?>
+<?php $filterKeys = ['gender','remarks','voucher_status','date_from','date_to','junior_hs','preferred_hs','gwa_min','gwa_max', /* 'eligibility' */] ?>
 <?php $f = static fn (string $k) => (string) ($filters[$k] ?? '') ?>
 <?php $activeFilterCount = count(array_filter($filterKeys, fn ($k) => $f($k) !== '')) ?>
 
@@ -29,21 +29,21 @@
     <div class="vs-alert vs-alert-success mb-3"><?= esc(session()->getFlashdata('message')) ?></div>
   <?php endif ?>
 
+  <?php if ($allowGenerate): ?>
   <div class="vs-action-bar" id="actionBar" style="display:none">
     <span class="vs-action-bar-count"><span id="selectedCount">0</span> selected</span>
     <div class="vs-action-bar-buttons d-flex gap-2 ms-auto align-items-center">
-      <?php if ($allowGenerate): ?>
         <button class="vs-btn vs-btn-dark-green" id="btnGeneratePdf">
           <?= asset_icon('voucher_add') ?>
           Generate Voucher
         </button>
-      <?php endif ?>
       <button type="button" class="vs-btn vs-btn-success" id="btnOpenExport">
         <?= asset_icon('export') ?>
         Export
       </button>
     </div>
   </div>
+  <?php endif ?>
 
   <div id="studentsAlertBox"></div>
 
@@ -70,15 +70,26 @@
     <div class="col-auto d-none d-md-flex align-items-center">
       <span style="color:var(--border);font-size:1.2rem;line-height:1;user-select:none">|</span>
     </div>
-    <div class="col-12 col-md-2 d-flex gap-2">
-      <button type="button" class="vs-btn vs-btn-success flex-fill" id="btnAddVoucher" data-mode="add">
+    <div class="col-12 col-md-auto ms-md-auto d-flex gap-2">
+<?php if ($allowGenerate): ?>
+      <button type="button" class="vs-btn vs-btn-dark-green flex-fill flex-md-grow-0 flex-md-shrink-0" id="btnGenerateAll">
+        <?= asset_icon('voucher_add') ?>
+        Generate Voucher
+      </button>
+      <button type="button" class="vs-btn vs-btn-success flex-fill flex-md-grow-0 flex-md-shrink-0" id="btnExportAll">
+        <?= asset_icon('export') ?>
+        Export
+      </button>
+<?php else: ?>
+      <button type="button" class="vs-btn vs-btn-success flex-fill flex-md-grow-0 flex-md-shrink-0" id="btnAddVoucher" data-mode="add">
         <?= asset_icon('add', ['stroke-width' => '2.5']) ?>
         Add Voucher
       </button>
-      <button type="button" class="vs-btn vs-btn-info flex-fill" id="btnOpenImport">
+      <button type="button" class="vs-btn vs-btn-info flex-fill flex-md-grow-0 flex-md-shrink-0" id="btnOpenImport">
         <?= asset_icon('import') ?>
         Import
       </button>
+<?php endif ?>
     </div>
   </form>
 
@@ -88,13 +99,16 @@
         <input type="text" id="customStudentsSearch" class="vs-input vs-page-search" placeholder="Enter keyword to search this page" style="max-width:260px">
         <label class="vs-length-label ms-auto">Show <input type="number" id="vouchersLengthInput" class="vs-length-input" value="10" min="1" max="500"> entries</label>
       </div>
+      <?php if ($allowGenerate): ?>
       <div id="selectAllBanner" style="display:none; margin-bottom:8px; padding:8px 12px; background:#fef3c7; border:1px solid #fcd34d; border-radius:6px">
         <span id="selectAllBannerText"></span>
         <a href="#" id="selectAllMatchingLink" style="font-weight:600; margin-left:8px">Select all matching</a>
         <a href="#" id="selectAllClearLink" style="margin-left:8px; display:none">Clear</a>
       </div>
+      <?php endif ?>
       <table id="studentsTable" class="vs-datatable vs-mobile-primary"
              data-mobile-primary="2"
+             data-allow-generate="<?= $allowGenerate ? '1' : '0' ?>"
              data-search-placeholder="Search students..."
              data-datatable-url="<?= site_url($prefix . '/students/datatable') ?>"
              data-matching-ids-url="<?= site_url($prefix . '/students/matching-ids') ?>"
@@ -139,6 +153,9 @@
 </form>
 
 <?= pre_modal('vouchers') ?>
+<?php if (!$allowGenerate): ?>
+<?= modal_assets('importModal') ?>
+<?php endif ?>
 
 <script>
 window.__VS.pageData = { filterOptions: <?= json_encode($filterOptions) ?> };
@@ -158,6 +175,7 @@ document.addEventListener('vs:modals:ready', function () {
   var csrfHash = '<?= csrf_hash() ?>';
   var schoolOptionsUrl = '<?= site_url($prefix . '/schools/options') ?>';
 
+<?php if (!$allowGenerate): ?>
   // ── Import ──────────────────────────────────────────────────────────────────
   var importModal  = document.getElementById('importModal');
   var importFile   = document.getElementById('importFile');
@@ -227,8 +245,29 @@ document.addEventListener('vs:modals:ready', function () {
       });
   });
 
+  importModal.addEventListener('click', function (e) {
+    if (e.target === importModal) importModal.style.display = 'none';
+  });
+<?php endif ?>
+
+  // ── Generate Voucher (toolbar) ─────────────────────────────────────────────
+  var btnGenerateAll = document.getElementById('btnGenerateAll');
+  btnGenerateAll && btnGenerateAll.addEventListener('click', function () {
+    runBulkAll('generate');
+  });
+
   // ── Export ──────────────────────────────────────────────────────────────────
   var exportModal = document.getElementById('exportModal');
+
+  function updateExportLinksForFilters() {
+    var query = buildCountQuery();
+    document.querySelectorAll('[data-export-format]').forEach(function (link) {
+      var format = link.dataset.exportFormat || 'xlsx';
+      if (!link.dataset.exportBase) link.dataset.exportBase = link.href.split('?')[0];
+      link.href = link.dataset.exportBase + '?format=' + encodeURIComponent(format)
+        + (query ? '&' + query : '');
+    });
+  }
 
   var btnOpenExport = document.getElementById('btnOpenExport');
   if (btnOpenExport) {
@@ -236,15 +275,17 @@ document.addEventListener('vs:modals:ready', function () {
       exportModal.style.display = 'flex';
     });
   }
+  var btnExportAll = document.getElementById('btnExportAll');
+  btnExportAll && btnExportAll.addEventListener('click', function () {
+    updateExportLinksForFilters();
+    exportModal.style.display = 'flex';
+  });
   document.getElementById('exportModalClose').addEventListener('click', function () {
     exportModal.style.display = 'none';
   });
 
   exportModal.addEventListener('click', function (e) {
     if (e.target === exportModal) exportModal.style.display = 'none';
-  });
-  importModal.addEventListener('click', function (e) {
-    if (e.target === importModal) importModal.style.display = 'none';
   });
 
   // ── Advanced Filters ───────────────────────────────────────────────────────
@@ -280,7 +321,7 @@ document.addEventListener('vs:modals:ready', function () {
     preferredHs:    document.getElementById('filterPreferredHs'),
     gwaMin:         document.getElementById('filterGwaMin'),
     gwaMax:         document.getElementById('filterGwaMax'),
-    eligibility:    document.getElementById('filterEligibility'),
+    // eligibility:    document.getElementById('filterEligibility'),
   };
 
   var filterForm = document.getElementById('vouchersFilterForm');
@@ -297,16 +338,11 @@ document.addEventListener('vs:modals:ready', function () {
     preferredHs:   'preferred_hs',
     gwaMin:        'gwa_min',
     gwaMax:        'gwa_max',
-    eligibility:   'eligibility',
+    // eligibility:   'eligibility',
   };
 
   // JHS / SHS dropdowns are fully populated server-side from
   // DISTINCT values in the students table (see VoucherModel::getListingFilterOptions).
-
-  // Hide the DT header row (length control) — replaced by custom row above.
-  var dtWrap = studentsTable.closest('.dataTables_wrapper');
-  var dtLengthEl = dtWrap ? dtWrap.querySelector('.dataTables_length') : null;
-  if (dtLengthEl) (dtLengthEl.closest('.row') || dtLengthEl.parentElement).style.display = 'none';
 
   // Wire custom length input.
   var lenInput = document.getElementById('vouchersLengthInput');
@@ -430,7 +466,7 @@ document.addEventListener('vs:modals:ready', function () {
 
   // ── Per-row Toggle-active + Bulk Activate / Deactivate ────────────────────
   var toggleActiveUrlBase       = '<?= site_url($prefix . '/vouchers/toggle-active') ?>';
-  var toggleEligibilityUrlBase  = '<?= site_url($prefix . '/vouchers/toggle-eligibility') ?>';
+  // var toggleEligibilityUrlBase  = '<?= site_url($prefix . '/vouchers/toggle-eligibility') ?>';
   var activateMultipleUrl       = '<?= site_url($prefix . '/vouchers/activate-multiple') ?>';
   var deactivateMultipleUrl     = '<?= site_url($prefix . '/vouchers/deactivate-multiple') ?>';
 
@@ -439,10 +475,12 @@ document.addEventListener('vs:modals:ready', function () {
     inactive: <?= json_encode(asset_icon('circle_x',     ['width' => '18', 'height' => '18'])) ?>,
   };
 
+  /*
   var eligIcons = {
     eligible:   <?= json_encode(asset_icon('circle_check', ['width' => '18', 'height' => '18'])) ?>,
     ineligible: <?= json_encode(asset_icon('circle_x',     ['width' => '18', 'height' => '18'])) ?>,
   };
+  */
 
   function flashSuccess(msg) {
     var alertBox = document.getElementById('studentsAlertBox');
@@ -501,6 +539,7 @@ document.addEventListener('vs:modals:ready', function () {
       .catch(function () { btn.disabled = false; alert('An error occurred. Please try again.'); });
   }
 
+  /*
   function handleToggleEligibility(btn) {
     if (!btn || btn.disabled) return;
     var id = btn.getAttribute('data-id');
@@ -550,13 +589,14 @@ document.addEventListener('vs:modals:ready', function () {
       })
       .catch(function () { btn.disabled = false; alert('An error occurred. Please try again.'); });
   }
+  */
 
   // Event delegation — covers both static rows and AJAX-rendered DataTable rows
   document.addEventListener('click', function (e) {
     var btn = e.target.closest('.js-toggle-active');
     if (btn) { handleToggleActive(btn); return; }
-    var btn2 = e.target.closest('.js-toggle-eligibility');
-    if (btn2) { handleToggleEligibility(btn2); return; }
+    // var btn2 = e.target.closest('.js-toggle-eligibility');
+    // if (btn2) { handleToggleEligibility(btn2); return; }
   });
 
   // ── Bulk Activate / Deactivate ─────────────────────────────────────────────
@@ -614,6 +654,7 @@ document.addEventListener('vs:modals:ready', function () {
   var activateAllUrl   = '<?= site_url($prefix . '/vouchers/activate-all') ?>';
   var deactivateAllUrl = '<?= site_url($prefix . '/vouchers/deactivate-all') ?>';
   var archiveAllUrl    = '<?= site_url($prefix . '/vouchers/archive-all') ?>';
+  var generateAllUrl   = '<?= site_url($prefix . '/vouchers/generate-all') ?>';
   var countMatchingUrl = '<?= site_url($prefix . '/vouchers/count-matching') ?>';
 
   function collectFilterScope() {
@@ -687,15 +728,16 @@ document.addEventListener('vs:modals:ready', function () {
   });
 
   function openBulkAllModal(action, count) {
-    var titleMap = { activate: 'Activate All', deactivate: 'Deactivate All', archive: 'Archive All' };
-    var verbMap  = { activate: 'activate', deactivate: 'deactivate', archive: 'archive' };
-    var btnClass = action === 'archive' ? 'vs-btn vs-btn-danger' : 'vs-btn vs-btn-primary';
+    var titleMap = { activate: 'Activate All', deactivate: 'Deactivate All', archive: 'Archive All', generate: 'Generate Vouchers' };
+    var verbMap  = { activate: 'activate', deactivate: 'deactivate', archive: 'archive', generate: 'generate vouchers for' };
+    var btnClass = action === 'archive' ? 'vs-btn vs-btn-danger' : (action === 'generate' ? 'vs-btn vs-btn-dark-green' : 'vs-btn vs-btn-primary');
 
     bulkAllTitle.textContent   = titleMap[action] || 'Confirm';
     bulkAllCount.textContent   = count;
     bulkAllMessage.innerHTML   = 'You are about to <strong>' + verbMap[action] + '</strong> '
       + '<strong id="bulkAllCount">' + count + '</strong> student(s) matching the current search/filters.'
-      + (action === 'archive' ? ' This cannot be undone.' : '');
+      + (action === 'archive' ? ' This cannot be undone.' : '')
+      + (action === 'generate' ? ' Students that are inactive or missing a preferred school will be skipped.' : '');
     bulkAllReasonWrap.style.display = action === 'archive' ? 'block' : 'none';
     if (bulkAllReason) bulkAllReason.value = '';
     bulkAllConfirm.className = btnClass;
@@ -724,7 +766,7 @@ document.addEventListener('vs:modals:ready', function () {
   bulkAllConfirm && bulkAllConfirm.addEventListener('click', function () {
     if (!pendingBulkAction) return;
     var action = pendingBulkAction;
-    var urlMap = { activate: activateAllUrl, deactivate: deactivateAllUrl, archive: archiveAllUrl };
+    var urlMap = { activate: activateAllUrl, deactivate: deactivateAllUrl, archive: archiveAllUrl, generate: generateAllUrl };
     var url    = urlMap[action];
     if (!url) return;
 
@@ -750,10 +792,21 @@ document.addEventListener('vs:modals:ready', function () {
           showInfo(data.message || (action + ' failed.'), 'Error');
           return;
         }
-        // Archive All now queues a background job — show a live progress toast
-        // (like generate) and reload when it finishes. Activate/Deactivate All
+        // Archive All / Generate All queue a background job — show a live
+        // progress toast and reload when it finishes. Activate/Deactivate All
         // stay synchronous (no status_url).
         if (data.queued && data.status_url) {
+          if (action === 'generate') {
+            trackJob('Generating', data.status_url, {
+              count: data.count || 0,
+              doneLabel: function () {
+                return (data.count || 0).toLocaleString() + ' voucher(s) generated.';
+              },
+              onDone:  function () { location.reload(); },
+              onError: function (msg) { showInfo('Generate failed: ' + msg, 'Error'); },
+            });
+            return;
+          }
           trackArchiveJob(data.status_url, data.count || 0, {
             onDone:  function () { location.reload(); },
             onError: function (msg) { showInfo('Archive failed: ' + msg, 'Error'); },

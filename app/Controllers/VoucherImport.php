@@ -3,6 +3,7 @@
 namespace App\Controllers;
 
 use App\Libraries\JsonPdfQueue;
+use App\Models\VoucherModel;
 
 /**
  * VoucherImport — student import/export. Both run on the background worker now:
@@ -74,7 +75,32 @@ class VoucherImport extends BaseController
             $format = 'xlsx';
         }
 
-        $ids    = $this->parseSelectedIds((string) $this->request->getGet('ids'));
+        $ids = $this->parseSelectedIds((string) $this->request->getGet('ids'));
+
+        // No explicit selection — fall back to "everything matching the
+        // current search/filter scope" (the toolbar Export button). An empty
+        // scope (no q, no filters) leaves $ids empty, which ExportRunner
+        // already treats as "export everything".
+        if (empty($ids)) {
+            $keyword = trim((string) $this->request->getGet('q'));
+            $filters = [];
+            foreach (VoucherModel::LISTING_FILTER_KEYS as $key) {
+                $filters[$key] = trim((string) $this->request->getGet($key));
+            }
+
+            $hasScope = $keyword !== '';
+            foreach ($filters as $value) {
+                if ($value !== '') {
+                    $hasScope = true;
+                    break;
+                }
+            }
+
+            if ($hasScope) {
+                $ids = (new VoucherModel())->getMatchingStudentIds($keyword, $filters);
+            }
+        }
+
         $userId = (int) session()->get('user_id');
         $prefix = session()->get('role') === 'admin' ? 'admin' : 'user';
 

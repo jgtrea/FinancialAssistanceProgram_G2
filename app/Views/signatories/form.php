@@ -80,7 +80,7 @@
 
         <div>
           <label class="vs-label" for="degree">Degree</label>
-          <select id="degree" name="degree" class="vs-input js-filter-select" data-placeholder="- TYPE OR SELECT -">
+          <select id="degree" name="degree" class="vs-input js-filter-select" data-placeholder="TYPE OR SELECT">
             <option></option>
             <?php foreach ($degreeOptions as $option): ?>
               <option value="<?= esc($option) ?>" <?= $selectedDegree === $option ? 'selected' : '' ?>><?= esc($option) ?></option>

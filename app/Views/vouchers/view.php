@@ -80,10 +80,12 @@
         <div class="vs-readonly-field"><?= esc($voucher['remarks_status'] ?: '-') ?></div>
       </div>
 
+      <?php if (false): ?>
       <div>
         <label class="vs-label">Eligibility</label>
         <div class="vs-readonly-field"><?= esc(ucfirst(str_replace('_', ' ', $voucher['eligibility_status']))) ?></div>
       </div>
+      <?php endif ?>
     </div>
 
     <div class="mt-4 d-flex gap-2">

@@ -15,8 +15,8 @@ class Dashboard extends Controller
         $totalUsers     = $userModel->countAll();
         $totalVouchers  = $db->table('students')->countAllResults();
         $generatedCount = $db->table('students')->where('generated_at IS NOT NULL', null, false)->countAllResults();
-        $eligibleCount  = $db->table('students')->where('eligibility_status', 'eligible')->countAllResults();
-        $notEligibleCount = $db->table('students')->where('eligibility_status', 'not_eligible')->countAllResults();
+        // $eligibleCount  = $db->table('students')->where('eligibility_status', 'eligible')->countAllResults();
+        // $notEligibleCount = $db->table('students')->where('eligibility_status', 'not_eligible')->countAllResults();
 
         $recentVouchers = $db->table('students')
             ->join('school jhs', 'jhs.school_id = students.junior_high_school', 'left', false)
@@ -37,8 +37,8 @@ class Dashboard extends Controller
             'totalUsers'     => $totalUsers,
             'myVouchers'     => $totalVouchers,
             'generated'      => $generatedCount,
-            'eligible'       => $eligibleCount,
-            'notEligible'    => $notEligibleCount,
+            // 'eligible'       => $eligibleCount,
+            // 'notEligible'    => $notEligibleCount,
             'recentVouchers' => $recentVouchers,
         ]);
     }

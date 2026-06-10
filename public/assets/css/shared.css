@@ -19,6 +19,7 @@
   --border: #c8e4ee;
   --danger: var(--bs-danger, #dc3545);
   --success: var(--bs-success, #198754);
+  --bs-gray-500: #adb5bd;
   --sidebar-w: 240px;
   --topbar-h: 56px;
   --font: "DM Sans", sans-serif;
@@ -177,7 +178,7 @@ canvas {
 .vs-btn-outline {
   background: transparent;
   color: var(--navy);
-  border: 1.5px solid var(--border);
+  border: 1.5px solid var(--bs-gray-500);
 }
 .vs-btn-outline:hover {
   background: var(--surface-md);
@@ -660,7 +661,8 @@ canvas {
 .vs-badge-not_found,
 .vs-badge-forbidden  { background: #edf3f6; color: #506173; }
 
-/* ── Eligibility icon ── */
+/*
+── Eligibility icon (unused) ──
 .vs-eligibility-icon {
   display: inline-flex;
   align-items: center;
@@ -682,6 +684,7 @@ canvas {
   background: #fde2e1;
   color: #a02622;
 }
+*/
 
 /* ── Role badges ── */
 .vs-role-badge {

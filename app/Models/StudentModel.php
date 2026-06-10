@@ -11,6 +11,7 @@ class StudentModel extends Model
 
     protected $allowedFields = [
         'voucher_no',
+        'control_no',
         'voucher_date',
         'first_name',
         'middle_name',
@@ -24,7 +25,7 @@ class StudentModel extends Model
         'contact_number',
         'remarks_status',
         'school_year',
-        'eligibility_status',
+        // 'eligibility_status',
         'voucher_status',
         'is_active',
         'generated_at',

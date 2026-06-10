@@ -37,36 +37,36 @@
     </div>
 
     <form method="get" id="sigSearchForm" class="row g-2 align-items-center mb-3">
-        <div class="col-12 col-md-3">
+        <div class="col-4">
             <input type="text" name="q" class="vs-input vs-advanced-search-input w-100" placeholder="Enter keyword to search (name, position)" value="<?= esc((string) ($keyword ?? ''), 'attr') ?>">
         </div>
-        <div class="col-6 col-md-2">
-            <select id="sfStatus" name="status" class="js-filter-select" data-placeholder="SELECTED / UNSELECTED" data-no-search="1" style="width:100%">
+        <div class="col-2">
+            <select id="sfStatus" name="status" class="js-filter-select" data-placeholder="Select Active" data-no-search="1" style="width:100%">
                 <option></option>
                 <option value="selected"   <?= ($filterStatus ?? '') === 'selected'   ? 'selected' : '' ?>>Selected</option>
                 <option value="unselected" <?= ($filterStatus ?? '') === 'unselected' ? 'selected' : '' ?>>Unselected</option>
             </select>
         </div>
-        <div class="col-6 col-md-2">
-            <select id="sfPosition" name="position" class="js-filter-select" data-placeholder="- TYPE OR SELECT -" style="width:100%">
+        <div class="col-2">
+            <select id="sfPosition" name="position" class="js-filter-select" data-placeholder="Select Position" style="width:100%">
                 <option></option>
                 <?php foreach (($allPositions ?? []) as $pos): ?>
                     <option value="<?= esc($pos) ?>" <?= ($filterPosition ?? '') === $pos ? 'selected' : '' ?>><?= esc($pos) ?></option>
                 <?php endforeach ?>
             </select>
         </div>
-        <div class="col-auto d-none d-md-flex align-items-center">
+        <div class="col-auto">
             <span style="color:var(--border);font-size:1.2rem;line-height:1;user-select:none">|</span>
         </div>
-        <div class="col-6 col-md-2 d-flex gap-2">
+        <div class="col-auto">
             <button type="submit" class="vs-btn vs-btn-primary flex-fill">Search</button>
             <a href="<?= site_url('signatories') ?>" class="vs-btn vs-btn-danger flex-fill">Clear</a>
         </div>
-        <div class="col-auto d-none d-md-flex align-items-center">
+        <div class="col-auto">
             <span style="color:var(--border);font-size:1.2rem;line-height:1;user-select:none">|</span>
         </div>
-        <div class="col-6 col-md-2">
-            <button type="button" class="vs-btn vs-btn-success w-100" id="btnAddSignatory">
+        <div class="col-auto">
+            <button type="button" class="vs-btn vs-btn-success" id="btnAddSignatory">
                 <?= asset_icon('add', ['stroke-width' => '2.5']) ?>
                 Add Signatory
             </button>
@@ -152,7 +152,7 @@
                         <td class="actions-cell">
                             <div class="dropdown">
                                 <button type="button" class="vs-tbl-btn vs-tbl-btn-actions dropdown-toggle"
-                                        data-bs-toggle="dropdown" aria-expanded="false">Actions</button>
+                                        data-bs-toggle="dropdown" data-bs-popper-config='{"strategy":"fixed"}' aria-expanded="false">Actions</button>
                                 <ul class="dropdown-menu dropdown-menu-end">
                                     <li>
                                         <button type="button" class="dropdown-item js-sig-edit"

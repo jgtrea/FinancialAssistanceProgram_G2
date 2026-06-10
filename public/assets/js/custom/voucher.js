@@ -14,6 +14,15 @@ document.addEventListener('DOMContentLoaded', function () {
   // /admin/students to handle 30k+ rows without DOM blowup. Otherwise we fall
   // back to the original client-side init that renders all PHP-rendered rows.
   const datatableUrl = vouchersTable.dataset.datatableUrl || null;
+  // The students/vouchers listing page renders its own "Show N entries"
+  // input — skip DataTables' built-in length dropdown there so it doesn't
+  // show twice. The voucher generation page has no custom input, so it
+  // keeps the built-in dropdown.
+  const customLengthInput = document.getElementById('vouchersLengthInput');
+  // The Students page (data-allow-generate="0") drops bulk selection — hide
+  // the row-checkbox column there. Other tables (vouchers/generate.php has no
+  // data-allow-generate attr) keep showing it.
+  const showCheckboxColumn = vouchersTable.dataset.allowGenerate !== '0';
   let dt;
   let dtMode = null;
 
@@ -131,9 +140,10 @@ document.addEventListener('DOMContentLoaded', function () {
         columnDefs: [
           ...voucherMobileColumnDefs(),
           { orderData: [3], targets: [2] },
+          ...(showCheckboxColumn ? [] : [{ visible: false, targets: 0 }]),
         ],
         order: [[3, 'asc']],
-        dom:        window.VS.dtHeaderDom(false) + window.VS.dtBodyDom,
+        dom:        (customLengthInput ? '' : window.VS.dtHeaderDom(false)) + window.VS.dtBodyDom,
         pageLength: initialPageLen,
         lengthMenu: window.VS.dtLengthMenuSS,
         responsive: voucherResponsiveConfig(),
@@ -146,7 +156,7 @@ document.addEventListener('DOMContentLoaded', function () {
     } else {
       dt = $(vouchersTable).DataTable({
         destroy: true,
-        dom:        window.VS.dtHeaderDom(false) + window.VS.dtBodyDom,
+        dom:        (customLengthInput ? '' : window.VS.dtHeaderDom(false)) + window.VS.dtBodyDom,
         pageLength: 10,
         lengthMenu: window.VS.dtLengthMenu,
         responsive: voucherResponsiveConfig(),
@@ -239,7 +249,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const currentNodes = dt.rows({ page: 'current' }).nodes().toArray();
     const pageIds = [];
     currentNodes.forEach(function (node) {
-      if (node.getAttribute('data-eligibility') === 'not_eligible') return;
+      // if (node.getAttribute('data-eligibility') === 'not_eligible') return;
       const cb = node.querySelector('.vs-row-check');
       if (cb && !cb.disabled) pageIds.push(cb.value);
     });

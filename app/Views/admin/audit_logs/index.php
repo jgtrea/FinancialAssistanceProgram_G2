@@ -28,7 +28,7 @@
             <input type="text" name="q" class="vs-input vs-advanced-search-input w-100" placeholder="Enter keyword to search (action, description)" value="<?= esc((string) ($keyword ?? ''), 'attr') ?>">
         </div>
         <div class="col-6 col-md-2">
-            <select name="action" id="auditFilterAction" class="js-filter-select" data-placeholder="- TYPE OR SELECT -" style="width:100%">
+            <select name="action" id="auditFilterAction" class="js-filter-select" data-placeholder="Select Action Status" style="width:100%">
                 <option></option>
                 <?php foreach ($actionOptions as $option): ?>
                     <?php $val = is_array($option) ? ($option['action'] ?? '') : $option ?>

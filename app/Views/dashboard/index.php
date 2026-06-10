@@ -32,6 +32,7 @@
             <div class="vs-stat-value"><?= number_format($generated) ?></div>
         </div>
     </div>
+    <?php if (false): ?>
     <div class="vs-stat-card vs-stat-teal">
         <div class="vs-stat-icon" aria-hidden="true">
             <svg viewBox="0 0 24 24" focusable="false">
@@ -54,6 +55,7 @@
             <div class="vs-stat-value"><?= number_format($notEligible) ?></div>
         </div>
     </div>
+    <?php endif ?>
 </div>
 
 <div class="row">

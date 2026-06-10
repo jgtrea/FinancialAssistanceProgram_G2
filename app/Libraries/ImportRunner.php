@@ -283,7 +283,7 @@ class ImportRunner
                 'remarks_status'               => $remarks !== '' ? $remarks : null,
                 'evaluated_by'                 => $evalBy !== '' ? $evalBy : null,
                 'school_year'                  => null,
-                'eligibility_status'           => 'eligible',
+                // 'eligibility_status'           => 'eligible',
                 'voucher_status'               => 'not_generated',
                 'is_active'                    => 1,
             ]);

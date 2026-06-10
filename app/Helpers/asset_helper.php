@@ -118,7 +118,7 @@ if (!function_exists('pre_modal')) {
             case 'layout':
                 return modal_assets('pdfStatusModal', 'accountModal');
             case 'vouchers':
-                return modal_assets('archiveModal', 'infoModal', 'bulkAllModal', 'importModal', 'voucherModal', 'filterModal', 'exportVoucher');
+                return modal_assets('archiveModal', 'infoModal', 'bulkAllModal', 'voucherModal', 'filterModal', 'exportVoucher');
             case 'generate':
                 return modal_assets('exportVoucher');
             case 'users':

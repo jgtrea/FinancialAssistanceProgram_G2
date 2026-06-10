@@ -55,7 +55,7 @@
             <?php if (!$hasResults): ?>
                 <div class="vs-alert vs-alert-info vs-alert-static vs-archive-empty-message mb-0">
                     <?php if (!$hasSchoolYear): ?>
-                        Open <strong>Filters</strong> and choose an <strong>SY</strong> to load archived records.
+                        Open <strong>Filters</strong> and choose a <strong>SY</strong> to load archived records.
                     <?php else: ?>
                         No archived records found for <strong><?= esc($f('school_year')) ?></strong>. Try a different SY or adjust your filters.
                     <?php endif ?>

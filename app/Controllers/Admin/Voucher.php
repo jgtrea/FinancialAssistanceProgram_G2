@@ -51,7 +51,7 @@ class Voucher extends Controller
             'preferred_senior_high_school' => 'required|max_length[200]',
             'contact_number'               => 'permit_empty|max_length[30]|regex_match[/^[0-9+().\\-\\s]+$/]',
             'remarks_status'               => 'permit_empty|in_list[COMPLETE,INCOMPLETE,OTHERS]',
-            'eligibility_status'           => 'required|in_list[eligible,not_eligible]',
+            // 'eligibility_status'           => 'required|in_list[eligible,not_eligible]',
         ];
 
         if ($includeVoucherStatus) {
@@ -83,7 +83,7 @@ class Voucher extends Controller
             'preferred_senior_high_school' => $this->schoolOptionModel->resolveSchoolId('SHS', $this->request->getPost('preferred_senior_high_school'), false),
             'contact_number'               => $this->cleanText($this->request->getPost('contact_number')),
             'remarks_status'               => strtoupper($this->cleanText($this->request->getPost('remarks_status'))),
-            'eligibility_status'           => $this->request->getPost('eligibility_status') ?: 'eligible',
+            // 'eligibility_status'           => $this->request->getPost('eligibility_status') ?: 'eligible',
         ];
 
         if ($includeVoucherStatus) {
@@ -251,13 +251,13 @@ class Voucher extends Controller
         }
 
 
-        // Exclude not_eligible and inactive rows — their checkboxes are disabled in the UI.
+        // Exclude inactive rows — their checkboxes are disabled in the UI.
         if (!empty($ids)) {
             $db  = \Config\Database::connect();
             $ids = $db->table('students')
                 ->select('student_id')
                 ->whereIn('student_id', $ids)
-                ->where('eligibility_status', 'eligible')
+                // ->where('eligibility_status', 'eligible')
                 ->where('is_active', 1)
                 ->get()
                 ->getResultArray();
@@ -334,12 +334,11 @@ class Voucher extends Controller
     protected function renderStudentRowForDatatable(array $v): array
     {
         $studentId   = (int) ($v['student_id'] ?? 0);
-        $notEligible = ($v['eligibility_status'] ?? '') === 'not_eligible';
+        // $notEligible = ($v['eligibility_status'] ?? '') === 'not_eligible';
         $isActive    = !isset($v['is_active']) || !empty($v['is_active']);
-        $elig        = (string) ($v['eligibility_status'] ?? '');
+        // $elig        = (string) ($v['eligibility_status'] ?? '');
 
-        $disabledReason = $notEligible ? 'Not eligible — cannot be selected'
-                        : (!$isActive   ? 'Deactivated — cannot be selected' : '');
+        $disabledReason = !$isActive ? 'Deactivated — cannot be selected' : '';
         $checkbox = '<input type="checkbox" class="vs-check vs-row-check" value="'
             . esc($studentId, 'attr') . '"'
             . ($disabledReason !== '' ? ' disabled title="' . esc($disabledReason, 'attr') . '"' : '')
@@ -361,6 +360,7 @@ class Voucher extends Controller
         $shs        = '<span title="' . esc($shsName, 'attr') . '">' . esc($shsAcr !== '' ? $shsAcr : $shsName) . '</span>';
         $remarks    = '<span class="js-remarks-cell">' . esc($v['remarks_status'] ?: '-') . '</span>';
 
+        /*
         if ($elig === 'eligible' || $elig === 'not_eligible') {
             $color    = $elig === 'eligible' ? '#16a34a' : '#9ca3af';
             $label    = $elig === 'eligible' ? 'Eligible' : 'Not eligible';
@@ -369,6 +369,7 @@ class Voucher extends Controller
         } else {
             $eligCell = '<span aria-label="Unknown">—</span>';
         }
+        */
 
         $statusColor = $isActive ? '#16a34a' : '#9ca3af';
         $statusLabel = $isActive ? 'Active' : 'Inactive';
@@ -379,14 +380,14 @@ class Voucher extends Controller
         $lastGen   = !empty($v['generated_at']) ? date('M d, Y', strtotime($v['generated_at'])) : '-';
         $lastGenCell = '<span class="js-last-generated">' . esc($lastGen) . '</span>';
 
-        $eligAttr   = esc($elig, 'attr');
-        $toggleText = $elig === 'not_eligible' ? 'Mark Eligible' : 'Mark Not Eligible';
+        // $eligAttr   = esc($elig, 'attr');
+        // $toggleText = $elig === 'not_eligible' ? 'Mark Eligible' : 'Mark Not Eligible';
         $actCell = '<div class="js-actions-cell"><div class="dropdown">'
-            . '<button type="button" class="vs-tbl-btn vs-tbl-btn-actions dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">Actions</button>'
+            . '<button type="button" class="vs-tbl-btn vs-tbl-btn-actions dropdown-toggle" data-bs-toggle="dropdown" data-bs-popper-config=\'{"strategy":"fixed"}\' aria-expanded="false">Actions</button>'
             . '<ul class="dropdown-menu dropdown-menu-end">'
             . '<li><button class="dropdown-item js-voucher-action" type="button" data-mode="view" data-id="' . $studentId . '">View</button></li>'
             . '<li><button class="dropdown-item js-voucher-action" type="button" data-mode="edit" data-id="' . $studentId . '">Edit</button></li>'
-            . '<li><button class="dropdown-item js-toggle-eligibility" type="button" data-id="' . $studentId . '" data-eligibility="' . $eligAttr . '">' . $toggleText . '</button></li>'
+            // . '<li><button class="dropdown-item js-toggle-eligibility" type="button" data-id="' . $studentId . '" data-eligibility="' . $eligAttr . '">' . $toggleText . '</button></li>'
             . '<li><hr class="dropdown-divider"></li>'
             . '<li><button class="dropdown-item ' . ($isActive ? 'text-danger' : '') . ' js-toggle-active" type="button" data-id="' . $studentId . '" data-active="' . ($isActive ? '1' : '0') . '">' . ($isActive ? 'Deactivate' : 'Activate') . '</button></li>'
             . '</ul></div></div>';
@@ -399,7 +400,7 @@ class Voucher extends Controller
                 'data-remarks'        => (string) ($v['remarks_status'] ?? ''),
                 'data-voucher-date'   => (string) ($v['voucher_date'] ?? ''),
                 'data-voucher-status' => (string) ($v['voucher_status'] ?? ''),
-                'data-eligibility'    => $elig,
+                // 'data-eligibility'    => $elig,
                 'data-active'         => $isActive ? '1' : '0',
                 'data-gwa'            => (string) ($v['gwa'] ?? ''),
                 'data-search-extra'   => implode(' ', array_filter([
@@ -414,7 +415,7 @@ class Voucher extends Controller
             'rank'          => $rank,
             'jhs'           => $jhs,
             'shs'           => $shs,
-            'eligibility'   => $eligCell,
+            // 'eligibility'   => $eligCell,
             'remarks'       => $remarks,
             'generate_count'=> $genCount,
             'last_generated'=> $lastGenCell,
@@ -909,7 +910,7 @@ class Voucher extends Controller
 
     // ── Bulk archive everything matching the current search + filter scope ────
     // Sweeps the full DB (not just the loaded 1000-row slice), including
-    // not-eligible students that the per-row Archive checkbox can't select.
+    // inactive students that the per-row Archive checkbox can't select.
     public function archiveAll()
     {
         $keyword = trim((string) $this->request->getPost('q'));
@@ -929,6 +930,58 @@ class Voucher extends Controller
         }
 
         return $this->enqueueArchiveJob($ids, $reason);
+    }
+
+    // ── Bulk-generate vouchers for everything matching the current search +
+    // filter scope. Mirrors archiveAll()'s scope resolution, but instead of
+    // blocking the whole batch (like missingPreferredResponse() does for
+    // per-selection generation), it silently skips students that can't be
+    // generated: inactive, or missing a preferred senior high
+    // school.
+    public function generateAll()
+    {
+        $keyword = trim((string) $this->request->getPost('q'));
+        $filters = [];
+        foreach (VoucherModel::LISTING_FILTER_KEYS as $key) {
+            $filters[$key] = trim((string) $this->request->getPost($key));
+        }
+
+        $ids = $this->voucherModel->getMatchingStudentIds($keyword, $filters);
+
+        if (!empty($ids)) {
+            $db  = \Config\Database::connect();
+            $ids = $db->table('students')
+                ->select('student_id')
+                ->whereIn('student_id', $ids)
+                // ->where('eligibility_status', 'eligible')
+                ->where('is_active', 1)
+                ->where('preferred_senior_high_school IS NOT NULL', null, false)
+                ->where('preferred_senior_high_school !=', 0)
+                ->get()
+                ->getResultArray();
+            $ids = array_map(static fn($r) => (int) $r['student_id'], $ids);
+        }
+
+        if (empty($ids)) {
+            return $this->response->setJSON([
+                'success' => false,
+                'message' => 'No students match the current search/filter — nothing to generate.',
+            ]);
+        }
+
+        $userId = $this->getCurrentUserId();
+        $prefix = session()->get('role') === 'admin' ? 'admin' : 'user';
+
+        $jobId = \App\Libraries\JsonPdfQueue::enqueueJob($ids, $userId, self::CHUNK_SIZE);
+        log_action($userId, 'QUEUE_PDF_JSON', 'Queued JSON-PDF for ' . \count($ids) . ' student(s) (job #' . $jobId . ')');
+
+        return $this->response->setJSON([
+            'success'    => true,
+            'queued'     => true,
+            'job_id'     => $jobId,
+            'count'      => \count($ids),
+            'status_url' => site_url("{$prefix}/vouchers/json-pdf-status/{$jobId}"),
+        ]);
     }
 
     // ── Archive all students matching the archive-page filter (GET params) ───
@@ -1055,7 +1108,7 @@ class Voucher extends Controller
                 'remarks_status'               => $r['remarks_status']               ?? null,
                 'evaluated_by'                 => $r['evaluated_by']                 ?? null,
                 'school_year'                  => null,
-                'eligibility_status'           => $r['eligibility_status']           ?? 'eligible',
+                // 'eligibility_status'           => $r['eligibility_status']           ?? 'eligible',
                 'voucher_status'               => $r['voucher_status']               ?? 'not_generated',
                 'is_active'                    => 1,
                 'created_at'                   => $r['archived_at']                  ?? $now,
@@ -1128,7 +1181,7 @@ class Voucher extends Controller
                 'contact_number'               => $s['contact_number'],
                 'remarks_status'               => $s['remarks_status'],
                 'school_year'                  => $schoolYear,
-                'eligibility_status'           => $s['eligibility_status'],
+                // 'eligibility_status'           => $s['eligibility_status'],
                 'voucher_status'               => $s['voucher_status'],
                 'archive_reason'               => $reason,
                 'archived_by'                  => $userId,
@@ -1267,6 +1320,7 @@ class Voucher extends Controller
         ]);
     }
 
+    /*
     // ── Per-row toggle eligibility ────────────────────────────────────────────
     public function toggleEligibility(int $id)
     {
@@ -1293,6 +1347,7 @@ class Voucher extends Controller
             'csrf_token'         => csrf_hash(),
         ]);
     }
+    */
 
     protected function prepareStudentsForGeneration(array $ids): array
     {

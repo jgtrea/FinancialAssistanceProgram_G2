@@ -15,7 +15,7 @@ class ArchiveModel extends Model
         'rank_no', 'gwa', 'gender',
         'junior_high_school', 'preferred_senior_high_school',
         'contact_number', 'remarks_status', 'school_year',
-        'eligibility_status', 'voucher_status', 'evaluated_by',
+        /* 'eligibility_status', */ 'voucher_status', 'evaluated_by',
         'archive_reason', 'archived_by', 'archived_at',
     ];
 

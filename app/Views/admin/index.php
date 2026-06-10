@@ -28,14 +28,14 @@
         <input type="text" name="q" class="vs-input vs-advanced-search-input w-100" placeholder="Enter keyword to search (name, email)" value="<?= esc((string) ($keyword ?? ''), 'attr') ?>">
     </div>
     <div class="col-6 col-md-2">
-        <select id="ufRole" name="role" class="js-filter-select" data-placeholder="ADMIN / USER" data-no-search="1" style="width:100%">
+        <select id="ufRole" name="role" class="js-filter-select" data-placeholder="Select Role" data-no-search="1" style="width:100%">
             <option value=""></option>
-            <option value="admin" <?= ($filterRole ?? '') === 'admin' ? 'selected' : '' ?>>ADMIN</option>
-            <option value="user"  <?= ($filterRole ?? '') === 'user'  ? 'selected' : '' ?>>USER</option>
+            <option value="admin" <?= ($filterRole ?? '') === 'admin' ? 'selected' : '' ?>>Admin</option>
+            <option value="user"  <?= ($filterRole ?? '') === 'user'  ? 'selected' : '' ?>>User</option>
         </select>
     </div>
     <div class="col-6 col-md-2">
-        <select id="ufStatus" name="status" class="js-filter-select" data-placeholder="ACTIVE / INACTIVE" data-no-search="1" style="width:100%">
+        <select id="ufStatus" name="status" class="js-filter-select" data-placeholder="Select Status" data-no-search="1" style="width:100%">
             <option value=""></option>
             <option value="active"   <?= ($filterStatus ?? '') === 'active'   ? 'selected' : '' ?>>Active</option>
             <option value="inactive" <?= ($filterStatus ?? '') === 'inactive' ? 'selected' : '' ?>>Inactive</option>
@@ -106,7 +106,7 @@
                             <?php if (!$isSelf): ?>
                             <div class="dropdown">
                                 <button type="button" class="vs-tbl-btn vs-tbl-btn-actions dropdown-toggle"
-                                        data-bs-toggle="dropdown" aria-expanded="false">Actions</button>
+                                        data-bs-toggle="dropdown" data-bs-popper-config='{"strategy":"fixed"}' aria-expanded="false">Actions</button>
                                 <ul class="dropdown-menu dropdown-menu-end">
                                     <li>
                                         <button type="button" class="dropdown-item js-user-edit"

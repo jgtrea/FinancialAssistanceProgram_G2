@@ -15,7 +15,7 @@ class VoucherModel extends Model
         'rank_no', 'gwa', 'gender',
         'junior_high_school', 'preferred_senior_high_school',
         'contact_number', 'remarks_status', 'school_year',
-        'eligibility_status', 'voucher_status', 'is_active',
+        /* 'eligibility_status', */ 'voucher_status', 'is_active',
         'evaluated_by',
     ];
 
@@ -114,7 +114,7 @@ class VoucherModel extends Model
     public const LISTING_FILTER_KEYS = [
         'gender', 'remarks', 'voucher_status',
         'date_from', 'date_to', 'junior_hs', 'preferred_hs',
-        'gwa_min', 'gwa_max', 'eligibility',
+        'gwa_min', 'gwa_max', /* 'eligibility', */
     ];
 
     // When no keyword and no filter are given, return only the most recently
@@ -168,12 +168,12 @@ class VoucherModel extends Model
 
         $builder
             ->orderBy('students.created_at', 'DESC')
-            ->orderBy("CASE WHEN students.eligibility_status = 'eligible' THEN 0 ELSE 1 END", '', false)
+            // ->orderBy("CASE WHEN students.eligibility_status = 'eligible' THEN 0 ELSE 1 END", '', false)
             ->orderBy('students.is_active', 'DESC')
             ->orderBy('students.student_id', 'DESC');
 
         // Always cap the result set, even with keyword/filter applied. Without
-        // this guard, a filter like eligibility=eligible can return tens of
+        // this guard, a filter like remarks=COMPLETE can return tens of
         // thousands of rows on large databases and hang the browser. Users
         // refine further via the in-page search if they need a tighter slice.
         if ($limit > 0) {
@@ -469,10 +469,12 @@ class VoucherModel extends Model
             $builder->where('gwa <=', (float) $v);
             $applied = true;
         }
+        /*
         if (($v = $value($filters, 'eligibility')) !== '') {
             $builder->where('students.eligibility_status', $v);
             $applied = true;
         }
+        */
 
         return $applied;
     }

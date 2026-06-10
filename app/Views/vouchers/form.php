@@ -166,6 +166,7 @@
                  value="<?= old('evaluated_by', $voucher['evaluated_by'] ?? '') ?>">
         </div>
 
+        <?php if (false): ?>
         <div>
           <label class="vs-label" for="eligibility_status">Eligibility</label>
           <?php $eligibility = old('eligibility_status', $voucher['eligibility_status'] ?? '') ?>
@@ -175,6 +176,7 @@
             <option value="not_eligible" <?= $eligibility === 'not_eligible' ? 'selected' : '' ?>>NOT ELIGIBLE</option>
           </select>
         </div>
+        <?php endif ?>
 
       </div>
 

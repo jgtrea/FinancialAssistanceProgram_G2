@@ -159,7 +159,7 @@ class ArchiveRunner
                 'remarks_status'               => $s['remarks_status'],
                 'evaluated_by'                 => $s['evaluated_by'] ?? null,
                 'school_year'                  => $schoolYear,
-                'eligibility_status'           => $s['eligibility_status'],
+                // 'eligibility_status'           => $s['eligibility_status'],
                 'voucher_status'               => $s['voucher_status'],
                 'archive_reason'               => $reason,
                 'archived_by'                  => $userId,

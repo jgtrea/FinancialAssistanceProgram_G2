@@ -6,11 +6,11 @@ use CodeIgniter\CLI\BaseCommand;
 use CodeIgniter\CLI\CLI;
 
 /**
- * `php spark seed:test-students N` — bulk-insert N eligible test students.
+ * `php spark seed:test-students N` — bulk-insert N test students.
  *
  * Used to load-test the voucher generation pipeline. All inserted rows are
- * `eligibility_status='eligible'`, `voucher_status='not_generated'`,
- * `is_active=1`, so they show up as selectable in the generation UI.
+ * `voucher_status='not_generated'`, `is_active=1`, so they show up as
+ * selectable in the generation UI.
  *
  * Inserts in 1000-row batches via insertBatch() for speed.
  *
@@ -22,7 +22,7 @@ class SeedTestStudents extends BaseCommand
 {
     protected $group       = 'App';
     protected $name        = 'seed:test-students';
-    protected $description = 'Insert N test student records (eligible, not generated). Default 1000.';
+    protected $description = 'Insert N test student records (not generated). Default 1000.';
 
     private const FIRST_NAMES = [
         'Juan', 'Pedro', 'Jose', 'Maria', 'Ana', 'Luis', 'Carlos', 'Miguel',
@@ -121,7 +121,7 @@ class SeedTestStudents extends BaseCommand
                     'contact_number'               => '09' . str_pad((string) mt_rand(100000000, 999999999), 9, '0', STR_PAD_LEFT),
                     'remarks_status'               => self::REMARKS[array_rand(self::REMARKS)],
                     'school_year'                  => null,
-                    'eligibility_status'           => 'eligible',
+                    // 'eligibility_status'           => 'eligible',
                     'voucher_status'               => 'not_generated',
                     'is_active'                    => 1,
                     'created_at'                   => $now,

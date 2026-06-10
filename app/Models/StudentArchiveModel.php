@@ -25,7 +25,7 @@ class StudentArchiveModel extends Model
         'contact_number',
         'remarks_status',
         'school_year',
-        'eligibility_status',
+        // 'eligibility_status',
         'voucher_status',
         'archive_reason',
         'archived_by',
