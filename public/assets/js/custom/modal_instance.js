@@ -49,7 +49,7 @@ var ModalInstance = (function () {
 
         infoModal: function () {
             return `<div class="vs-modal-overlay" id="infoModal" style="display:none">
-              <div class="vs-modal" style="max-width:420px">
+              <div class="vs-modal" style="max-width:680px">
                 <div class="vs-modal-header">
                   <h5 id="infoModalTitle">Notice</h5>
                   <button class="vs-modal-close" id="infoModalClose">&times;</button>
@@ -124,54 +124,54 @@ var ModalInstance = (function () {
                   <button class="vs-modal-close" id="filterModalClose">&times;</button>
                 </div>  
                 <div class="vs-modal-body">
-                  <div class="vs-form-grid vs-form-grid-4">
-                    <div class="vs-span-2">
+                  <div class="row g-3">
+                    <div class="col-6">
                       <label class="vs-label" for="filterSchoolYear">School Year</label>
                       <select id="filterSchoolYear" class="vs-input js-filter-select" data-placeholder="- TYPE OR SELECT -"><option></option></select>
                     </div>
-                    <div class="vs-span-2">
+                    <div class="col-6">
                       <label class="vs-label" for="filterGender">Sex</label>
                       <select id="filterGender" class="vs-input js-filter-select" data-placeholder="MALE / FEMALE" data-no-search="1">
                         <option></option><option value="MALE">MALE</option><option value="FEMALE">FEMALE</option>
                       </select>
                     </div>
-                    <div class="vs-span-2">
+                    <div class="col-6">
                       <label class="vs-label" for="filterRemarks">Remarks</label>
                       <select id="filterRemarks" class="vs-input js-filter-select" data-placeholder="PASSED / FOR REVIEW / FAILED" data-no-search="1">
                         <option></option><option value="PASSED">PASSED</option><option value="FOR REVIEW">FOR REVIEW</option><option value="FAILED">FAILED</option>
                       </select>
                     </div>
-                    <div class="vs-span-2">
+                    <div class="col-6">
                       <label class="vs-label" for="filterVoucherStatus">Voucher Status</label>
                       <select id="filterVoucherStatus" class="vs-input js-filter-select" data-placeholder="GENERATED / NOT GENERATED" data-no-search="1">
                         <option></option><option value="generated">generated</option><option value="not_generated">not_generated</option>
                       </select>
                     </div>
-                    <div class="vs-span-2">
+                    <div class="col-6">
                       <label class="vs-label" for="filterDateFrom">Voucher Date From</label>
                       <input type="date" id="filterDateFrom" class="vs-input">
                     </div>
-                    <div class="vs-span-2">
+                    <div class="col-6">
                       <label class="vs-label" for="filterDateTo">Voucher Date To</label>
                       <input type="date" id="filterDateTo" class="vs-input">
                     </div>
-                    <div class="vs-span-2">
+                    <div class="col-6">
                       <label class="vs-label" for="filterJuniorHs">Junior High School</label>
                       <select id="filterJuniorHs" class="vs-input js-filter-select" data-placeholder="- TYPE OR SELECT -"><option></option></select>
                     </div>
-                    <div class="vs-span-2">
+                    <div class="col-6">
                       <label class="vs-label" for="filterPreferredHs">Preferred Senior HS</label>
                       <select id="filterPreferredHs" class="vs-input js-filter-select" data-placeholder="- TYPE OR SELECT -"><option></option></select>
                     </div>
-                    <div class="vs-span-2">
+                    <div class="col-6">
                       <label class="vs-label" for="filterGwaMin">GWA Min</label>
                       <input type="number" step="0.01" id="filterGwaMin" class="vs-input" placeholder="e.g. 80">
                     </div>
-                    <div class="vs-span-2">
+                    <div class="col-6">
                       <label class="vs-label" for="filterGwaMax">GWA Max</label>
                       <input type="number" step="0.01" id="filterGwaMax" class="vs-input" placeholder="e.g. 100">
                     </div>
-                    <div class="vs-span-2">
+                    <div class="col-6">
                       <label class="vs-label" for="filterEligibility">Eligibility Status</label>
                       <select id="filterEligibility" class="vs-input js-filter-select" data-placeholder="ELIGIBLE / NOT ELIGIBLE" data-no-search="1">
                         <option></option><option value="eligible">eligible</option><option value="not_eligible">not_eligible</option>
@@ -208,7 +208,7 @@ var ModalInstance = (function () {
 
         voucherModal: function () {
             return `<div class="vs-modal-overlay" id="voucherModal" style="display:none">
-              <div class="vs-modal" style="max-width:780px">
+              <div class="vs-modal" style="max-width:680px">
                 <div class="vs-modal-header">
                   <h5 id="voucherModalTitle">Add Voucher</h5>
                   <button class="vs-modal-close" id="voucherModalClose">&times;</button>
@@ -218,82 +218,73 @@ var ModalInstance = (function () {
                   <input type="hidden" name="student_id" id="vmStudentId" value="">
                   <div class="vs-modal-body">
                     <div id="voucherModalAlert"></div>
-                    <div class="vs-form-grid vs-form-grid-4">
-                      <div id="vmVoucherNoWrap" class="vs-span-4" style="display:none">
-                        <label class="vs-label">Voucher No.</label>
-                        <div id="vmVoucherNoDisplay" class="vs-input" style="background:#f9fafb;min-height:38px;display:flex;align-items:center;cursor:default;max-width:220px">—</div>
-                      </div>
-                      <div id="vmVoucherDateWrap" class="vs-span-4">
+                    <div class="row g-3">
+                      <div class="col-6">
+                        <label class="vs-label required" for="vmFirstName">Control No.</label>
+                        <input id="vmFirstName" name="first_name" type="text" class="vs-input vs-uppercase" required>
+                      </div>                    
+                      <div id="vmVoucherDateWrap" class="col-6">
                         <label class="vs-label required" for="vmVoucherDate">Voucher Date</label>
-                        <input id="vmVoucherDate" name="voucher_date" type="date" class="vs-input" required style="max-width:220px">
+                        <input id="vmVoucherDate" name="voucher_date" type="date" class="vs-input"  >
                       </div>
-                      <div>
+                      <div class="col-4">
                         <label class="vs-label required" for="vmFirstName">First Name</label>
                         <input id="vmFirstName" name="first_name" type="text" class="vs-input vs-uppercase" required>
                       </div>
-                      <div>
+                      <div class="col-4">
                         <label class="vs-label" for="vmMiddleName">Middle Name</label>
                         <input id="vmMiddleName" name="middle_name" type="text" class="vs-input vs-uppercase">
                       </div>
-                      <div>
+                      <div class="col-4">
                         <label class="vs-label required" for="vmLastName">Last Name</label>
                         <input id="vmLastName" name="last_name" type="text" class="vs-input vs-uppercase" required>
                       </div>
-                      <div></div>
-                      <div>
+                      <div class="col-4">
                         <label class="vs-label" for="vmSuffix">Suffix</label>
                         <select id="vmSuffix" name="suffix" class="vs-input js-school-select vs-uppercase" data-placeholder="- SELECT -" data-no-search="1">
                           <option></option><option value="JR.">JR.</option><option value="SR.">SR.</option>
                           <option value="II">II</option><option value="III">III</option><option value="IV">IV</option>
                         </select>
                       </div>
-                      <div>
+                      <div class="col-4">
                         <label class="vs-label" for="vmGender">Sex</label>
                         <select id="vmGender" name="gender" class="vs-input js-school-select" data-placeholder="MALE / FEMALE" data-no-search="1">
                           <option></option><option value="MALE">MALE</option><option value="FEMALE">FEMALE</option>
                         </select>
                       </div>
-                      <div>
+                      <div class="col-4">
                         <label class="vs-label" for="vmContactNumber">Contact Number</label>
                         <input id="vmContactNumber" name="contact_number" type="text" class="vs-input vs-uppercase">
                       </div>
-                      <div></div>
-                      <div>
+                      <div class="col-6">
                         <label class="vs-label" for="vmGwa">GWA</label>
                         <input id="vmGwa" name="gwa" type="number" step="0.01" class="vs-input">
                       </div>
-                      <div>
+                      <div class="col-6">
                         <label class="vs-label" for="vmRankNo">Rank No.</label>
                         <input id="vmRankNo" name="rank_no" type="number" class="vs-input">
                       </div>
-                      <div></div><div></div>
-                      <div>
+                      <div class="col-6">
                         <label class="vs-label required" for="vmJuniorHs">Junior High School</label>
                         <select id="vmJuniorHs" name="junior_high_school" class="vs-input js-school-select vs-uppercase" data-placeholder="- TYPE OR SELECT -" required><option></option></select>
                       </div>
-                      <div>
+                      <div class="col-6">
                         <label class="vs-label required" for="vmPreferredHs">Preferred Senior High School</label>
                         <select id="vmPreferredHs" name="preferred_senior_high_school" class="vs-input js-school-select vs-uppercase" data-placeholder="- TYPE OR SELECT -" required><option></option></select>
                       </div>
-                      <div id="vmSchoolYearWrap">
-                        <label class="vs-label required" for="vmSchoolYear">School Year</label>
-                        <input id="vmSchoolYear" name="school_year" type="text" list="vmSchoolYear-list" class="vs-input vs-uppercase" placeholder="e.g. 2025-2026" required autocomplete="off">
-                        <datalist id="vmSchoolYear-list"></datalist>
-                      </div>
-                      <div></div>
-                      <div>
+                      <div class="col-6">
                         <label class="vs-label required" for="vmEligibility">Eligibility</label>
                         <select id="vmEligibility" name="eligibility_status" class="vs-input js-school-select" data-placeholder="ELIGIBLE / NOT ELIGIBLE" data-no-search="1" required>
                           <option></option><option value="eligible">ELIGIBLE</option><option value="not_eligible">NOT ELIGIBLE</option>
                         </select>
                       </div>
-                      <div>
+                      <div class="col-6 ">
                         <label class="vs-label required" for="vmRemarks">Remarks</label>
                         <select id="vmRemarks" name="remarks_status" class="vs-input js-school-select vs-uppercase" data-placeholder="PASSED / FOR REVIEW / FAILED" data-no-search="1" required>
                           <option></option><option value="PASSED">PASSED</option><option value="FOR REVIEW">FOR REVIEW</option><option value="FAILED">FAILED</option>
                         </select>
                       </div>
-                      <div></div><div></div>
+                      <div class="col-4"></div><div class="col-4"></div>
                     </div>
                   </div>
                   <div class="vs-modal-footer">
@@ -326,40 +317,38 @@ var ModalInstance = (function () {
                   <input type="hidden" name="user_id" id="umUserId" value="">
                   <div class="vs-modal-body">
                     <div id="userModalAlert"></div>
-                    <div class="vs-form-grid vs-form-grid-4">
-                      <div>
+                    <div class="row g-3">
+                      <div class="col-4">
                         <label class="vs-label required" for="umFirstName">First Name</label>
                         <input type="text" id="umFirstName" name="first_name" class="vs-input vs-uppercase" required spellcheck="false">
                       </div>
-                      <div>
+                      <div class="col-4">
                         <label class="vs-label" for="umMiddleName">Middle Name</label>
                         <input type="text" id="umMiddleName" name="middle_name" class="vs-input vs-uppercase" spellcheck="false">
                       </div>
-                      <div>
+                      <div class="col-4">
                         <label class="vs-label required" for="umLastName">Last Name</label>
                         <input type="text" id="umLastName" name="last_name" class="vs-input vs-uppercase" required spellcheck="false">
-                      </div>
-                      <div></div>
-                      <div class="vs-span-2">
-                        <label class="vs-label required" for="umUsername">Username <span class="vs-label-hint">(used for login)</span></label>
-                        <input type="text" id="umUsername" name="username" class="vs-input" required spellcheck="false" autocomplete="off">
-                      </div>
-                      <div class="vs-span-2"></div>
-                      <div class="vs-span-2">
+                      </div>                      
+                      <div class="col-6 ">
                         <label class="vs-label required" for="umEmail">Email</label>
                         <input type="email" id="umEmail" name="email" class="vs-input" required autocomplete="email" autocapitalize="none" spellcheck="false">
                       </div>
-                      <div class="vs-span-2">
-                        <label class="vs-label" id="umPasswordLabel" for="umPassword">Password</label>
-                        <input type="password" id="umPassword" name="password" class="vs-input" autocomplete="new-password" autocapitalize="none" spellcheck="false">
-                      </div>
-                      <div class="vs-span-2">
-                        <label class="vs-label required" for="umRole">Role</label>
+                      <div class="col-6">
+                        <label class="vs-label required" for="umRole">Account Level</label>
                         <select id="umRole" name="role" class="vs-input js-filter-select" data-placeholder="ADMIN / USER" data-no-search="1" required>
                           <option></option><option value="admin">ADMIN</option><option value="user">USER</option>
                         </select>
                       </div>
-                      <div class="vs-span-2"></div>
+                      <div class="col-6">
+                        <label class="vs-label required" for="umUsername">Username</label>
+                        <input type="text" id="umUsername" name="username" class="vs-input" required spellcheck="false" autocomplete="off">
+                      </div>
+                      <div class="col-6">
+                        <label class="vs-label" id="umPasswordLabel" for="umPassword">Password</label>
+                        <input type="password" id="umPassword" name="password" class="vs-input" autocomplete="new-password" autocapitalize="none" spellcheck="false">
+                      </div>                      
+                      <div class="col-4"></div>
                     </div>
                   </div>
                   <div class="vs-modal-footer">
@@ -376,7 +365,7 @@ var ModalInstance = (function () {
 
         deactivateModal: function () {
             return `<div class="vs-modal-overlay" id="deactivateModal" style="display:none">
-              <div class="vs-modal" style="max-width:460px">
+              <div class="vs-modal" style="max-width:680px">
                 <div class="vs-modal-header">
                   <h5>Deactivate User</h5>
                   <button class="vs-modal-close" id="deactivateModalClose">&times;</button>
@@ -397,7 +386,7 @@ var ModalInstance = (function () {
 
         archiveCurrentModal: function () {
             return `<div class="vs-modal-overlay" id="archiveCurrentModal" style="display:none">
-              <div class="vs-modal" style="max-width:500px">
+              <div class="vs-modal" style="max-width:680px">
                 <div class="vs-modal-header">
                   <h5 id="archiveCurrentModalTitle">Archive Current Data</h5>
                   <button class="vs-modal-close" id="archiveCurrentModalClose">&times;</button>
@@ -428,50 +417,50 @@ var ModalInstance = (function () {
                   <button class="vs-modal-close" id="archiveFilterClose">&times;</button>
                 </div>
                 <div class="vs-modal-body">
-                  <div class="vs-form-grid vs-form-grid-4">
-                    <div class="vs-span-2">
+                  <div class="row g-3">
+                    <div class="col-12 col-lg-6">
                       <label class="vs-label required" for="afSchoolYear">School Year</label>
                       <select id="afSchoolYear" class="vs-input js-filter-select" data-placeholder="- TYPE OR SELECT -"><option></option></select>
                     </div>
-                    <div class="vs-span-2">
+                    <div class="col-12 col-lg-6">
                       <label class="vs-label" for="afGender">Sex</label>
                       <select id="afGender" class="vs-input js-filter-select" data-placeholder="MALE / FEMALE" data-no-search="1">
                         <option></option><option value="MALE">MALE</option><option value="FEMALE">FEMALE</option>
                       </select>
                     </div>
-                    <div class="vs-span-2">
+                    <div class="col-12 col-lg-6">
                       <label class="vs-label" for="afRemarks">Remarks</label>
                       <select id="afRemarks" class="vs-input js-filter-select" data-placeholder="PASSED / FOR REVIEW / FAILED" data-no-search="1">
                         <option></option><option value="PASSED">PASSED</option><option value="FOR REVIEW">FOR REVIEW</option><option value="FAILED">FAILED</option>
                       </select>
                     </div>
-                    <div class="vs-span-2">
+                    <div class="col-12 col-lg-6">
                       <label class="vs-label" for="afVoucherStatus">Voucher Status</label>
                       <select id="afVoucherStatus" class="vs-input js-filter-select" data-placeholder="GENERATED / NOT GENERATED" data-no-search="1">
                         <option></option><option value="generated">generated</option><option value="not_generated">not_generated</option>
                       </select>
                     </div>
-                    <div class="vs-span-2">
+                    <div class="col-12 col-lg-6">
                       <label class="vs-label" for="afDateFrom">Voucher Date From</label>
                       <input type="date" id="afDateFrom" class="vs-input">
                     </div>
-                    <div class="vs-span-2">
+                    <div class="col-12 col-lg-6">
                       <label class="vs-label" for="afDateTo">Voucher Date To</label>
                       <input type="date" id="afDateTo" class="vs-input">
                     </div>
-                    <div class="vs-span-2">
+                    <div class="col-12 col-lg-6">
                       <label class="vs-label" for="afJuniorHs">Junior High School</label>
                       <select id="afJuniorHs" class="vs-input js-filter-select" data-placeholder="- TYPE OR SELECT -"><option></option></select>
                     </div>
-                    <div class="vs-span-2">
+                    <div class="col-12 col-lg-6">
                       <label class="vs-label" for="afPreferredHs">Preferred Senior HS</label>
                       <select id="afPreferredHs" class="vs-input js-filter-select" data-placeholder="- TYPE OR SELECT -"><option></option></select>
                     </div>
-                    <div class="vs-span-2">
+                    <div class="col-12 col-lg-6">
                       <label class="vs-label" for="afGwaMin">GWA Min</label>
                       <input type="number" step="0.01" id="afGwaMin" class="vs-input" placeholder="e.g. 80">
                     </div>
-                    <div class="vs-span-2">
+                    <div class="col-12 col-lg-6">
                       <label class="vs-label" for="afGwaMax">GWA Max</label>
                       <input type="number" step="0.01" id="afGwaMax" class="vs-input" placeholder="e.g. 100">
                     </div>
@@ -494,16 +483,16 @@ var ModalInstance = (function () {
                         <button class="vs-modal-close" id="auditFilterModalClose">&times;</button>
                     </div>
                     <div class="vs-modal-body">
-                        <div class="vs-form-grid vs-form-grid-4">
-                            <div class="vs-span-4">
+                        <div class="row g-3">
+                            <div class="col-12">
                                 <label class="vs-label" for="auditFilterAction">Action</label>
                                 <select id="auditFilterAction" class="vs-input js-filter-select" data-placeholder="- TYPE OR SELECT -"><option></option></select>
                             </div>
-                            <div class="vs-span-2">
+                            <div class="col-12 col-lg-6">
                                 <label class="vs-label" for="auditFilterDateFrom">Date From</label>
                                 <input type="date" id="auditFilterDateFrom" class="vs-input">
                             </div>
-                            <div class="vs-span-2">
+                            <div class="col-12 col-lg-6">
                                 <label class="vs-label" for="auditFilterDateTo">Date To</label>
                                 <input type="date" id="auditFilterDateTo" class="vs-input">
                             </div>
@@ -560,7 +549,7 @@ var ModalInstance = (function () {
 
         schoolModal: function () {
             return `<div class="vs-modal-overlay" id="schoolModal" style="display:none">
-                <div class="vs-modal" style="max-width:480px">
+                <div class="vs-modal" style="max-width:680px">
                     <div class="vs-modal-header">
                         <h5 id="schoolModalTitle">Add School</h5>
                         <button class="vs-modal-close" id="schoolModalClose">&times;</button>
@@ -570,16 +559,16 @@ var ModalInstance = (function () {
                         <input type="hidden" name="school_id" id="smSchoolId" value="">
                         <div class="vs-modal-body">
                             <div id="schoolModalAlert"></div>
-                            <div class="vs-form-grid vs-form-grid-4">
-                                <div class="vs-span-2">
+                            <div class="row g-3">
+                                <div class="col-12">
                                     <label class="vs-label required" for="smSchoolName">School Name</label>
                                     <input id="smSchoolName" name="school_name" type="text" class="vs-input vs-uppercase" required placeholder="e.g. TANDAG NATIONAL HIGH SCHOOL">
                                 </div>
-                                <div class="vs-span-2">
+                                <div class="col-6">
                                     <label class="vs-label">Acronym</label>
                                     <div id="smAcronymDisplay" class="vs-input" style="background:#f9fafb;cursor:default;display:flex;align-items:center;min-height:38px;color:#6b7280">—</div>
                                 </div>
-                                <div class="vs-span-4">
+                                <div class="col-6">
                                     <label class="vs-label required" for="smSchoolLevel">Level</label>
                                     <select id="smSchoolLevel" name="school_level" class="vs-input js-filter-select" data-placeholder="JHS / SHS" data-no-search="1" required>
                                         <option></option><option value="JHS">JHS</option><option value="SHS">SHS</option>
@@ -601,7 +590,7 @@ var ModalInstance = (function () {
 
         schoolImportModal: function () {
             return `<div class="vs-modal-overlay" id="schoolImportModal" style="display:none">
-                <div class="vs-modal" style="max-width:500px">
+                <div class="vs-modal" style="max-width:680px">
                     <div class="vs-modal-header">
                         <h5>Import Schools</h5>
                         <button class="vs-modal-close" id="schoolImportClose">&times;</button>
@@ -663,7 +652,7 @@ var ModalInstance = (function () {
             }
 
             return `<div class="vs-modal-overlay" id="signatoryModal" style="display:none">
-              <div class="vs-modal" style="max-width:780px">
+              <div class="vs-modal" style="max-width:680px">
                 <div class="vs-modal-header">
                   <h5 id="signatoryModalTitle">Add Signatory</h5>
                   <button class="vs-modal-close" id="signatoryModalClose">&times;</button>
@@ -673,45 +662,43 @@ var ModalInstance = (function () {
                   <input type="hidden" name="signatory_id" id="smSignatoryId" value="">
                   <div class="vs-modal-body">
                     <div id="signatoryModalAlert"></div>
-                    <div class="vs-form-grid vs-form-grid-4">
-                      <div>
+                    <div class="row g-3">
+                      <div class="col-4">
                         <label class="vs-label required" for="smFirstName">First Name</label>
                         <input id="smFirstName" name="first_name" type="text" class="vs-input vs-uppercase" required>
                       </div>
-                      <div>
+                      <div class="col-4">
                         <label class="vs-label" for="smMiddleName">Middle Name</label>
                         <input id="smMiddleName" name="middle_name" type="text" class="vs-input vs-uppercase">
                       </div>
-                      <div>
+                      <div class="col-4">
                         <label class="vs-label required" for="smLastName">Last Name</label>
                         <input id="smLastName" name="last_name" type="text" class="vs-input vs-uppercase" required>
                       </div>
-                      <div></div>
-                      <div>
+                      <div class="col-6">
                         <label class="vs-label" for="smPrefix">Prefix</label>
                         <select id="smPrefix" name="prefix" class="vs-input js-filter-select" data-placeholder="- SELECT -" data-no-search="1">
                           <option></option>${_staticOpts(prefixOpts)}
                         </select>
                       </div>
-                      <div>
+                      <div class="col-6">
                         <label class="vs-label" for="smSuffix">Suffix</label>
                         <select id="smSuffix" name="suffix" class="vs-input js-filter-select" data-placeholder="- SELECT -" data-no-search="1">
                           <option></option>${_staticOpts(suffixOpts)}
                         </select>
                       </div>
-                      <div></div><div></div>
-                      <div>
+                      <div class="col-6">
                         <label class="vs-label" for="smDegree">Degree</label>
                         <select id="smDegree" name="degree" class="vs-input js-filter-select" data-placeholder="- TYPE OR SELECT -">
                           <option></option>${_staticOpts(degreeOpts)}
                         </select>
                         <input id="smDegreeOther" name="degree_other" type="text" class="vs-input mt-2" placeholder="Specify degree" style="display:none">
                       </div>
-                      <div class="vs-span-2">
+                      <div class="col-6">
                         <label class="vs-label required" for="smPositionTitle">Position Title</label>
                         <input id="smPositionTitle" name="position_title" type="text" class="vs-input vs-uppercase" required>
                       </div>
-                      <div style="grid-column:1 / -1">
+                      <div class="col-12">
                         <label class="vs-label" for="smSignatureImage">Signature Image</label>
                         <input id="smSignatureImage" name="signature_image" type="file" class="vs-input" accept="image/png,image/jpeg,image/jpg,image/webp">
                         <small class="text-muted">PNG, JPG, or WEBP — max 2 MB. Leave empty to keep the current image.</small>
@@ -767,7 +754,7 @@ var ModalInstance = (function () {
 
         accountModal: function () {
             return `<div class="vs-modal-overlay" id="accountModal" style="display:none">
-                <div class="vs-modal" style="max-width:720px;width:95%">
+                <div class="vs-modal" style="max-width:680px">
                     <div class="vs-modal-header">
                         <h5>My Account</h5>
                         <button class="vs-modal-close" id="accountModalClose">&times;</button>
@@ -776,45 +763,45 @@ var ModalInstance = (function () {
                         <div id="accountModalMsg" class="mb-3" style="display:none"></div>
                         <form id="accountModalForm" autocomplete="off">
                             <input type="hidden" id="amCsrf" name="${_csrf.name}" value="${_csrf.hash}">
-                            <div class="vs-form-grid vs-form-grid-4">
-                                <div>
+                            <div class="row g-3">
+                                <div class="col-12 col-md-6 col-lg-3">
                                     <label class="vs-label required">Username</label>
                                     <input id="amUsername" name="username" type="text" class="vs-input" required>
                                 </div>
-                                <div>
+                                <div class="col-12 col-md-6 col-lg-3">
                                     <label class="vs-label required">Email</label>
                                     <input id="amEmail" name="email" type="email" class="vs-input" required>
                                 </div>
-                                <div>
+                                <div class="col-12 col-md-6 col-lg-3">
                                     <label class="vs-label">Role</label>
                                     <div id="amRole" class="vs-input" style="background:#f9fafb;cursor:default"></div>
                                 </div>
-                                <div></div>
-                                <div>
+                                <div class="col-12 col-md-6 col-lg-3"></div>
+                                <div class="col-12 col-md-6 col-lg-3">
                                     <label class="vs-label required">First Name</label>
                                     <input id="amFirstName" name="first_name" type="text" class="vs-input vs-uppercase" required>
                                 </div>
-                                <div>
+                                <div class="col-12 col-md-6 col-lg-3">
                                     <label class="vs-label">Middle Name</label>
                                     <input id="amMiddleName" name="middle_name" type="text" class="vs-input vs-uppercase">
                                 </div>
-                                <div>
+                                <div class="col-12 col-md-6 col-lg-3">
                                     <label class="vs-label required">Last Name</label>
                                     <input id="amLastName" name="last_name" type="text" class="vs-input vs-uppercase" required>
                                 </div>
-                                <div></div>
-                                <div class="vs-span-4">
+                                <div class="col-12 col-md-6 col-lg-3"></div>
+                                <div class="col-12">
                                     <h2 class="vs-section-title">Change Password</h2>
                                 </div>
-                                <div>
+                                <div class="col-12 col-md-6 col-lg-3">
                                     <label class="vs-label">Current Password</label>
                                     <input id="amCurrentPw" name="current_password" type="password" class="vs-input" autocomplete="current-password">
                                 </div>
-                                <div>
+                                <div class="col-12 col-md-6 col-lg-3">
                                     <label class="vs-label">New Password</label>
                                     <input id="amNewPw" name="new_password" type="password" class="vs-input" autocomplete="new-password">
                                 </div>
-                                <div>
+                                <div class="col-12 col-md-6 col-lg-3">
                                     <label class="vs-label">Confirm Password</label>
                                     <input id="amConfirmPw" name="confirm_password" type="password" class="vs-input" autocomplete="new-password">
                                 </div>
