@@ -23,34 +23,40 @@
 
     <div id="userAlertBox"></div>
 
-<div class="vs-users-toolbar d-flex align-items-center gap-2 mb-3">
-    <form method="get" class="vs-users-filter-form" style="flex:1;min-width:0;display:flex;align-items:center;gap:0.5rem">
-        <input type="text" name="q" class="vs-input vs-advanced-search-input" placeholder="Enter keyword to search (name, email)" value="<?= esc((string) ($keyword ?? ''), 'attr') ?>" style="flex:1;min-width:0">
-        <div class="vs-users-role-filter" style="width:140px;flex-shrink:0">
-            <select id="ufRole" name="role" class="js-filter-select" data-placeholder="ADMIN / USER" data-no-search="1" style="width:100%">
-                <option value=""></option>
-                <option value="admin" <?= ($filterRole ?? '') === 'admin' ? 'selected' : '' ?>>ADMIN</option>
-                <option value="user"  <?= ($filterRole ?? '') === 'user'  ? 'selected' : '' ?>>USER</option>
-            </select>
-        </div>
-        <div class="vs-users-status-filter" style="width:130px;flex-shrink:0">
-            <select id="ufStatus" name="status" class="js-filter-select" data-placeholder="ACTIVE / INACTIVE" data-no-search="1" style="width:100%">
-                <option value=""></option>
-                <option value="active"   <?= ($filterStatus ?? '') === 'active'   ? 'selected' : '' ?>>Active</option>
-                <option value="inactive" <?= ($filterStatus ?? '') === 'inactive' ? 'selected' : '' ?>>Inactive</option>
-            </select>
-        </div>
-        <span class="vs-users-separator" style="color:var(--border);font-size:1.2rem;line-height:1;user-select:none;flex-shrink:0">|</span>
-        <button type="submit" class="vs-btn vs-btn-primary vs-users-search-btn" style="flex-shrink:0">Search</button>
-        <a href="<?= site_url('admin/users') ?>" class="vs-btn vs-btn-outline vs-users-clear-btn" id="userFilterClear" style="flex-shrink:0">Clear</a>
-    </form>
-    <span class="vs-users-separator" style="color:var(--border);font-size:1.2rem;line-height:1;user-select:none;flex-shrink:0">|</span>
-    <div class="vs-users-actions" style="display:flex;gap:0.5rem;flex-shrink:0">
-        <button type="button" class="vs-btn vs-btn-primary" id="btnAddUser">
+<form method="get" class="row g-2 align-items-center mb-3">
+    <div class="col-12 col-md-3">
+        <input type="text" name="q" class="vs-input vs-advanced-search-input w-100" placeholder="Enter keyword to search (name, email)" value="<?= esc((string) ($keyword ?? ''), 'attr') ?>">
+    </div>
+    <div class="col-6 col-md-2">
+        <select id="ufRole" name="role" class="js-filter-select" data-placeholder="ADMIN / USER" data-no-search="1" style="width:100%">
+            <option value=""></option>
+            <option value="admin" <?= ($filterRole ?? '') === 'admin' ? 'selected' : '' ?>>ADMIN</option>
+            <option value="user"  <?= ($filterRole ?? '') === 'user'  ? 'selected' : '' ?>>USER</option>
+        </select>
+    </div>
+    <div class="col-6 col-md-2">
+        <select id="ufStatus" name="status" class="js-filter-select" data-placeholder="ACTIVE / INACTIVE" data-no-search="1" style="width:100%">
+            <option value=""></option>
+            <option value="active"   <?= ($filterStatus ?? '') === 'active'   ? 'selected' : '' ?>>Active</option>
+            <option value="inactive" <?= ($filterStatus ?? '') === 'inactive' ? 'selected' : '' ?>>Inactive</option>
+        </select>
+    </div>
+    <div class="col-auto d-none d-md-flex align-items-center">
+        <span style="color:var(--border);font-size:1.2rem;line-height:1;user-select:none">|</span>
+    </div>
+    <div class="col-6 col-md-2 d-flex gap-2">
+        <button type="submit" class="vs-btn vs-btn-primary flex-fill">Search</button>
+        <a href="<?= site_url('admin/users') ?>" class="vs-btn vs-btn-outline flex-fill" id="userFilterClear">Clear</a>
+    </div>
+    <div class="col-auto d-none d-md-flex align-items-center">
+        <span style="color:var(--border);font-size:1.2rem;line-height:1;user-select:none">|</span>
+    </div>
+    <div class="col-6 col-md-2">
+        <button type="button" class="vs-btn vs-btn-primary w-100" id="btnAddUser">
             <?= asset_icon('add', ['stroke-width' => '2.5']) ?>
             Add User        </button>
     </div>
-</div>
+</form>
 
     <div class="vs-card">
         <div class="vs-card-body">

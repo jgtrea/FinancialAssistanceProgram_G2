@@ -20,18 +20,26 @@
         </div>
     </div>
 
-    <form method="get" id="auditFilterForm" style="display:flex;align-items:center;gap:0.5rem;margin-bottom:1rem">
-        <input type="text" name="q" class="vs-input vs-advanced-search-input" placeholder="Enter keyword to search (action, description)" value="<?= esc((string) ($keyword ?? ''), 'attr') ?>" style="flex:1;min-width:0">
-        <button type="button" class="vs-btn vs-btn-outline" id="auditBtnOpenFilter" style="flex-shrink:0">
-            Filters
-            <span id="auditFilterBadge" class="badge bg-primary" style="display:<?= $activeFilterCount > 0 ? 'inline-block' : 'none' ?>;margin-left:.35rem"><?= $activeFilterCount > 0 ? esc($activeFilterCount) : '' ?></span>
-        </button>
+    <form method="get" id="auditFilterForm" class="row g-2 align-items-center mb-3">
         <?php foreach ($filterKeys as $k): ?>
             <input type="hidden" name="<?= esc($k, 'attr') ?>" value="<?= esc((string) $filterValues[$k], 'attr') ?>">
         <?php endforeach ?>
-        <span style="color:var(--border);font-size:1.2rem;line-height:1;user-select:none;flex-shrink:0">|</span>
-        <button type="submit" class="vs-btn vs-btn-primary" style="flex-shrink:0">Search</button>
-        <a href="<?= site_url('user/audit-logs') ?>" class="vs-btn vs-btn-outline" style="flex-shrink:0">Clear</a>
+        <div class="col-12 col-md-7">
+            <input type="text" name="q" class="vs-input vs-advanced-search-input w-100" placeholder="Enter keyword to search (action, description)" value="<?= esc((string) ($keyword ?? ''), 'attr') ?>">
+        </div>
+        <div class="col-6 col-md-2">
+            <button type="button" class="vs-btn vs-btn-outline w-100" id="auditBtnOpenFilter">
+                Filters
+                <span id="auditFilterBadge" class="badge bg-primary" style="display:<?= $activeFilterCount > 0 ? 'inline-block' : 'none' ?>;margin-left:.35rem"><?= $activeFilterCount > 0 ? esc($activeFilterCount) : '' ?></span>
+            </button>
+        </div>
+        <div class="col-auto d-none d-md-flex align-items-center">
+            <span style="color:var(--border);font-size:1.2rem;line-height:1;user-select:none">|</span>
+        </div>
+        <div class="col-6 col-md-2 d-flex gap-2">
+            <button type="submit" class="vs-btn vs-btn-primary flex-fill">Search</button>
+            <a href="<?= site_url('user/audit-logs') ?>" class="vs-btn vs-btn-outline flex-fill">Clear</a>
+        </div>
     </form>
 
     <div class="vs-card">
