@@ -27,11 +27,13 @@ document.addEventListener('DOMContentLoaded', function () {
   var vmGenerationHistoryList = document.getElementById('vmGenerationHistoryList');
 
   var vmFieldIds = [
-    'vmVoucherDate', 'vmFirstName', 'vmMiddleName', 'vmLastName',
+    'vmControlNo', 'vmVoucherDate', 'vmFirstName', 'vmMiddleName', 'vmLastName',
     'vmSuffix', 'vmGender', 'vmGwa', 'vmRankNo', 'vmContactNumber',
-    'vmJuniorHs', 'vmPreferredHs', 'vmRemarks', 'vmSchoolYear', 'vmEligibility',
+    'vmJuniorHs', 'vmPreferredHs', 'vmRemarks', 'vmEvaluatedBy', 'vmSchoolYear', 'vmEligibility',
   ];
   var vmFieldToName = {
+    vmControlNo:     'control_no',
+    vmEvaluatedBy:   'evaluated_by',
     vmVoucherDate:   'voucher_date',
     vmFirstName:     'first_name',
     vmMiddleName:    'middle_name',
@@ -137,8 +139,8 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
   var remarksOptionsByEligibility = {
-    eligible:     ['PASSED'],
-    not_eligible: ['FOR REVIEW', 'FAILED'],
+    eligible:     ['COMPLETE'],
+    not_eligible: ['INCOMPLETE', 'OTHERS'],
   };
 
   function vmUpdateRemarksOptions(eligValue) {

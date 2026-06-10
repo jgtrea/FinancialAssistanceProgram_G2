@@ -10,12 +10,12 @@ class ArchiveModel extends Model
     protected $primaryKey    = 'archive_id';
     protected $returnType    = 'array';
     protected $allowedFields = [
-        'student_id', 'voucher_no', 'voucher_date',
+        'student_id', 'control_no', 'voucher_no', 'voucher_date',
         'first_name', 'middle_name', 'last_name', 'suffix',
         'rank_no', 'gwa', 'gender',
         'junior_high_school', 'preferred_senior_high_school',
         'contact_number', 'remarks_status', 'school_year',
-        'eligibility_status', 'voucher_status',
+        'eligibility_status', 'voucher_status', 'evaluated_by',
         'archive_reason', 'archived_by', 'archived_at',
     ];
 

@@ -142,6 +142,7 @@ class ArchiveRunner
         foreach ($students as $s) {
             $rows[] = [
                 'student_id'                   => $s['student_id'],
+                'control_no'                   => $s['control_no'] ?? null,
                 'voucher_no'                   => $s['voucher_no'],
                 'voucher_date'                 => $s['voucher_date'],
                 'first_name'                   => $s['first_name'],
@@ -155,6 +156,7 @@ class ArchiveRunner
                 'preferred_senior_high_school' => $s['preferred_senior_high_school'],
                 'contact_number'               => $s['contact_number'],
                 'remarks_status'               => $s['remarks_status'],
+                'evaluated_by'                 => $s['evaluated_by'] ?? null,
                 'school_year'                  => $s['school_year'],
                 'eligibility_status'           => $s['eligibility_status'],
                 'voucher_status'               => $s['voucher_status'],

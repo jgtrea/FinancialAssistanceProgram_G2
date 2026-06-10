@@ -37,18 +37,20 @@ class Voucher extends Controller
     protected function getStudentValidationRules(bool $includeVoucherStatus = false): array
     {
         $rules = [
+            'control_no'                   => 'permit_empty|max_length[50]',
+            'evaluated_by'                 => 'permit_empty|max_length[150]',
             'voucher_date'                 => 'required|valid_date[Y-m-d]',
             'first_name'                   => 'required|max_length[100]',
             'middle_name'                  => 'permit_empty|max_length[100]',
             'last_name'                    => 'required|max_length[100]',
             'suffix'                       => 'permit_empty|in_list[JR.,SR.,II,III,IV]',
-            'rank_no'                      => 'permit_empty|is_natural_no_zero|less_than_equal_to[999999]',
+            'rank_no'                      => 'permit_empty|decimal|greater_than[0]|less_than_equal_to[999999]',
             'gwa'                          => 'permit_empty|decimal|greater_than_equal_to[0]|less_than_equal_to[100]',
             'gender'                       => 'permit_empty|in_list[MALE,FEMALE]',
             'junior_high_school'           => 'required|max_length[200]',
             'preferred_senior_high_school' => 'required|max_length[200]',
             'contact_number'               => 'permit_empty|max_length[30]|regex_match[/^[0-9+().\\-\\s]+$/]',
-            'remarks_status'               => 'required|in_list[PASSED,FOR REVIEW,FAILED]',
+            'remarks_status'               => 'permit_empty|in_list[COMPLETE,INCOMPLETE,OTHERS]',
             'school_year'                  => 'required|max_length[20]|regex_match[/^\\d{4}(-\\d{4})?$/]',
             'eligibility_status'           => 'required|in_list[eligible,not_eligible]',
         ];
@@ -68,12 +70,14 @@ class Voucher extends Controller
     protected function getStudentPayload(bool $includeVoucherStatus = false): array
     {
         $payload = [
+            'control_no'                   => $this->cleanText($this->request->getPost('control_no')) ?: null,
+            'evaluated_by'                 => $this->cleanText($this->request->getPost('evaluated_by')) ?: null,
             'voucher_date'                 => $this->request->getPost('voucher_date'),
             'first_name'                   => $this->cleanText($this->request->getPost('first_name')),
             'middle_name'                  => $this->cleanText($this->request->getPost('middle_name')),
             'last_name'                    => $this->cleanText($this->request->getPost('last_name')),
             'suffix'                       => strtoupper($this->cleanText($this->request->getPost('suffix'))),
-            'rank_no'                      => $this->nullableInt($this->request->getPost('rank_no')),
+            'rank_no'                      => $this->nullableFloat($this->request->getPost('rank_no')),
             'gwa'                          => $this->nullableFloat($this->request->getPost('gwa')),
             'gender'                       => strtoupper($this->cleanText($this->request->getPost('gender'))),
             'junior_high_school'           => $this->schoolOptionModel->resolveSchoolId('JHS', $this->request->getPost('junior_high_school'), false),
@@ -708,12 +712,36 @@ class Voucher extends Controller
     // and surface in finished.json when done. See App\Libraries\JsonPdfQueue
     // and App\Libraries\JsonPdfRunner for the storage + render logic.
 
+    // Block generation when any selected student has no Preferred Senior High
+    // School — a voucher can't be issued without it. Returns a JSON error
+    // response listing the offenders, or null when all are OK. Shared by the
+    // admin + user generate flows.
+    protected function missingPreferredResponse(array $ids)
+    {
+        $missing = $this->voucherModel->getMissingPreferredSchool($ids);
+        if (empty($missing)) {
+            return null;
+        }
+        $names = array_slice(array_map(static fn ($r) => $r['full_name'], $missing), 0, 5);
+        $more  = \count($missing) > 5 ? ' and ' . (\count($missing) - 5) . ' more' : '';
+
+        return $this->response->setJSON([
+            'success' => false,
+            'message' => \count($missing) . ' selected student(s) have no Preferred Senior High School and cannot be generated: '
+                . implode(', ', $names) . $more . '. Set their preferred school first.',
+        ]);
+    }
+
     public function generateJsonPdf()
     {
         $ids = $this->parseVoucherIds($this->request->getPost('voucher_ids'));
 
         if (empty($ids)) {
             return $this->response->setJSON(['success' => false, 'message' => 'No students selected.']);
+        }
+
+        if ($resp = $this->missingPreferredResponse($ids)) {
+            return $resp;
         }
 
         $userId = $this->getCurrentUserId();
@@ -1001,6 +1029,7 @@ class Voucher extends Controller
 
             $db->table('students')->insert([
                 'student_id'                   => $studentId,
+                'control_no'                   => $r['control_no']                   ?? null,
                 'voucher_no'                   => $r['voucher_no']                   ?? null,
                 'voucher_date'                 => $r['voucher_date']                 ?? null,
                 'first_name'                   => $r['first_name']                   ?? '',
@@ -1014,6 +1043,7 @@ class Voucher extends Controller
                 'preferred_senior_high_school' => $this->schoolOptionModel->resolveSchoolId('SHS', $r['preferred_senior_high_school'] ?? null, false),
                 'contact_number'               => $r['contact_number']               ?? null,
                 'remarks_status'               => $r['remarks_status']               ?? null,
+                'evaluated_by'                 => $r['evaluated_by']                 ?? null,
                 'school_year'                  => $r['school_year']                  ?? null,
                 'eligibility_status'           => $r['eligibility_status']           ?? 'eligible',
                 'voucher_status'               => $r['voucher_status']               ?? 'not_generated',
@@ -1238,7 +1268,7 @@ class Voucher extends Controller
         $newEligibility = ($current === 'not_eligible') ? 'eligible' : 'not_eligible';
 
         $updateData = ['eligibility_status' => $newEligibility];
-        $updateData['remarks_status'] = $newEligibility === 'not_eligible' ? 'FOR REVIEW' : 'PASSED';
+        $updateData['remarks_status'] = $newEligibility === 'not_eligible' ? 'INCOMPLETE' : 'COMPLETE';
         $this->voucherModel->update($id, $updateData);
 
         $userId = $this->getCurrentUserId();

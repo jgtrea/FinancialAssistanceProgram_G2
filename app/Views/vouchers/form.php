@@ -36,6 +36,12 @@
       <div class="vs-form-grid vs-form-grid-4">
 
         <div>
+          <label class="vs-label" for="control_no">Control No.</label>
+          <input id="control_no" name="control_no" type="text" class="vs-input vs-uppercase"
+                 value="<?= old('control_no', $voucher['control_no'] ?? '') ?>">
+        </div>
+
+        <div>
           <label class="vs-label required" for="voucher_date">Voucher Date</label>
           <input id="voucher_date" name="voucher_date" type="date"
                  class="vs-input <?= ($validation && $validation->hasError('voucher_date')) ? 'vs-input-error' : '' ?>"
@@ -92,7 +98,7 @@
 
         <div>
           <label class="vs-label" for="rank_no">Rank No.</label>
-          <input id="rank_no" name="rank_no" type="number" class="vs-input"
+          <input id="rank_no" name="rank_no" type="number" step="any" class="vs-input"
                  value="<?= old('rank_no', $voucher['rank_no'] ?? '') ?>">
         </div>
 
@@ -145,13 +151,19 @@
         </div>
 
         <div>
-          <label class="vs-label" for="remarks_status">Remarks</label>
-          <select id="remarks_status" name="remarks_status" class="vs-input js-filter-select" data-placeholder="PASSED / FOR REVIEW / FAILED" data-no-search="1">
+          <label class="vs-label" for="remarks_status">Remarks / Status</label>
+          <select id="remarks_status" name="remarks_status" class="vs-input js-filter-select" data-placeholder="COMPLETE / INCOMPLETE / OTHERS" data-no-search="1">
             <option></option>
-            <option value="PASSED"     <?= $remarks === 'PASSED'     ? 'selected' : '' ?>>PASSED</option>
-            <option value="FOR REVIEW" <?= $remarks === 'FOR REVIEW' ? 'selected' : '' ?>>FOR REVIEW</option>
-            <option value="FAILED"     <?= $remarks === 'FAILED'     ? 'selected' : '' ?>>FAILED</option>
+            <option value="COMPLETE"   <?= $remarks === 'COMPLETE'   ? 'selected' : '' ?>>COMPLETE</option>
+            <option value="INCOMPLETE" <?= $remarks === 'INCOMPLETE' ? 'selected' : '' ?>>INCOMPLETE</option>
+            <option value="OTHERS"     <?= $remarks === 'OTHERS'     ? 'selected' : '' ?>>OTHERS</option>
           </select>
+        </div>
+
+        <div>
+          <label class="vs-label" for="evaluated_by">Evaluated By</label>
+          <input id="evaluated_by" name="evaluated_by" type="text" class="vs-input vs-uppercase"
+                 value="<?= old('evaluated_by', $voucher['evaluated_by'] ?? '') ?>">
         </div>
 
         <div>

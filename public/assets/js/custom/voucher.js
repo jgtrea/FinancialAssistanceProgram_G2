@@ -427,6 +427,39 @@ document.addEventListener('DOMContentLoaded', function () {
     if (e.target === exportModal) exportModal.style.display = 'none';
   });
 
+  // Export runs on the background worker now. Intercept the format links
+  // (delegated — they're injected by the modal builder), enqueue the export,
+  // show a progress toast, and auto-download the finished file. Delegation also
+  // handles links added after this script runs.
+  document.addEventListener('click', async function (e) {
+    var link = e.target.closest('[data-export-format]');
+    if (!link) return;
+    e.preventDefault();
+
+    updateExportLinks();              // ensure ?format=&ids= is current
+    var url = link.href;
+    if (exportModal) exportModal.style.display = 'none';
+
+    try {
+      var res  = await fetch(url, ajaxOptions({ method: 'GET' }));
+      var data = await res.json();
+      if (!data.success || !data.queued || !data.status_url) {
+        showAlert((data && data.message) || 'Export failed to start.', 'error');
+        return;
+      }
+      trackJob('Exporting', data.status_url, {
+        download:  true,
+        persist:   true,          // survive navigation/reload like the generate flow
+        jobId:     data.job_id,
+        doneLabel: function () { return 'Export ready — downloading…'; },
+        onError:   function (msg) { showAlert('Export failed: ' + msg, 'error'); },
+      });
+    } catch (err) {
+      console.error(err);
+      showAlert('Export failed to start.', 'error');
+    }
+  });
+
   const btnGeneratePdf = document.getElementById('btnGeneratePdf');
   const pdfForm        = document.getElementById('pdfForm');
 

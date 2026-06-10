@@ -303,6 +303,120 @@ class JsonPdfQueue
     }
 
     /**
+     * Enqueue a SINGLE (non-chunked) job of the given $type — one parent record
+     * with total_chunks = 0 and no chunk records. The parent IS the unit of work
+     * (claimed and processed whole). Used by import/export where there's nothing
+     * to parallelise across chunks. Returns the job_id.
+     */
+    public static function enqueueSingle(string $type, array $payload, int $userId): int
+    {
+        $now = date('Y-m-d H:i:s');
+
+        return self::mutate(self::FILE_QUEUE, function (array $queue) use ($type, $payload, $userId, $now) {
+            $nextId = (int) ($queue['next_job_id'] ?? 1);
+            if ($nextId < 1) $nextId = 1;
+
+            $jobId         = $nextId++;
+            $queue['jobs'] = $queue['jobs'] ?? [];
+            $queue['jobs'][] = self::newRecord([
+                'job_id'       => $jobId,
+                'parent_job_id'=> null,
+                'chunk_index'  => null,
+                'total_chunks' => 0,
+                'type'         => $type,
+                'voucher_ids'  => [],
+                'payload'      => $payload,
+                'created_by'   => $userId,
+                'created_at'   => $now,
+            ]);
+
+            $queue['next_job_id'] = $nextId;
+            return [$queue, $jobId];
+        });
+    }
+
+    /**
+     * Atomically claim the next pending SINGLE job (total_chunks = 0, no parent)
+     * — moves it queue→processing and returns the record, or null if none. Picks
+     * the lowest job_id (FIFO). Chunked-job parents are NOT claimable here; they
+     * finalize via their runner once all chunks finish.
+     */
+    public static function claimNextSingle(): ?array
+    {
+        return self::mutateAll(function (array $queue, array $processing, array $finished) {
+            $jobs       = $queue['jobs'] ?? [];
+            $pickIdx    = null;
+            $pickJobId  = null;
+            foreach ($jobs as $i => $job) {
+                if (! empty($job['parent_job_id'])) continue;          // chunk
+                if ((int) ($job['total_chunks'] ?? 0) !== 0) continue; // chunked parent
+                if (($job['status'] ?? 'pending') !== 'pending') continue;
+                $jid = (int) $job['job_id'];
+                if ($pickJobId === null || $jid < $pickJobId) {
+                    $pickIdx   = $i;
+                    $pickJobId = $jid;
+                }
+            }
+            if ($pickIdx === null) {
+                return null;
+            }
+
+            $claimed = $jobs[$pickIdx];
+            $claimed['status'] = 'processing';
+            array_splice($jobs, $pickIdx, 1);
+            $queue['jobs'] = array_values($jobs);
+            $processing['jobs']   = $processing['jobs'] ?? [];
+            $processing['jobs'][] = $claimed;
+
+            return [[$queue, $processing, $finished], $claimed];
+        });
+    }
+
+    /**
+     * Update a job's progress counter while it runs (it lives in processing.json
+     * during execution). Lets single jobs (e.g. import) report coarse progress
+     * that the status endpoint surfaces as a percentage.
+     */
+    public static function setProgress(int $jobId, int $done, int $total): void
+    {
+        self::mutate(self::FILE_PROCESSING, function (array $processing) use ($jobId, $done, $total) {
+            $changed = false;
+            foreach (($processing['jobs'] ?? []) as &$job) {
+                if ((int) $job['job_id'] === $jobId) {
+                    $job['progress'] = ['done' => $done, 'total' => $total];
+                    $changed = true;
+                    break;
+                }
+            }
+            unset($job);
+            return $changed ? $processing : null;
+        });
+    }
+
+    /**
+     * Move a single (non-chunked) job from processing.json into finished.json,
+     * applying $apply to set its terminal fields (status/result/file_path/...).
+     */
+    public static function finishSingle(int $jobId, callable $apply): void
+    {
+        self::mutateAll(function (array $queue, array $processing, array $finished) use ($jobId, $apply) {
+            $idx = null;
+            foreach (($processing['jobs'] ?? []) as $i => $job) {
+                if ((int) $job['job_id'] === $jobId) { $idx = $i; break; }
+            }
+            if ($idx === null) {
+                return null;
+            }
+            $rec = $apply($processing['jobs'][$idx]);
+            array_splice($processing['jobs'], $idx, 1);
+            $processing['jobs'] = array_values($processing['jobs']);
+            $finished['jobs']   = $finished['jobs'] ?? [];
+            $finished['jobs'][] = $rec;
+            return [$queue, $processing, $finished];
+        });
+    }
+
+    /**
      * Look up a job by id across all three files. Returns ['file' => ..., 'job' => ...]
      * or null if not found.
      */

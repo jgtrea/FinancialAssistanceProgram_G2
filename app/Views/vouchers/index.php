@@ -191,8 +191,27 @@ document.addEventListener('vs:modals:ready', function () {
       .then(function (r) { return r.json(); })
       .then(function (data) {
         importModal.style.display = 'none';
-        alert(data.message);
-        if (data.success) location.reload();
+        if (!data.success) {
+          alert(data.message || 'Import failed.');
+          return;
+        }
+        // Importing runs on the background worker now — show a live progress
+        // toast (like generate/archive), reload when done. Validation rejects
+        // come back via onError with the specific message.
+        if (data.queued && data.status_url && typeof trackJob === 'function') {
+          trackJob('Importing', data.status_url, {
+            doneLabel: function (d) {
+              if (d && d.message) return d.message;
+              var n = (d && d.result && typeof d.result.imported === 'number') ? d.result.imported : 0;
+              return n.toLocaleString() + ' record(s) imported.';
+            },
+            onDone:  function () { location.reload(); },
+            onError: function (msg) { alert('Import failed: ' + msg); },
+          });
+          return;
+        }
+        if (data.message) alert(data.message);
+        location.reload();
       })
       .catch(function () {
         alert('An error occurred while uploading. Please try again.');
