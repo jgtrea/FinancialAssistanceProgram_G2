@@ -141,6 +141,7 @@ document.addEventListener('DOMContentLoaded', function () {
           ...voucherMobileColumnDefs(),
           { orderData: [3], targets: [2] },
           ...(showCheckboxColumn ? [] : [{ visible: false, targets: 0 }]),
+          ...(showCheckboxColumn ? [] : [{ visible: false, targets: [1, 8, 9] }]),
         ],
         order: [[3, 'asc']],
         dom:        (customLengthInput ? '' : window.VS.dtHeaderDom(false)) + window.VS.dtBodyDom,
