@@ -81,7 +81,6 @@ class StudentController extends BaseController
         }
 
         $studentModel = new StudentModel();
-        $schoolOptions = new SchoolOptionModel();
         $studentId = $this->request->getPost('student_id');
 
         $validation = \Config\Services::validation();
@@ -103,22 +102,6 @@ class StudentController extends BaseController
                 'status' => 'error',
                 'message' => 'Please enter the other remarks.',
                 'errors' => ['other_remarks' => 'The Other Remarks field is required when Remarks is OTHERS.'],
-                'csrf_token' => csrf_hash(),
-            ]);
-        }
-
-        if (!$schoolOptions->juniorHighSchoolExists($this->request->getPost('junior_high_school'))) {
-            return $this->response->setJSON([
-                'status' => 'error',
-                'message' => 'Please select a valid junior high school.',
-                'csrf_token' => csrf_hash(),
-            ]);
-        }
-
-        if (!$schoolOptions->seniorHighSchoolExists($this->request->getPost('preferred_senior_high_school'))) {
-            return $this->response->setJSON([
-                'status' => 'error',
-                'message' => 'Please select a valid senior high school.',
                 'csrf_token' => csrf_hash(),
             ]);
         }

@@ -105,7 +105,7 @@ var ModalInstance = (function () {
                 </div>
                 <div class="vs-modal-footer">
                   <button class="vs-btn vs-btn-outline" id="importModalCancel">Cancel</button>
-                  <button class="vs-btn vs-btn-info" id="importConfirm">
+                  <button class="vs-btn vs-btn-success" id="importConfirm">
                     <span id="importBtnText">Import</span>
                     <span id="importBtnSpinner" class="vs-spinner" style="display:none"></span>
                   </button>
@@ -613,7 +613,7 @@ var ModalInstance = (function () {
                         </div>
                         <div class="vs-modal-footer">
                             <button type="button" class="vs-btn vs-btn-outline" id="schoolImportCancel">Cancel</button>
-                            <button type="submit" class="vs-btn vs-btn-info" id="schoolImportSubmit">
+                            <button type="submit" class="vs-btn vs-btn-success" id="schoolImportSubmit">
                                 <span id="siSubmitText">Import</span>
                                 <span id="siSubmitSpinner" class="vs-spinner" style="display:none"></span>
                             </button>

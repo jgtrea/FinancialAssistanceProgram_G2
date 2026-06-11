@@ -56,7 +56,7 @@
     <div class="col-12 col-md-auto d-flex align-items-center gap-2">
         <span class="d-none d-md-inline-flex align-items-center" style="color:var(--border);font-size:1.2rem;line-height:1;user-select:none">|</span>
         <div class="d-flex gap-2 flex-fill">
-            <button type="button" class="vs-btn vs-btn-dark-green vs-btn-success flex-fill flex-md-grow-0 flex-md-shrink-0" id="btnAddSchool">
+            <button type="button" class="vs-btn vs-btn-dark-green flex-fill flex-md-grow-0 flex-md-shrink-0" id="btnAddSchool">
                 <?= asset_icon('add', ['width' => '20', 'height' => '20', 'stroke-width' => '2.5']) ?>
                 Add School
             </button>
