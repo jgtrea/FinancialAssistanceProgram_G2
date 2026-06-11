@@ -24,7 +24,7 @@
     <div id="userAlertBox"></div>
 
 <form method="get" class="row g-2 align-items-center mb-3">
-    <div class="col-12 col-md-3">
+    <div class="col-12 col-md">
         <input type="text" name="q" class="vs-input vs-advanced-search-input w-100" placeholder="Enter keyword to search (name, email)" value="<?= esc((string) ($keyword ?? ''), 'attr') ?>">
     </div>
     <div class="col-12 col-md-2">

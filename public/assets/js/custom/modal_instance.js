@@ -263,8 +263,8 @@ var ModalInstance = (function () {
                         <input id="vmRankNo" name="rank_no" type="number" step="any" class="vs-input" required>
                       </div>
                       <div class="col-6">
-                        <label class="vs-label" for="vmJuniorHs">Junior High School</label>
-                        <select id="vmJuniorHs" name="junior_high_school" class="vs-input js-school-select vs-uppercase" data-placeholder="TYPE OR SELECT"><option></option></select>
+                        <label class="vs-label required" for="vmJuniorHs">Junior High School</label>
+                        <select id="vmJuniorHs" name="junior_high_school" class="vs-input js-school-select vs-uppercase" data-placeholder="TYPE OR SELECT" required><option></option></select>
                       </div>
                       <div class="col-6">
                         <label class="vs-label" for="vmPreferredHs">Preferred Senior High School</label>
