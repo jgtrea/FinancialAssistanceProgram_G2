@@ -14,7 +14,7 @@ class VoucherModel extends Model
         'first_name', 'middle_name', 'last_name', 'suffix',
         'rank_no', 'gwa', 'gender',
         'junior_high_school', 'preferred_senior_high_school',
-        'contact_number', 'remarks_status', 'school_year',
+        'contact_number', 'remarks_status', 'other_remarks', 'school_year',
         /* 'eligibility_status', */ 'voucher_status', 'is_active',
         'evaluated_by',
     ];
@@ -36,6 +36,7 @@ class VoucherModel extends Model
         'gender',
         'contact_number',
         'remarks_status',
+        'other_remarks',
         'school_year',
     ];
 
@@ -139,7 +140,7 @@ class VoucherModel extends Model
                 school_year,
                 eligibility_status, voucher_status, students.is_active AS is_active,
                 gwa, rank_no, gender,
-                contact_number, remarks_status, evaluated_by, students.created_at AS created_at, students.generated_at AS generated_at
+                contact_number, remarks_status, other_remarks, evaluated_by, students.created_at AS created_at, students.generated_at AS generated_at
             ");
 
         $keyword = trim($keyword);
@@ -159,6 +160,7 @@ class VoucherModel extends Model
                 ->orLike('shs.acronym', $keyword)
                 ->orLike('gender', $keyword)
                 ->orLike('remarks_status', $keyword)
+                ->orLike('other_remarks', $keyword)
                 ->orLike('voucher_status', $keyword)
                 ->orLike('contact_number', $keyword)
                 ->groupEnd();
@@ -255,6 +257,7 @@ class VoucherModel extends Model
                 ->orLike('shs.acronym', $needle)
                 ->orLike('gender', $needle)
                 ->orLike('remarks_status', $needle)
+                ->orLike('other_remarks', $needle)
                 ->orLike('voucher_status', $needle)
                 ->orLike('contact_number', $needle)
                 ->orWhere("CONCAT_WS(' ', `first_name`, `middle_name`, `last_name`) LIKE {$escaped}")
@@ -314,7 +317,7 @@ class VoucherModel extends Model
                 school_year,
                 eligibility_status, voucher_status, students.is_active AS is_active,
                 gwa, rank_no, gender,
-                contact_number, remarks_status, evaluated_by, students.created_at AS created_at, students.generated_at AS generated_at,
+                contact_number, remarks_status, other_remarks, evaluated_by, students.created_at AS created_at, students.generated_at AS generated_at,
                 generate_count
             ");
         if ($scopeIds !== null && !empty($scopeIds)) {
@@ -507,6 +510,7 @@ class VoucherModel extends Model
                 ->orLike('shs.acronym', $keyword)
                 ->orLike('gender', $keyword)
                 ->orLike('remarks_status', $keyword)
+                ->orLike('other_remarks', $keyword)
                 ->orLike('voucher_status', $keyword)
                 ->orLike('contact_number', $keyword)
                 ->groupEnd();
@@ -529,7 +533,7 @@ class VoucherModel extends Model
                 CONCAT_WS(' ', NULLIF(first_name,''), NULLIF(middle_name,''), NULLIF(last_name,''), NULLIF(suffix,'')) AS full_name,
                 rank_no, gwa, gender,
                 {$this->schoolSelect},
-                contact_number, remarks_status, school_year,
+                contact_number, remarks_status, other_remarks, school_year,
                 eligibility_status, voucher_status, evaluated_by,
                 students.generated_at AS generated_at, students.created_at AS created_at, students.updated_at AS updated_at
             ")
@@ -572,7 +576,7 @@ class VoucherModel extends Model
                 CONCAT_WS(' ', NULLIF(first_name,''), NULLIF(middle_name,''), NULLIF(last_name,''), NULLIF(suffix,'')) AS full_name,
                 rank_no, gwa, gender,
                 {$this->schoolSelect},
-                contact_number, remarks_status, school_year,
+                contact_number, remarks_status, other_remarks, school_year,
                 eligibility_status, voucher_status, evaluated_by,
                 students.created_at AS created_at
             ")

@@ -58,7 +58,8 @@ if (!function_exists('voucher_status_label')) {
 if (!function_exists('voucher_status_badge')) {
     function voucher_status_badge(string $status): string
     {
-        $label = voucher_status_label($status);
-        return "<span class=\"vs-status-badge vs-status-{$status}\">{$label}</span>";
+        $label = esc(voucher_status_label($status));
+        $class = preg_replace('/[^a-z0-9_-]+/', '-', strtolower($status)) ?: 'custom';
+        return "<span class=\"vs-status-badge vs-status-{$class}\">{$label}</span>";
     }
 }

@@ -67,7 +67,7 @@
 <?php else: ?>
       <button type="button" class="vs-btn vs-btn-success flex-fill flex-md-grow-0 flex-md-shrink-0" id="btnAddVoucher" data-mode="add">
         <?= asset_icon('add', ['stroke-width' => '2.5']) ?>
-        Add Voucher
+        Add Student
       </button>
       <button type="button" class="vs-btn vs-btn-info flex-fill flex-md-grow-0 flex-md-shrink-0" id="btnOpenImport">
         <?= asset_icon('import') ?>

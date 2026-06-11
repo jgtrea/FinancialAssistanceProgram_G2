@@ -97,6 +97,16 @@ class StudentController extends BaseController
             ]);
         }
 
+        $remarksStatus = strtoupper($this->cleanText($this->request->getPost('remarks_status')));
+        if ($remarksStatus === 'OTHERS' && $this->cleanText($this->request->getPost('other_remarks')) === '') {
+            return $this->response->setJSON([
+                'status' => 'error',
+                'message' => 'Please enter the other remarks.',
+                'errors' => ['other_remarks' => 'The Other Remarks field is required when Remarks is OTHERS.'],
+                'csrf_token' => csrf_hash(),
+            ]);
+        }
+
         if (!$schoolOptions->juniorHighSchoolExists($this->request->getPost('junior_high_school'))) {
             return $this->response->setJSON([
                 'status' => 'error',
@@ -113,7 +123,12 @@ class StudentController extends BaseController
             ]);
         }
 
-        if ($studentId && !$studentModel->find($studentId)) {
+        $existingStudent = null;
+        if ($studentId) {
+            $existingStudent = $studentModel->find($studentId);
+        }
+
+        if ($studentId && !$existingStudent) {
             return $this->response->setJSON([
                 'status' => 'error',
                 'message' => 'Student not found.',
@@ -121,7 +136,7 @@ class StudentController extends BaseController
             ]);
         }
 
-        $data = $this->studentPayload();
+        $data = $this->studentPayload($existingStudent);
 
         if ($studentId) {
             $studentModel->update($studentId, $data);
@@ -181,6 +196,7 @@ class StudentController extends BaseController
             'preferred_senior_high_school' => $student['preferred_senior_high_school'],
             'contact_number' => $student['contact_number'],
             'remarks_status' => $student['remarks_status'],
+            'other_remarks' => $student['other_remarks'] ?? null,
             'school_year' => $this->archiveSchoolYearLabel($now),
             // 'eligibility_status' => $student['eligibility_status'],
             'voucher_status' => $student['voucher_status'],
@@ -300,22 +316,26 @@ class StudentController extends BaseController
             'middle_name'                  => 'permit_empty|max_length[100]',
             'last_name'                    => 'required|max_length[100]',
             'suffix'                       => 'permit_empty|in_list[JR.,SR.,II,III,IV]',
-            'rank_no'                      => 'permit_empty|decimal|greater_than[0]|less_than_equal_to[999999]',
-            'gwa'                          => 'permit_empty|decimal|greater_than_equal_to[0]|less_than_equal_to[100]',
+            'rank_no'                      => 'required|decimal|greater_than[0]|less_than_equal_to[999999]',
+            'gwa'                          => 'required|decimal|greater_than_equal_to[0]|less_than_equal_to[100]',
             'gender'                       => 'permit_empty|in_list[MALE,FEMALE]',
             'junior_high_school'           => 'permit_empty|max_length[200]',
             'preferred_senior_high_school' => 'permit_empty|max_length[200]',
             'contact_number'               => 'permit_empty|max_length[30]|regex_match[/^[0-9+().\\-\\s]+$/]',
             'remarks_status'               => 'permit_empty|in_list[COMPLETE,INCOMPLETE,OTHERS]',
+            'other_remarks'                 => 'permit_empty|max_length[255]',
             // 'eligibility_status'           => 'required|in_list[eligible,not_eligible]',
             'voucher_status'               => 'permit_empty|in_list[not_generated,generated]',
         ];
     }
 
-    private function studentPayload(): array
+    private function studentPayload(?array $existingStudent = null): array
     {
         $rankNo = trim((string) $this->request->getPost('rank_no'));
         $gwa = trim((string) $this->request->getPost('gwa'));
+        $remarksStatus = strtoupper($this->cleanText($this->request->getPost('remarks_status')));
+        $otherRemarks = $this->cleanText($this->request->getPost('other_remarks'));
+        $existingVoucherStatus = $this->cleanText($existingStudent['voucher_status'] ?? '');
 
         return [
             'voucher_no'                   => $this->cleanText($this->request->getPost('voucher_no')) ?: null,
@@ -331,9 +351,10 @@ class StudentController extends BaseController
             'junior_high_school'           => (new SchoolOptionModel())->resolveSchoolId('JHS', $this->request->getPost('junior_high_school'), true),
             'preferred_senior_high_school' => (new SchoolOptionModel())->resolveSchoolId('SHS', $this->request->getPost('preferred_senior_high_school'), true),
             'contact_number'               => $this->cleanText($this->request->getPost('contact_number')),
-            'remarks_status'               => strtoupper($this->cleanText($this->request->getPost('remarks_status'))),
+            'remarks_status'               => $remarksStatus,
+            'other_remarks'                 => $remarksStatus === 'OTHERS' ? $otherRemarks : null,
             // 'eligibility_status'           => $this->request->getPost('eligibility_status') ?: 'eligible',
-            'voucher_status'               => $this->request->getPost('voucher_status') ?: 'not_generated',
+            'voucher_status'               => $existingVoucherStatus !== '' ? $existingVoucherStatus : 'not_generated',
         ];
     }
 
