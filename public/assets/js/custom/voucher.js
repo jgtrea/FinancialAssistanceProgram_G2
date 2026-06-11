@@ -609,7 +609,7 @@ document.addEventListener('DOMContentLoaded', function () {
           });
           // Now that the job_id is known, scope this toast's Status button to it.
           if (toast.setJob) toast.setJob({ jobId: data.job_id, statusUrl: data.status_url });
-          toast.update('Generating PDF (job #' + data.job_id + ')...');
+          toast.update('Printing PDF (job #' + data.job_id + ')...');
           pollPdfJob(data.job_id, data.status_url, toast);
           return;
         }
@@ -619,12 +619,12 @@ document.addEventListener('DOMContentLoaded', function () {
           window.location.href = data.download_url;
         } else {
           toast.remove();
-          showAlert('PDF generation response was malformed.', 'error');
+          showAlert('PDF printing response was malformed.', 'error');
         }
 
       } catch (err) {
         toast.remove();
-        showAlert('Failed to generate PDF.', 'error');
+        showAlert('Failed to print PDF.', 'error');
         console.error(err);
         btnGeneratePdf.disabled = false;
       }
@@ -632,18 +632,18 @@ document.addEventListener('DOMContentLoaded', function () {
 
     btnGeneratePdf.addEventListener('click', function () {
       if (!selectedIds.size) {
-        showAlert('Select at least one student to generate vouchers.', 'warning');
+        showAlert('Select at least one student to print vouchers.', 'warning');
         return;
       }
       if (selectedIds.size > MAX_BATCH) {
-        showAlert('You can only generate PDFs for up to ' + MAX_BATCH + ' students at a time. You have ' + selectedIds.size + ' selected.', 'warning');
+        showAlert('You can only print PDFs for up to ' + MAX_BATCH + ' students at a time. You have ' + selectedIds.size + ' selected.', 'warning');
         return;
       }
       vsConfirm({
-        title:        'Generate Vouchers',
-        html:         'Generate vouchers for <strong>' + selectedIds.size + '</strong> selected student(s)?',
-        plain:        'Generate vouchers for ' + selectedIds.size + ' selected student(s)?',
-        confirmLabel: 'Generate',
+        title:        'Print Vouchers',
+        html:         'Print vouchers for <strong>' + selectedIds.size + '</strong> selected student(s)?',
+        plain:        'Print vouchers for ' + selectedIds.size + ' selected student(s)?',
+        confirmLabel: 'Print',
         btnClass:     'vs-btn vs-btn-dark-green',
         onConfirm:    doGeneratePdf,
       });

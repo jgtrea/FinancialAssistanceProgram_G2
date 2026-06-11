@@ -57,7 +57,7 @@
 <?php if ($allowGenerate): ?>
         <button type="button" class="vs-btn vs-btn-dark-green flex-fill flex-md-grow-0 flex-md-shrink-0" id="btnGenerateAll">
           <?= asset_icon('voucher_add') ?>
-          Generate Voucher
+          Print Voucher
         </button>
         <button type="button" class="vs-btn vs-btn-success flex-fill flex-md-grow-0 flex-md-shrink-0" id="btnExportAll">
           <?= asset_icon('export') ?>
