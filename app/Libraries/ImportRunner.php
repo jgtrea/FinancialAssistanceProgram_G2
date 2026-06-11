@@ -67,6 +67,7 @@ class ImportRunner
         'contact'                      => 'contact',
         'preferred senior school'      => 'shs',
         'preferred senior high school' => 'shs',
+        'shs'                          => 'shs',
         'remarks / status'             => 'remarks',
         'remarks/status'               => 'remarks',
         'remarks'                      => 'remarks',

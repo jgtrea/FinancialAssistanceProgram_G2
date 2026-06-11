@@ -29,22 +29,6 @@
     <div class="vs-alert vs-alert-success mb-3"><?= esc(session()->getFlashdata('message')) ?></div>
   <?php endif ?>
 
-  <?php if ($allowGenerate): ?>
-  <div class="vs-action-bar" id="actionBar" style="display:none">
-    <span class="vs-action-bar-count"><span id="selectedCount">0</span> selected</span>
-    <div class="vs-action-bar-buttons d-flex gap-2 ms-auto align-items-center">
-        <button class="vs-btn vs-btn-dark-green" id="btnGeneratePdf">
-          <?= asset_icon('voucher_add') ?>
-          Generate Voucher
-        </button>
-      <button type="button" class="vs-btn vs-btn-success" id="btnOpenExport">
-        <?= asset_icon('export') ?>
-        Export
-      </button>
-    </div>
-  </div>
-  <?php endif ?>
-
   <div id="studentsAlertBox"></div>
 
   <form method="get" id="vouchersFilterForm" class="vs-page-toolbar row g-2 align-items-center mb-3">
@@ -252,43 +236,9 @@ document.addEventListener('vs:modals:ready', function () {
   });
 <?php endif ?>
 
-  // ── Generate Voucher (toolbar) ─────────────────────────────────────────────
-  var btnGenerateAll = document.getElementById('btnGenerateAll');
-  btnGenerateAll && btnGenerateAll.addEventListener('click', function () {
-    runBulkAll('generate');
-  });
-
-  // ── Export ──────────────────────────────────────────────────────────────────
-  var exportModal = document.getElementById('exportModal');
-
-  function updateExportLinksForFilters() {
-    var query = buildCountQuery();
-    document.querySelectorAll('[data-export-format]').forEach(function (link) {
-      var format = link.dataset.exportFormat || 'xlsx';
-      if (!link.dataset.exportBase) link.dataset.exportBase = link.href.split('?')[0];
-      link.href = link.dataset.exportBase + '?format=' + encodeURIComponent(format)
-        + (query ? '&' + query : '');
-    });
-  }
-
-  var btnOpenExport = document.getElementById('btnOpenExport');
-  if (btnOpenExport) {
-    btnOpenExport.addEventListener('click', function () {
-      exportModal.style.display = 'flex';
-    });
-  }
-  var btnExportAll = document.getElementById('btnExportAll');
-  btnExportAll && btnExportAll.addEventListener('click', function () {
-    updateExportLinksForFilters();
-    exportModal.style.display = 'flex';
-  });
-  document.getElementById('exportModalClose').addEventListener('click', function () {
-    exportModal.style.display = 'none';
-  });
-
-  exportModal.addEventListener('click', function (e) {
-    if (e.target === exportModal) exportModal.style.display = 'none';
-  });
+  // The toolbar "Generate Voucher" (#btnGenerateAll) and "Export"
+  // (#btnExportAll) buttons act on the current selection — wired in voucher.js,
+  // which owns the selection state. The old in-page action bar is gone.
 
   // ── Advanced Filters ───────────────────────────────────────────────────────
   // script.js initializes the DataTable on DOMContentLoaded. Our IIFE runs

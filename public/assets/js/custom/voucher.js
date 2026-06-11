@@ -187,7 +187,9 @@ document.addEventListener('DOMContentLoaded', function () {
 
   const actionBar  = document.getElementById('actionBar');
   const countLabel = document.getElementById('selectedCount');
-  const btnOpenExport = document.getElementById('btnOpenExport');
+  // Toolbar Export button now drives the selection-based export (the old
+  // in-page action bar was removed).
+  const btnOpenExport = document.getElementById('btnExportAll');
   const exportModal = document.getElementById('exportModal');
   const exportModalClose = document.getElementById('exportModalClose');
 
@@ -421,12 +423,63 @@ document.addEventListener('DOMContentLoaded', function () {
     }
   }
 
+  // Styled confirm dialog reusing the bulkAllModal shell (its old driver,
+  // runBulkAll, was removed). Shows a count + title and runs opts.onConfirm on
+  // confirm. Falls back to window.confirm when the modal isn't present.
+  function vsConfirm(opts) {
+    var modal      = document.getElementById('bulkAllModal');
+    var titleEl    = document.getElementById('bulkAllTitle');
+    var msgEl      = document.getElementById('bulkAllMessage');
+    var reasonWrap = document.getElementById('bulkAllReasonWrap');
+    var confirmBtn = document.getElementById('bulkAllConfirm');
+
+    if (!modal || !titleEl || !msgEl || !confirmBtn) {
+      if (window.confirm(opts.plain || 'Are you sure?')) opts.onConfirm();
+      return;
+    }
+
+    titleEl.textContent = opts.title || 'Confirm';
+    msgEl.innerHTML     = opts.html || '';
+    if (reasonWrap) reasonWrap.style.display = 'none';
+
+    // Clone the confirm button to drop any prior click handler, then wire this
+    // invocation's action onto the fresh node.
+    var fresh = confirmBtn.cloneNode(false);
+    fresh.id        = 'bulkAllConfirm';
+    fresh.className = opts.btnClass || 'vs-btn vs-btn-primary';
+    fresh.textContent = opts.confirmLabel || 'Confirm';
+    confirmBtn.parentNode.replaceChild(fresh, confirmBtn);
+
+    function close() { modal.style.display = 'none'; }
+    fresh.addEventListener('click', function () { close(); opts.onConfirm(); });
+
+    var cancel = document.getElementById('bulkAllCancel');
+    var x      = document.getElementById('bulkAllModalClose');
+    if (cancel) cancel.onclick = close;
+    if (x)      x.onclick = close;
+    modal.onclick = function (e) { if (e.target === modal) close(); };
+
+    modal.style.display = 'flex';
+  }
+
   // ── Generate PDF ──────────────────────────────────────────────────────────────
   if (btnOpenExport && exportModal) {
     btnOpenExport.addEventListener('click', function () {
-      if (!selectedIds.size) return;
-      updateExportLinks();
-      exportModal.style.display = 'flex';
+      if (!selectedIds.size) {
+        showAlert('Select at least one student to export.', 'warning');
+        return;
+      }
+      vsConfirm({
+        title:        'Export Students',
+        html:         'Export <strong>' + selectedIds.size + '</strong> selected student(s)?',
+        plain:        'Export ' + selectedIds.size + ' selected student(s)?',
+        confirmLabel: 'Export',
+        btnClass:     'vs-btn vs-btn-success',
+        onConfirm: function () {
+          updateExportLinks();
+          exportModal.style.display = 'flex';
+        },
+      });
     });
   }
   exportModalClose && exportModalClose.addEventListener('click', function () {
@@ -469,20 +522,14 @@ document.addEventListener('DOMContentLoaded', function () {
     }
   });
 
-  const btnGeneratePdf = document.getElementById('btnGeneratePdf');
+  // Toolbar Generate Voucher button now drives selection-based generation.
+  const btnGeneratePdf = document.getElementById('btnGenerateAll');
   const pdfForm        = document.getElementById('pdfForm');
 
   const MAX_BATCH = 100000;
 
   if (btnGeneratePdf && pdfForm) {
-    btnGeneratePdf.addEventListener('click', async function () {
-      if (!selectedIds.size) return;
-
-      if (selectedIds.size > MAX_BATCH) {
-        showAlert('You can only generate PDFs for up to ' + MAX_BATCH + ' students at a time. You have ' + selectedIds.size + ' selected.', 'warning');
-        return;
-      }
-
+    async function doGeneratePdf() {
       btnGeneratePdf.disabled = true;
       // Unique key so this generation's toast is independent of any other
       // job's toast already on screen (job_id isn't known until the response).
@@ -567,6 +614,25 @@ document.addEventListener('DOMContentLoaded', function () {
         console.error(err);
         btnGeneratePdf.disabled = false;
       }
+    }
+
+    btnGeneratePdf.addEventListener('click', function () {
+      if (!selectedIds.size) {
+        showAlert('Select at least one student to generate vouchers.', 'warning');
+        return;
+      }
+      if (selectedIds.size > MAX_BATCH) {
+        showAlert('You can only generate PDFs for up to ' + MAX_BATCH + ' students at a time. You have ' + selectedIds.size + ' selected.', 'warning');
+        return;
+      }
+      vsConfirm({
+        title:        'Generate Vouchers',
+        html:         'Generate vouchers for <strong>' + selectedIds.size + '</strong> selected student(s)?',
+        plain:        'Generate vouchers for ' + selectedIds.size + ' selected student(s)?',
+        confirmLabel: 'Generate',
+        btnClass:     'vs-btn vs-btn-dark-green',
+        onConfirm:    doGeneratePdf,
+      });
     });
   }
 
