@@ -45,6 +45,8 @@
           if (!data.success) { alert(data.message || 'Import failed.'); return; }
           if (data.queued && data.status_url && typeof trackJob === 'function') {
             trackJob('Importing', data.status_url, {
+              persist: true,          // survive page navigation
+              jobId:   data.job_id,
               doneLabel: function (d) {
                 if (d && d.message) return d.message;
                 var n = (d && d.result && typeof d.result.imported === 'number') ? d.result.imported : 0;

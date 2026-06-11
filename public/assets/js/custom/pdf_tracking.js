@@ -206,7 +206,10 @@ function trackJob(verb, statusUrl, opts) {
     : null;
 
   if (opts.persist && opts.jobId) {
-    savePendingDownloadJob({ jobId: opts.jobId, statusUrl: statusUrl, verb: verb });
+    // Store the download flag so the resume loop knows whether to auto-download
+    // (export) or just keep showing the progress/done toast (import, archive,
+    // generate). Survives navigation/reload.
+    savePendingDownloadJob({ jobId: opts.jobId, statusUrl: statusUrl, verb: verb, download: !!opts.download });
   }
 
   pollJob(statusUrl, {
@@ -234,16 +237,23 @@ function trackJob(verb, statusUrl, opts) {
   });
 }
 
-// Resume any downloadable jobs left pending by a prior page (mirrors the PDF
-// generate resume below) so an export auto-downloads whenever it finishes,
-// even across navigation/reload.
+// Resume any background jobs left pending by a prior page (mirrors the PDF
+// generate resume below) so the progress toast survives navigation/reload for
+// EVERY job type — export auto-downloads on finish, while import/archive/
+// generate keep showing progress and a done line.
 document.addEventListener('DOMContentLoaded', function () {
   getPendingDownloadJobs().forEach(function (job) {
-    trackJob(job.verb || 'Exporting', job.statusUrl, {
-      download:  true,
+    var isDownload = !!job.download;
+    trackJob(job.verb || 'Working', job.statusUrl, {
+      download:  isDownload,
       persist:   true,
       jobId:     job.jobId,
-      doneLabel: function () { return (job.verb || 'Export') + ' ready — downloading…'; },
+      doneLabel: isDownload
+        ? function () { return (job.verb || 'Export') + ' ready — downloading…'; }
+        : function (d) {
+            if (d && d.message) return d.message;
+            return (job.verb || 'Job') + ' complete.';
+          },
     });
   });
 });
@@ -252,7 +262,9 @@ document.addEventListener('DOMContentLoaded', function () {
 function trackArchiveJob(statusUrl, count, callbacks) {
   callbacks = callbacks || {};
   trackJob('Archiving', statusUrl, {
-    count: count,
+    count:   count,
+    persist: !!callbacks.jobId, // survive navigation when caller passes the job id
+    jobId:   callbacks.jobId,
     doneLabel: function (data) {
       var n = (data && data.result && typeof data.result.archived === 'number') ? data.result.archived : count;
       return (Number(n) || 0).toLocaleString() + ' student(s) archived.';

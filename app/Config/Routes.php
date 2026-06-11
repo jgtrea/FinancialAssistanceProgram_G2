@@ -90,6 +90,8 @@ $routes->group('admin', ['filter' => 'role:admin'], function ($routes) {
 
     // Archive & Logs
     $routes->get('archive', 'ArchiveController::index');
+    $routes->get('archive/datatable', 'ArchiveController::datatable');
+    $routes->get('archive/filter-options', 'ArchiveController::filterOptions');
     $routes->get('logs',    'Admin\Report::logs');
 
     // Background job status (archive, etc.) — polled by the browser after enqueue.
@@ -170,6 +172,8 @@ $routes->post('students/archive/(:num)', 'StudentController::archive/$1');
 
 // ─── Archive (madridbranch) ───────────────────────────────────────────────────
 $routes->get('archive', 'ArchiveController::index');
+$routes->get('archive/datatable', 'ArchiveController::datatable');
+$routes->get('archive/filter-options', 'ArchiveController::filterOptions');
 
 // ─── Signatories (madridbranch) ───────────────────────────────────────────────
 $routes->get('signatories',                           'SignatoryController::index');

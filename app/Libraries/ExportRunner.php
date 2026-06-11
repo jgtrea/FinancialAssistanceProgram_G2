@@ -89,7 +89,10 @@ class ExportRunner
             $row = $ri + 2;
             $sheet->getCell([1,  $row])->setValue($r['control_no'] ?? '');
             $sheet->getCell([2,  $row])->setValue($r['voucher_no'] ?? '');
-            $sheet->getCell([3,  $row])->setValue($r['voucher_date'] ?? '');
+            // DATE = when the student was added to the system (created_at),
+            // not voucher_date. Output as Y-m-d so it round-trips into import.
+            $createdAt = (string) ($r['created_at'] ?? '');
+            $sheet->getCell([3,  $row])->setValue($createdAt !== '' ? date('Y-m-d', strtotime($createdAt)) : '');
             $sheet->getCell([4,  $row])->setValue($r['last_name'] ?? '');     // Surname
             $sheet->getCell([5,  $row])->setValue($r['first_name'] ?? '');    // Firstname
             $sheet->getCell([6,  $row])->setValue($r['middle_name'] ?? '');

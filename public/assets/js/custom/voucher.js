@@ -662,6 +662,7 @@ document.addEventListener('DOMContentLoaded', function () {
         // toast (like the generate flow) and drop the rows when it finishes.
         if (data.queued && data.status_url) {
           trackArchiveJob(data.status_url, data.count || ids.length, {
+            jobId:   data.job_id,    // survive page navigation
             onDone:  function () { removeArchivedRows(); },
             onError: function (msg) { showAlert('Archive failed: ' + msg, 'error'); },
           });

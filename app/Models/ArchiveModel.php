@@ -21,6 +21,10 @@ class ArchiveModel extends Model
 
     public const LISTING_DEFAULT_LIMIT = 1000;
 
+    // Sentinel SY value for archived rows that have no school_year. Lets users
+    // still reach those rows via the (otherwise required) SY filter.
+    public const NO_SCHOOL_YEAR = '(No School Year)';
+
     // Supported filter keys (also the GET param names used by the archive view).
     // Mirrors VoucherModel::LISTING_FILTER_KEYS so the two pages behave the
     // same way; date_from/date_to here filter on voucher_date, not archived_at.
@@ -87,6 +91,108 @@ class ArchiveModel extends Model
         return $builder->get()->getResultArray();
     }
 
+    /**
+     * Server-side DataTables slice for the archive listing. Mirrors
+     * VoucherModel::getDatatableSlice but trimmed (no checkboxes/actions).
+     * The archive is gated on SY: without a school_year filter this returns an
+     * empty set, so the page never dumps the whole table into the DOM.
+     *
+     * $params: start, length, keyword (outer ?q), search (inner DT box),
+     *          order_col (int|null), order_dir (asc|desc),
+     *          filters (array — same shape as getArchivesForListing).
+     */
+    public function getDatatableSlice(array $params): array
+    {
+        $start    = max(0, (int) ($params['start']  ?? 0));
+        $length   = (int) ($params['length'] ?? 25);
+        $keyword  = trim((string) ($params['keyword'] ?? ''));
+        $search   = trim((string) ($params['search']  ?? ''));
+        $orderCol = $params['order_col'] ?? null;
+        $orderDir = (strtolower((string) ($params['order_dir'] ?? 'asc')) === 'desc') ? 'DESC' : 'ASC';
+        $filters  = $params['filters'] ?? [];
+
+        $schoolYear = trim((string) ($filters['school_year'] ?? ''));
+        if ($schoolYear === '') {
+            // No SY chosen — load nothing (matches the page's gated empty state).
+            return ['rows' => [], 'recordsTotal' => 0, 'recordsFiltered' => 0];
+        }
+
+        // Column indices match the <th> order in archive/index.php (the hidden
+        // name_sort column at index 2 drives Name sorting). Columns without an
+        // entry (Printed / Last Generated) are not server-sortable.
+        $columnMap = [
+            0 => 'a.voucher_no',
+            1 => 'a.last_name',
+            2 => 'a.last_name',
+            3 => 'jhs.school_name',
+            4 => 'shs.school_name',
+            5 => 'a.school_year',
+            6 => 'a.remarks_status',
+            9 => 'a.archived_at',
+        ];
+
+        $base = fn () => $this->db->table('student_archive a')
+            ->join('school jhs', 'jhs.school_id = a.junior_high_school', 'left', false)
+            ->join('school shs', 'shs.school_id = a.preferred_senior_high_school', 'left', false);
+
+        $likeGroup = static function ($builder, string $needle): void {
+            $builder->groupStart()
+                ->like('a.voucher_no', $needle)
+                ->orLike('a.first_name', $needle)
+                ->orLike('a.middle_name', $needle)
+                ->orLike('a.last_name', $needle)
+                ->orLike('a.suffix', $needle)
+                ->orLike('jhs.school_name', $needle)
+                ->orLike('jhs.acronym', $needle)
+                ->orLike('shs.school_name', $needle)
+                ->orLike('shs.acronym', $needle)
+                ->orLike('a.school_year', $needle)
+                ->orLike('a.remarks_status', $needle)
+                ->groupEnd();
+        };
+
+        $applyWhere = function ($builder) use ($keyword, $search, $filters, $likeGroup): void {
+            if ($keyword !== '') $likeGroup($builder, $keyword);
+            if ($search  !== '') $likeGroup($builder, $search);
+            $this->applyListingFilters($builder, $filters);
+        };
+
+        // recordsTotal = everything in the chosen SY (the baseline scope). The
+        // "(No School Year)" bucket matches rows with a NULL/blank school_year.
+        $totalBuilder = $base();
+        $this->whereSchoolYear($totalBuilder, $schoolYear);
+        $recordsTotal = (int) $totalBuilder->countAllResults();
+
+        $countBuilder = $base();
+        $applyWhere($countBuilder);
+        $recordsFiltered = (int) $countBuilder->countAllResults();
+
+        $builder = $base()->select("
+            a.*,
+            COALESCE(jhs.school_name, a.junior_high_school) AS junior_high_school,
+            COALESCE(shs.school_name, a.preferred_senior_high_school) AS preferred_senior_high_school
+        ");
+        $applyWhere($builder);
+
+        $orderColumn = $columnMap[(int) $orderCol] ?? null;
+        if ($orderColumn !== null) {
+            $builder->orderBy($orderColumn, $orderDir);
+        } else {
+            $builder->orderBy('a.archived_at', 'DESC');
+        }
+        $builder->orderBy('a.archive_id', 'DESC'); // stable tiebreak
+
+        if ($length > 0) {
+            $builder->limit($length, $start);
+        }
+
+        return [
+            'rows'            => $builder->get()->getResultArray(),
+            'recordsTotal'    => $recordsTotal,
+            'recordsFiltered' => $recordsFiltered,
+        ];
+    }
+
     // Applies any advanced-filter clauses to the listing builder. Returns true
     // if at least one filter was applied (so the caller can skip the row cap).
     protected function applyListingFilters($builder, array $filters): bool
@@ -98,7 +204,7 @@ class ArchiveModel extends Model
         $applied = false;
 
         if (($v = $value($filters, 'school_year')) !== '') {
-            $builder->where('a.school_year', $v);
+            $this->whereSchoolYear($builder, $v);
             $applied = true;
         }
         if (($v = $value($filters, 'gender')) !== '') {
@@ -147,10 +253,25 @@ class ArchiveModel extends Model
         return $applied;
     }
 
+    // Apply the SY filter to a builder, translating the NO_SCHOOL_YEAR sentinel
+    // into a NULL/blank match so the "(No School Year)" bucket works everywhere.
+    protected function whereSchoolYear($builder, string $schoolYear): void
+    {
+        if ($schoolYear === self::NO_SCHOOL_YEAR) {
+            $builder->groupStart()
+                ->where('a.school_year IS NULL', null, false)
+                ->orWhere('a.school_year', '')
+                ->groupEnd();
+        } else {
+            $builder->where('a.school_year', $schoolYear);
+        }
+    }
+
     // Distinct school years that exist in the archive. Used to populate the
     // SY dropdown on the listing page — the archive is gated on school_year
-    // selection, so this list is what the user actually chooses.
-    // from to load data.
+    // selection, so this list is what the user actually chooses. If any archived
+    // rows have no school_year, a "(No School Year)" bucket is appended so those
+    // rows stay reachable through the (required) SY filter.
     public function getDistinctSchoolYears(): array
     {
         $rows = $this->db->table('student_archive')
@@ -162,36 +283,21 @@ class ArchiveModel extends Model
             ->get()
             ->getResultArray();
 
-        return array_values(array_filter(array_map(
+        $years = array_values(array_filter(array_map(
             static fn ($r) => trim((string) ($r['school_year'] ?? '')),
             $rows
         )));
-    }
 
-    // Distinct non-empty values for a given school column. Used to fold
-    // archive-only school names (no longer in the school options table)
-    // into the filter dropdown so they remain selectable.
-    public function getDistinctSchools(string $column): array
-    {
-        if (!in_array($column, ['junior_high_school', 'preferred_senior_high_school'], true)) {
-            return [];
+        $blank = (int) $this->db->table('student_archive')
+            ->groupStart()
+                ->where('school_year IS NULL', null, false)
+                ->orWhere('school_year', '')
+            ->groupEnd()
+            ->countAllResults();
+        if ($blank > 0) {
+            $years[] = self::NO_SCHOOL_YEAR;
         }
 
-        $alias = $column === 'junior_high_school' ? 'jhs' : 'shs';
-
-        $rows = $this->db->table('student_archive a')
-            ->select("COALESCE({$alias}.school_name, a.{$column}) AS school_name")
-            ->distinct()
-            ->join('school jhs', 'jhs.school_id = a.junior_high_school', 'left', false)
-            ->join('school shs', 'shs.school_id = a.preferred_senior_high_school', 'left', false)
-            ->where('a.' . $column . ' IS NOT NULL', null, false)
-            ->where('a.' . $column . ' !=', '')
-            ->get()
-            ->getResultArray();
-
-        return array_values(array_filter(array_map(
-            static fn ($r) => trim((string) ($r['school_name'] ?? '')),
-            $rows
-        ), static fn ($v) => $v !== ''));
+        return $years;
     }
 }

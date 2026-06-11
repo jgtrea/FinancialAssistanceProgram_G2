@@ -10,7 +10,13 @@
     $f                 = static fn (string $k) => (string) ($filters[$k] ?? '');
     $activeFilterCount = count(array_filter($filterKeys, fn ($k) => $f($k) !== ''));
     $hasSchoolYear     = $f('school_year') !== '';
-    $hasResults        = $hasSchoolYear && !empty($vouchers);
+
+    // Params the server-side DataTable forwards on every ajax draw so the slice
+    // stays scoped to the current SY / filters / keyword.
+    $dtFilterParams    = $filters;
+    $dtFilterParams['q'] = (string) ($keyword ?? '');
+    $dtUrl             = site_url((session()->get('role') === 'admin' ? 'admin/' : '') . 'archive/datatable');
+    $dtOptionsUrl      = site_url((session()->get('role') === 'admin' ? 'admin/' : '') . 'archive/filter-options');
 ?>
 
 <div class="vs-page-header mb-3">
@@ -52,19 +58,14 @@
 
     <div class="vs-card">
         <div class="vs-card-body">
-            <?php if (!$hasResults): ?>
+            <?php if (!$hasSchoolYear): ?>
                 <div class="vs-alert vs-alert-info vs-alert-static vs-archive-empty-message mb-0">
-                    <?php if (!$hasSchoolYear): ?>
-                        Open <strong>Filters</strong> and choose a <strong>SY</strong> to load archived records.
-                    <?php else: ?>
-                        No archived records found for <strong><?= esc($f('school_year')) ?></strong>. Try a different SY or adjust your filters.
-                    <?php endif ?>
+                    Open <strong>Filters</strong> and choose a <strong>SY</strong> to load archived records.
                 </div>
             <?php else: ?>
-            <table id="archivedVouchersTable" class="vs-datatable js-data-table vs-mobile-primary" data-mobile-primary="1" data-page-search="customArchiveSearch"
-                   data-search-placeholder="Search archived vouchers..."
-                   data-order='[[2,"asc"]]'
-                   data-col-defs='[{"orderData":[2],"targets":[1]},{"visible":false,"targets":2}]'
+            <table id="archivedVouchersTable" class="vs-datatable vs-mobile-primary" data-mobile-primary="1"
+                   data-datatable-url="<?= esc($dtUrl, 'attr') ?>"
+                   data-filter-params="<?= esc(json_encode($dtFilterParams), 'attr') ?>"
                    style="width:100%">
                 <thead>
                     <tr>
@@ -80,28 +81,7 @@
                         <th>Archived At</th>
                     </tr>
                 </thead>
-                <tbody>
-                    <?php foreach ($vouchers as $voucher): ?>
-                        <?php
-                            $aLn = trim((string) ($voucher['last_name']   ?? ''));
-                            $aFm = implode(' ', array_filter([trim((string) ($voucher['first_name'] ?? '')), trim((string) ($voucher['middle_name'] ?? ''))]));
-                            $aDn = $aLn !== '' ? $aLn . ($aFm !== '' ? ', ' . $aFm : '') : $aFm;
-                            $aSort = trim($aLn . ' ' . $aFm);
-                        ?>
-                        <tr data-archived-date="<?= !empty($voucher['archived_at']) ? esc(date('Y-m-d', strtotime($voucher['archived_at']))) : '' ?>">
-                            <td><?= esc($voucher['voucher_no'] ?: '-') ?></td>
-                            <td><?= esc($aDn) ?></td>
-                            <td style="display:none"><?= esc($aSort) ?></td>
-                            <td><?= esc($voucher['junior_high_school'] ?? '') ?></td>
-                            <td><?= esc($voucher['preferred_senior_high_school'] ?? '') ?></td>
-                            <td><?= esc($voucher['school_year'] ?? '') ?></td>
-                            <td><?= esc($voucher['remarks_status'] ?: '-') ?></td>
-                            <td><?= esc((string) ($voucher['generate_count'] ?? 0)) ?></td>
-                            <td><?= !empty($voucher['generated_at']) ? esc(date('M d, Y', strtotime($voucher['generated_at']))) : '-' ?></td>
-                            <td><?= !empty($voucher['archived_at']) ? esc(date('M d, Y h:i A', strtotime($voucher['archived_at']))) : '-' ?></td>
-                        </tr>
-                    <?php endforeach; ?>
-                </tbody>
+                <tbody></tbody>
             </table>
             <?php endif; ?>
         </div>
@@ -109,11 +89,59 @@
 
 <?= pre_modal('archive') ?>
 <script>
-window.__VS.pageData = {
-    schoolYears:       <?= json_encode($schoolYears) ?>,
-    juniorHighSchools: <?= json_encode($juniorHighSchools) ?>,
-    seniorHighSchools: <?= json_encode($seniorHighSchools) ?>,
-};
+// Archive filter dropdowns (SY + schools) are lazy-loaded — see the Filters
+// modal wiring below — so the page load itself runs no DISTINCT/JOIN scans.
+window.__VS.archiveFilterOptionsUrl = <?= json_encode($dtOptionsUrl) ?>;
+</script>
+
+<script>
+// Server-side DataTable for the archive listing — pages through the DB instead
+// of dumping every matching row into the DOM. Only present when a SY is chosen
+// (the table shell is rendered only in that state).
+document.addEventListener('DOMContentLoaded', function () {
+    var table = document.getElementById('archivedVouchersTable');
+    if (!table || !window.jQuery || !$.fn.DataTable || !window.VS) return;
+
+    var url = table.dataset.datatableUrl;
+    if (!url) return;
+
+    var filterParams = {};
+    try { filterParams = JSON.parse(table.dataset.filterParams || '{}'); } catch (e) {}
+
+    $(table).DataTable({
+        destroy:    true,
+        serverSide: true,
+        processing: true,
+        ajax: {
+            url:  url,
+            type: 'GET',
+            data: function (d) { Object.assign(d, filterParams); },
+        },
+        columns: [
+            { data: 'voucher_no' },
+            { data: 'name' },
+            { data: 'name_sort', visible: false },
+            { data: 'jhs' },
+            { data: 'shs' },
+            { data: 'sy' },
+            { data: 'remarks' },
+            { data: 'printed',        orderable: false },
+            { data: 'last_generated', orderable: false },
+            { data: 'archived_at' },
+        ],
+        order:      [[2, 'asc']],
+        columnDefs: [{ orderData: [2], targets: [1] }],
+        dom:        window.VS.dtHeaderDom(false) + window.VS.dtBodyDom,
+        pageLength: 25,
+        lengthMenu: window.VS.dtLengthMenuSS,
+        autoWidth:  false,
+        language:   window.VS.dtLanguage({
+            info:       'Showing _START_ to _END_ of _TOTAL_ matching',
+            emptyTable: 'No archived records found for the selected filters.',
+            zeroRecords:'No archived records found for the selected filters.',
+        }),
+    });
+});
 </script>
 
 <script>
@@ -127,9 +155,55 @@ document.addEventListener('vs:modals:ready', function () {
         var filterModal = document.getElementById('archiveFilterModal');
         var filterForm  = document.getElementById('archiveFilterForm');
         if (!filterModal || !filterForm) return;
+        // Filter dropdowns are fetched on first open (the 5 DISTINCT/JOIN scans
+        // that used to run on every page load). Cached after the first fetch.
+        // Append <option>s to a (possibly select2-wrapped) select. Destroys any
+        // existing select2 first so the new options are picked up, then leaves
+        // re-init to initVsSelect2. getTxt extracts the label from each item.
+        function fillSelect(id, items, getTxt, selectedVal) {
+            var sel = document.getElementById(id);
+            if (!sel) return;
+            if (window.jQuery && $.fn.select2 && $(sel).hasClass('select2-hidden-accessible')) {
+                try { $(sel).select2('destroy'); } catch (e) {}
+            }
+            var blank = sel.options[0];           // keep the empty placeholder option
+            sel.innerHTML = '';
+            if (blank) sel.appendChild(blank);
+            (items || []).forEach(function (item) {
+                var txt = getTxt(item);
+                if (!txt) return;
+                var opt = document.createElement('option');
+                opt.value = txt;
+                opt.textContent = txt;
+                if (selectedVal && txt === selectedVal) opt.selected = true;
+                sel.appendChild(opt);
+            });
+        }
+
+        var optionsLoaded = false;
+        function loadFilterOptions(done) {
+            if (optionsLoaded) { done(); return; }
+            var url = (window.__VS && window.__VS.archiveFilterOptionsUrl) || '';
+            if (!url) { done(); return; }
+            fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' }, credentials: 'same-origin' })
+                .then(function (r) { return r.json(); })
+                .then(function (data) {
+                    data = data || {};
+                    var qp = new URLSearchParams(window.location.search);
+                    var schoolTxt = function (s) { return (s && typeof s === 'object') ? (s.school_name || '') : s; };
+                    fillSelect('afSchoolYear', data.schoolYears,       function (s) { return s; }, qp.get('school_year'));
+                    fillSelect('afJuniorHs',   data.juniorHighSchools, schoolTxt,                 qp.get('junior_hs'));
+                    fillSelect('afPreferredHs', data.seniorHighSchools, schoolTxt,                qp.get('preferred_hs'));
+                    optionsLoaded = true;
+                })
+                .catch(function () {})
+                .finally(done);
+        }
         function openFilter()  {
           filterModal.style.display = 'flex';
-          if (typeof window.initVsSelect2 === 'function') window.initVsSelect2(filterModal);
+          loadFilterOptions(function () {
+            if (typeof window.initVsSelect2 === 'function') window.initVsSelect2(filterModal);
+          });
         }
         function closeFilter() { filterModal.style.display = 'none'; }
 
@@ -295,6 +369,7 @@ document.addEventListener('vs:modals:ready', function () {
             // reflects the moved rows.
             if (data.queued && data.status_url && typeof trackArchiveJob === 'function') {
                 trackArchiveJob(data.status_url, data.count || 0, {
+                    jobId:   data.job_id,    // survive page navigation
                     onDone:  function () { location.reload(); },
                     onError: function (msg) { alert('Archive failed: ' + msg); },
                 });

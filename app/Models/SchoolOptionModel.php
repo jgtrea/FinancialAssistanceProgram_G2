@@ -110,6 +110,22 @@ class SchoolOptionModel extends Model
             return $row ? (int) $row['school_id'] : ($allowEmpty ? null : 0);
         }
 
+        // Non-digit: match an existing school by exact NAME or ACRONYM (case-
+        // insensitive) at this level before creating one. Voucher imports often
+        // carry the acronym (e.g. "BCSTHS"), which must resolve to the real
+        // school instead of spawning a duplicate named after the acronym.
+        $upper = $this->db->escapeString($this->upper($value));
+        $row   = $this->db->table('school')
+            ->select('school_id')
+            ->where('school_level', $level)
+            ->where("(UPPER(school_name) = '{$upper}' OR UPPER(acronym) = '{$upper}')", null, false)
+            ->get()
+            ->getRowArray();
+
+        if ($row) {
+            return (int) $row['school_id'];
+        }
+
         return $this->addSchool($level, $value);
     }
 

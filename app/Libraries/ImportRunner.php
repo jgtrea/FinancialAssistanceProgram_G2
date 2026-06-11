@@ -50,6 +50,10 @@ class ImportRunner
         'voucher number'               => 'voucher',
         'date'                         => 'date',
         'voucher date'                 => 'date',
+        'school year'                  => 'sy',
+        'school yr'                    => 'sy',
+        'sy'                           => 'sy',
+        's.y.'                         => 'sy',
         'rank'                         => 'rank',
         'rank no.'                     => 'rank',
         'rank no'                      => 'rank',
@@ -213,6 +217,7 @@ class ImportRunner
             $contact = $get($row, $colMap, 'contact');
             $remarks = strtoupper($get($row, $colMap, 'remarks'));
             $evalBy  = $get($row, $colMap, 'evaluated');
+            $sy      = $get($row, $colMap, 'sy');
 
             // ── Skip rows with invalid required/optional fields ──────────────
             $err = null;
@@ -236,6 +241,8 @@ class ImportRunner
                 $err = 'remarks too long';
             } elseif (strlen($evalBy) > 150) {
                 $err = 'evaluated by too long';
+            } elseif ($sy !== '' && strlen($sy) > 20) {
+                $err = 'school year too long';
             } elseif ($vno !== '' && strlen($vno) > 50) {
                 $err = 'voucher number too long';
             } elseif ($date !== '' && strtotime($date) === false) {
@@ -282,7 +289,7 @@ class ImportRunner
                 'contact_number'               => $contact,
                 'remarks_status'               => $remarks !== '' ? $remarks : null,
                 'evaluated_by'                 => $evalBy !== '' ? $evalBy : null,
-                'school_year'                  => null,
+                'school_year'                  => $sy !== '' ? $sy : null,
                 // 'eligibility_status'           => 'eligible',
                 'voucher_status'               => 'not_generated',
                 'is_active'                    => 1,
@@ -360,6 +367,7 @@ class ImportRunner
 
         if ($has('surname') && $has(',')) return 'fullname';   // "surname, first name, middle name"
         if ($has('full name') || $has('fullname')) return 'fullname';
+        if ($has('school year') || $has('school yr') || $norm === 'sy' || $norm === 's.y.') return 'sy';
         if ($has('junior high') || $has('junior hs') || $norm === 'jhs') return 'jhs';
         if ($has('senior high') || ($has('preferred') && $has('senior'))) return 'shs';
         if ($has('evaluat')) return 'evaluated';

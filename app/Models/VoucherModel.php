@@ -573,7 +573,8 @@ class VoucherModel extends Model
                 rank_no, gwa, gender,
                 {$this->schoolSelect},
                 contact_number, remarks_status, school_year,
-                eligibility_status, voucher_status, evaluated_by
+                eligibility_status, voucher_status, evaluated_by,
+                students.created_at AS created_at
             ")
             ->whereIn('students.student_id', $ids)
             ->orderBy('students.student_id', 'ASC')

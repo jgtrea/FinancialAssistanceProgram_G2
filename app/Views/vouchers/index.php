@@ -222,6 +222,8 @@ document.addEventListener('vs:modals:ready', function () {
         // come back via onError with the specific message.
         if (data.queued && data.status_url && typeof trackJob === 'function') {
           trackJob('Importing', data.status_url, {
+            persist: true,            // survive page navigation like generate/export
+            jobId:   data.job_id,
             doneLabel: function (d) {
               if (d && d.message) return d.message;
               var n = (d && d.result && typeof d.result.imported === 'number') ? d.result.imported : 0;
@@ -798,7 +800,9 @@ document.addEventListener('vs:modals:ready', function () {
         if (data.queued && data.status_url) {
           if (action === 'generate') {
             trackJob('Generating', data.status_url, {
-              count: data.count || 0,
+              count:   data.count || 0,
+              persist: true,          // survive page navigation
+              jobId:   data.job_id,
               doneLabel: function () {
                 return (data.count || 0).toLocaleString() + ' voucher(s) generated.';
               },
@@ -808,6 +812,7 @@ document.addEventListener('vs:modals:ready', function () {
             return;
           }
           trackArchiveJob(data.status_url, data.count || 0, {
+            jobId:   data.job_id,    // survive page navigation
             onDone:  function () { location.reload(); },
             onError: function (msg) { showInfo('Archive failed: ' + msg, 'Error'); },
           });
