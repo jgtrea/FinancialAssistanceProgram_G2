@@ -380,7 +380,7 @@ var ModalInstance = (function () {
 
         archiveCurrentModal: function () {
             return `<div class="vs-modal-overlay" id="archiveCurrentModal" style="display:none">
-              <div class="vs-modal" style="max-width:680px">
+              <div class="vs-modal" style="max-width:480px">
                 <div class="vs-modal-header">
                   <h5 id="archiveCurrentModalTitle">Archive Current Data</h5>
                   <button class="vs-modal-close" id="archiveCurrentModalClose">&times;</button>
