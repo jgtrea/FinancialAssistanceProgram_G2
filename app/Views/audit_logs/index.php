@@ -24,10 +24,10 @@
         <?php foreach ($filterKeys as $k): ?>
             <input type="hidden" name="<?= esc($k, 'attr') ?>" value="<?= esc((string) $filterValues[$k], 'attr') ?>">
         <?php endforeach ?>
-        <div class="col-12 col-md-7">
+        <div class="col-12 col-md">
             <input type="text" name="q" class="vs-input vs-advanced-search-input w-100" placeholder="Enter keyword to search (action, description)" value="<?= esc((string) ($keyword ?? ''), 'attr') ?>">
         </div>
-        <div class="col-6 col-md-2">
+        <div class="col-6 col-md-auto">
             <button type="button" class="vs-btn vs-btn-outline w-100" id="auditBtnOpenFilter">
                 Filters
                 <span id="auditFilterBadge" class="badge bg-primary" style="display:<?= $activeFilterCount > 0 ? 'inline-block' : 'none' ?>;margin-left:.35rem"><?= $activeFilterCount > 0 ? esc($activeFilterCount) : '' ?></span>

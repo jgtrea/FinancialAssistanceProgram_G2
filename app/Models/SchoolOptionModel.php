@@ -68,13 +68,21 @@ class SchoolOptionModel extends Model
 
     public function addSchool(string $level, string $name): ?int
     {
-        $name = $this->upper(trim($name));
-        if ($name === '') return null;
+        $raw = trim($name);
+        if ($raw === '') return null;
+
+        // Imports may carry either a full school name ("Mapua Malayan Colleges
+        // Laguna") or just its acronym ("MMCL"). Store each in its own column so
+        // the value doesn't land in the wrong field. Detect on the raw value —
+        // case is the main signal, so check before uppercasing.
+        $isAcronym = $this->looksLikeAcronym($raw);
+        $value     = $this->upper($raw);
+        $column    = $isAcronym ? 'acronym' : 'school_name';
 
         $existing = $this->db->table('school')
             ->select('school_id')
             ->where('school_level', $level)
-            ->where('school_name', $name)
+            ->where($column, $value)
             ->get()
             ->getRowArray();
 
@@ -84,12 +92,34 @@ class SchoolOptionModel extends Model
 
         $this->db->table('school')->insert([
             'school_level' => $level,
-            'school_name'  => $name,
-            'acronym'      => '',
+            'school_name'  => $isAcronym ? '' : $value,
+            'acronym'      => $isAcronym ? $value : '',
             'is_active'    => 1,
         ]);
 
         return (int) $this->db->insertID();
+    }
+
+    // Heuristic: a value is treated as an acronym (vs a full school name) when it
+    // is short, has no spaces, and carries no lowercase letters — e.g. "MMCL",
+    // "BCSTHS", "FEU-A". Full names have spaces or mixed case ("Mapua Malayan
+    // Colleges Laguna"), so they fall through to school_name.
+    private function looksLikeAcronym(string $value): bool
+    {
+        $value = trim($value);
+        if ($value === '' || preg_match('/\s/u', $value)) {
+            return false;
+        }
+
+        $len = function_exists('mb_strlen') ? mb_strlen($value, 'UTF-8') : \strlen($value);
+        if ($len > 10) {
+            return false;
+        }
+
+        // All uppercase letters / digits / acronym punctuation, and at least one
+        // uppercase letter present (no lowercase anywhere).
+        return (bool) preg_match('/^[\p{Lu}0-9&.\-]+$/u', $value)
+            && (bool) preg_match('/\p{Lu}/u', $value);
     }
 
     public function resolveSchoolId(string $level, ?string $value, bool $allowEmpty = false): ?int

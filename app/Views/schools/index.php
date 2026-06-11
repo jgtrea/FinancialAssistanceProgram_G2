@@ -34,7 +34,7 @@
 
 <!-- Search + Level quick filter + action buttons -->
 <form method="get" id="schoolSearchForm" class="row g-2 align-items-center mb-3">
-    <div class="col-12 col-md-5">
+    <div class="col-12 col-md">
         <input type="text" name="q" class="vs-input vs-advanced-search-input w-100"
                placeholder="Enter keyword to search (name, acronym, level)"
                value="<?= esc($keyword, 'attr') ?>">
@@ -75,7 +75,7 @@
             <a href="#" id="schoolSelectAllMatchingLink" style="font-weight:600;margin-left:.5rem;display:none"></a>
             <a href="#" id="schoolClearLink" style="margin-left:.5rem;display:none">Clear</a>
         </div>
-        <table id="schoolsTable" class="vs-datatable js-data-table vs-mobile-primary" data-mobile-primary="1" data-page-search="customSchoolsSearch" data-order='[[6,"desc"],[1,"asc"]]' data-col-defs='[{"orderable":false,"targets":5},{"visible":false,"targets":6}]' style="width:100%">
+        <table id="schoolsTable" class="vs-datatable js-data-table vs-mobile-primary" data-mobile-primary="1" data-page-search="customSchoolsSearch" data-order='[[6,"desc"],[1,"asc"]]' data-col-defs='[{"orderable":false,"targets":5},{"visible":false,"targets":6},{"width":"46%","targets":1},{"width":"16%","targets":2},{"width":"9%","targets":3},{"width":"9%","targets":4}]' style="width:100%">
             <thead>
                 <tr>
                     <th class="vs-th-check">
@@ -282,14 +282,19 @@ document.addEventListener('vs:modals:ready', function () {
         syncSchoolPageCheckboxes();
     });
 
-    document.querySelectorAll('.school-row-check').forEach(function (cb) {
-        cb.addEventListener('change', function () {
-            if (cb.checked) schoolSelected.add(cb.value);
-            else            schoolSelected.delete(cb.value);
-            cb.closest('tr').classList.toggle('vs-row-selected', cb.checked);
-            updateBar();
-            updateCheckAll();
-        });
+    // Delegated so a row checkbox on ANY DataTables page works. Per-node binding
+    // misses off-page rows: DataTables detaches them from the live DOM, so they
+    // aren't found when listeners are attached and clicking them on later pages
+    // never updates schoolSelected (selection silently capped to page 1).
+    document.addEventListener('change', function (e) {
+        var cb = e.target;
+        if (!cb || !cb.classList || !cb.classList.contains('school-row-check')) return;
+        if (cb.checked) schoolSelected.add(cb.value);
+        else            schoolSelected.delete(cb.value);
+        var tr = cb.closest('tr');
+        if (tr) tr.classList.toggle('vs-row-selected', cb.checked);
+        updateBar();
+        updateCheckAll();
     });
 
     // ── Select-all-matching + Clear links ────────────────────────────────────

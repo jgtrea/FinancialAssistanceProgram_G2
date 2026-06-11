@@ -24,7 +24,7 @@
     <div id="userAlertBox"></div>
 
 <form method="get" class="row g-2 align-items-center mb-3">
-    <div class="col-12 col-md-3">
+    <div class="col-12 col-md">
         <input type="text" name="q" class="vs-input vs-advanced-search-input w-100" placeholder="Enter keyword to search (name, email)" value="<?= esc((string) ($keyword ?? ''), 'attr') ?>">
     </div>
     <div class="col-12 col-md-2">
@@ -59,7 +59,7 @@
 
     <div class="vs-card">
         <div class="vs-card-body">
-            <table id="userManagementTable" class="vs-datatable js-data-table vs-mobile-primary" data-mobile-primary="0" data-page-search="customUsersSearch" data-search-placeholder="Search users..." data-order='[[6,"desc"],[1,"asc"]]' data-col-defs='[{"orderable":false,"targets":5},{"visible":false,"targets":6}]' style="width:100%">
+            <table id="userManagementTable" class="vs-datatable js-data-table vs-mobile-primary" data-mobile-primary="0" data-page-search="customUsersSearch" data-search-placeholder="Search users..." data-order='[[6,"desc"],[1,"asc"]]' data-col-defs='[{"orderable":false,"targets":5},{"visible":false,"targets":6},{"width":"18%","targets":0},{"width":"15%","targets":1},{"width":"28%","targets":2},{"width":"9%","targets":3},{"width":"9%","targets":4}]' style="width:100%">
             <thead>
                 <tr>
                     <th>Full Name</th>

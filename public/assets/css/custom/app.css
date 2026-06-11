@@ -252,6 +252,14 @@
     }
 }
 
+@media (min-width: 768px) {
+    #btnOpenFilter,
+    #btnOpenArchiveFilter,
+    #auditBtnOpenFilter {
+        width: auto !important;
+    }
+}
+
 @media (max-width: 420px) {
     .sb-topnav .ms-auto span,
     .sb-topnav .topbar-profile-link {

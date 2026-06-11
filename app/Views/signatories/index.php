@@ -37,7 +37,7 @@
     </div>
 
     <form method="get" id="sigSearchForm" class="row g-2 align-items-center mb-3">
-        <div class="col-12 col-md-4">
+        <div class="col-12 col-md">
             <input type="text" name="q" class="vs-input vs-advanced-search-input w-100" placeholder="Enter keyword to search (name, position)" value="<?= esc((string) ($keyword ?? ''), 'attr') ?>">
         </div>
         <div class="col-12 col-md-2">
@@ -81,7 +81,7 @@
             <table id="signatoriesTable" class="vs-datatable js-data-table vs-mobile-primary" data-mobile-primary="1" data-page-search="customSignatoriesSearch"
                    data-search-placeholder="Search signatories..."
                    data-order='[[8,"desc"],[7,"asc"]]'
-                   data-col-defs='[{"orderData":[7],"targets":[1]},{"visible":false,"targets":7},{"visible":false,"targets":8}]'
+                   data-col-defs='[{"orderData":[7],"targets":[1]},{"visible":false,"targets":7},{"visible":false,"targets":8},{"width":"20%","targets":1},{"width":"34%","targets":2},{"width":"13%","targets":3},{"width":"8%","targets":4},{"width":"8%","targets":5}]'
                    style="width:100%">
             <thead>
                 <tr>

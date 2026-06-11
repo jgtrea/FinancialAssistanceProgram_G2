@@ -114,6 +114,17 @@ class Voucher extends Controller
         return $value === '' ? null : (float) $value;
     }
 
+    // Display rank without a trailing ".0" for whole numbers (1.0 → "1") while
+    // keeping real fractions intact (1.5 → "1.5", 1.25 → "1.25").
+    protected function formatRank($value): string
+    {
+        $f = (float) $value;
+        if ($f === floor($f)) {
+            return (string) (int) $f;
+        }
+        return rtrim(rtrim(number_format($f, 2, '.', ''), '0'), '.');
+    }
+
     protected function archiveSchoolYearLabel(?string $archivedAt = null): string
     {
         $timestamp = strtotime($archivedAt ?: 'now') ?: time();
@@ -355,7 +366,7 @@ class Voucher extends Controller
         $firstMid   = implode(' ', array_filter([$firstName, $middleName]));
         $name       = esc($lastName !== '' ? $lastName . ($firstMid !== '' ? ', ' . $firstMid : '') : $firstMid);
         $nameSort   = esc(trim($lastName . ' ' . $firstName . ' ' . $middleName));
-        $rank       = ($v['rank_no'] ?? null) !== null && (string) $v['rank_no'] !== '' ? esc((string) $v['rank_no']) : '-';
+        $rank       = ($v['rank_no'] ?? null) !== null && (string) $v['rank_no'] !== '' ? esc($this->formatRank($v['rank_no'])) : '-';
         $jhsName    = (string) ($v['junior_high_school'] ?: '-');
         $shsName    = (string) ($v['preferred_senior_high_school'] ?? '-');
         $jhsAcr     = trim((string) ($v['jhs_acronym'] ?? ''));
@@ -772,6 +783,96 @@ class Voucher extends Controller
         return array_map(static fn($r) => (int) $r['student_id'], $rows);
     }
 
+    // Find the schools (JHS or SHS) referenced by these students whose record is
+    // incomplete — missing an acronym (which prefixes the voucher number) or a
+    // school name (which prints on the voucher). Returns one row per offending
+    // school, ordered so the same school is offered for editing consistently.
+    protected function getIncompleteSchoolsForStudents(array $ids): array
+    {
+        if (empty($ids)) {
+            return [];
+        }
+
+        $db   = \Config\Database::connect();
+        $rows = $db->table('students')
+            ->select('junior_high_school, preferred_senior_high_school')
+            ->whereIn('student_id', $ids)
+            ->get()
+            ->getResultArray();
+
+        $schoolIds = [];
+        foreach ($rows as $r) {
+            foreach (['junior_high_school', 'preferred_senior_high_school'] as $col) {
+                $sid = (int) ($r[$col] ?? 0);
+                if ($sid > 0) {
+                    $schoolIds[$sid] = true;
+                }
+            }
+        }
+        if (empty($schoolIds)) {
+            return [];
+        }
+
+        $schools = $db->table('school')
+            ->select('school_id, school_name, acronym, school_level')
+            ->whereIn('school_id', array_keys($schoolIds))
+            ->groupStart()
+                ->where('acronym IS NULL', null, false)
+                ->orWhere('acronym', '')
+                ->orWhere('school_name IS NULL', null, false)
+                ->orWhere('school_name', '')
+            ->groupEnd()
+            ->orderBy('school_level', 'ASC')
+            ->orderBy('school_id', 'ASC')
+            ->get()
+            ->getResultArray();
+
+        $out = [];
+        foreach ($schools as $s) {
+            $missing = [];
+            if (trim((string) ($s['acronym'] ?? '')) === '')     { $missing[] = 'acronym'; }
+            if (trim((string) ($s['school_name'] ?? '')) === '')  { $missing[] = 'name'; }
+            $out[] = [
+                'school_id'    => (int) $s['school_id'],
+                'school_name'  => (string) ($s['school_name'] ?? ''),
+                'acronym'      => (string) ($s['acronym'] ?? ''),
+                'school_level' => (string) ($s['school_level'] ?? ''),
+                'missing'      => $missing,
+            ];
+        }
+
+        return $out;
+    }
+
+    // Build a block response when any referenced school is incomplete. The
+    // frontend opens the school-edit modal for `edit_school_id` so the user can
+    // fill the gap, then retry generation. Returns null when all schools are OK.
+    protected function incompleteSchoolsResponse(array $ids)
+    {
+        $incomplete = $this->getIncompleteSchoolsForStudents($ids);
+        if (empty($incomplete)) {
+            return null;
+        }
+
+        $first = $incomplete[0];
+        $label = $first['school_name'] !== '' ? $first['school_name']
+            : ($first['acronym'] !== '' ? $first['acronym'] : ('School #' . $first['school_id']));
+        $fields = implode(' and ', array_map(
+            static fn ($m) => $m === 'name' ? 'full name' : 'acronym',
+            $first['missing']
+        ));
+
+        return $this->response->setJSON([
+            'success'        => false,
+            'incomplete'     => true,
+            'edit_school_id' => $first['school_id'],
+            'remaining'      => \count($incomplete),
+            'message'        => 'The ' . ($first['school_level'] ?: 'school') . ' "' . $label
+                . '" is missing its ' . $fields . '. The acronym starts the voucher number and the '
+                . 'name prints on the voucher, so update it before generating.',
+        ]);
+    }
+
     public function generateJsonPdf()
     {
         $ids = $this->parseVoucherIds($this->request->getPost('voucher_ids'));
@@ -792,6 +893,12 @@ class Voucher extends Controller
                 'success' => false,
                 'message' => 'None of the selected students can be generated — they are inactive or missing a preferred senior high school.',
             ]);
+        }
+
+        // Block when a referenced school is missing its acronym / name. The
+        // frontend opens that school's edit modal so it can be fixed first.
+        if ($resp = $this->incompleteSchoolsResponse($ids)) {
+            return $resp;
         }
 
         $userId = $this->getCurrentUserId();

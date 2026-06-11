@@ -302,7 +302,7 @@ class StudentController extends BaseController
             'rank_no'                      => 'required|decimal|greater_than[0]|less_than_equal_to[999999]',
             'gwa'                          => 'required|decimal|greater_than_equal_to[0]|less_than_equal_to[100]',
             'gender'                       => 'permit_empty|in_list[MALE,FEMALE]',
-            'junior_high_school'           => 'permit_empty|max_length[200]',
+            'junior_high_school'           => 'required|max_length[200]',
             'preferred_senior_high_school' => 'permit_empty|max_length[200]',
             'contact_number'               => 'permit_empty|max_length[30]|regex_match[/^[0-9+().\\-\\s]+$/]',
             'remarks_status'               => 'permit_empty|in_list[COMPLETE,INCOMPLETE,OTHERS]',
