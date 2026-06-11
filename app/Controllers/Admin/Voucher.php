@@ -743,6 +743,31 @@ class Voucher extends Controller
         ]);
     }
 
+    // Narrow a set of student IDs to those a voucher can actually be issued for:
+    // active, with both a junior high and a preferred senior high school. Used so
+    // "select all + Generate" silently skips incomplete rows instead of blocking
+    // the whole batch. Shared by generateJsonPdf() and generateAll().
+    protected function filterGeneratableIds(array $ids): array
+    {
+        if (empty($ids)) {
+            return [];
+        }
+
+        $db   = \Config\Database::connect();
+        $rows = $db->table('students')
+            ->select('student_id')
+            ->whereIn('student_id', $ids)
+            ->where('is_active', 1)
+            ->where('junior_high_school IS NOT NULL', null, false)
+            ->where('junior_high_school !=', 0)
+            ->where('preferred_senior_high_school IS NOT NULL', null, false)
+            ->where('preferred_senior_high_school !=', 0)
+            ->get()
+            ->getResultArray();
+
+        return array_map(static fn($r) => (int) $r['student_id'], $rows);
+    }
+
     public function generateJsonPdf()
     {
         $ids = $this->parseVoucherIds($this->request->getPost('voucher_ids'));
@@ -751,8 +776,18 @@ class Voucher extends Controller
             return $this->response->setJSON(['success' => false, 'message' => 'No students selected.']);
         }
 
-        if ($resp = $this->missingPreferredResponse($ids)) {
-            return $resp;
+        // Skip incomplete rows (inactive / missing junior or preferred senior
+        // high school) instead of rejecting the whole batch — generate only the
+        // selected students that have the details a voucher needs.
+        $requested = \count($ids);
+        $ids       = $this->filterGeneratableIds($ids);
+        $skipped   = $requested - \count($ids);
+
+        if (empty($ids)) {
+            return $this->response->setJSON([
+                'success' => false,
+                'message' => 'None of the selected students can be generated — they are inactive or missing a preferred senior high school.',
+            ]);
         }
 
         $userId = $this->getCurrentUserId();
@@ -771,6 +806,8 @@ class Voucher extends Controller
             'success'    => true,
             'queued'     => true,
             'job_id'     => $jobId,
+            'count'      => \count($ids),
+            'skipped'    => $skipped,
             'status_url' => site_url("{$prefix}/vouchers/json-pdf-status/{$jobId}"),
         ]);
     }
@@ -948,19 +985,9 @@ class Voucher extends Controller
 
         $ids = $this->voucherModel->getMatchingStudentIds($keyword, $filters);
 
-        if (!empty($ids)) {
-            $db  = \Config\Database::connect();
-            $ids = $db->table('students')
-                ->select('student_id')
-                ->whereIn('student_id', $ids)
-                // ->where('eligibility_status', 'eligible')
-                ->where('is_active', 1)
-                ->where('preferred_senior_high_school IS NOT NULL', null, false)
-                ->where('preferred_senior_high_school !=', 0)
-                ->get()
-                ->getResultArray();
-            $ids = array_map(static fn($r) => (int) $r['student_id'], $ids);
-        }
+        // Skip students that can't be generated (inactive, or missing a junior /
+        // preferred senior high school) — a voucher needs both schools.
+        $ids = $this->filterGeneratableIds($ids);
 
         if (empty($ids)) {
             return $this->response->setJSON([

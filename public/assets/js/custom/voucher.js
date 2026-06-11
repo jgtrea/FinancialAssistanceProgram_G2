@@ -583,6 +583,12 @@ document.addEventListener('DOMContentLoaded', function () {
         selectedIds.clear();
         syncPageCheckboxes();
 
+        // Some selected rows can be skipped server-side (inactive, or missing a
+        // preferred senior high school). Let the user know they weren't generated.
+        if (data.skipped && data.skipped > 0) {
+          showAlert(data.skipped + ' selected student(s) were skipped — inactive or missing a preferred senior high school.', 'warning');
+        }
+
         if (data.queued && data.status_url) {
           savePendingPdfJob({
             jobId:     data.job_id,

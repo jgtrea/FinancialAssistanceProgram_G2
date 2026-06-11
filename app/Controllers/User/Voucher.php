@@ -193,8 +193,18 @@ class Voucher extends AdminVoucher
             return $this->response->setJSON(['success' => false, 'message' => 'No students selected.']);
         }
 
-        if ($resp = $this->missingPreferredResponse($ids)) {
-            return $resp;
+        // Skip incomplete rows (inactive / missing junior or preferred senior
+        // high school) instead of rejecting the whole batch — generate only the
+        // selected students that have the details a voucher needs.
+        $requested = \count($ids);
+        $ids       = $this->filterGeneratableIds($ids);
+        $skipped   = $requested - \count($ids);
+
+        if (empty($ids)) {
+            return $this->response->setJSON([
+                'success' => false,
+                'message' => 'None of the selected students can be generated — they are inactive or missing a preferred senior high school.',
+            ]);
         }
 
         $students = $this->prepareStudentsForGeneration($ids);
@@ -209,6 +219,8 @@ class Voucher extends AdminVoucher
             'success'    => true,
             'queued'     => true,
             'job_id'     => $jobId,
+            'count'      => \count($ids),
+            'skipped'    => $skipped,
             'status_url' => site_url("user/vouchers/json-pdf-status/{$jobId}"),
             'vouchers'   => array_column($students, 'voucher_no', 'student_id'),
         ]);

@@ -133,16 +133,37 @@ function showPdfToast(message, key, job, opts) {
   };
 }
 
-function showAlert(message, type = 'success') {
+function showAlert(message, type = 'success', opts = {}) {
   const map = { success: 'vs-alert-success', error: 'vs-alert-error', warning: 'vs-alert-warning' };
   const el  = document.createElement('div');
   el.className = `vs-alert ${map[type] ?? map.success} mb-3 mt-2`;
-  el.textContent = message;
+  el.style.display = 'flex';
+  el.style.alignItems = 'center';
+  el.style.gap = '1rem';
+
+  const text = document.createElement('span');
+  text.textContent = message;
+  text.style.flex = '1';
+  el.appendChild(text);
+
+  // Manual dismiss button — always present so the user can close the alert.
+  const close = document.createElement('button');
+  close.type = 'button';
+  close.textContent = 'Dismiss';
+  close.setAttribute('aria-label', 'Dismiss');
+  close.style.cssText = 'flex:none;background:rgba(0,0,0,.06);border:1px solid rgba(0,0,0,.15);'
+    + 'border-radius:.35rem;font-size:.8rem;font-weight:600;line-height:1;cursor:pointer;'
+    + 'color:inherit;padding:.35rem .75rem;white-space:nowrap';
+  close.addEventListener('mouseenter', () => { close.style.background = 'rgba(0,0,0,.12)'; });
+  close.addEventListener('mouseleave', () => { close.style.background = 'rgba(0,0,0,.06)'; });
+  close.addEventListener('click', () => el.remove());
+  el.appendChild(close);
 
   const main = document.querySelector('.vs-content') || document.querySelector('main');
   if (main) {
     main.prepend(el);
-    setTimeout(() => el.remove(), 5000);
+    // opts.persist keeps the alert until manually dismissed (no auto-timer).
+    if (!opts.persist) setTimeout(() => el.remove(), 5000);
   }
 }
 
