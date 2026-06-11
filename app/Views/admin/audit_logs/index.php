@@ -24,7 +24,7 @@
          change so the user sees results immediately, matching the Schools
          page quick-filter pattern. -->
     <form method="get" id="auditFilterForm" class="row g-2 align-items-center mb-3">
-        <div class="col-12 col-md-3">
+        <div class="col-12 col-md">
             <input type="text" name="q" class="vs-input vs-advanced-search-input w-100" placeholder="Enter keyword to search (action, description)" value="<?= esc((string) ($keyword ?? ''), 'attr') ?>">
         </div>
         <div class="col-6 col-md-2">

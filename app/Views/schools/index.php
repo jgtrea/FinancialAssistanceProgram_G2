@@ -34,7 +34,7 @@
 
 <!-- Search + Level quick filter + action buttons -->
 <form method="get" id="schoolSearchForm" class="row g-2 align-items-center mb-3">
-    <div class="col-12 col-md-5">
+    <div class="col-12 col-md">
         <input type="text" name="q" class="vs-input vs-advanced-search-input w-100"
                placeholder="Enter keyword to search (name, acronym, level)"
                value="<?= esc($keyword, 'attr') ?>">

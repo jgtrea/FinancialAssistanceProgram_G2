@@ -25,8 +25,8 @@ use PhpOffice\PhpSpreadsheet\IOFactory;
  * Columns are located by NAME (header detected anywhere in the first rows), so
  * the leading blank "#" column and minor ordering differences don't matter.
  *
- * Required per row: Surname, Firstname, Rank, GWA, Gender.
- * Optional: Control No. (unique when present), JHS, Preferred Senior, Contact,
+ * Required per row: Surname, Firstname, Rank, GWA, Gender, JHS.
+ * Optional: Control No. (unique when present), Preferred Senior, Contact,
  * Remarks/Status (free text), Evaluated By.
  */
 class ImportRunner
@@ -151,7 +151,7 @@ class ImportRunner
         }
         // Name comes from a single "Full Name" column OR split Surname/Firstname.
         $hasName = isset($colMap['fullname']) || isset($colMap['surname']);
-        foreach (['rank' => 'Rank', 'gwa' => 'GWA'] as $need => $label) {
+        foreach (['rank' => 'Rank', 'gwa' => 'GWA', 'jhs' => 'JHS'] as $need => $label) {
             if (! isset($colMap[$need])) {
                 throw new \RuntimeException('File format does not match: missing the "' . $label . '" column.');
             }
@@ -230,6 +230,8 @@ class ImportRunner
                 $err = 'invalid GWA';
             } elseif ($gender !== '' && ! in_array($gender, ['MALE', 'FEMALE'], true)) {
                 $err = 'invalid Gender';
+            } elseif ($jhs === '') {
+                $err = 'missing JHS';
             } elseif (strlen($surname) > 100 || strlen($first) > 100 || strlen($middle) > 100) {
                 $err = 'name too long';
             } elseif ($control !== '' && strlen($control) > 50) {
