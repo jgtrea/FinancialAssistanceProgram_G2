@@ -214,7 +214,7 @@ document.addEventListener('vs:modals:ready', function () {
             umPassword.required = false;
         } else {
             umPasswordLabel.classList.remove('required');
-            umPasswordLabel.innerHTML = 'Password <span class="vs-label-hint">(leave blank for default: pass123)</span>';
+            umPasswordLabel.innerHTML = 'Password <span class="vs-label-hint">(leave blank for default: password123)</span>';
             umPassword.required = false;
         }
     }
