@@ -113,7 +113,7 @@ class VoucherModel extends Model
 
     // Supported filter keys (also the GET param names used by the listing view).
     public const LISTING_FILTER_KEYS = [
-        'gender', 'remarks', 'voucher_status',
+        'gender', 'remarks', 'other_remarks', 'voucher_status',
         'date_from', 'date_to', 'junior_hs', 'preferred_hs',
         'gwa_min', 'gwa_max', /* 'eligibility', */
     ];
@@ -436,6 +436,10 @@ class VoucherModel extends Model
         }
         if (($v = $value($filters, 'remarks')) !== '') {
             $builder->where('remarks_status', $v);
+            $applied = true;
+        }
+        if (($v = $value($filters, 'other_remarks')) !== '') {
+            $builder->like('other_remarks', $v);
             $applied = true;
         }
         if (($v = $value($filters, 'voucher_status')) !== '') {

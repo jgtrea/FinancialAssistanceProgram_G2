@@ -137,6 +137,13 @@ canvas {
 .vs-btn:active {
   transform: scale(0.98);
 }
+/* .flex-fill (flex:1 1 auto) sizes by content first, so a longer label
+   grows wider than its sibling once extra space is split evenly. Force
+   flex-basis:0 so paired toolbar buttons (Search/Clear, Add X/Import...)
+   split the row equally regardless of label length. */
+.vs-btn.flex-fill {
+  flex-basis: 0;
+}
 .vs-btn:disabled {
   opacity: 0.55;
   cursor: not-allowed;
@@ -275,7 +282,6 @@ canvas {
 }
 
 @media (max-width: 767.98px) {
-  .vs-page-toolbar,
   .vs-table-toolbar {
     align-items: stretch !important;
     flex-direction: column;

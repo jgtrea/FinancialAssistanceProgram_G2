@@ -1,3 +1,182 @@
 {
-    "jobs": []
+    "jobs": [
+        {
+            "job_id": 427,
+            "parent_job_id": null,
+            "chunk_index": null,
+            "total_chunks": 0,
+            "type": "import",
+            "voucher_ids": [],
+            "payload": {
+                "file_path": "C:\\Users\\Jan Rea\\Documents\\GitHub\\FinancialAssistanceProgram_G2\\writable\\imports\\import_20260611_130133_94077b7a.xlsx",
+                "original_name": "FAP-AY-2026-2027.xlsx"
+            },
+            "progress": null,
+            "result": {
+                "imported": 0,
+                "skipped": 18,
+                "reasons": [
+                    "Row 7 (AMBULO, RAINE, BALDONADO): invalid contact number",
+                    "Row 8 (BASCO, MIRANDA JONI, GO): invalid contact number",
+                    "Row 9 (BAUTISTA, TRAVIS, GONZAGA): invalid contact number",
+                    "Row 10 (BORRE, RHONMAE YESHUA, PALACIO): invalid contact number",
+                    "Row 11 (CABASE, ALLIYAH, MAQUIDATO): invalid contact number",
+                    "Row 12 (CARBO, CYANN, MANANES): invalid contact number",
+                    "Row 13 (DAVO, GOLDWYN FREIAN ACE, ESCOBIDO): invalid contact number",
+                    "Row 14 (ELUSO, ZHACCAINA TRIXIE, EUCACION): invalid contact number",
+                    "Row 15 (FABIA, YSAAC JACOB, DELA CRUZ): invalid contact number",
+                    "Row 16 (HELLERA, ELISHA CLAIRE, VILLANO): invalid contact number"
+                ]
+            },
+            "created_by": 9,
+            "created_at": "2026-06-11 13:01:33",
+            "status": "done",
+            "file_path": null,
+            "completed_at": "2026-06-11 13:02:06",
+            "error_message": null
+        },
+        {
+            "job_id": 428,
+            "parent_job_id": null,
+            "chunk_index": null,
+            "total_chunks": 0,
+            "type": "import",
+            "voucher_ids": [],
+            "payload": {
+                "file_path": "C:\\Users\\Jan Rea\\Documents\\GitHub\\FinancialAssistanceProgram_G2\\writable\\imports\\import_20260611_130304_d59ef581.xlsx",
+                "original_name": "FAP-AY-2026-2027.xlsx"
+            },
+            "progress": null,
+            "result": {
+                "imported": 0,
+                "skipped": 18,
+                "reasons": [
+                    "Row 7 (AMBULO, RAINE, BALDONADO): invalid contact number",
+                    "Row 8 (BASCO, MIRANDA JONI, GO): invalid contact number",
+                    "Row 9 (BAUTISTA, TRAVIS, GONZAGA): invalid contact number",
+                    "Row 10 (BORRE, RHONMAE YESHUA, PALACIO): invalid contact number",
+                    "Row 11 (CABASE, ALLIYAH, MAQUIDATO): invalid contact number",
+                    "Row 12 (CARBO, CYANN, MANANES): invalid contact number",
+                    "Row 13 (DAVO, GOLDWYN FREIAN ACE, ESCOBIDO): invalid contact number",
+                    "Row 14 (ELUSO, ZHACCAINA TRIXIE, EUCACION): invalid contact number",
+                    "Row 15 (FABIA, YSAAC JACOB, DELA CRUZ): invalid contact number",
+                    "Row 16 (HELLERA, ELISHA CLAIRE, VILLANO): invalid contact number"
+                ]
+            },
+            "created_by": 9,
+            "created_at": "2026-06-11 13:03:04",
+            "status": "done",
+            "file_path": null,
+            "completed_at": "2026-06-11 13:03:06",
+            "error_message": null
+        },
+        {
+            "job_id": 429,
+            "parent_job_id": null,
+            "chunk_index": null,
+            "total_chunks": 0,
+            "type": "import",
+            "voucher_ids": [],
+            "payload": {
+                "file_path": "C:\\Users\\Jan Rea\\Documents\\GitHub\\FinancialAssistanceProgram_G2\\writable\\imports\\import_20260611_130426_89749840.xls",
+                "original_name": "BISTECH-GRADE-10-OVERALL-RANKING (1).xls"
+            },
+            "progress": null,
+            "result": {
+                "imported": 134,
+                "skipped": 3,
+                "reasons": [
+                    "Row 140 (Prepared by:): missing first name",
+                    "Row 142 (Mark Anthony M. Crisostomo): missing first name",
+                    "Row 143 (GRADE 10- CHIEF ADVISER): missing first name"
+                ]
+            },
+            "created_by": 9,
+            "created_at": "2026-06-11 13:04:26",
+            "status": "done",
+            "file_path": null,
+            "completed_at": "2026-06-11 13:05:05",
+            "error_message": null
+        },
+        {
+            "job_id": 430,
+            "parent_job_id": null,
+            "chunk_index": null,
+            "total_chunks": 0,
+            "type": "import",
+            "voucher_ids": [],
+            "payload": {
+                "file_path": "C:\\Users\\Jan Rea\\Documents\\GitHub\\FinancialAssistanceProgram_G2\\writable\\imports\\import_20260611_130556_1fd2f395.xlsx",
+                "original_name": "FAP-AY-2026-2027.xlsx"
+            },
+            "progress": null,
+            "result": {
+                "imported": 0,
+                "skipped": 18,
+                "reasons": [
+                    "Row 7 (AMBULO, RAINE, BALDONADO): student already exists",
+                    "Row 8 (BASCO, MIRANDA JONI, GO): student already exists",
+                    "Row 9 (BAUTISTA, TRAVIS, GONZAGA): student already exists",
+                    "Row 10 (BORRE, RHONMAE YESHUA, PALACIO): student already exists",
+                    "Row 11 (CABASE, ALLIYAH, MAQUIDATO): student already exists",
+                    "Row 12 (CARBO, CYANN, MANANES): student already exists",
+                    "Row 13 (DAVO, GOLDWYN FREIAN ACE, ESCOBIDO): student already exists",
+                    "Row 14 (ELUSO, ZHACCAINA TRIXIE, EUCACION): student already exists",
+                    "Row 15 (FABIA, YSAAC JACOB, DELA CRUZ): student already exists",
+                    "Row 16 (HELLERA, ELISHA CLAIRE, VILLANO): student already exists"
+                ]
+            },
+            "created_by": 9,
+            "created_at": "2026-06-11 13:05:56",
+            "status": "done",
+            "file_path": null,
+            "completed_at": "2026-06-11 13:06:06",
+            "error_message": null
+        },
+        {
+            "job_id": 431,
+            "parent_job_id": null,
+            "chunk_index": null,
+            "total_chunks": 1,
+            "type": "archive",
+            "voucher_ids": [],
+            "payload": {
+                "reason": "Archive current data"
+            },
+            "progress": null,
+            "result": {
+                "archived": 134
+            },
+            "created_by": 9,
+            "created_at": "2026-06-11 13:06:27",
+            "status": "done",
+            "file_path": null,
+            "completed_at": "2026-06-11 13:07:05",
+            "error_message": null
+        },
+        {
+            "job_id": 432,
+            "parent_job_id": null,
+            "chunk_index": null,
+            "total_chunks": 0,
+            "type": "import",
+            "voucher_ids": [],
+            "payload": {
+                "file_path": "C:\\Users\\Jan Rea\\Documents\\GitHub\\FinancialAssistanceProgram_G2\\writable\\imports\\import_20260611_130717_da73a5a4.xlsx",
+                "original_name": "FAP-AY-2026-2027.xlsx"
+            },
+            "progress": null,
+            "result": {
+                "imported": 18,
+                "skipped": 0,
+                "reasons": []
+            },
+            "created_by": 9,
+            "created_at": "2026-06-11 13:07:17",
+            "status": "done",
+            "file_path": null,
+            "completed_at": "2026-06-11 13:08:06",
+            "error_message": null
+        }
+    ]
 }
