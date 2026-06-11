@@ -99,8 +99,6 @@ var ModalInstance = (function () {
                 <div class="vs-modal-body">
                   <p class="text-muted small mb-3">
                     Upload an <strong>.xlsx</strong>, <strong>.xls</strong>, or <strong>.csv</strong> file.<br>
-                    Columns must be in this exact order:
-                    <em>Voucher No., Voucher Date, Full Name, Rank No., GWA, Sex, Junior High School, Preferred Senior High School, Contact Number, Remarks</em>
                   </p>
                   <label class="vs-label" for="importFile">File</label>
                   <input type="file" id="importFile" class="vs-input" accept=".xlsx,.xls,.csv">
@@ -167,7 +165,7 @@ var ModalInstance = (function () {
                         <option></option><option value="eligible">eligible</option><option value="not_eligible">not_eligible</option>
                       </select>
                     </div> -->
-                    <div class="col-6">
+                    <div class="col-12">
                       <label class="vs-label" for="filterRemarks">Remarks</label>
                       <select id="filterRemarks" class="vs-input js-filter-select" data-placeholder="PASSED / FOR REVIEW / FAILED" data-no-search="1">
                         <option></option><option value="PASSED">PASSED</option><option value="FOR REVIEW">FOR REVIEW</option><option value="FAILED">FAILED</option>
@@ -274,7 +272,7 @@ var ModalInstance = (function () {
                           <option></option><option value="eligible">ELIGIBLE</option><option value="not_eligible">NOT ELIGIBLE</option>
                         </select>
                       </div> -->
-                      <div class="col-6 ">
+                      <div class="col-12 ">
                         <label class="vs-label" for="vmRemarks">Remarks</label>
                         <select id="vmRemarks" name="remarks_status" class="vs-input js-school-select vs-uppercase" data-placeholder="COMPLETE / INCOMPLETE / OTHERS" data-no-search="1">
                           <option></option><option value="COMPLETE">COMPLETE</option><option value="INCOMPLETE">INCOMPLETE</option><option value="OTHERS">OTHERS</option>
@@ -586,7 +584,7 @@ var ModalInstance = (function () {
 
         schoolImportModal: function () {
             return `<div class="vs-modal-overlay" id="schoolImportModal" style="display:none">
-                <div class="vs-modal" style="max-width:680px">
+                <div class="vs-modal">
                     <div class="vs-modal-header">
                         <h5>Import Schools</h5>
                         <button class="vs-modal-close" id="schoolImportClose">&times;</button>
@@ -595,15 +593,11 @@ var ModalInstance = (function () {
                         ${_csrfInput('siCsrf')}
                         <div class="vs-modal-body">
                             <div id="schoolImportAlert"></div>
-                            <p class="text-muted" style="font-size:.875rem">
-                                Upload a <strong>.csv</strong>, <strong>.xlsx</strong>, or <strong>.xls</strong> file
-                                with columns: <strong>School Name</strong>, <strong>Acronym</strong>, and <strong>Level</strong> (JHS or SHS).
-                                Duplicate entries will be skipped automatically.
+                            <p class="text-muted small mb-3">
+                                Upload an <strong>.xlsx</strong>, <strong>.xls</strong>, or <strong>.csv</strong> file.<br>
                             </p>
-                            <div class="mt-3">
-                                <label class="vs-label" for="schoolFileInput">File</label>
-                                <input id="schoolFileInput" name="school_file" type="file" class="vs-input" accept=".csv,.xlsx,.xls" required>
-                            </div>
+                            <label class="vs-label" for="schoolFileInput">File</label>
+                            <input id="schoolFileInput" name="school_file" type="file" class="vs-input" accept=".csv,.xlsx,.xls" required>
                         </div>
                         <div class="vs-modal-footer">
                             <button type="button" class="vs-btn vs-btn-outline" id="schoolImportCancel">Cancel</button>
