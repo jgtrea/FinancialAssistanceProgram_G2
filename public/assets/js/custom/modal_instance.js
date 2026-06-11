@@ -131,7 +131,7 @@ var ModalInstance = (function () {
                     </div>                    
                     <div class="col-6">
                       <label class="vs-label" for="filterVoucherStatus">Voucher Status</label>
-                      <select id="filterVoucherStatus" class="vs-input js-filter-select" data-placeholder="GENERATED / NOT GENERATED" data-no-search="1">
+                      <select id="filterVoucherStatus" class="vs-input js-filter-select" data-placeholder="TYPE OR SELECT" data-tags="1">
                         <option></option><option value="generated">GENERATED</option><option value="not_generated">NOT GENERATED</option>
                       </select>
                     </div>
@@ -167,8 +167,8 @@ var ModalInstance = (function () {
                     </div> -->
                     <div class="col-12">
                       <label class="vs-label" for="filterRemarks">Remarks</label>
-                      <select id="filterRemarks" class="vs-input js-filter-select" data-placeholder="PASSED / FOR REVIEW / FAILED" data-no-search="1">
-                        <option></option><option value="PASSED">PASSED</option><option value="FOR REVIEW">FOR REVIEW</option><option value="FAILED">FAILED</option>
+                      <select id="filterRemarks" class="vs-input js-filter-select" data-placeholder="TYPE OR SELECT" data-tags="1">
+                        <option></option><option value="COMPLETE">COMPLETE</option><option value="INCOMPLETE">INCOMPLETE</option><option value="OTHERS">OTHERS</option>
                       </select>
                     </div>
                   </div>
@@ -251,12 +251,12 @@ var ModalInstance = (function () {
                         <input id="vmContactNumber" name="contact_number" type="text" class="vs-input vs-uppercase">
                       </div>
                       <div class="col-6">
-                        <label class="vs-label" for="vmGwa">GWA</label>
-                        <input id="vmGwa" name="gwa" type="number" step="0.01" class="vs-input">
+                        <label class="vs-label required" for="vmGwa">GWA</label>
+                        <input id="vmGwa" name="gwa" type="number" step="0.01" class="vs-input" required>
                       </div>
                       <div class="col-6">
-                        <label class="vs-label" for="vmRankNo">Rank No.</label>
-                        <input id="vmRankNo" name="rank_no" type="number" class="vs-input">
+                        <label class="vs-label required" for="vmRankNo">Rank No.</label>
+                        <input id="vmRankNo" name="rank_no" type="number" step="any" class="vs-input" required>
                       </div>
                       <div class="col-6">
                         <label class="vs-label" for="vmJuniorHs">Junior High School</label>
@@ -277,6 +277,10 @@ var ModalInstance = (function () {
                         <select id="vmRemarks" name="remarks_status" class="vs-input js-school-select vs-uppercase" data-placeholder="COMPLETE / INCOMPLETE / OTHERS" data-no-search="1">
                           <option></option><option value="COMPLETE">COMPLETE</option><option value="INCOMPLETE">INCOMPLETE</option><option value="OTHERS">OTHERS</option>
                         </select>
+                      </div>
+                      <div class="col-12" id="vmOtherRemarksWrap" style="display:none">
+                        <label class="vs-label required" for="vmOtherRemarks">Other Remarks</label>
+                        <input id="vmOtherRemarks" name="other_remarks" type="text" class="vs-input vs-uppercase" maxlength="255">
                       </div>
                       <div class="col-4"></div><div class="col-4"></div>
                     </div>
@@ -932,8 +936,16 @@ var ModalInstance = (function () {
             var el = document.getElementById(id);
             var val = _urlParam(selectMap[id]);
             if (!el || !val) return;
+            var matched = false;
             for (var i = 0; i < el.options.length; i++) {
-                if (el.options[i].value === val) { el.options[i].selected = true; break; }
+                if (el.options[i].value === val) { el.options[i].selected = true; matched = true; break; }
+            }
+            if (!matched && el.dataset.tags === '1') {
+                var opt = document.createElement('option');
+                opt.value = val;
+                opt.textContent = val;
+                opt.selected = true;
+                el.appendChild(opt);
             }
         });
     }

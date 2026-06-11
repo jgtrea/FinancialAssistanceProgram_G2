@@ -187,8 +187,9 @@ window.initVsSelect2 = function initVsSelect2(root) {
     var $modal = $el.closest('.vs-modal-overlay');
     var noSearch = this.dataset.noSearch === '1';
     var isSchoolSelect = $el.hasClass('js-school-select');
+    var allowTags = isSchoolSelect || this.dataset.tags === '1';
     $el.select2({
-      tags: isSchoolSelect,
+      tags: allowTags,
       placeholder: this.dataset.placeholder || 'All',
       allowClear: true,
       width: '100%',
@@ -202,7 +203,7 @@ window.initVsSelect2 = function initVsSelect2(root) {
         if (text.indexOf(term) !== -1 || acronym.indexOf(term) !== -1) return data;
         return null;
       },
-      createTag: isSchoolSelect ? function (params) {
+      createTag: allowTags ? function (params) {
         var term = params.term.trim();
         if (!term) return null;
         // Prevent duplicate: check if term matches existing option (case-insensitive).

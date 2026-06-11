@@ -14,7 +14,7 @@ class ArchiveModel extends Model
         'first_name', 'middle_name', 'last_name', 'suffix',
         'rank_no', 'gwa', 'gender',
         'junior_high_school', 'preferred_senior_high_school',
-        'contact_number', 'remarks_status', 'school_year',
+        'contact_number', 'remarks_status', 'other_remarks', 'school_year',
         /* 'eligibility_status', */ 'voucher_status', 'evaluated_by',
         'archive_reason', 'archived_by', 'archived_at',
     ];
@@ -148,6 +148,7 @@ class ArchiveModel extends Model
                 ->orLike('shs.acronym', $needle)
                 ->orLike('a.school_year', $needle)
                 ->orLike('a.remarks_status', $needle)
+                ->orLike('a.other_remarks', $needle)
                 ->groupEnd();
         };
 

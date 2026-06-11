@@ -24,6 +24,7 @@ class StudentModel extends Model
         'preferred_senior_high_school',
         'contact_number',
         'remarks_status',
+        'other_remarks',
         'school_year',
         // 'eligibility_status',
         'voucher_status',
@@ -46,6 +47,7 @@ class StudentModel extends Model
         'preferred_senior_high_school',
         'contact_number',
         'remarks_status',
+        'other_remarks',
         'school_year',
     ];
 

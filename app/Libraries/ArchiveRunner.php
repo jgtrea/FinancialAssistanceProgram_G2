@@ -157,6 +157,7 @@ class ArchiveRunner
                 'preferred_senior_high_school' => $s['preferred_senior_high_school'],
                 'contact_number'               => $s['contact_number'],
                 'remarks_status'               => $s['remarks_status'],
+                'other_remarks'                 => $s['other_remarks'] ?? null,
                 'evaluated_by'                 => $s['evaluated_by'] ?? null,
                 'school_year'                  => $schoolYear,
                 // 'eligibility_status'           => $s['eligibility_status'],

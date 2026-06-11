@@ -24,11 +24,13 @@ document.addEventListener('DOMContentLoaded', function () {
   var vmLastGeneratedAtEl   = document.getElementById('vmLastGeneratedAt');
   var vmGenerationHistoryDetails = document.getElementById('vmGenerationHistoryDetails');
   var vmGenerationHistoryList = document.getElementById('vmGenerationHistoryList');
+  var vmOtherRemarksWrap = document.getElementById('vmOtherRemarksWrap');
+  var vmOtherRemarksInput = document.getElementById('vmOtherRemarks');
 
   var vmFieldIds = [
     'vmControlNo', 'vmVoucherDate', 'vmFirstName', 'vmMiddleName', 'vmLastName',
     'vmSuffix', 'vmGender', 'vmGwa', 'vmRankNo', 'vmContactNumber',
-    'vmJuniorHs', 'vmPreferredHs', 'vmRemarks', 'vmEvaluatedBy', /* 'vmEligibility', */
+    'vmJuniorHs', 'vmPreferredHs', 'vmRemarks', 'vmOtherRemarks', 'vmEvaluatedBy', /* 'vmEligibility', */
   ];
   var vmFieldToName = {
     vmControlNo:     'control_no',
@@ -45,6 +47,7 @@ document.addEventListener('DOMContentLoaded', function () {
     vmJuniorHs:      'junior_high_school',
     vmPreferredHs:   'preferred_senior_high_school',
     vmRemarks:       'remarks_status',
+    vmOtherRemarks:  'other_remarks',
     // vmEligibility:   'eligibility_status',
   };
 
@@ -117,6 +120,17 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   }
   function vmClearAlert() { voucherModalAlert.innerHTML = ''; }
+
+  function vmToggleOtherRemarks() {
+    var remarksEl = document.getElementById('vmRemarks');
+    var isOther = remarksEl && String(remarksEl.value || '').toUpperCase() === 'OTHERS';
+    if (vmOtherRemarksWrap) vmOtherRemarksWrap.style.display = isOther ? '' : 'none';
+    if (vmOtherRemarksInput) {
+      vmOtherRemarksInput.required = isOther;
+      vmOtherRemarksInput.disabled = !isOther;
+      if (!isOther) vmOtherRemarksInput.value = '';
+    }
+  }
 
   function vmSetFieldValue(el, value) {
     if (!el) return;
@@ -196,6 +210,7 @@ document.addEventListener('DOMContentLoaded', function () {
     if (vmLastGeneratedAtEl) vmLastGeneratedAtEl.textContent = '';
     if (vmGenerationHistoryDetails) vmGenerationHistoryDetails.open = false;
     if (vmGenerationHistoryList) vmGenerationHistoryList.innerHTML = '';
+    vmToggleOtherRemarks();
   }
 
   function vmPopulateFields(student) {
@@ -213,6 +228,7 @@ document.addEventListener('DOMContentLoaded', function () {
       if (!el) return;
       vmSetFieldValue(el, student[vmFieldToName[id]]);
     });
+    vmToggleOtherRemarks();
   }
 
   function vmSetReadOnly(readOnly) {
@@ -375,6 +391,13 @@ document.addEventListener('DOMContentLoaded', function () {
   voucherModalClose  && voucherModalClose.addEventListener('click',  vmClose);
   voucherModalCancel && voucherModalCancel.addEventListener('click', vmClose);
   voucherModal       && voucherModal.addEventListener('click',       function (e) { if (e.target === voucherModal) vmClose(); });
+  if (window.jQuery) {
+    $(document).off('change.vmRemarks', '#vmRemarks').on('change.vmRemarks', '#vmRemarks', vmToggleOtherRemarks);
+  } else {
+    document.addEventListener('change', function (e) {
+      if (e.target && e.target.id === 'vmRemarks') vmToggleOtherRemarks();
+    });
+  }
 
   // Event delegation — works for AJAX-rendered rows (server-side DataTables)
   document.addEventListener('click', function (e) {
@@ -388,6 +411,12 @@ document.addEventListener('DOMContentLoaded', function () {
   voucherModalForm && voucherModalForm.addEventListener('submit', function (e) {
     e.preventDefault();
     vmClearAlert();
+    vmToggleOtherRemarks();
+
+    if (!voucherModalForm.checkValidity()) {
+      voucherModalForm.reportValidity();
+      return;
+    }
 
     if (typeof refreshCsrfToken === 'function') refreshCsrfToken();
     var fd = new FormData(voucherModalForm);

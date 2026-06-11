@@ -51,6 +51,7 @@ class Voucher extends Controller
             'preferred_senior_high_school' => 'required|max_length[200]',
             'contact_number'               => 'permit_empty|max_length[30]|regex_match[/^[0-9+().\\-\\s]+$/]',
             'remarks_status'               => 'permit_empty|in_list[COMPLETE,INCOMPLETE,OTHERS]',
+            'other_remarks'                 => 'permit_empty|max_length[255]',
             // 'eligibility_status'           => 'required|in_list[eligible,not_eligible]',
         ];
 
@@ -83,6 +84,9 @@ class Voucher extends Controller
             'preferred_senior_high_school' => $this->schoolOptionModel->resolveSchoolId('SHS', $this->request->getPost('preferred_senior_high_school'), false),
             'contact_number'               => $this->cleanText($this->request->getPost('contact_number')),
             'remarks_status'               => strtoupper($this->cleanText($this->request->getPost('remarks_status'))),
+            'other_remarks'                 => strtoupper($this->cleanText($this->request->getPost('remarks_status'))) === 'OTHERS'
+                ? $this->cleanText($this->request->getPost('other_remarks'))
+                : null,
             // 'eligibility_status'           => $this->request->getPost('eligibility_status') ?: 'eligible',
         ];
 
@@ -1106,6 +1110,7 @@ class Voucher extends Controller
                 'preferred_senior_high_school' => $this->schoolOptionModel->resolveSchoolId('SHS', $r['preferred_senior_high_school'] ?? null, false),
                 'contact_number'               => $r['contact_number']               ?? null,
                 'remarks_status'               => $r['remarks_status']               ?? null,
+                'other_remarks'                 => $r['other_remarks']                 ?? null,
                 'evaluated_by'                 => $r['evaluated_by']                 ?? null,
                 'school_year'                  => null,
                 // 'eligibility_status'           => $r['eligibility_status']           ?? 'eligible',
@@ -1180,6 +1185,7 @@ class Voucher extends Controller
                 'preferred_senior_high_school' => $s['preferred_senior_high_school'],
                 'contact_number'               => $s['contact_number'],
                 'remarks_status'               => $s['remarks_status'],
+                'other_remarks'                 => $s['other_remarks'] ?? null,
                 'school_year'                  => $schoolYear,
                 // 'eligibility_status'           => $s['eligibility_status'],
                 'voucher_status'               => $s['voucher_status'],
