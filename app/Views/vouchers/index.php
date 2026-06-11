@@ -890,7 +890,9 @@ document.addEventListener('vs:modals:ready', function () {
         .then(function (data) {
           if (data.success) {
             vsCloseSchoolModal();
-            flashSuccess(data.message || 'School updated. You can generate now.');
+            flashSuccess(data.message || 'School updated.');
+            // Reload so the listing reflects the fixed school before retrying.
+            setTimeout(function () { location.reload(); }, 700);
             return;
           }
           vsSchoolAlert(data.message || 'Save failed.');
