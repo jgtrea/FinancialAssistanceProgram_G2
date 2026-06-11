@@ -207,6 +207,12 @@ class Voucher extends AdminVoucher
             ]);
         }
 
+        // Block when a referenced school is missing its acronym / name so the
+        // frontend can open that school's edit modal before generating.
+        if ($resp = $this->incompleteSchoolsResponse($ids)) {
+            return $resp;
+        }
+
         $students = $this->prepareStudentsForGeneration($ids);
         if (empty($students)) {
             return $this->response->setJSON(['success' => false, 'message' => 'No valid students found.']);
