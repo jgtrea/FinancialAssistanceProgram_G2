@@ -805,6 +805,104 @@ document.addEventListener('vs:modals:ready', function () {
       })
       .catch(function () { btnRestoreAllArchive.disabled = false; showInfo('An error occurred. Please try again.', 'Error'); });
   });
+
+  // ── School edit modal (reused from the schools page) ──────────────────────
+  // Generation is blocked when a referenced JHS/SHS is missing its acronym or
+  // name. The generate flow (voucher.js) calls window.vsOpenSchoolEdit(id) so
+  // the user can fix that school inline, then retry Generate.
+  var schoolJsonUrl = '<?= site_url($prefix . '/schools/json') ?>';
+  var schoolSaveUrl = '<?= site_url($prefix . '/schools/save') ?>';
+
+  function vsSchoolAlert(msg, type) {
+    var box = document.getElementById('schoolModalAlert');
+    if (box) box.innerHTML = '<div class="vs-alert vs-alert-' + (type || 'error') + ' mb-3"></div>';
+    if (box && box.firstChild) box.firstChild.textContent = msg;
+  }
+
+  function vsCloseSchoolModal() {
+    var m = document.getElementById('schoolModal');
+    if (m) m.style.display = 'none';
+  }
+
+  window.vsOpenSchoolEdit = function (id) {
+    var modal = document.getElementById('schoolModal');
+    var form  = document.getElementById('schoolModalForm');
+    if (!modal || !form) { showInfo('School editor is unavailable on this page.', 'Error'); return; }
+
+    var title = document.getElementById('schoolModalTitle');
+    if (title) title.textContent = 'Edit School';
+    var submitText = document.getElementById('smSubmitText');
+    if (submitText) submitText.textContent = 'Update';
+    var alertBox = document.getElementById('schoolModalAlert');
+    if (alertBox) alertBox.innerHTML = '';
+
+    modal.style.display = 'flex';
+
+    fetch(schoolJsonUrl + '/' + id, { headers: { 'X-Requested-With': 'XMLHttpRequest' }, credentials: 'same-origin' })
+      .then(function (r) { return r.json(); })
+      .then(function (data) {
+        if (!data.success) { vsSchoolAlert(data.message || 'Failed to load school.'); return; }
+        var s = data.school;
+        document.getElementById('smSchoolId').value    = s.school_id;
+        document.getElementById('smSchoolName').value  = s.school_name  || '';
+        document.getElementById('smAcronym').value     = s.acronym      || '';
+        var lvl = document.getElementById('smSchoolLevel');
+        if (lvl) {
+          lvl.value = s.school_level || '';
+          if (window.jQuery) $(lvl).trigger('change.select2');
+        }
+      })
+      .catch(function () { vsSchoolAlert('Failed to load school.'); });
+  };
+
+  (function bindSchoolModal() {
+    var form   = document.getElementById('schoolModalForm');
+    var closeB = document.getElementById('schoolModalClose');
+    var cancel = document.getElementById('schoolModalCancel');
+    var modal  = document.getElementById('schoolModal');
+    closeB && closeB.addEventListener('click', vsCloseSchoolModal);
+    cancel && cancel.addEventListener('click', vsCloseSchoolModal);
+    modal  && modal.addEventListener('click', function (e) { if (e.target === modal) vsCloseSchoolModal(); });
+
+    form && form.addEventListener('submit', function (e) {
+      e.preventDefault();
+      var alertBox = document.getElementById('schoolModalAlert');
+      if (alertBox) alertBox.innerHTML = '';
+
+      var submitBtn  = document.getElementById('schoolModalSubmit');
+      var submitText = document.getElementById('smSubmitText');
+      var submitSpin = document.getElementById('smSubmitSpinner');
+
+      var fd = new FormData(form);
+      if (!fd.get(csrfName)) fd.append(csrfName, csrfHash);
+
+      if (submitBtn)  submitBtn.disabled = true;
+      if (submitText) submitText.style.display = 'none';
+      if (submitSpin) submitSpin.style.display = 'inline-block';
+
+      fetch(schoolSaveUrl, {
+        method: 'POST',
+        headers: { 'X-Requested-With': 'XMLHttpRequest' },
+        credentials: 'same-origin',
+        body: fd,
+      })
+        .then(function (r) { return r.json(); })
+        .then(function (data) {
+          if (data.success) {
+            vsCloseSchoolModal();
+            flashSuccess(data.message || 'School updated. You can generate now.');
+            return;
+          }
+          vsSchoolAlert(data.message || 'Save failed.');
+        })
+        .catch(function () { vsSchoolAlert('An error occurred while saving.'); })
+        .finally(function () {
+          if (submitBtn)  submitBtn.disabled = false;
+          if (submitText) submitText.style.display = 'inline';
+          if (submitSpin) submitSpin.style.display = 'none';
+        });
+    });
+  })();
 });
 </script>
 

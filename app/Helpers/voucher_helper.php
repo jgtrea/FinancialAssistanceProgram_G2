@@ -6,9 +6,13 @@ if (!function_exists('generate_voucher_no')) {
         $db   = \Config\Database::connect();
         $year = $year ?: date('Y');
 
+        // The voucher number prefix comes straight from the school's stored
+        // acronym — no auto-derived placeholder. Generation is gated upstream
+        // (Voucher::incompleteSchoolsResponse) so the school always has one by
+        // the time we get here; the exception below is a last-resort guard.
         $jhs = trim($jhs);
+        $acronym = '';
         if ($jhs !== '') {
-            // Prefer the stored acronym from the school table.
             $schoolBuilder = $db->table('school')->select('acronym, school_name');
             if (ctype_digit($jhs)) {
                 $schoolBuilder->where('school_id', (int) $jhs);
@@ -16,15 +20,11 @@ if (!function_exists('generate_voucher_no')) {
                 $schoolBuilder->where('school_name', strtoupper($jhs));
             }
             $schoolRow = $schoolBuilder->limit(1)->get()->getRow();
-            $stored = $schoolRow ? trim((string) ($schoolRow->acronym ?? '')) : '';
+            $acronym   = $schoolRow ? strtoupper(trim((string) ($schoolRow->acronym ?? ''))) : '';
+        }
 
-            if ($stored !== '') {
-                $acronym = strtoupper($stored);
-            } else {
-                $acronym = 'VOU';
-            }
-        } else {
-            $acronym = 'VOU';
+        if ($acronym === '') {
+            throw new \RuntimeException('Cannot build a voucher number: the school has no acronym set.');
         }
 
         $prefix = "{$acronym}-{$year}-";

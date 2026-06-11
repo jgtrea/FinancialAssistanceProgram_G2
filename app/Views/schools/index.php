@@ -282,14 +282,19 @@ document.addEventListener('vs:modals:ready', function () {
         syncSchoolPageCheckboxes();
     });
 
-    document.querySelectorAll('.school-row-check').forEach(function (cb) {
-        cb.addEventListener('change', function () {
-            if (cb.checked) schoolSelected.add(cb.value);
-            else            schoolSelected.delete(cb.value);
-            cb.closest('tr').classList.toggle('vs-row-selected', cb.checked);
-            updateBar();
-            updateCheckAll();
-        });
+    // Delegated so a row checkbox on ANY DataTables page works. Per-node binding
+    // misses off-page rows: DataTables detaches them from the live DOM, so they
+    // aren't found when listeners are attached and clicking them on later pages
+    // never updates schoolSelected (selection silently capped to page 1).
+    document.addEventListener('change', function (e) {
+        var cb = e.target;
+        if (!cb || !cb.classList || !cb.classList.contains('school-row-check')) return;
+        if (cb.checked) schoolSelected.add(cb.value);
+        else            schoolSelected.delete(cb.value);
+        var tr = cb.closest('tr');
+        if (tr) tr.classList.toggle('vs-row-selected', cb.checked);
+        updateBar();
+        updateCheckAll();
     });
 
     // ── Select-all-matching + Clear links ────────────────────────────────────

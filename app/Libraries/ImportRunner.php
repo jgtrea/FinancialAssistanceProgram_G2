@@ -213,6 +213,13 @@ class ImportRunner
             $rank    = $get($row, $colMap, 'rank');
             $gwa     = $get($row, $colMap, 'gwa');
             $gender  = strtoupper($get($row, $colMap, 'gender'));
+            // Accept single-letter M/F in addition to full MALE/FEMALE so
+            // imports using either convention map to the stored values.
+            if ($gender === 'M') {
+                $gender = 'MALE';
+            } elseif ($gender === 'F') {
+                $gender = 'FEMALE';
+            }
             $jhs     = $get($row, $colMap, 'jhs');
             $shs     = $get($row, $colMap, 'shs');
             $contact = $get($row, $colMap, 'contact');

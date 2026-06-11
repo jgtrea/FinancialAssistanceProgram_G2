@@ -550,6 +550,13 @@ document.addEventListener('DOMContentLoaded', function () {
 
         if (!data.success) {
           toast.remove();
+          // A referenced school is missing its acronym/name — block generation
+          // and open that school's edit modal so it can be fixed, then retried.
+          if (data.incomplete && data.edit_school_id && typeof window.vsOpenSchoolEdit === 'function') {
+            showAlert(data.message || 'A school needs its acronym/name before generating.', 'warning');
+            window.vsOpenSchoolEdit(data.edit_school_id);
+            return;
+          }
           showAlert(data.message || 'PDF generation failed.', 'error');
           return;
         }
