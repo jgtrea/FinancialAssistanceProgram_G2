@@ -129,3 +129,4 @@ install-caveman.ps1
 writable/pdf_queue/finished.json
 writable/pdf_queue/queue.json
 writable/pdf_queue/finished.json
+/writable/pdf_queue
