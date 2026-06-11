@@ -110,7 +110,7 @@
             <th>SHS</th>
             <th>Remarks</th>
             <th>Printed</th>
-            <th>Last Generated</th>
+            <th>Last Printed</th>
             <th>Status</th>
             <th>Actions</th>
           </tr>

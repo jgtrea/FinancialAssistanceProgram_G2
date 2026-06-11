@@ -508,3 +508,13 @@ table.js-data-table tbody tr.vs-row-archived img {
     white-space: normal;
   }
 }
+
+/* The students listing (data-allow-generate="0") has no bulk selection. The
+   DataTables column-hide already drops the checkbox column, but guarantee no
+   select boxes ever show even if that JS hasn't applied (e.g. a stale cached
+   voucher.js), so admin and user students pages stay identical. */
+.vs-datatable[data-allow-generate="0"] th.vs-th-check,
+.vs-datatable[data-allow-generate="0"] .vs-check-all,
+.vs-datatable[data-allow-generate="0"] .vs-row-check {
+  display: none !important;
+}

@@ -28,7 +28,7 @@
             </svg>
         </div>
         <div>
-            <div class="vs-stat-label">Vouchers Generated</div>
+            <div class="vs-stat-label">Vouchers Printed</div>
             <div class="vs-stat-value"><?= number_format($generated) ?></div>
         </div>
     </div>
@@ -78,7 +78,7 @@
                                 <th>Student Name</th>
                                 <th>JHS</th>
                                 <th>Status</th>
-                                <th>Last Generated</th>
+                                <th>Last Printed</th>
                                 <th style="display:none">Name Sort</th>
                             </tr>
                         </thead>

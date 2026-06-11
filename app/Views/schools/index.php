@@ -75,7 +75,7 @@
             <a href="#" id="schoolSelectAllMatchingLink" style="font-weight:600;margin-left:.5rem;display:none"></a>
             <a href="#" id="schoolClearLink" style="margin-left:.5rem;display:none">Clear</a>
         </div>
-        <table id="schoolsTable" class="vs-datatable js-data-table vs-mobile-primary" data-mobile-primary="1" data-page-search="customSchoolsSearch" data-order='[[6,"desc"],[1,"asc"]]' data-col-defs='[{"orderable":false,"targets":5},{"visible":false,"targets":6}]' style="width:100%">
+        <table id="schoolsTable" class="vs-datatable js-data-table vs-mobile-primary" data-mobile-primary="1" data-page-search="customSchoolsSearch" data-order='[[6,"desc"],[1,"asc"]]' data-col-defs='[{"orderable":false,"targets":5},{"visible":false,"targets":6},{"width":"46%","targets":1},{"width":"16%","targets":2},{"width":"9%","targets":3},{"width":"9%","targets":4}]' style="width:100%">
             <thead>
                 <tr>
                     <th class="vs-th-check">

@@ -75,7 +75,7 @@
                         <th>SY</th>
                         <th>Remarks</th>
                         <th>Printed</th>
-                        <th>Last Generated</th>
+                        <th>Last Printed</th>
                         <th>Archived At</th>
                     </tr>
                 </thead>
