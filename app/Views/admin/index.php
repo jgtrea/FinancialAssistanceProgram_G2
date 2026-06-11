@@ -27,14 +27,14 @@
     <div class="col-12 col-md-3">
         <input type="text" name="q" class="vs-input vs-advanced-search-input w-100" placeholder="Enter keyword to search (name, email)" value="<?= esc((string) ($keyword ?? ''), 'attr') ?>">
     </div>
-    <div class="col-6 col-md-2">
+    <div class="col-12 col-md-2">
         <select id="ufRole" name="role" class="js-filter-select" data-placeholder="Select Role" data-no-search="1" style="width:100%">
             <option value=""></option>
             <option value="admin" <?= ($filterRole ?? '') === 'admin' ? 'selected' : '' ?>>Admin</option>
             <option value="user"  <?= ($filterRole ?? '') === 'user'  ? 'selected' : '' ?>>User</option>
         </select>
     </div>
-    <div class="col-6 col-md-2">
+    <div class="col-12 col-md-2">
         <select id="ufStatus" name="status" class="js-filter-select" data-placeholder="Select Status" data-no-search="1" style="width:100%">
             <option value=""></option>
             <option value="active"   <?= ($filterStatus ?? '') === 'active'   ? 'selected' : '' ?>>Active</option>
@@ -44,15 +44,13 @@
     <div class="col-auto d-none d-md-flex align-items-center">
         <span style="color:var(--border);font-size:1.2rem;line-height:1;user-select:none">|</span>
     </div>
-    <div class="col-6 col-md-2 d-flex gap-2">
+    <div class="col-12 col-md-2 d-flex gap-2">
         <button type="submit" class="vs-btn vs-btn-primary flex-fill">Search</button>
         <a href="<?= site_url('admin/user_management') ?>" class="vs-btn vs-btn-danger flex-fill" id="userFilterClear">Clear</a>
     </div>
-    <div class="col-auto d-none d-md-flex align-items-center">
-        <span style="color:var(--border);font-size:1.2rem;line-height:1;user-select:none">|</span>
-    </div>
-    <div class="col-6 col-md-2">
-        <button type="button" class="vs-btn vs-btn-success w-100" id="btnAddUser">
+    <div class="col-12 col-md-auto d-flex align-items-center gap-2">
+        <span class="d-none d-md-inline-flex align-items-center" style="color:var(--border);font-size:1.2rem;line-height:1;user-select:none">|</span>
+        <button type="button" class="vs-btn vs-btn-success flex-fill flex-md-grow-0 flex-md-shrink-0" id="btnAddUser">
             <?= asset_icon('add', ['stroke-width' => '2.5']) ?>
             Add User
         </button>

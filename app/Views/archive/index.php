@@ -6,7 +6,7 @@
     $juniorHighSchools = $juniorHighSchools ?? [];
     $seniorHighSchools = $seniorHighSchools ?? [];
     $schoolYears       = $schoolYears ?? [];
-    $filterKeys        = ['school_year','gender','remarks','voucher_status','date_from','date_to','junior_hs','preferred_hs','gwa_min','gwa_max'];
+    $filterKeys        = ['school_year','gender','remarks','other_remarks','voucher_status','date_from','date_to','junior_hs','preferred_hs','gwa_min','gwa_max'];
     $f                 = static fn (string $k) => (string) ($filters[$k] ?? '');
     $activeFilterCount = count(array_filter($filterKeys, fn ($k) => $f($k) !== ''));
     $hasSchoolYear     = $f('school_year') !== '';
@@ -46,11 +46,9 @@
             <button type="submit" class="vs-btn vs-btn-primary flex-fill">Search</button>
             <a href="<?= site_url('admin/archive') ?>" class="vs-btn vs-btn-danger flex-fill">Clear</a>
         </div>
-        <div class="col-auto d-none d-md-flex align-items-center">
-            <span style="color:var(--border);font-size:1.2rem;line-height:1;user-select:none">|</span>
-        </div>
-        <div class="col-12 col-md-2">
-            <button type="button" class="vs-btn vs-btn-danger w-100" id="btnArchiveCurrentData">
+        <div class="col-12 col-md-auto d-flex align-items-center gap-2">
+            <span class="d-none d-md-inline-flex align-items-center" style="color:var(--border);font-size:1.2rem;line-height:1;user-select:none">|</span>
+            <button type="button" class="vs-btn vs-btn-danger flex-fill" id="btnArchiveCurrentData">
                 Archive Current Data
             </button>
         </div>
@@ -224,6 +222,7 @@ document.addEventListener('vs:modals:ready', function () {
             afSchoolYear:    'school_year',
             afGender:        'gender',
             afRemarks:       'remarks',
+            afOtherRemarks:  'other_remarks',
             afVoucherStatus: 'voucher_status',
             afDateFrom:      'date_from',
             afDateTo:        'date_to',

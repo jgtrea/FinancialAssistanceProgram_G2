@@ -11,7 +11,7 @@
 <?php $seniorHighSchools = $seniorHighSchools ?? [] ?>
 <?php $filterOptions = $filterOptions ?? ['junior_high_schools' => [], 'senior_high_schools' => []] ?>
 <?php $filters = $filters ?? [] ?>
-<?php $filterKeys = ['gender','remarks','voucher_status','date_from','date_to','junior_hs','preferred_hs','gwa_min','gwa_max', /* 'eligibility' */] ?>
+<?php $filterKeys = ['gender','remarks','other_remarks','voucher_status','date_from','date_to','junior_hs','preferred_hs','gwa_min','gwa_max', /* 'eligibility' */] ?>
 <?php $f = static fn (string $k) => (string) ($filters[$k] ?? '') ?>
 <?php $activeFilterCount = count(array_filter($filterKeys, fn ($k) => $f($k) !== '')) ?>
 
@@ -38,7 +38,7 @@
     <div class="col-12 col-md-5">
       <input type="text" name="q" class="vs-input vs-advanced-search-input w-100" placeholder="Enter keyword to search (voucher no, name)" value="<?= esc((string) ($keyword ?? ''), 'attr') ?>">
     </div>
-    <div class="col-6 col-md-2">
+    <div class="col-12 col-md-2">
       <button type="button" class="vs-btn vs-btn-outline w-100" id="btnOpenFilter">
         Filters
         <span id="filterBadge" class="badge bg-primary" style="display:<?= $activeFilterCount > 0 ? 'inline-block' : 'none' ?>;margin-left:.35rem"><?= $activeFilterCount > 0 ? esc($activeFilterCount) : '' ?></span>
@@ -47,33 +47,33 @@
     <div class="col-auto d-none d-md-flex align-items-center">
       <span style="color:var(--border);font-size:1.2rem;line-height:1;user-select:none">|</span>
     </div>
-    <div class="col-6 col-md-2 d-flex gap-2">
+    <div class="col-12 col-md-2 d-flex gap-2">
       <button type="submit" class="vs-btn vs-btn-primary flex-fill">Search</button>
       <a href="<?= $listingUrl ?>" class="vs-btn vs-btn-danger flex-fill">Clear</a>
     </div>
-    <div class="col-auto d-none d-md-flex align-items-center">
-      <span style="color:var(--border);font-size:1.2rem;line-height:1;user-select:none">|</span>
-    </div>
-    <div class="col-12 col-md-auto ms-md-auto d-flex gap-2">
+    <div class="col-12 col-md-auto d-flex align-items-center gap-2">
+      <span class="d-none d-md-inline-flex align-items-center" style="color:var(--border);font-size:1.2rem;line-height:1;user-select:none">|</span>
+      <div class="d-flex gap-2 flex-fill">
 <?php if ($allowGenerate): ?>
-      <button type="button" class="vs-btn vs-btn-dark-green flex-fill flex-md-grow-0 flex-md-shrink-0" id="btnGenerateAll">
-        <?= asset_icon('voucher_add') ?>
-        Generate Voucher
-      </button>
-      <button type="button" class="vs-btn vs-btn-success flex-fill flex-md-grow-0 flex-md-shrink-0" id="btnExportAll">
-        <?= asset_icon('export') ?>
-        Export
-      </button>
+        <button type="button" class="vs-btn vs-btn-dark-green flex-fill flex-md-grow-0 flex-md-shrink-0" id="btnGenerateAll">
+          <?= asset_icon('voucher_add') ?>
+          Generate Voucher
+        </button>
+        <button type="button" class="vs-btn vs-btn-success flex-fill flex-md-grow-0 flex-md-shrink-0" id="btnExportAll">
+          <?= asset_icon('export') ?>
+          Export
+        </button>
 <?php else: ?>
-      <button type="button" class="vs-btn vs-btn-success flex-fill flex-md-grow-0 flex-md-shrink-0" id="btnAddVoucher" data-mode="add">
-        <?= asset_icon('add', ['stroke-width' => '2.5']) ?>
-        Add Student
-      </button>
-      <button type="button" class="vs-btn vs-btn-info flex-fill flex-md-grow-0 flex-md-shrink-0" id="btnOpenImport">
-        <?= asset_icon('import') ?>
-        Import
-      </button>
+        <button type="button" class="vs-btn vs-btn-dark-green flex-fill flex-md-grow-0 flex-md-shrink-0" id="btnAddVoucher" data-mode="add">
+          <?= asset_icon('add', ['stroke-width' => '2.5']) ?>
+          Add Student
+        </button>
+        <button type="button" class="vs-btn vs-btn-success flex-fill flex-md-grow-0 flex-md-shrink-0" id="btnOpenImport">
+          <?= asset_icon('import') ?>
+          Import
+        </button>
 <?php endif ?>
+      </div>
     </div>
   </form>
 
@@ -266,6 +266,7 @@ document.addEventListener('vs:modals:ready', function () {
   var fields = {
     gender:         document.getElementById('filterGender'),
     remarks:        document.getElementById('filterRemarks'),
+    otherRemarks:   document.getElementById('filterOtherRemarks'),
     voucherStatus:  document.getElementById('filterVoucherStatus'),
     dateFrom:       document.getElementById('filterDateFrom'),
     dateTo:         document.getElementById('filterDateTo'),
@@ -283,6 +284,7 @@ document.addEventListener('vs:modals:ready', function () {
   var filterFieldToParam = {
     gender:        'gender',
     remarks:       'remarks',
+    otherRemarks:  'other_remarks',
     voucherStatus: 'voucher_status',
     dateFrom:      'date_from',
     dateTo:        'date_to',

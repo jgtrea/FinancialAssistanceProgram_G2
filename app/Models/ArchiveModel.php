@@ -29,7 +29,7 @@ class ArchiveModel extends Model
     // Mirrors VoucherModel::LISTING_FILTER_KEYS so the two pages behave the
     // same way; date_from/date_to here filter on voucher_date, not archived_at.
     public const LISTING_FILTER_KEYS = [
-        'school_year', 'gender', 'remarks', 'voucher_status',
+        'school_year', 'gender', 'remarks', 'other_remarks', 'voucher_status',
         'date_from', 'date_to', 'junior_hs', 'preferred_hs',
         'gwa_min', 'gwa_max',
     ];
@@ -214,6 +214,10 @@ class ArchiveModel extends Model
         }
         if (($v = $value($filters, 'remarks')) !== '') {
             $builder->where('a.remarks_status', $v);
+            $applied = true;
+        }
+        if (($v = $value($filters, 'other_remarks')) !== '') {
+            $builder->like('a.other_remarks', $v);
             $applied = true;
         }
         if (($v = $value($filters, 'voucher_status')) !== '') {

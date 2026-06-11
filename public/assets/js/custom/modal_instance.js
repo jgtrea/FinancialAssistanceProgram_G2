@@ -165,11 +165,15 @@ var ModalInstance = (function () {
                         <option></option><option value="eligible">eligible</option><option value="not_eligible">not_eligible</option>
                       </select>
                     </div> -->
-                    <div class="col-12">
+                    <div class="col-6">
                       <label class="vs-label" for="filterRemarks">Remarks</label>
-                      <select id="filterRemarks" class="vs-input js-filter-select" data-placeholder="TYPE OR SELECT" data-tags="1">
+                      <select id="filterRemarks" class="vs-input js-filter-select" data-placeholder="COMPLETE / INCOMPLETE / OTHERS" data-no-search="1">
                         <option></option><option value="COMPLETE">COMPLETE</option><option value="INCOMPLETE">INCOMPLETE</option><option value="OTHERS">OTHERS</option>
                       </select>
+                    </div>
+                    <div class="col-6" id="filterOtherRemarksWrap" style="display:none">
+                      <label class="vs-label" for="filterOtherRemarks">Other Remarks</label>
+                      <input id="filterOtherRemarks" type="text" class="vs-input vs-uppercase" placeholder="SEARCH OTHER REMARKS" maxlength="255" disabled>
                     </div>
                   </div>
                 </div>
@@ -272,13 +276,13 @@ var ModalInstance = (function () {
                           <option></option><option value="eligible">ELIGIBLE</option><option value="not_eligible">NOT ELIGIBLE</option>
                         </select>
                       </div> -->
-                      <div class="col-12 ">
+                      <div class="col-6 ">
                         <label class="vs-label" for="vmRemarks">Remarks</label>
                         <select id="vmRemarks" name="remarks_status" class="vs-input js-school-select vs-uppercase" data-placeholder="COMPLETE / INCOMPLETE / OTHERS" data-no-search="1">
                           <option></option><option value="COMPLETE">COMPLETE</option><option value="INCOMPLETE">INCOMPLETE</option><option value="OTHERS">OTHERS</option>
                         </select>
                       </div>
-                      <div class="col-12" id="vmOtherRemarksWrap" style="display:none">
+                      <div class="col-6" id="vmOtherRemarksWrap" style="display:none">
                         <label class="vs-label required" for="vmOtherRemarks">Other Remarks</label>
                         <input id="vmOtherRemarks" name="other_remarks" type="text" class="vs-input vs-uppercase" maxlength="255">
                       </div>
@@ -428,9 +432,13 @@ var ModalInstance = (function () {
                     </div>
                     <div class="col-12 col-lg-6">
                       <label class="vs-label" for="afRemarks">Remarks</label>
-                      <select id="afRemarks" class="vs-input js-filter-select" data-placeholder="PASSED / FOR REVIEW / FAILED" data-no-search="1">
-                        <option></option><option value="PASSED">PASSED</option><option value="FOR REVIEW">FOR REVIEW</option><option value="FAILED">FAILED</option>
+                      <select id="afRemarks" class="vs-input js-filter-select" data-placeholder="COMPLETE / INCOMPLETE / OTHERS" data-no-search="1">
+                        <option></option><option value="COMPLETE">COMPLETE</option><option value="INCOMPLETE">INCOMPLETE</option><option value="OTHERS">OTHERS</option>
                       </select>
+                    </div>
+                    <div class="col-12 col-lg-6" id="afOtherRemarksWrap" style="display:none">
+                      <label class="vs-label" for="afOtherRemarks">Other Remarks</label>
+                      <input id="afOtherRemarks" type="text" class="vs-input vs-uppercase" placeholder="SEARCH OTHER REMARKS" maxlength="255" disabled>
                     </div>
                     <div class="col-12 col-lg-6">
                       <label class="vs-label" for="afVoucherStatus">Voucher Status</label>
@@ -917,6 +925,8 @@ var ModalInstance = (function () {
             filterGwaMin:   'gwa_min',    filterGwaMax: 'gwa_max',
             afDateFrom:     'date_from',  afDateTo:     'date_to',
             afGwaMin:       'gwa_min',    afGwaMax:     'gwa_max',
+            filterOtherRemarks: 'other_remarks',
+            afOtherRemarks:     'other_remarks',
         };
         Object.keys(inputMap).forEach(function (id) {
             var el = document.getElementById(id);
@@ -947,6 +957,33 @@ var ModalInstance = (function () {
                 opt.selected = true;
                 el.appendChild(opt);
             }
+        });
+    }
+
+    /* ── show/hide "Other Remarks" filter alongside Remarks=OTHERS ── */
+
+    function _toggleOtherRemarksFilter(selectId, wrapId, inputId) {
+        var sel   = document.getElementById(selectId);
+        var wrap  = document.getElementById(wrapId);
+        var input = document.getElementById(inputId);
+        if (!sel || !wrap || !input) return;
+        var isOthers = String(sel.value || '').toUpperCase() === 'OTHERS';
+        wrap.style.display = isOthers ? '' : 'none';
+        input.disabled = !isOthers;
+        if (!isOthers) input.value = '';
+    }
+
+    function _initOtherRemarksFilters() {
+        [
+            ['filterRemarks', 'filterOtherRemarksWrap', 'filterOtherRemarks'],
+            ['afRemarks',     'afOtherRemarksWrap',     'afOtherRemarks'],
+        ].forEach(function (ids) {
+            var selectId = ids[0], wrapId = ids[1], inputId = ids[2];
+            if (!document.getElementById(selectId)) return;
+            _toggleOtherRemarksFilter(selectId, wrapId, inputId);
+            document.addEventListener('change', function (e) {
+                if (e.target && e.target.id === selectId) _toggleOtherRemarksFilter(selectId, wrapId, inputId);
+            });
         });
     }
 
@@ -1056,6 +1093,7 @@ var ModalInstance = (function () {
         }
 
         _syncFilterInputs();
+        _initOtherRemarksFilters();
 
         if (_rendered.accountModal) _initAccountModal();
         document.dispatchEvent(new CustomEvent('vs:modals:ready'));

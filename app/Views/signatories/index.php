@@ -37,17 +37,17 @@
     </div>
 
     <form method="get" id="sigSearchForm" class="row g-2 align-items-center mb-3">
-        <div class="col-4">
+        <div class="col-12 col-md-4">
             <input type="text" name="q" class="vs-input vs-advanced-search-input w-100" placeholder="Enter keyword to search (name, position)" value="<?= esc((string) ($keyword ?? ''), 'attr') ?>">
         </div>
-        <div class="col-2">
+        <div class="col-12 col-md-2">
             <select id="sfStatus" name="status" class="js-filter-select" data-placeholder="Select Active" data-no-search="1" style="width:100%">
                 <option></option>
                 <option value="selected"   <?= ($filterStatus ?? '') === 'selected'   ? 'selected' : '' ?>>Selected</option>
                 <option value="unselected" <?= ($filterStatus ?? '') === 'unselected' ? 'selected' : '' ?>>Unselected</option>
             </select>
         </div>
-        <div class="col-2">
+        <div class="col-12 col-md-2">
             <select id="sfPosition" name="position" class="js-filter-select" data-placeholder="Select Position" style="width:100%">
                 <option></option>
                 <?php foreach (($allPositions ?? []) as $pos): ?>
@@ -55,18 +55,16 @@
                 <?php endforeach ?>
             </select>
         </div>
-        <div class="col-auto">
+        <div class="col-auto d-none d-md-flex align-items-center">
             <span style="color:var(--border);font-size:1.2rem;line-height:1;user-select:none">|</span>
         </div>
-        <div class="col-auto">
+        <div class="col-12 col-md-2 d-flex gap-2">
             <button type="submit" class="vs-btn vs-btn-primary flex-fill">Search</button>
             <a href="<?= site_url('signatories') ?>" class="vs-btn vs-btn-danger flex-fill">Clear</a>
         </div>
-        <div class="col-auto">
-            <span style="color:var(--border);font-size:1.2rem;line-height:1;user-select:none">|</span>
-        </div>
-        <div class="col-auto">
-            <button type="button" class="vs-btn vs-btn-success" id="btnAddSignatory">
+        <div class="col-12 col-md-auto d-flex align-items-center gap-2">
+            <span class="d-none d-md-inline-flex align-items-center" style="color:var(--border);font-size:1.2rem;line-height:1;user-select:none">|</span>
+            <button type="button" class="vs-btn vs-btn-success flex-fill flex-md-grow-0 flex-md-shrink-0" id="btnAddSignatory">
                 <?= asset_icon('add', ['stroke-width' => '2.5']) ?>
                 Add Signatory
             </button>
