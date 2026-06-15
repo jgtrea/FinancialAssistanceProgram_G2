@@ -7,7 +7,11 @@
 
 .vs-app {
   background:
-    linear-gradient(180deg, rgba(255, 246, 221, 0.65), rgba(238, 248, 251, 0.95) 14rem),
+    linear-gradient(
+      180deg,
+      rgba(255, 246, 221, 0.65),
+      rgba(238, 248, 251, 0.95) 14rem
+    ),
     var(--surface);
   min-height: 100vh;
 }
@@ -20,8 +24,12 @@
 /* ── Sidebar ── */
 .vs-sidebar {
   width: var(--sidebar-w);
-  background:
-    linear-gradient(180deg, #042b61 0%, var(--navy) 44%, var(--teal-dark) 100%);
+  background: linear-gradient(
+    180deg,
+    #042b61 0%,
+    var(--navy) 44%,
+    var(--teal-dark) 100%
+  );
   display: flex;
   flex-direction: column;
   flex-shrink: 0;

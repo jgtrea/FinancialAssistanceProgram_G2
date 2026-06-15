@@ -20,6 +20,7 @@ each returns instantly with a job to poll instead of blocking the request.
 ## Scope
 
 In scope:
+
 - Voucher/student **Archive All** + **Archive By Filter** (admin + user controllers).
 - Student **Import** (`VoucherImport::import`).
 - Student **Export** (`VoucherImport::export`).
@@ -90,6 +91,7 @@ Two enqueue shapes:
   records. New `enqueueSingle(string $type, array $payload, int $userId)`.
 
 `snapshot()` is extended:
+
 - Chunked → percentage from chunk counts (unchanged behavior).
 - Single → status plus `progress` and/or `result` read off the parent record.
 
@@ -103,14 +105,14 @@ facade `JobRunner::processOne()`:
 1. `JobQueue::claimNext()` atomically claims the next unit:
    - a pending **chunk** (for chunked types `pdf`/`archive`), OR
    - a pending **single parent** (`total_chunks = 0`, types `import`/`export`),
-   using the same fair, least-served-parent scheduling already in
-   `JsonPdfRunner::claimNextChunk()`, generalized to also pick claimable single
-   parents.
+     using the same fair, least-served-parent scheduling already in
+     `JsonPdfRunner::claimNextChunk()`, generalized to also pick claimable single
+     parents.
 2. Dispatch by `type` via a runner registry:
-   - `pdf`     → `JsonPdfRunner` (unchanged)
+   - `pdf` → `JsonPdfRunner` (unchanged)
    - `archive` → `ArchiveRunner`
-   - `import`  → `ImportRunner`
-   - `export`  → `ExportRunner`
+   - `import` → `ImportRunner`
+   - `export` → `ExportRunner`
 3. For chunked types, after a chunk completes, `tryFinalizeParent()` runs:
    - `pdf`: assemble final PDF/ZIP (today's logic).
    - `archive`: total the archived counts, write one bulk audit row, mark parent done.
@@ -121,8 +123,10 @@ same `process(array $unit): bool` contract.
 ## Section 3 — Per-type runner behavior
 
 ### ArchiveRunner (chunked)
+
 Each chunk archives its id subset using the exact logic of
 `Admin\Voucher::archiveStudentsByIds()`, scoped to the chunk's ids:
+
 1. Copy each row into `student_archive` (with `archive_reason` from `payload.reason`,
    `archived_by` from `created_by`, `archived_at` = now).
 2. Null `audit_log.student_id` (and `voucher_id` if the column exists) for the chunk ids.
@@ -136,6 +140,7 @@ chunk error in `error_message`; already-archived chunks remain archived (no
 cross-chunk rollback — same effective behavior as the current loop, but now reported).
 
 ### ImportRunner (single)
+
 1. Read `payload.file_path` from `writable/imports/`.
 2. Parse (PhpSpreadsheet for xlsx/xls, `fgetcsv` for csv) — same parsing as
    `VoucherImport::import()`.
@@ -149,13 +154,14 @@ cross-chunk rollback — same effective behavior as the current loop, but now re
 7. Delete the uploaded file when finished (success or fail).
 
 ### ExportRunner (single)
+
 1. Resolve rows from `payload.ids` (selected) or full listing when empty
    (same as today's `export()`).
 2. Build xlsx or csv per `payload.format` using the existing PhpSpreadsheet writer
    body.
 3. Write the file to `writable/pdfs/students_export_<timestamp>.{xlsx|csv}`, set
    `file_path`, mark `done`.
-Status→done exposes a download URL.
+   Status→done exposes a download URL.
 
 ## Section 4 — Endpoints + routes
 
@@ -174,12 +180,12 @@ the current import/export routes live), mirroring the existing admin/user split.
 
 Changed endpoints (admin + user mirror each other):
 
-| Route | Before | After |
-|-------|--------|-------|
-| `vouchers/archive-all` | sync loop, returns count | resolve ids → `enqueueChunked('archive', ids, user, CHUNK_SIZE, {reason})`, return `{queued, job_id, status_url}` |
-| `vouchers/archive-by-filter` | sync loop | same as above |
-| `import_data` | sync parse+insert | move upload to `writable/imports/<jobid>_<name>`, `enqueueSingle('import', {file_path, original_name}, user)`, return `{queued, status_url}` |
-| `vouchers/export` | direct file download | `enqueueSingle('export', {ids|filters, format}, user)`, return `{queued, status_url}` |
+| Route                        | Before                   | After                                                                                                                                        |
+| ---------------------------- | ------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------- |
+| `vouchers/archive-all`       | sync loop, returns count | resolve ids → `enqueueChunked('archive', ids, user, CHUNK_SIZE, {reason})`, return `{queued, job_id, status_url}`                            |
+| `vouchers/archive-by-filter` | sync loop                | same as above                                                                                                                                |
+| `import_data`                | sync parse+insert        | move upload to `writable/imports/<jobid>_<name>`, `enqueueSingle('import', {file_path, original_name}, user)`, return `{queued, status_url}` |
+| `vouchers/export`            | direct file download     | `enqueueSingle('export', {ids                                                                                                                | filters, format}, user)`, return `{queued, status_url}` |
 
 `vouchers/archive` (selected, small) and Generate's `json-pdf-*` routes stay
 unchanged. The `vouchers/count-matching` preview endpoint stays as-is (used by the
@@ -224,6 +230,7 @@ swaps from synchronous POST to enqueue + `pollJob`.
 ## Files touched (anticipated)
 
 New:
+
 - `app/Libraries/ArchiveRunner.php`
 - `app/Libraries/ImportRunner.php`
 - `app/Libraries/ExportRunner.php`
@@ -231,6 +238,7 @@ New:
 - `app/Controllers/JobController.php` (generic status/download)
 
 Modified:
+
 - `app/Libraries/JsonPdfQueue.php` — `enqueueChunked`, `enqueueSingle`, generalized
   `claimNext`, extended `snapshot`.
 - `app/Commands/ProcessJsonPdfQueue.php` — drain via `JobRunner::processOne()`;
@@ -251,4 +259,7 @@ Modified:
 - Export selected + export all, xlsx + csv: job → done, file downloads, content correct.
 - Generate still works unchanged (regression): pdf jobs drain alongside the new types.
 - One worker only: confirm all four types drain from a single `run:json-pdf-queue`.
+
+```
+
 ```

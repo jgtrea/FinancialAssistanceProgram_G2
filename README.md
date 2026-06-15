@@ -257,11 +257,11 @@ Client PCs need nothing installed. Only the server PC runs the deployment steps 
 
 The PDF worker can run three ways. **Pick exactly one** — running two at once double-drains the queue.
 
-| Mode | Installer | Process model | Pickup latency | Best for |
-| ---- | --------- | ------------- | -------------- | -------- |
-| **Cron (scheduled task)** — *recommended, this deployment* | `install-cron-worker.ps1` | no persistent process — scheduler spawns a one-shot drain that exits | up to the interval (~1 min) | lightest on a shared PC; idle between fires |
-| Always-on service | `install-worker.ps1` | one persistent `php.exe`, drains every 5s | ~5s | snappiest pickup; one process always resident |
-| Manual `.bat` | `run-json-pdf-worker.bat` | one `php.exe` in a console window | ~5s | local dev only (not boot-persistent) |
+| Mode                                                       | Installer                 | Process model                                                        | Pickup latency              | Best for                                      |
+| ---------------------------------------------------------- | ------------------------- | -------------------------------------------------------------------- | --------------------------- | --------------------------------------------- |
+| **Cron (scheduled task)** — _recommended, this deployment_ | `install-cron-worker.ps1` | no persistent process — scheduler spawns a one-shot drain that exits | up to the interval (~1 min) | lightest on a shared PC; idle between fires   |
+| Always-on service                                          | `install-worker.ps1`      | one persistent `php.exe`, drains every 5s                            | ~5s                         | snappiest pickup; one process always resident |
+| Manual `.bat`                                              | `run-json-pdf-worker.bat` | one `php.exe` in a console window                                    | ~5s                         | local dev only (not boot-persistent)          |
 
 Cron and the service both auto-start on reboot and run as `SYSTEM`. The `.bat` does not survive reboot.
 
@@ -471,18 +471,18 @@ php spark migrate
 
 ### Troubleshooting
 
-| Symptom                                    | Cause / Fix                                                                                                           |
-| ------------------------------------------ | --------------------------------------------------------------------------------------------------------------------- |
-| `Class "Locale" not found` on every page   | `intl` extension off. Enable `extension=intl` in `php.ini`, restart Apache. See [Enable required PHP extensions](#enable-required-php-extensions). |
-| Job fails: `Class "ZipArchive" not found`  | `zip` extension off — multi-chunk batches (>501) can't build the ZIP. Enable `extension=zip`, restart Apache **and the worker**, re-generate. |
-| Voucher PDF has blank background / broken signature images | `gd` extension off — mPDF can't decode PNG/JPG. Enable `extension=gd`, restart the worker. (Also check signature files exist under `writable/uploads/signatures/`.) |
-| Extension enabled but still failing        | The worker loads `php.ini` once at startup. After editing `php.ini`, **restart the worker** (`nssm restart JsonPdfQueue`, or just wait one cron fire — fresh process). |
-| Service stuck `Paused`                     | NSSM throttled it after fast crashes. `sc.exe stop JsonPdfQueue`, then check the log.                                 |
-| Log full of "file used by another process" | An old `php.exe` is still holding the file. `Get-Process php \| Stop-Process -Force`, then `nssm start JsonPdfQueue`. |
-| Worker starts then exits immediately       | Usually MySQL not yet up at boot, or `php.exe` path wrong. Check log; restart MySQL if needed.                        |
-| Jobs queue but never process               | No worker running. Service: `Get-Service JsonPdfQueue`. Cron: `Get-ScheduledTask JsonPdfQueueCron*`. Neither installed → install one. |
-| Status modal shows `queued` forever        | Same as above — worker is down (or, on cron, just waiting for the next fire).                                        |
-| Permission denied writing PDFs             | Re-run `icacls "C:\xampp\htdocs\FinancialAssistanceProgram_G2\writable" /grant "SYSTEM:(OI)(CI)F" /T`                 |
+| Symptom                                                    | Cause / Fix                                                                                                                                                            |
+| ---------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `Class "Locale" not found` on every page                   | `intl` extension off. Enable `extension=intl` in `php.ini`, restart Apache. See [Enable required PHP extensions](#enable-required-php-extensions).                     |
+| Job fails: `Class "ZipArchive" not found`                  | `zip` extension off — multi-chunk batches (>501) can't build the ZIP. Enable `extension=zip`, restart Apache **and the worker**, re-generate.                          |
+| Voucher PDF has blank background / broken signature images | `gd` extension off — mPDF can't decode PNG/JPG. Enable `extension=gd`, restart the worker. (Also check signature files exist under `writable/uploads/signatures/`.)    |
+| Extension enabled but still failing                        | The worker loads `php.ini` once at startup. After editing `php.ini`, **restart the worker** (`nssm restart JsonPdfQueue`, or just wait one cron fire — fresh process). |
+| Service stuck `Paused`                                     | NSSM throttled it after fast crashes. `sc.exe stop JsonPdfQueue`, then check the log.                                                                                  |
+| Log full of "file used by another process"                 | An old `php.exe` is still holding the file. `Get-Process php \| Stop-Process -Force`, then `nssm start JsonPdfQueue`.                                                  |
+| Worker starts then exits immediately                       | Usually MySQL not yet up at boot, or `php.exe` path wrong. Check log; restart MySQL if needed.                                                                         |
+| Jobs queue but never process                               | No worker running. Service: `Get-Service JsonPdfQueue`. Cron: `Get-ScheduledTask JsonPdfQueueCron*`. Neither installed → install one.                                  |
+| Status modal shows `queued` forever                        | Same as above — worker is down (or, on cron, just waiting for the next fire).                                                                                          |
+| Permission denied writing PDFs                             | Re-run `icacls "C:\xampp\htdocs\FinancialAssistanceProgram_G2\writable" /grant "SYSTEM:(OI)(CI)F" /T`                                                                  |
 
 ### Logs and queue files
 

@@ -3,10 +3,12 @@
    ============================================================ */
 
 function getCsrfToken() {
-  const metaName  = document.querySelector('meta[name="csrf-token-name"]');
+  const metaName = document.querySelector('meta[name="csrf-token-name"]');
   const metaValue = document.querySelector('meta[name="csrf-token-value"]');
-  const cookieMatch = document.cookie.match(/(?:^|;\s*)csrf_cookie_name=([^;]+)/);
-  const cookieToken = cookieMatch ? decodeURIComponent(cookieMatch[1]) : '';
+  const cookieMatch = document.cookie.match(
+    /(?:^|;\s*)csrf_cookie_name=([^;]+)/,
+  );
+  const cookieToken = cookieMatch ? decodeURIComponent(cookieMatch[1]) : "";
 
   if (metaName && metaValue) {
     if (cookieToken && metaValue.content !== cookieToken) {
@@ -18,14 +20,16 @@ function getCsrfToken() {
   const input = document.querySelector('input[name^="csrf"]');
   if (input) return { name: input.name, token: cookieToken || input.value };
 
-  return { name: 'csrf_token', token: '' };
+  return { name: "csrf_token", token: "" };
 }
 
 function refreshCsrfToken() {
-  const cookieMatch = document.cookie.match(/(?:^|;\s*)csrf_cookie_name=([^;]+)/);
+  const cookieMatch = document.cookie.match(
+    /(?:^|;\s*)csrf_cookie_name=([^;]+)/,
+  );
   if (!cookieMatch) return;
   const newToken = decodeURIComponent(cookieMatch[1]);
-  document.querySelectorAll('input[name^="csrf"]').forEach(input => {
+  document.querySelectorAll('input[name^="csrf"]').forEach((input) => {
     input.value = newToken;
   });
   const metaValue = document.querySelector('meta[name="csrf-token-value"]');
@@ -53,47 +57,65 @@ function showPdfToast(message, key, job, opts) {
   // button that would open the empty PDF-status modal.
   opts = opts || {};
 
-  let stack = document.getElementById('pdfToastStack');
+  let stack = document.getElementById("pdfToastStack");
   if (!stack) {
-    stack = document.createElement('div');
-    stack.id = 'pdfToastStack';
+    stack = document.createElement("div");
+    stack.id = "pdfToastStack";
     stack.style.cssText = [
-      'position:fixed', 'bottom:24px', 'right:24px', 'z-index:9999',
-      'display:flex', 'flex-direction:column-reverse', 'gap:10px',
-    ].join(';');
+      "position:fixed",
+      "bottom:24px",
+      "right:24px",
+      "z-index:9999",
+      "display:flex",
+      "flex-direction:column-reverse",
+      "gap:10px",
+    ].join(";");
     document.body.appendChild(stack);
   }
 
-  const nodeId = 'pdfToast-' + (key != null ? key : ('t' + Date.now() + Math.random().toString(36).slice(2)));
+  const nodeId =
+    "pdfToast-" +
+    (key != null
+      ? key
+      : "t" + Date.now() + Math.random().toString(36).slice(2));
   let toast = document.getElementById(nodeId);
   if (!toast) {
-    toast = document.createElement('div');
+    toast = document.createElement("div");
     toast.id = nodeId;
     toast.style.cssText = [
-      'background:#1e293b', 'color:#f8fafc', 'border-radius:10px',
-      'padding:14px 20px', 'display:flex', 'align-items:center', 'gap:12px',
-      'box-shadow:0 4px 20px rgba(0,0,0,.35)', 'font-size:14px',
-      'min-width:220px', 'transition:opacity .3s ease',
-    ].join(';');
+      "background:#1e293b",
+      "color:#f8fafc",
+      "border-radius:10px",
+      "padding:14px 20px",
+      "display:flex",
+      "align-items:center",
+      "gap:12px",
+      "box-shadow:0 4px 20px rgba(0,0,0,.35)",
+      "font-size:14px",
+      "min-width:220px",
+      "transition:opacity .3s ease",
+    ].join(";");
     stack.appendChild(toast);
   }
-  toast.style.opacity = '1';
+  toast.style.opacity = "1";
   // No Status button — both the generate and archive toasts now just show the
   // message + (for downloads) a Download link + close. The Download anchor uses
   // margin-left:auto so it sits flush right when revealed.
   toast.innerHTML =
     '<div class="vs-spinner" style="width:16px;height:16px;flex-shrink:0"></div>' +
-    '<span class="pdfToastMsg">' + message + '</span>' +
+    '<span class="pdfToastMsg">' +
+    message +
+    "</span>" +
     '<a class="pdfToastDownload" style="display:none;margin-left:auto;background:#16a34a;color:#fff;border-radius:6px;padding:4px 10px;font-size:12px;text-decoration:none;cursor:pointer">Download</a>' +
     '<button type="button" class="pdfToastClose" style="margin-left:auto;background:none;color:#94a3b8;border:none;font-size:16px;line-height:1;cursor:pointer;padding:0 2px">&times;</button>';
 
   if (opts.hideDownload) {
-    const db = toast.querySelector('.pdfToastDownload');
+    const db = toast.querySelector(".pdfToastDownload");
     if (db) db.remove();
   }
 
   function removeToast() {
-    toast.style.opacity = '0';
+    toast.style.opacity = "0";
     setTimeout(function () {
       if (toast.parentNode) toast.remove();
       // Drop the empty stack so it doesn't linger as a stray fixed element.
@@ -101,8 +123,8 @@ function showPdfToast(message, key, job, opts) {
     }, 300);
   }
 
-  const closeBtn = toast.querySelector('.pdfToastClose');
-  if (closeBtn) closeBtn.addEventListener('click', removeToast);
+  const closeBtn = toast.querySelector(".pdfToastClose");
+  if (closeBtn) closeBtn.addEventListener("click", removeToast);
 
   return {
     // update(msg)                 → change the text only.
@@ -110,56 +132,68 @@ function showPdfToast(message, key, job, opts) {
     // update(msg, true, url)      → mark done, reveal a manual Download link,
     //                               and linger ~5 min before auto-removing.
     update: function (msg, done, downloadUrl) {
-      const el = toast.querySelector('.pdfToastMsg');
+      const el = toast.querySelector(".pdfToastMsg");
       if (el) el.textContent = msg;
       if (!done) return;
 
-      const spinner = toast.querySelector('.vs-spinner');
-      if (spinner) spinner.style.display = 'none';
+      const spinner = toast.querySelector(".vs-spinner");
+      if (spinner) spinner.style.display = "none";
 
       if (downloadUrl) {
-        const dl = toast.querySelector('.pdfToastDownload');
+        const dl = toast.querySelector(".pdfToastDownload");
         if (dl) {
           dl.href = downloadUrl;
-          dl.style.display = 'inline-block';
+          dl.style.display = "inline-block";
         }
         setTimeout(removeToast, FINISHED_LINGER_MS);
       } else {
         setTimeout(removeToast, 2000);
       }
     },
-    setJob: function (j) { currentJob = j || currentJob; },
+    setJob: function (j) {
+      currentJob = j || currentJob;
+    },
     remove: removeToast,
   };
 }
 
-function showAlert(message, type = 'success', opts = {}) {
-  const map = { success: 'vs-alert-success', error: 'vs-alert-error', warning: 'vs-alert-warning' };
-  const el  = document.createElement('div');
+function showAlert(message, type = "success", opts = {}) {
+  const map = {
+    success: "vs-alert-success",
+    error: "vs-alert-error",
+    warning: "vs-alert-warning",
+  };
+  const el = document.createElement("div");
   el.className = `vs-alert ${map[type] ?? map.success} mb-3 mt-2`;
-  el.style.display = 'flex';
-  el.style.alignItems = 'center';
-  el.style.gap = '1rem';
+  el.style.display = "flex";
+  el.style.alignItems = "center";
+  el.style.gap = "1rem";
 
-  const text = document.createElement('span');
+  const text = document.createElement("span");
   text.textContent = message;
-  text.style.flex = '1';
+  text.style.flex = "1";
   el.appendChild(text);
 
   // Manual dismiss button — always present so the user can close the alert.
-  const close = document.createElement('button');
-  close.type = 'button';
-  close.textContent = 'Dismiss';
-  close.setAttribute('aria-label', 'Dismiss');
-  close.style.cssText = 'flex:none;background:rgba(0,0,0,.06);border:1px solid rgba(0,0,0,.15);'
-    + 'border-radius:.35rem;font-size:.8rem;font-weight:600;line-height:1;cursor:pointer;'
-    + 'color:inherit;padding:.35rem .75rem;white-space:nowrap';
-  close.addEventListener('mouseenter', () => { close.style.background = 'rgba(0,0,0,.12)'; });
-  close.addEventListener('mouseleave', () => { close.style.background = 'rgba(0,0,0,.06)'; });
-  close.addEventListener('click', () => el.remove());
+  const close = document.createElement("button");
+  close.type = "button";
+  close.textContent = "Dismiss";
+  close.setAttribute("aria-label", "Dismiss");
+  close.style.cssText =
+    "flex:none;background:rgba(0,0,0,.06);border:1px solid rgba(0,0,0,.15);" +
+    "border-radius:.35rem;font-size:.8rem;font-weight:600;line-height:1;cursor:pointer;" +
+    "color:inherit;padding:.35rem .75rem;white-space:nowrap";
+  close.addEventListener("mouseenter", () => {
+    close.style.background = "rgba(0,0,0,.12)";
+  });
+  close.addEventListener("mouseleave", () => {
+    close.style.background = "rgba(0,0,0,.06)";
+  });
+  close.addEventListener("click", () => el.remove());
   el.appendChild(close);
 
-  const main = document.querySelector('.vs-content') || document.querySelector('main');
+  const main =
+    document.querySelector(".vs-content") || document.querySelector("main");
   if (main) {
     main.prepend(el);
     // opts.persist keeps the alert until manually dismissed (no auto-timer).
@@ -172,27 +206,26 @@ function ajaxOptions(options = {}) {
   return {
     ...options,
     headers: {
-      'X-Requested-With': 'XMLHttpRequest',
+      "X-Requested-With": "XMLHttpRequest",
       ...(options.headers || {}),
     },
   };
 }
 
 function initPasswordToggles() {
-  document.querySelectorAll('.vs-pw-toggle').forEach(btn => {
-    btn.addEventListener('click', function () {
-      const field = document.getElementById(this.dataset.target || 'password');
-      if (field) field.type = field.type === 'password' ? 'text' : 'password';
+  document.querySelectorAll(".vs-pw-toggle").forEach((btn) => {
+    btn.addEventListener("click", function () {
+      const field = document.getElementById(this.dataset.target || "password");
+      if (field) field.type = field.type === "password" ? "text" : "password";
     });
   });
 }
 
 function initAlertDismiss() {
-  document.querySelectorAll('.vs-alert:not(.vs-alert-static)').forEach(el => {
+  document.querySelectorAll(".vs-alert:not(.vs-alert-static)").forEach((el) => {
     setTimeout(() => el.remove(), 4000);
   });
 }
-
 
 /**
  * Initialise Select2 on every `.js-filter-select` and `.js-school-select`.
@@ -200,61 +233,73 @@ function initAlertDismiss() {
  * dropdown inside the nearest .vs-modal so it stacks above the modal overlay.
  */
 window.initVsSelect2 = function initVsSelect2(root) {
-  if (typeof $ === 'undefined' || !$.fn.select2) return;
+  if (typeof $ === "undefined" || !$.fn.select2) return;
   var scope = root || document;
-  $(scope).find('.js-filter-select, .js-school-select').each(function () {
-    var $el = $(this);
-    if ($el.hasClass('select2-hidden-accessible')) return;
-    var $modal = $el.closest('.vs-modal-overlay');
-    var noSearch = this.dataset.noSearch === '1';
-    var isSchoolSelect = $el.hasClass('js-school-select');
-    var allowTags = isSchoolSelect || this.dataset.tags === '1';
-    $el.select2({
-      tags: allowTags,
-      placeholder: this.dataset.placeholder || 'All',
-      allowClear: true,
-      width: '100%',
-      dropdownParent: $modal.length ? $modal : $(document.body),
-      minimumResultsForSearch: noSearch ? Infinity : 0,
-      matcher: function (params, data) {
-        if (!params.term || params.term.trim() === '') return data;
-        var term = params.term.toUpperCase();
-        var text = (data.text || '').toUpperCase();
-        var acronym = ($(data.element).data('acronym') || '').toUpperCase();
-        if (text.indexOf(term) !== -1 || acronym.indexOf(term) !== -1) return data;
-        return null;
-      },
-      createTag: allowTags ? function (params) {
-        var term = params.term.trim();
-        if (!term) return null;
-        // Prevent duplicate: check if term matches existing option (case-insensitive).
-        var termUpper = term.toUpperCase();
-        var isDuplicate = false;
-        $(this.options.dropdownParent || 'body').find('select').addBack('select').each(function () {
-          // Check against the actual select element's options.
-        });
-        // Check the select element's current options.
-        var $select = $el;
-        $select.find('option').each(function () {
-          if (($(this).val() || '').toUpperCase() === termUpper || ($(this).text() || '').toUpperCase() === termUpper) {
-            isDuplicate = true;
-          }
-        });
-        if (isDuplicate) return null;
-        return { id: term, text: term, newTag: true };
-      } : undefined,
+  $(scope)
+    .find(".js-filter-select, .js-school-select")
+    .each(function () {
+      var $el = $(this);
+      if ($el.hasClass("select2-hidden-accessible")) return;
+      var $modal = $el.closest(".vs-modal-overlay");
+      var noSearch = this.dataset.noSearch === "1";
+      var isSchoolSelect = $el.hasClass("js-school-select");
+      var allowTags = isSchoolSelect || this.dataset.tags === "1";
+      $el.select2({
+        tags: allowTags,
+        placeholder: this.dataset.placeholder || "All",
+        allowClear: true,
+        width: "100%",
+        dropdownParent: $modal.length ? $modal : $(document.body),
+        minimumResultsForSearch: noSearch ? Infinity : 0,
+        matcher: function (params, data) {
+          if (!params.term || params.term.trim() === "") return data;
+          var term = params.term.toUpperCase();
+          var text = (data.text || "").toUpperCase();
+          var acronym = ($(data.element).data("acronym") || "").toUpperCase();
+          if (text.indexOf(term) !== -1 || acronym.indexOf(term) !== -1)
+            return data;
+          return null;
+        },
+        createTag: allowTags
+          ? function (params) {
+              var term = params.term.trim();
+              if (!term) return null;
+              // Prevent duplicate: check if term matches existing option (case-insensitive).
+              var termUpper = term.toUpperCase();
+              var isDuplicate = false;
+              $(this.options.dropdownParent || "body")
+                .find("select")
+                .addBack("select")
+                .each(function () {
+                  // Check against the actual select element's options.
+                });
+              // Check the select element's current options.
+              var $select = $el;
+              $select.find("option").each(function () {
+                if (
+                  ($(this).val() || "").toUpperCase() === termUpper ||
+                  ($(this).text() || "").toUpperCase() === termUpper
+                ) {
+                  isDuplicate = true;
+                }
+              });
+              if (isDuplicate) return null;
+              return { id: term, text: term, newTag: true };
+            }
+          : undefined,
+      });
     });
-  });
 };
 
-document.addEventListener('DOMContentLoaded', function () {
-  if (typeof window.initVsSelect2 === 'function') window.initVsSelect2(document);
+document.addEventListener("DOMContentLoaded", function () {
+  if (typeof window.initVsSelect2 === "function")
+    window.initVsSelect2(document);
 });
 
 // Allow Bootstrap dropdowns to overflow .vs-card (overflow:hidden) while open.
-document.addEventListener('show.bs.dropdown', function (e) {
-  e.target.closest('.vs-card')?.classList.add('vs-card--dropdown-open');
+document.addEventListener("show.bs.dropdown", function (e) {
+  e.target.closest(".vs-card")?.classList.add("vs-card--dropdown-open");
 });
-document.addEventListener('hidden.bs.dropdown', function (e) {
-  e.target.closest('.vs-card')?.classList.remove('vs-card--dropdown-open');
+document.addEventListener("hidden.bs.dropdown", function (e) {
+  e.target.closest(".vs-card")?.classList.remove("vs-card--dropdown-open");
 });

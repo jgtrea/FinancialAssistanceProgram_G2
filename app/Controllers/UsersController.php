@@ -182,7 +182,7 @@ class UsersController extends BaseController
         }
 
         if (!$id && empty($password)) {
-            $password = 'pass123';
+            $password = 'password123';
         }
         if (!empty($password)) {
             $data['password'] = password_hash($password, PASSWORD_ARGON2ID);
