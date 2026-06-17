@@ -65,7 +65,6 @@
         <div class="col-12 col-md-auto d-flex align-items-center gap-2">
             <span class="d-none d-md-inline-flex align-items-center" style="color:var(--border);font-size:1.2rem;line-height:1;user-select:none">|</span>
             <button type="button" class="vs-btn vs-btn-success flex-fill flex-md-grow-0 flex-md-shrink-0" id="btnAddSignatory">
-                <?= asset_icon('add', ['stroke-width' => '2.5']) ?>
                 Add Signatory
             </button>
         </div>

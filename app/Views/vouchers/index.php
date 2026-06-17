@@ -56,20 +56,16 @@
       <div class="d-flex gap-2 flex-fill">
 <?php if ($allowGenerate): ?>
         <button type="button" class="vs-btn vs-btn-dark-green flex-fill flex-md-grow-0 flex-md-shrink-0" id="btnGenerateAll">
-          <?= asset_icon('voucher_add') ?>
           Print Voucher
         </button>
         <button type="button" class="vs-btn vs-btn-success flex-fill flex-md-grow-0 flex-md-shrink-0" id="btnExportAll">
-          <?= asset_icon('export') ?>
           Export
         </button>
 <?php else: ?>
-        <button type="button" class="vs-btn vs-btn-dark-green flex-fill flex-md-grow-0 flex-md-shrink-0" id="btnAddVoucher" data-mode="add">
-          <?= asset_icon('add', ['stroke-width' => '2.5']) ?>
+        <button type="button" class="vs-btn vs-btn-dark-green flex-fill flex-md-grow-0 flex-md-shrink-0" id="btnAddVoucher" data-mode="add">       
           Add Student
         </button>
-        <button type="button" class="vs-btn vs-btn-success flex-fill flex-md-grow-0 flex-md-shrink-0" id="btnOpenImport">
-          <?= asset_icon('import') ?>
+        <button type="button" class="vs-btn vs-btn-success flex-fill flex-md-grow-0 flex-md-shrink-0" id="btnOpenImport">          
           Import
         </button>
 <?php endif ?>
@@ -150,6 +146,7 @@ window.VM_CONFIG = {
   saveUrl:          '<?= site_url('students/save') ?>',
   fetchUrl:         '<?= site_url('students/json') ?>',
   schoolOptionsUrl: '<?= site_url($prefix . '/schools/options') ?>',
+  listingContext:   '<?= esc($listingPath) ?>',
 };
 </script>
 

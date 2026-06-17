@@ -220,6 +220,16 @@ canvas {
   color: #fff;
 }
 
+.vs-btn-warning {
+  background: #fbe925;
+  color: #000;
+}
+
+.vs-btn-warning:hover {
+  background: #e8d600;
+  color: #000;
+}
+
 /* ── Inputs ── */
 .vs-label {
   display: block;

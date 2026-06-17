@@ -38,8 +38,8 @@ var ModalInstance = (function () {
                   <input type="text" id="archiveReason" class="vs-input" placeholder="e.g. End of school year">
                 </div>
                 <div class="vs-modal-footer">
-                  <button class="vs-btn vs-btn-outline" id="archiveModalCancel">Cancel</button>
-                  <button class="vs-btn vs-btn-danger" id="archiveConfirm">
+                  <button class="vs-btn vs-btn-danger" id="archiveModalCancel">Close</button>
+                  <button class="vs-btn vs-btn-success" id="archiveConfirm">
                     <span id="archiveBtnText">Confirm Archive</span>
                     <span id="archiveBtnSpinner" class="vs-spinner" style="display:none"></span>
                   </button>
@@ -80,7 +80,7 @@ var ModalInstance = (function () {
                   </div>
                 </div>
                 <div class="vs-modal-footer">
-                  <button class="vs-btn vs-btn-outline" id="bulkAllCancel">Cancel</button>
+                  <button class="vs-btn vs-btn-danger" id="bulkAllCancel">Close</button>
                   <button class="vs-btn vs-btn-primary" id="bulkAllConfirm">
                     <span id="bulkAllBtnText">Confirm</span>
                     <span id="bulkAllBtnSpinner" class="vs-spinner" style="display:none"></span>
@@ -105,7 +105,7 @@ var ModalInstance = (function () {
                   <input type="file" id="importFile" class="vs-input" accept=".xlsx,.xls,.csv">
                 </div>
                 <div class="vs-modal-footer">
-                  <button class="vs-btn vs-btn-outline" id="importModalCancel">Cancel</button>
+                  <button class="vs-btn vs-btn-danger" id="importModalCancel">Close</button>
                   <button class="vs-btn vs-btn-success" id="importConfirm">
                     <span id="importBtnText">Import</span>
                     <span id="importBtnSpinner" class="vs-spinner" style="display:none"></span>
@@ -131,17 +131,17 @@ var ModalInstance = (function () {
                       </select>
                     </div>                    
                     <div class="col-6">
-                      <label class="vs-label" for="filterVoucherStatus">Voucher Status</label>
+                      <label class="vs-label" for="filterVoucherStatus">Generation Status</label>
                       <select id="filterVoucherStatus" class="vs-input js-filter-select" data-placeholder="TYPE OR SELECT" data-tags="1">
-                        <option></option><option value="generated">GENERATED</option><option value="not_generated">NOT GENERATED</option>
+                        <option></option><option value="generated">PRINTED</option><option value="not_generated">NOT PRINTED</option>
                       </select>
                     </div>
                     <div class="col-6">
-                      <label class="vs-label" for="filterDateFrom">Voucher Date From</label>
+                      <label class="vs-label" for="filterDateFrom">Date Added From</label>
                       <input type="date" id="filterDateFrom" class="vs-input">
                     </div>
                     <div class="col-6">
-                      <label class="vs-label" for="filterDateTo">Voucher Date To</label>
+                      <label class="vs-label" for="filterDateTo">Date Added To</label>
                       <input type="date" id="filterDateTo" class="vs-input">
                     </div>
                     <div class="col-6">
@@ -180,7 +180,7 @@ var ModalInstance = (function () {
                 </div>
                 <div class="vs-modal-footer">
                   <button type="button" class="vs-btn vs-btn-danger" id="filterClear">Clear All</button>
-                  <button type="button" class="vs-btn vs-btn-outline" id="filterModalCancel">Cancel</button>
+                  <button type="button" class="vs-btn vs-btn-danger" id="filterModalCancel">Close</button>
                   <button type="button" class="vs-btn vs-btn-primary" id="filterApply">Apply Filters</button>
                 </div>
               </div>
@@ -297,9 +297,9 @@ var ModalInstance = (function () {
                         <div id="vmGenerationHistoryList" class="vm-generation-history-list"></div>
                       </details>
                     </div>
-                    <button type="button" class="vs-btn vs-btn-outline" id="voucherModalCancel">Close</button>
+                    <button type="button" class="vs-btn vs-btn-danger" id="voucherModalCancel">Close</button>
                     <button type="submit" class="vs-btn vs-btn-primary" id="voucherModalSubmit">
-                      <span id="vmSubmitText">Save Voucher</span>
+                      <span id="vmSubmitText">Save Student</span>
                       <span id="vmSubmitSpinner" class="vs-spinner" style="display:none"></span>
                     </button>
                   </div>
@@ -355,7 +355,7 @@ var ModalInstance = (function () {
                     </div>
                   </div>
                   <div class="vs-modal-footer">
-                    <button type="button" class="vs-btn vs-btn-outline" id="userModalCancel">Close</button>
+                    <button type="button" class="vs-btn vs-btn-danger" id="userModalCancel">Close</button>
                     <button type="submit" class="vs-btn vs-btn-primary" id="userModalSubmit">
                       <span id="umSubmitText">Save User</span>
                       <span id="umSubmitSpinner" class="vs-spinner" style="display:none"></span>
@@ -377,7 +377,7 @@ var ModalInstance = (function () {
                   <p>You are about to deactivate 1 user(s). This will move them to the archive.</p>
                 </div>
                 <div class="vs-modal-footer">
-                  <button class="vs-btn vs-btn-outline" id="deactivateModalCancel">Cancel</button>
+                  <button class="vs-btn vs-btn-danger" id="deactivateModalCancel">Close</button>
                   <button class="vs-btn vs-btn-danger" id="deactivateModalConfirm">
                     <span id="deactivateBtnText">Deactivate</span>
                     <span id="deactivateBtnSpinner" class="vs-spinner" style="display:none"></span>
@@ -402,7 +402,7 @@ var ModalInstance = (function () {
                   </div>
                 </div>
                 <div class="vs-modal-footer">
-                  <button class="vs-btn vs-btn-outline" id="archiveCurrentModalCancel">Cancel</button>
+                  <button class="vs-btn vs-btn-danger" id="archiveCurrentModalCancel">Close</button>
                   <button class="vs-btn vs-btn-danger" id="archiveCurrentModalConfirm">
                     <span id="archiveCurrentBtnText">Confirm Archive</span>
                     <span id="archiveCurrentBtnSpinner" class="vs-spinner" style="display:none"></span>
@@ -475,7 +475,7 @@ var ModalInstance = (function () {
                 </div>
                 <div class="vs-modal-footer">
                   <button type="button" class="vs-btn vs-btn-danger" id="archiveFilterClear">Clear All</button>
-                  <button type="button" class="vs-btn vs-btn-outline" id="archiveFilterCancel">Cancel</button>
+                  <button type="button" class="vs-btn vs-btn-danger" id="archiveFilterCancel">Close</button>
                   <button type="button" class="vs-btn vs-btn-primary" id="archiveFilterApply">Apply Filters</button>
                 </div>
               </div>
@@ -507,7 +507,7 @@ var ModalInstance = (function () {
                     </div>
                     <div class="vs-modal-footer">
                         <button type="button" class="vs-btn vs-btn-danger" id="auditFilterClear">Clear All</button>
-                        <button type="button" class="vs-btn vs-btn-outline" id="auditFilterModalCancel">Cancel</button>
+                        <button type="button" class="vs-btn vs-btn-danger" id="auditFilterModalCancel">Close</button>
                         <button type="button" class="vs-btn vs-btn-primary" id="auditFilterApply">Apply Filters</button>
                     </div>
                 </div>
@@ -526,7 +526,7 @@ var ModalInstance = (function () {
                            Archived schools will no longer appear in the voucher school picker.</p>
                     </div>
                     <div class="vs-modal-footer">
-                        <button class="vs-btn vs-btn-outline" id="schoolArchiveModalCancel">Cancel</button>
+                        <button class="vs-btn vs-btn-danger" id="schoolArchiveModalCancel">Close</button>
                         <button class="vs-btn vs-btn-danger" id="schoolArchiveConfirm">
                             <span id="schoolArchiveBtnText">Confirm Archive</span>
                             <span id="schoolArchiveBtnSpinner" class="vs-spinner" style="display:none"></span>
@@ -584,7 +584,7 @@ var ModalInstance = (function () {
                             </div>
                         </div>
                         <div class="vs-modal-footer">
-                            <button type="button" class="vs-btn vs-btn-outline" id="schoolModalCancel">Cancel</button>
+                            <button type="button" class="vs-btn vs-btn-danger" id="schoolModalCancel">Close</button>
                             <button type="submit" class="vs-btn vs-btn-primary" id="schoolModalSubmit">
                                 <span id="smSubmitText">Save</span>
                                 <span id="smSubmitSpinner" class="vs-spinner" style="display:none"></span>
@@ -613,7 +613,7 @@ var ModalInstance = (function () {
                             <input id="schoolFileInput" name="school_file" type="file" class="vs-input" accept=".csv,.xlsx,.xls" required>
                         </div>
                         <div class="vs-modal-footer">
-                            <button type="button" class="vs-btn vs-btn-outline" id="schoolImportCancel">Cancel</button>
+                            <button type="button" class="vs-btn vs-btn-danger" id="schoolImportCancel">Close</button>
                             <button type="submit" class="vs-btn vs-btn-success" id="schoolImportSubmit">
                                 <span id="siSubmitText">Import</span>
                                 <span id="siSubmitSpinner" class="vs-spinner" style="display:none"></span>
@@ -635,7 +635,7 @@ var ModalInstance = (function () {
                   <p>You are about to archive <strong id="sigArchiveCount">0</strong> signatory(ies). This will move them to the archive.</p>
                 </div>
                 <div class="vs-modal-footer">
-                  <button class="vs-btn vs-btn-outline" id="sigArchiveModalCancel">Cancel</button>
+                  <button class="vs-btn vs-btn-danger" id="sigArchiveModalCancel">Close</button>
                   <button class="vs-btn vs-btn-danger" id="sigArchiveConfirm">
                     <span id="sigArchiveBtnText">Confirm Archive</span>
                     <span id="sigArchiveBtnSpinner" class="vs-spinner" style="display:none"></span>
@@ -742,7 +742,7 @@ var ModalInstance = (function () {
                     </div>
                   </div>
                   <div class="vs-modal-footer">
-                    <button type="button" class="vs-btn vs-btn-outline" id="signatoryModalCancel">Close</button>
+                    <button type="button" class="vs-btn vs-btn-danger" id="signatoryModalCancel">Close</button>
                     <button type="submit" class="vs-btn vs-btn-primary" id="signatoryModalSubmit">
                       <span id="smSubmitText">Save</span>
                       <span id="smSubmitSpinner" class="vs-spinner" style="display:none"></span>
@@ -855,7 +855,7 @@ var ModalInstance = (function () {
                         </form>
                     </div>
                     <div class="vs-modal-footer d-flex justify-content-end gap-2">
-                        <button type="button" class="btn btn-outline-secondary" id="accountModalCancel">Cancel</button>
+                        <button type="button" class="vs-btn vs-btn-danger" id="accountModalCancel">Close</button>
                         <button type="button" class="btn btn-primary px-4" id="accountModalSave">Save Account</button>
                     </div>
                 </div>

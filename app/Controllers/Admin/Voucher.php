@@ -464,7 +464,7 @@ class Voucher extends Controller
         helper(['form']);
 
         return view('vouchers/form', [
-            'title'      => 'Add Student Voucher',
+            'title'      => 'Add Student',
             'action'     => site_url('admin/vouchers/store'),
             'voucher'    => [],
             'validation' => \Config\Services::validation(),
@@ -505,7 +505,7 @@ class Voucher extends Controller
         }
 
         return view('vouchers/view', [
-            'title'   => 'Voucher Details',
+            'title'   => 'Student Details',
             'voucher' => $student,
             'role'    => session()->get('role') ?: 'admin',
         ]);
@@ -522,7 +522,7 @@ class Voucher extends Controller
         }
 
         return view('vouchers/form', [
-            'title'      => 'Update Voucher',
+            'title'      => 'Edit Student',
             'action'     => site_url('admin/vouchers/update/' . $id),
             'voucher'    => $student,
             'validation' => \Config\Services::validation(),

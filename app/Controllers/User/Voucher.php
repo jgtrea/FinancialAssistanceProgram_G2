@@ -119,7 +119,7 @@ class Voucher extends AdminVoucher
         }
 
         return view('vouchers/form', [
-            'title'      => 'Update Voucher',
+            'title'      => 'Edit Student',
             'action'     => site_url('user/vouchers/update/' . $id),
             'voucher'    => $student,
             'validation' => \Config\Services::validation(),

@@ -57,11 +57,9 @@
         <span class="d-none d-md-inline-flex align-items-center" style="color:var(--border);font-size:1.2rem;line-height:1;user-select:none">|</span>
         <div class="d-flex gap-2 flex-fill">
             <button type="button" class="vs-btn vs-btn-dark-green flex-fill flex-md-grow-0 flex-md-shrink-0" id="btnAddSchool">
-                <?= asset_icon('add') ?>
                 Add School
             </button>
             <button type="button" class="vs-btn vs-btn-success flex-fill flex-md-grow-0 flex-md-shrink-0" id="btnOpenImport">
-                <?= asset_icon('import') ?>
                 Import
             </button>
         </div>
