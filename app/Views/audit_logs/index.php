@@ -15,8 +15,8 @@
 
 <div class="vs-page-header mb-4">
         <div>
-            <h4 class="vs-page-title">Audit Logs</h4>
-            <p class="vs-page-sub">Track Your Account Activity And Voucher Changes.</p>
+            <h4 class="vs-page-title"><?= session()->get('role') === 'admin' ? 'Audit Logs' : 'My Logs' ?></h4>
+            <p class="vs-page-sub">Track Account Activity And Voucher Changes.</p>
         </div>
     </div>
 

@@ -87,7 +87,7 @@ $icon = static fn (string $name): string => asset_icon($name, ['class' => 'vs-si
                 <div class="sb-sidenav-menu-heading">System</div>                 
                 <a class="nav-link <?= $isActive('user/audit-logs') ?>" href="<?= site_url('user/audit-logs') ?>">
                     <div class="sb-nav-link-icon"><?= $icon('logs') ?></div>
-                    Audit Logs
+                    My Logs
                 </a>
             <?php endif; ?>
         </div>

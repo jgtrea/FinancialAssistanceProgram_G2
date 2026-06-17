@@ -103,7 +103,7 @@
           <tr>
             <th class="vs-th-check"><input type="checkbox" class="vs-check vs-check-all" aria-label="Select all students"></th>
             <th>Voucher No.</th>
-            <th>Name</th>
+            <th>Full Name</th>
             <th style="display:none">Name Sort</th>
             <th>Rank</th>
             <th>JHS</th>

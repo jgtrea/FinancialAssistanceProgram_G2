@@ -82,7 +82,7 @@
                         data-active="<?= $isActive ? '1' : '0' ?>"
                         data-last-login="<?= !empty($user['last_login']) ? esc(date('Y-m-d', strtotime($user['last_login']))) : '' ?>"
                         <?= !$isActive ? 'class="vs-row-archived"' : '' ?>>
-                        <td><?= esc(trim(implode(' ', array_filter([$user['first_name'] ?? '', $user['middle_name'] ?? '', $user['last_name'] ?? ''])))) ?></td>
+                        <td><?= esc(trim(implode(' ', array_filter([($user['last_name'] ?? ''). ', ', $user['first_name'] ?? '', $user['middle_name'] ?? ''])))) ?></td>
                         <td><?= esc($user['username'] ?? '') ?></td>
                         <td><?= esc($user['email']) ?></td>
                         <td>

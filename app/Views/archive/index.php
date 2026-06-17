@@ -68,7 +68,7 @@
                 <thead>
                     <tr>
                         <th>Voucher No.</th>
-                        <th>Name</th>
+                        <th>Full Name</th>
                         <th style="display:none">Name Sort</th>
                         <th>Junior High School</th>
                         <th>Preferred School</th>
