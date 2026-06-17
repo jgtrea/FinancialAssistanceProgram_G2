@@ -53,20 +53,20 @@
     </div>
     <div class="col-12 col-md-auto d-flex align-items-center gap-2">
       <span class="d-none d-md-inline-flex align-items-center" style="color:var(--border);font-size:1.2rem;line-height:1;user-select:none">|</span>
-      <div class="d-flex gap-2 flex-fill">
+      <div class="d-flex gap-2">
 <?php if ($allowGenerate): ?>
-        <button type="button" class="vs-btn vs-btn-dark-green flex-fill flex-md-grow-0 flex-md-shrink-0" id="btnGenerateAll">
-          Print Voucher
-        </button>
-        <button type="button" class="vs-btn vs-btn-success flex-fill flex-md-grow-0 flex-md-shrink-0" id="btnExportAll">
+        <button type="button" class="vs-btn vs-btn-success" style="min-width:96px" id="btnExportAll">
           Export
         </button>
-<?php else: ?>
-        <button type="button" class="vs-btn vs-btn-dark-green flex-fill flex-md-grow-0 flex-md-shrink-0" id="btnAddVoucher" data-mode="add">       
-          Add Student
+        <button type="button" class="vs-btn vs-btn-dark-green" style="min-width:96px" id="btnGenerateAll">
+          Print Voucher
         </button>
-        <button type="button" class="vs-btn vs-btn-success flex-fill flex-md-grow-0 flex-md-shrink-0" id="btnOpenImport">          
+<?php else: ?>
+        <button type="button" class="vs-btn vs-btn-success" style="min-width:96px" id="btnOpenImport">
           Import
+        </button>
+        <button type="button" class="vs-btn vs-btn-dark-green" style="min-width:96px" id="btnAddVoucher" data-mode="add">
+          Add Student
         </button>
 <?php endif ?>
       </div>
@@ -108,7 +108,7 @@
             <th>Printed</th>
             <th>Last Printed</th>
             <th>Status</th>
-            <th>Actions</th>
+            <th class="actions-column">Actions</th>
           </tr>
         </thead>
         <tbody>

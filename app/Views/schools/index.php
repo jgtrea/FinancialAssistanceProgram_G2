@@ -27,7 +27,7 @@
         </button>
         <button class="vs-btn vs-btn-danger" id="btnArchiveSelected">
             <?= asset_icon('archive') ?>
-            Archive
+            Deactivate
         </button>
     </div>
 </div>
@@ -55,12 +55,12 @@
     </div>
     <div class="col-12 col-md-auto d-flex align-items-center gap-2">
         <span class="d-none d-md-inline-flex align-items-center" style="color:var(--border);font-size:1.2rem;line-height:1;user-select:none">|</span>
-        <div class="d-flex gap-2 flex-fill">
-            <button type="button" class="vs-btn vs-btn-dark-green flex-fill flex-md-grow-0 flex-md-shrink-0" id="btnAddSchool">
-                Add School
-            </button>
-            <button type="button" class="vs-btn vs-btn-success flex-fill flex-md-grow-0 flex-md-shrink-0" id="btnOpenImport">
+        <div class="d-flex gap-2">
+            <button type="button" class="vs-btn vs-btn-success" style="min-width:96px" id="btnOpenImport">
                 Import
+            </button>
+            <button type="button" class="vs-btn vs-btn-dark-green" style="min-width:96px" id="btnAddSchool">
+                Add School
             </button>
         </div>
     </div>
@@ -73,7 +73,7 @@
             <a href="#" id="schoolSelectAllMatchingLink" style="font-weight:600;margin-left:.5rem;display:none"></a>
             <a href="#" id="schoolClearLink" style="margin-left:.5rem;display:none">Clear</a>
         </div>
-        <table id="schoolsTable" class="vs-datatable js-data-table vs-mobile-primary" data-mobile-primary="1" data-page-search="customSchoolsSearch" data-order='[[6,"desc"],[1,"asc"]]' data-col-defs='[{"orderable":false,"targets":5},{"visible":false,"targets":6},{"width":"46%","targets":1},{"width":"16%","targets":2},{"width":"9%","targets":3},{"width":"9%","targets":4}]' style="width:100%">
+        <table id="schoolsTable" class="vs-datatable js-data-table vs-mobile-primary" data-mobile-primary="1" data-page-search="customSchoolsSearch" data-order='[[6,"desc"],[1,"asc"]]' data-col-defs='[{"orderable":false,"targets":5},{"visible":false,"targets":6},{"width":"4%","targets":0},{"width":"52%","targets":1},{"width":"16%","targets":2},{"width":"9%","targets":3},{"width":"9%","targets":4},{"width":"10%","targets":5},{"className":"text-start","targets":[1]}]' style="width:100%">
             <thead>
                 <tr>
                     <th class="vs-th-check">
@@ -112,10 +112,8 @@
                         <td><?= esc($school['acronym'] ?? '') ?></td>
                         <td><?= esc($level) ?></td>
                         <td>
-                            <span style="color:<?= $isActive ? '#16a34a' : '#9ca3af' ?>;display:inline-flex"
-                                  title="<?= $isActive ? 'Active' : 'Archived' ?>"
-                                  aria-label="<?= $isActive ? 'Active' : 'Archived' ?>">
-                                <?= asset_icon($isActive ? 'circle_check' : 'circle_x', ['width' => '18', 'height' => '18']) ?>
+                            <span class="badge <?= $isActive ? 'bg-success' : 'bg-danger' ?>" id="school-status-<?= $sid ?>">
+                                <?= $isActive ? 'Active' : 'Inactive' ?>
                             </span>
                         </td>
                         <td class="actions-cell">
@@ -126,7 +124,7 @@
                                     <ul class="dropdown-menu dropdown-menu-end">
                                         <li><button type="button" class="dropdown-item js-school-edit" data-id="<?= $sid ?>">Edit</button></li>
                                         <li><hr class="dropdown-divider"></li>
-                                        <li><button type="button" class="dropdown-item text-danger js-school-archive-single" data-id="<?= $sid ?>">Archive</button></li>
+                                        <li><button type="button" class="dropdown-item text-danger js-school-archive-single" data-id="<?= $sid ?>">Deactivate</button></li>
                                     </ul>
                                 </div>
                             <?php else: ?>
@@ -136,7 +134,7 @@
                                     <ul class="dropdown-menu dropdown-menu-end">
                                         <li><button type="button" class="dropdown-item js-school-edit" data-id="<?= $sid ?>">Edit</button></li>
                                         <li><hr class="dropdown-divider"></li>
-                                        <li><button type="button" class="dropdown-item js-school-restore" data-id="<?= $sid ?>">Restore</button></li>
+                                        <li><button type="button" class="dropdown-item js-school-restore" data-id="<?= $sid ?>">Activate</button></li>
                                     </ul>
                                 </div>
                             <?php endif ?>
@@ -396,6 +394,8 @@ document.addEventListener('vs:modals:ready', function () {
         }
         var cb = row.querySelector('.school-row-check');
         if (cb) { cb.disabled = true; cb.checked = false; }
+        var statusBadge = document.getElementById('school-status-' + id);
+        if (statusBadge) { statusBadge.textContent = 'Inactive'; statusBadge.className = 'badge bg-danger'; }
         var actionsCell = row.querySelector('.actions-cell');
         if (actionsCell) {
             actionsCell.innerHTML =
@@ -404,7 +404,7 @@ document.addEventListener('vs:modals:ready', function () {
                 '<ul class="dropdown-menu dropdown-menu-end">' +
                 '<li><button type="button" class="dropdown-item js-school-edit" data-id="' + id + '">Edit</button></li>' +
                 '<li><hr class="dropdown-divider"></li>' +
-                '<li><button type="button" class="dropdown-item js-school-restore" data-id="' + id + '">Restore</button></li>' +
+                '<li><button type="button" class="dropdown-item js-school-restore" data-id="' + id + '">Activate</button></li>' +
                 '</ul></div>';
             var newEdit    = actionsCell.querySelector('.js-school-edit');
             var newRestore = actionsCell.querySelector('.js-school-restore');
@@ -475,6 +475,8 @@ document.addEventListener('vs:modals:ready', function () {
                     if (sortCell) sortCell.textContent = '1';
                     var cb = row.querySelector('.school-row-check');
                     if (cb) { cb.disabled = false; }
+                    var statusBadgeR = document.getElementById('school-status-' + id);
+                    if (statusBadgeR) { statusBadgeR.textContent = 'Active'; statusBadgeR.className = 'badge bg-success'; }
                     var actionsCell = row.querySelector('.actions-cell');
                     if (actionsCell) {
                         actionsCell.innerHTML =
@@ -483,7 +485,7 @@ document.addEventListener('vs:modals:ready', function () {
                             '<ul class="dropdown-menu dropdown-menu-end">' +
                             '<li><button type="button" class="dropdown-item js-school-edit" data-id="' + id + '">Edit</button></li>' +
                             '<li><hr class="dropdown-divider"></li>' +
-                            '<li><button type="button" class="dropdown-item text-danger js-school-archive-single" data-id="' + id + '">Archive</button></li>' +
+                            '<li><button type="button" class="dropdown-item text-danger js-school-archive-single" data-id="' + id + '">Deactivate</button></li>' +
                             '</ul></div>';
                         var newEdit = actionsCell.querySelector('.js-school-edit');
                         if (newEdit) newEdit.addEventListener('click', function () { smOpen('edit', id); });

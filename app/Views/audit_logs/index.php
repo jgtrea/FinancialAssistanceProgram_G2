@@ -44,11 +44,11 @@
 
     <div class="vs-card">
         <div class="vs-card-body">
-            <table id="auditLogsTable" class="vs-datatable js-data-table vs-mobile-primary" data-mobile-primary="4" data-page-search="customAuditSearch" data-search-placeholder="Search audit logs..." style="width:100%">
+            <table id="auditLogsTable" class="vs-datatable js-data-table vs-mobile-primary" data-mobile-primary="4" data-page-search="customAuditSearch" data-search-placeholder="Search audit logs..." data-col-defs='[{"className":"text-start","targets":[0,2,3,4]}]' style="width:100%">
                 <thead>
                     <tr>
                         <th style="width: 170px;">Date/Time</th>
-                        <th style="width: 170px;">Action</th>
+                        <th style="width: 200px;">Action</th>
                         <th>Description</th>
                         <th>User Agent</th>
                         <th style="width: 180px;">User</th>

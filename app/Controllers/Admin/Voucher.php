@@ -386,10 +386,9 @@ class Voucher extends Controller
         }
         */
 
-        $statusColor = $isActive ? '#16a34a' : '#9ca3af';
-        $statusLabel = $isActive ? 'Active' : 'Inactive';
-        $statusIcon  = asset_icon($isActive ? 'circle_check' : 'circle_x', ['width' => '18', 'height' => '18']);
-        $statusCell  = '<span class="js-status-icon" style="color:' . $statusColor . ';display:inline-flex" title="' . $statusLabel . '" aria-label="' . $statusLabel . '">' . $statusIcon . '</span>';
+        $statusCell  = $isActive
+            ? '<span class="badge bg-success">Active</span>'
+            : '<span class="badge bg-danger">Inactive</span>';
 
         $genCount  = '<span class="js-generate-count">' . esc((string) ($v['generate_count'] ?? 0)) . '</span>';
         $lastGen   = !empty($v['generated_at']) ? date('M d, Y', strtotime($v['generated_at'])) : '-';

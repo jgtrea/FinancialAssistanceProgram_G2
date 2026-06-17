@@ -434,7 +434,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     if (mode === "add") {
       voucherModalTitle.textContent = "Add " + vmEntityLabel;
-      vmSubmitText.textContent = "Save " + vmEntityLabel;
+      vmSubmitText.textContent = "Save";
       vmSetReadOnly(false);
       document.getElementById("vmVoucherDate").value = new Date()
         .toISOString()
@@ -448,7 +448,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     voucherModalTitle.textContent =
       mode === "edit" ? "Edit " + vmEntityLabel : "View " + vmEntityLabel;
-    vmSubmitText.textContent = "Update " + vmEntityLabel;
+    vmSubmitText.textContent = "Update";
     vmSetReadOnly(mode === "view");
     initModalExtraSelects();
     voucherModal.style.display = "flex";

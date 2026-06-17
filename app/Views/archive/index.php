@@ -22,7 +22,7 @@
 <div class="vs-page-header mb-3">
         <div>
             <h4 class="vs-page-title">Archive</h4>
-            <p class="vs-page-sub">View Archived Student Records. Use <strong>Filters</strong> To Narrow By SY.</p>
+            <p class="vs-page-sub">View Archived Student Records. Use <strong>Filters</strong> To Narrow By School Year.</p>
         </div>
     </div>
 
@@ -48,7 +48,7 @@
         </div>
         <div class="col-12 col-md-auto d-flex align-items-center gap-2">
             <span class="d-none d-md-inline-flex align-items-center" style="color:var(--border);font-size:1.2rem;line-height:1;user-select:none">|</span>
-            <button type="button" class="vs-btn vs-btn-warning flex-fill" id="btnArchiveCurrentData">
+            <button type="button" class="vs-btn vs-btn-primary" style="min-width:140px" id="btnArchiveCurrentData">
                 Archive Current Data
             </button>
         </div>
@@ -61,22 +61,24 @@
                     Open <strong>Filters</strong> and choose a <strong>SY</strong> to load archived records.
                 </div>
             <?php else: ?>
+            <div class="vs-table-toolbar d-flex align-items-center gap-2 mb-3 flex-wrap">
+                <input type="text" id="customArchiveSearch" class="vs-input vs-page-search" placeholder="Enter keyword to search this page" style="max-width:260px">
+                <label class="vs-length-label ms-auto">Show <input type="number" id="archiveLengthInput" class="vs-length-input" value="10" min="1" max="500"> entries</label>
+            </div>
             <table id="archivedVouchersTable" class="vs-datatable vs-mobile-primary" data-mobile-primary="1"
                    data-datatable-url="<?= esc($dtUrl, 'attr') ?>"
                    data-filter-params="<?= esc(json_encode($dtFilterParams), 'attr') ?>"
                    style="width:100%">
                 <thead>
                     <tr>
-                        <th>Voucher No.</th>
                         <th>Full Name</th>
                         <th style="display:none">Name Sort</th>
-                        <th>Junior High School</th>
-                        <th>Preferred School</th>
-                        <th>SY</th>
+                        <th>Rank</th>
+                        <th>JHS</th>
+                        <th>SHS</th>
+                        <th>School Year</th>
                         <th>Remarks</th>
-                        <th>Printed</th>
-                        <th>Last Printed</th>
-                        <th>Archived At</th>
+                        <th>Status</th>
                     </tr>
                 </thead>
                 <tbody></tbody>
@@ -90,6 +92,7 @@
 // Archive filter dropdowns (SY + schools) are lazy-loaded — see the Filters
 // modal wiring below — so the page load itself runs no DISTINCT/JOIN scans.
 window.__VS.archiveFilterOptionsUrl = <?= json_encode($dtOptionsUrl) ?>;
+window.__VS.archiveDefaultSY       = <?= json_encode($f('school_year')) ?>;
 </script>
 
 <script>
@@ -116,21 +119,22 @@ document.addEventListener('DOMContentLoaded', function () {
             data: function (d) { Object.assign(d, filterParams); },
         },
         columns: [
-            { data: 'voucher_no' },
             { data: 'name' },
             { data: 'name_sort', visible: false },
+            { data: 'rank_no' },
             { data: 'jhs' },
             { data: 'shs' },
             { data: 'sy' },
             { data: 'remarks' },
-            { data: 'printed',        orderable: false },
-            { data: 'last_generated', orderable: false },
-            { data: 'archived_at' },
+            { data: 'voucher_status' },
         ],
-        order:      [[2, 'asc']],
-        columnDefs: [{ orderData: [2], targets: [1] }],
-        dom:        window.VS.dtHeaderDom(false) + window.VS.dtBodyDom,
-        pageLength: 25,
+        order:      [[1, 'asc']],
+        columnDefs: [
+            { orderData: [1], targets: [0] },
+            { className: 'text-start', targets: [0] },
+        ],
+        dom:        window.VS.dtBodyDom,
+        pageLength: 10,
         lengthMenu: window.VS.dtLengthMenuSS,
         autoWidth:  false,
         language:   window.VS.dtLanguage({
@@ -139,6 +143,25 @@ document.addEventListener('DOMContentLoaded', function () {
             zeroRecords:'No archived records found for the selected filters.',
         }),
     });
+
+    var dt = $(table).DataTable();
+
+    var archiveSearch = document.getElementById('customArchiveSearch');
+    if (archiveSearch && window.VS && window.VS.bindFullTableSearch) {
+        window.VS.bindFullTableSearch(dt, archiveSearch);
+    }
+
+    var archiveLengthInput = document.getElementById('archiveLengthInput');
+    if (archiveLengthInput) {
+        function applyArchiveLen() {
+            var v = parseInt(archiveLengthInput.value, 10);
+            if (!isNaN(v) && v > 0) dt.page.len(v).draw();
+        }
+        archiveLengthInput.addEventListener('change', applyArchiveLen);
+        archiveLengthInput.addEventListener('keydown', function (e) {
+            if (e.key === 'Enter') applyArchiveLen();
+        });
+    }
 });
 </script>
 
@@ -189,7 +212,7 @@ document.addEventListener('vs:modals:ready', function () {
                     data = data || {};
                     var qp = new URLSearchParams(window.location.search);
                     var schoolTxt = function (s) { return (s && typeof s === 'object') ? (s.school_name || '') : s; };
-                    fillSelect('afSchoolYear', data.schoolYears,       function (s) { return s; }, qp.get('school_year'));
+                    fillSelect('afSchoolYear', data.schoolYears,       function (s) { return s; }, qp.get('school_year') || (window.__VS.archiveDefaultSY || ''));
                     fillSelect('afJuniorHs',   data.juniorHighSchools, schoolTxt,                 qp.get('junior_hs'));
                     fillSelect('afPreferredHs', data.seniorHighSchools, schoolTxt,                qp.get('preferred_hs'));
                     optionsLoaded = true;

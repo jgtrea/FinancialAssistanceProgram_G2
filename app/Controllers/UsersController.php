@@ -32,6 +32,7 @@ class UsersController extends BaseController
             $model->where('is_active', 0);
         }
 
+        $model->where('user_id !=', (int) session()->get('user_id'));
         $data['users']        = $model->orderBy('is_active', 'DESC')->orderBy('user_id', 'DESC')->findAll();
         $data['keyword']      = $keyword;
         $data['filterRole']   = $filterRole;

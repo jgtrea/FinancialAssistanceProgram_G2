@@ -32,7 +32,7 @@
         <span class="vs-action-bar-count"><span id="sigSelectedCount">0</span> selected</span>
         <button class="vs-btn vs-btn-danger" id="btnArchiveSelected">
             <?= asset_icon('archive') ?>
-            Archive
+            Deactivate
         </button>
     </div>
 
@@ -64,7 +64,7 @@
         </div>
         <div class="col-12 col-md-auto d-flex align-items-center gap-2">
             <span class="d-none d-md-inline-flex align-items-center" style="color:var(--border);font-size:1.2rem;line-height:1;user-select:none">|</span>
-            <button type="button" class="vs-btn vs-btn-success flex-fill flex-md-grow-0 flex-md-shrink-0" id="btnAddSignatory">
+            <button type="button" class="vs-btn vs-btn-success" style="min-width:96px" id="btnAddSignatory">
                 Add Signatory
             </button>
         </div>
@@ -80,7 +80,7 @@
             <table id="signatoriesTable" class="vs-datatable js-data-table vs-mobile-primary" data-mobile-primary="1" data-page-search="customSignatoriesSearch"
                    data-search-placeholder="Search signatories..."
                    data-order='[[8,"desc"],[7,"asc"]]'
-                   data-col-defs='[{"orderData":[7],"targets":[1]},{"visible":false,"targets":7},{"visible":false,"targets":8},{"width":"20%","targets":1},{"width":"34%","targets":2},{"width":"13%","targets":3},{"width":"8%","targets":4},{"width":"8%","targets":5}]'
+                   data-col-defs='[{"orderData":[7],"targets":[1]},{"orderData":[9],"targets":[4]},{"orderData":[8],"targets":[5]},{"visible":false,"targets":7},{"visible":false,"targets":8},{"visible":false,"targets":9},{"width":"4%","targets":0},{"width":"35%","targets":1},{"width":"22%","targets":2},{"width":"13%","targets":3},{"width":"8%","targets":4},{"width":"8%","targets":5},{"width":"10%","targets":6},{"className":"text-start","targets":[1]}]'
                    style="width:100%">
             <thead>
                 <tr>
@@ -88,9 +88,10 @@
                     <th>Full Name</th>
                     <th>Position Title</th>
                     <th data-orderable="false">Signature</th>
-                    <th data-orderable="false">Selected</th>
-                    <th data-orderable="false">Status</th>
+                    <th>Selected</th>
+                    <th>Status</th>
                     <th class="actions-column actions-column--sm">Actions</th>
+                    <th style="display:none"></th>
                     <th style="display:none"></th>
                     <th style="display:none"></th>
                 </tr>
@@ -128,22 +129,13 @@
                             <?php endif; ?>
                         </td>
                         <td>
-                            <?php
-                                $iconName  = ($isArchived || !$isSelected) ? 'circle_x' : 'circle_check';
-                                $iconColor = $isArchived ? '#334155' : ($isSelected ? '#16a34a' : '#9ca3af');
-                                $iconTitle = $isArchived ? 'Archived' : ($isSelected ? 'Selected' : 'Unselected');
-                            ?>
-                            <span id="sig-badge-<?= $sid ?>"
-                                  style="color:<?= $iconColor ?>;display:inline-flex"
-                                  title="<?= $iconTitle ?>" aria-label="<?= $iconTitle ?>">
-                                <?= asset_icon($iconName, ['width' => '18', 'height' => '18']) ?>
+                            <span class="badge <?= (!$isArchived && $isSelected) ? 'bg-success' : 'bg-secondary' ?>" id="sig-badge-<?= $sid ?>">
+                                <?= (!$isArchived && $isSelected) ? 'Selected' : 'Unselected' ?>
                             </span>
                         </td>
                         <td>
-                            <span style="color:<?= $isArchived ? '#9ca3af' : '#16a34a' ?>;display:inline-flex"
-                                  title="<?= $isArchived ? 'Archived' : 'Active' ?>"
-                                  aria-label="<?= $isArchived ? 'Archived' : 'Active' ?>">
-                                <?= asset_icon($isArchived ? 'circle_x' : 'circle_check', ['width' => '18', 'height' => '18']) ?>
+                            <span class="badge <?= $isArchived ? 'bg-danger' : 'bg-success' ?>" id="sig-status-<?= $sid ?>">
+                                <?= $isArchived ? 'Inactive' : 'Active' ?>
                             </span>
                         </td>
                         <td class="actions-cell">
@@ -174,7 +166,7 @@
                                         <li><hr class="dropdown-divider"></li>
                                         <li>
                                             <button class="dropdown-item text-danger js-sig-archive-single"
-                                                    data-id="<?= $sid ?>">Archive</button>
+                                                    data-id="<?= $sid ?>">Deactivate</button>
                                         </li>
                                     <?php endif; ?>
                                 </ul>
@@ -182,6 +174,7 @@
                         </td>
                         <td style="display:none"><?= esc($nameSortKey) ?></td>
                         <td style="display:none"><?= $isArchived ? '0' : '1' ?></td>
+                        <td style="display:none"><?= (!$isArchived && $isSelected) ? '1' : '0' ?></td>
                     </tr>
                 <?php endforeach; ?>
             </tbody>
@@ -195,11 +188,6 @@
 document.addEventListener('vs:modals:ready', function () {
     var csrfName = '<?= csrf_token() ?>';
     var csrfHash = '<?= csrf_hash() ?>';
-
-    var sigIcons = {
-        selected:   <?= json_encode(asset_icon('circle_check', ['width' => '18', 'height' => '18'])) ?>,
-        unselected: <?= json_encode(asset_icon('circle_x',     ['width' => '18', 'height' => '18'])) ?>,
-    };
 
     function getCsrf() {
         var meta = document.querySelector('meta[name="csrf-token-value"]');
@@ -695,12 +683,9 @@ document.addEventListener('vs:modals:ready', function () {
         var cb = row.querySelector('.sig-row-check');
         if (cb) { cb.disabled = true; cb.checked = false; }
         var badge = document.getElementById('sig-badge-' + id);
-        if (badge) {
-            badge.innerHTML = sigIcons.unselected;
-            badge.style.color = '#334155';
-            badge.title = 'Archived';
-            badge.setAttribute('aria-label', 'Archived');
-        }
+        if (badge) { badge.textContent = 'Unselected'; badge.className = 'badge bg-secondary'; }
+        var statusBadge = document.getElementById('sig-status-' + id);
+        if (statusBadge) { statusBadge.textContent = 'Inactive'; statusBadge.className = 'badge bg-danger'; }
         var ul = row.querySelector('.actions-cell .dropdown-menu');
         if (ul) {
             ul.innerHTML =

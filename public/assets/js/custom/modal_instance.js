@@ -40,7 +40,7 @@ var ModalInstance = (function () {
                 <div class="vs-modal-footer">
                   <button class="vs-btn vs-btn-danger" id="archiveModalCancel">Close</button>
                   <button class="vs-btn vs-btn-success" id="archiveConfirm">
-                    <span id="archiveBtnText">Confirm Archive</span>
+                    <span id="archiveBtnText">Confirm</span>
                     <span id="archiveBtnSpinner" class="vs-spinner" style="display:none"></span>
                   </button>
                 </div>
@@ -299,7 +299,7 @@ var ModalInstance = (function () {
                     </div>
                     <button type="button" class="vs-btn vs-btn-danger" id="voucherModalCancel">Close</button>
                     <button type="submit" class="vs-btn vs-btn-primary" id="voucherModalSubmit">
-                      <span id="vmSubmitText">Save Student</span>
+                      <span id="vmSubmitText">Save</span>
                       <span id="vmSubmitSpinner" class="vs-spinner" style="display:none"></span>
                     </button>
                   </div>
@@ -357,7 +357,7 @@ var ModalInstance = (function () {
                   <div class="vs-modal-footer">
                     <button type="button" class="vs-btn vs-btn-danger" id="userModalCancel">Close</button>
                     <button type="submit" class="vs-btn vs-btn-primary" id="userModalSubmit">
-                      <span id="umSubmitText">Save User</span>
+                      <span id="umSubmitText">Save</span>
                       <span id="umSubmitSpinner" class="vs-spinner" style="display:none"></span>
                     </button>
                   </div>
@@ -403,8 +403,8 @@ var ModalInstance = (function () {
                 </div>
                 <div class="vs-modal-footer">
                   <button class="vs-btn vs-btn-danger" id="archiveCurrentModalCancel">Close</button>
-                  <button class="vs-btn vs-btn-danger" id="archiveCurrentModalConfirm">
-                    <span id="archiveCurrentBtnText">Confirm Archive</span>
+                  <button class="vs-btn vs-btn-primary" id="archiveCurrentModalConfirm">
+                    <span id="archiveCurrentBtnText">Confirm</span>
                     <span id="archiveCurrentBtnSpinner" class="vs-spinner" style="display:none"></span>
                   </button>
                 </div>
@@ -422,7 +422,7 @@ var ModalInstance = (function () {
                 <div class="vs-modal-body">
                   <div class="row g-3">
                     <div class="col-12 col-lg-6">
-                      <label class="vs-label required" for="afSchoolYear">SY</label>
+                      <label class="vs-label required" for="afSchoolYear">School Year</label>
                       <select id="afSchoolYear" class="vs-input js-filter-select" data-placeholder="TYPE OR SELECT"><option></option></select>
                     </div>
                     <div class="col-12 col-lg-6">
@@ -430,17 +430,7 @@ var ModalInstance = (function () {
                       <select id="afGender" class="vs-input js-filter-select" data-placeholder="MALE / FEMALE" data-no-search="1">
                         <option></option><option value="MALE">MALE</option><option value="FEMALE">FEMALE</option>
                       </select>
-                    </div>
-                    <div class="col-12 col-lg-6">
-                      <label class="vs-label" for="afRemarks">Remarks</label>
-                      <select id="afRemarks" class="vs-input js-filter-select" data-placeholder="COMPLETE / INCOMPLETE / OTHERS" data-no-search="1">
-                        <option></option><option value="COMPLETE">COMPLETE</option><option value="INCOMPLETE">INCOMPLETE</option><option value="OTHERS">OTHERS</option>
-                      </select>
-                    </div>
-                    <div class="col-12 col-lg-6" id="afOtherRemarksWrap" style="display:none">
-                      <label class="vs-label" for="afOtherRemarks">Other Remarks</label>
-                      <input id="afOtherRemarks" type="text" class="vs-input vs-uppercase" placeholder="SEARCH OTHER REMARKS" maxlength="255" disabled>
-                    </div>
+                    </div>                    
                     <div class="col-12 col-lg-6">
                       <label class="vs-label" for="afVoucherStatus">Voucher Status</label>
                       <select id="afVoucherStatus" class="vs-input js-filter-select" data-placeholder="GENERATED / NOT GENERATED" data-no-search="1">
@@ -448,11 +438,11 @@ var ModalInstance = (function () {
                       </select>
                     </div>
                     <div class="col-12 col-lg-6">
-                      <label class="vs-label" for="afDateFrom">Voucher Date From</label>
+                      <label class="vs-label" for="afDateFrom"> Date Added From</label>
                       <input type="date" id="afDateFrom" class="vs-input">
                     </div>
                     <div class="col-12 col-lg-6">
-                      <label class="vs-label" for="afDateTo">Voucher Date To</label>
+                      <label class="vs-label" for="afDateTo">Date Added To</label>
                       <input type="date" id="afDateTo" class="vs-input">
                     </div>
                     <div class="col-12 col-lg-6">
@@ -471,6 +461,16 @@ var ModalInstance = (function () {
                       <label class="vs-label" for="afGwaMax">GWA Max</label>
                       <input type="number" step="0.01" id="afGwaMax" class="vs-input" placeholder="e.g. 100">
                     </div>
+                    <div class="col-12 col-lg-6">
+                      <label class="vs-label" for="afRemarks">Remarks</label>
+                      <select id="afRemarks" class="vs-input js-filter-select" data-placeholder="COMPLETE / INCOMPLETE / OTHERS" data-no-search="1">
+                        <option></option><option value="COMPLETE">COMPLETE</option><option value="INCOMPLETE">INCOMPLETE</option><option value="OTHERS">OTHERS</option>
+                      </select>
+                    </div>
+                    <div class="col-12 col-lg-6" id="afOtherRemarksWrap" style="display:none">
+                      <label class="vs-label" for="afOtherRemarks">Other Remarks</label>
+                      <input id="afOtherRemarks" type="text" class="vs-input vs-uppercase" placeholder="SEARCH OTHER REMARKS" maxlength="255" disabled>
+                    </div>  
                   </div>
                 </div>
                 <div class="vs-modal-footer">
@@ -518,17 +518,17 @@ var ModalInstance = (function () {
       return `<div class="vs-modal-overlay" id="schoolArchiveModal" style="display:none">
                 <div class="vs-modal">
                     <div class="vs-modal-header">
-                        <h5>Archive Schools</h5>
+                        <h5>Deactivate Schools</h5>
                         <button class="vs-modal-close" id="schoolArchiveModalClose">&times;</button>
                     </div>
                     <div class="vs-modal-body">
-                        <p>You are about to archive <strong id="schoolArchiveCount">0</strong> school(s).
-                           Archived schools will no longer appear in the voucher school picker.</p>
+                        <p>You are about to deactivate <strong id="schoolArchiveCount">0</strong> school(s).
+                           Inactive schools will no longer appear in the voucher school picker.</p>
                     </div>
                     <div class="vs-modal-footer">
                         <button class="vs-btn vs-btn-danger" id="schoolArchiveModalCancel">Close</button>
-                        <button class="vs-btn vs-btn-danger" id="schoolArchiveConfirm">
-                            <span id="schoolArchiveBtnText">Confirm Archive</span>
+                        <button class="vs-btn vs-btn-success" id="schoolArchiveConfirm">
+                            <span id="schoolArchiveBtnText">Confirm</span>
                             <span id="schoolArchiveBtnSpinner" class="vs-spinner" style="display:none"></span>
                         </button>
                     </div>
@@ -628,16 +628,16 @@ var ModalInstance = (function () {
       return `<div class="vs-modal-overlay" id="sigArchiveModal" style="display:none">
               <div class="vs-modal">
                 <div class="vs-modal-header">
-                  <h5>Archive Signatories</h5>
+                  <h5>Deactivate Signatories</h5>
                   <button class="vs-modal-close" id="sigArchiveModalClose">&times;</button>
                 </div>
                 <div class="vs-modal-body">
-                  <p>You are about to archive <strong id="sigArchiveCount">0</strong> signatory(ies). This will move them to the archive.</p>
+                  <p>You are about to deactivate <strong id="sigArchiveCount">0</strong> signatory(ies).</p>
                 </div>
                 <div class="vs-modal-footer">
                   <button class="vs-btn vs-btn-danger" id="sigArchiveModalCancel">Close</button>
-                  <button class="vs-btn vs-btn-danger" id="sigArchiveConfirm">
-                    <span id="sigArchiveBtnText">Confirm Archive</span>
+                  <button class="vs-btn vs-btn-success" id="sigArchiveConfirm">
+                    <span id="sigArchiveBtnText">Confirm</span>
                     <span id="sigArchiveBtnSpinner" class="vs-spinner" style="display:none"></span>
                   </button>
                 </div>
@@ -856,7 +856,7 @@ var ModalInstance = (function () {
                     </div>
                     <div class="vs-modal-footer d-flex justify-content-end gap-2">
                         <button type="button" class="vs-btn vs-btn-danger" id="accountModalCancel">Close</button>
-                        <button type="button" class="btn btn-primary px-4" id="accountModalSave">Save Account</button>
+                        <button type="button" class="btn btn-primary px-4" id="accountModalSave">Save</button>
                     </div>
                 </div>
             </div>`;
@@ -967,7 +967,7 @@ var ModalInstance = (function () {
           function (s) {
             return s;
           },
-          _urlParam("school_year"),
+          _urlParam("school_year") || _currentSchoolYear(),
         );
         _buildOpts(
           "afJuniorHs",
@@ -1056,6 +1056,16 @@ var ModalInstance = (function () {
     });
   }
 
+  /* ── current school year helper (mirrors PHP archiveSchoolYearLabel) ── */
+
+  function _currentSchoolYear() {
+    var now = new Date();
+    var year = now.getFullYear();
+    var month = now.getMonth() + 1;
+    var startYear = month >= 6 ? year : year - 1;
+    return startYear + "-" + (startYear + 1);
+  }
+
   /* ── show/hide "Other Remarks" filter alongside Remarks=OTHERS ── */
 
   function _toggleOtherRemarksFilter(selectId, wrapId, inputId) {
@@ -1083,6 +1093,12 @@ var ModalInstance = (function () {
         if (e.target && e.target.id === selectId)
           _toggleOtherRemarksFilter(selectId, wrapId, inputId);
       });
+      // Select2 fires jQuery change events that don't always bubble as native DOM events
+      if (window.jQuery) {
+        $(document).on("change", "#" + selectId, function () {
+          _toggleOtherRemarksFilter(selectId, wrapId, inputId);
+        });
+      }
     });
   }
 
@@ -1171,7 +1187,7 @@ var ModalInstance = (function () {
         })
         .finally(function () {
           saveBtn.disabled = false;
-          saveBtn.textContent = "Save Account";
+          saveBtn.textContent = "Save";
         });
     });
   }

@@ -5,13 +5,14 @@
 .vs-datatable,
 table.js-data-table {
   font-family: var(--font);
-  font-size: 0.875rem;
+  font-size: clamp(0.68rem, 0.58rem + 0.18vw, 0.82rem);
   width: 100% !important;
 }
 .vs-datatable thead th,
 table.js-data-table thead th {
   font-size: 0.72rem;
   font-weight: 600;
+  text-align: center !important;
   text-transform: uppercase;
   letter-spacing: 0.05em;
   color: var(--muted);
@@ -25,6 +26,22 @@ table.js-data-table tbody td {
   padding: 0.7rem 0.75rem !important;
   border-bottom: 1px solid var(--border) !important;
   vertical-align: middle !important;
+  text-align: center !important;
+}
+.vs-datatable tbody td.text-start,
+table.js-data-table tbody td.text-start {
+  text-align: left !important;
+}
+.vs-datatable .badge,
+table.js-data-table .badge,
+.vs-dashboard-table .badge {
+  font-size: 0.72rem;
+  font-weight: 500;
+  padding: 0.35em 0.7em;
+  min-width: 76px;
+  display: inline-block;
+  text-align: center;
+  letter-spacing: 0.01em;
 }
 
 @media (min-width: 768px) {
@@ -47,10 +64,6 @@ table.js-data-table tbody td {
     text-overflow: ellipsis;
     white-space: nowrap;
     word-break: normal;
-  }
-
-  #studentsTable {
-    font-size: clamp(0.68rem, 0.58rem + 0.18vw, 0.82rem);
   }
 
   #studentsTable thead th,

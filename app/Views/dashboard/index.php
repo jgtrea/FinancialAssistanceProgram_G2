@@ -198,6 +198,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 { width: '34%', targets: 3 },
                 { width: '14%', targets: 4 },
                 { width: '18%', targets: 5 },
+                { className: 'text-start', targets: [2] },
             ]),
         });
     }

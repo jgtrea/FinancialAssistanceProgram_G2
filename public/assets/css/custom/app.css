@@ -15,12 +15,10 @@
   margin-bottom: 0.25rem;
 }
 
-.actions-column {
-  width: 260px;
-}
-
+.actions-column,
 .actions-column--sm {
-  width: 180px;
+  width: 112px;
+  min-width: 112px;
 }
 
 .actions-cell {

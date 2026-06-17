@@ -15,13 +15,14 @@ class ArchiveController extends BaseController
         $keyword = trim((string) $this->request->getGet('q'));
         $filters = $this->getListingFilters();
 
-        // The archive table is gated on SY; no data loads until the user picks
-        // one. The listing itself is now a server-side DataTable (see
-        // ArchiveController::datatable). The filter dropdowns (SY + schools)
-        // are lazy-loaded via filterOptions() the first time the user opens
-        // the Filters modal — they ran 5 DISTINCT/JOIN scans on every page
-        // load before, which is what made this page slow. We only need the SY
-        // flag here to decide whether to render the table shell or the prompt.
+        // Default school_year to the current SY so the table loads on first visit.
+        if (trim((string) ($filters['school_year'] ?? '')) === '') {
+            $year      = (int) date('Y');
+            $month     = (int) date('n');
+            $startYear = $month >= 6 ? $year : $year - 1;
+            $filters['school_year'] = $startYear . '-' . ($startYear + 1);
+        }
+
         $hasSchoolYear = trim((string) ($filters['school_year'] ?? '')) !== '';
 
         return view('archive/index', [
@@ -117,10 +118,16 @@ class ArchiveController extends BaseController
             'voucher_no'     => esc($v['voucher_no'] ?: '-'),
             'name'           => esc($name),
             'name_sort'      => esc($nameSort),
+            'rank_no'        => isset($v['rank_no']) && $v['rank_no'] !== null && $v['rank_no'] !== ''
+                                    ? esc(rtrim(rtrim(number_format((float) $v['rank_no'], 2, '.', ''), '0'), '.'))
+                                    : '-',
             'jhs'            => esc((string) ($v['junior_high_school'] ?: '-')),
             'shs'            => esc((string) ($v['preferred_senior_high_school'] ?: '-')),
             'sy'             => esc((string) ($v['school_year'] ?? '')),
             'remarks'        => esc($v['remarks_status'] ?: '-'),
+            'voucher_status' => ($v['voucher_status'] ?? '') === 'generated'
+                                    ? '<span class="badge bg-success">Generated</span>'
+                                    : '<span class="badge bg-warning text-dark">Not Generated</span>',
             'printed'        => esc((string) ($v['generate_count'] ?? 0)),
             'last_generated' => esc($lastGen),
             'archived_at'    => esc($archivedAt),

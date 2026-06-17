@@ -222,12 +222,12 @@ canvas {
 
 .vs-btn-warning {
   background: #fbe925;
-  color: #000;
+  color: var(--navy);
 }
 
 .vs-btn-warning:hover {
   background: #e8d600;
-  color: #000;
+  color: var(--navy);
 }
 
 /* ── Inputs ── */

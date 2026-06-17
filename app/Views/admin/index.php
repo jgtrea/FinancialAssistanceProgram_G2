@@ -50,7 +50,7 @@
     </div>
     <div class="col-12 col-md-auto d-flex align-items-center gap-2">
         <span class="d-none d-md-inline-flex align-items-center" style="color:var(--border);font-size:1.2rem;line-height:1;user-select:none">|</span>
-        <button type="button" class="vs-btn vs-btn-success flex-fill flex-md-grow-0 flex-md-shrink-0" id="btnAddUser">
+        <button type="button" class="vs-btn vs-btn-success" style="min-width:96px" id="btnAddUser">
             Add User
         </button>
     </div>
@@ -58,7 +58,7 @@
 
     <div class="vs-card">
         <div class="vs-card-body">
-            <table id="userManagementTable" class="vs-datatable js-data-table vs-mobile-primary" data-mobile-primary="0" data-page-search="customUsersSearch" data-search-placeholder="Search users..." data-order='[[6,"desc"],[1,"asc"]]' data-col-defs='[{"orderable":false,"targets":5},{"visible":false,"targets":6},{"width":"18%","targets":0},{"width":"15%","targets":1},{"width":"28%","targets":2},{"width":"9%","targets":3},{"width":"9%","targets":4}]' style="width:100%">
+            <table id="userManagementTable" class="vs-datatable js-data-table vs-mobile-primary" data-mobile-primary="0" data-page-search="customUsersSearch" data-search-placeholder="Search users..." data-order='[[6,"desc"],[1,"asc"]]' data-col-defs='[{"orderable":false,"targets":5},{"visible":false,"targets":6},{"width":"18%","targets":0},{"width":"15%","targets":1},{"width":"39%","targets":2},{"width":"9%","targets":3},{"width":"9%","targets":4},{"width":"10%","targets":5},{"className":"text-start","targets":[0,1,2]}]' style="width:100%">
             <thead>
                 <tr>
                     <th>Full Name</th>
@@ -92,11 +92,8 @@
                             <span class="badge" style="background-color:<?= $roleColor ?>"><?= esc(ucfirst($user['role'])) ?></span>
                         </td>
                         <td>
-                            <span id="user-status-badge-<?= $uid ?>"
-                                  style="color:<?= $isActive ? '#16a34a' : '#9ca3af' ?>;display:inline-flex"
-                                  title="<?= $isActive ? 'Active' : 'Inactive' ?>"
-                                  aria-label="<?= $isActive ? 'Active' : 'Inactive' ?>">
-                                <?= asset_icon($isActive ? 'circle_check' : 'circle_x', ['width' => '18', 'height' => '18']) ?>
+                            <span class="badge <?= $isActive ? 'bg-success' : 'bg-danger' ?>" id="user-status-badge-<?= $uid ?>">
+                                <?= $isActive ? 'Active' : 'Inactive' ?>
                             </span>
                         </td>
                         <td class="actions-cell">
@@ -138,10 +135,6 @@ document.addEventListener('vs:modals:ready', function () {
     var csrfName = '<?= csrf_token() ?>';
     var csrfHash = '<?= csrf_hash() ?>';
 
-    var userStatusIcons = {
-        active:   <?= json_encode(asset_icon('circle_check', ['width' => '18', 'height' => '18'])) ?>,
-        inactive: <?= json_encode(asset_icon('circle_x',     ['width' => '18', 'height' => '18'])) ?>,
-    };
 
     function getCsrf() {
         var meta = document.querySelector('meta[name="csrf-token-value"]');
@@ -363,10 +356,8 @@ document.addEventListener('vs:modals:ready', function () {
             }
 
             if (badge) {
-                badge.innerHTML   = nowActive ? userStatusIcons.active : userStatusIcons.inactive;
-                badge.style.color = nowActive ? '#16a34a' : '#9ca3af';
-                badge.title       = nowActive ? 'Active' : 'Inactive';
-                badge.setAttribute('aria-label', nowActive ? 'Active' : 'Inactive');
+                badge.textContent = nowActive ? 'Active' : 'Inactive';
+                badge.className   = 'badge ' + (nowActive ? 'bg-success' : 'bg-danger');
             }
 
             var metaEl = document.querySelector('meta[name="csrf-token-value"]');

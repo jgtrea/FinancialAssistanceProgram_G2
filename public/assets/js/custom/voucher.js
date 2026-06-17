@@ -147,18 +147,28 @@ document.addEventListener("DOMContentLoaded", function () {
           { data: "jhs", width: "7%" },
           { data: "shs", width: "7%" },
           { data: "remarks", width: "9%" },
-          { data: "generate_count", width: "9%" },
+          { data: "generate_count", width: "7%" },
           { data: "last_generated", width: "10%" },
-          { data: "status", width: "6%" },
+          { data: "status", width: "8%" },
           { data: "actions", orderable: false, width: "10%" },
         ],
         columnDefs: [
           ...voucherMobileColumnDefs(),
           { orderData: [3], targets: [2] },
+          { className: "text-start", targets: [2, 9] },
           ...(showCheckboxColumn ? [] : [{ visible: false, targets: 0 }]),
           ...(showCheckboxColumn
             ? []
             : [{ visible: false, targets: [1, 8, 9] }]),
+          ...(showCheckboxColumn ? [] : [
+            { width: "35%", targets: 2 },
+            { width: "8%",  targets: 4 },
+            { width: "10%", targets: 5 },
+            { width: "10%", targets: 6 },
+            { width: "18%", targets: 7 },
+            { width: "9%",  targets: 10 },
+            { width: "10%", targets: 11 },
+          ]),
         ],
         order: [[3, "asc"]],
         dom:

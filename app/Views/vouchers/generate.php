@@ -54,7 +54,7 @@
             <!-- <th>Eligibility</th> -->
             <th>Printed</th>
             <th>Date</th>
-            <th>Actions</th>
+            <th class="actions-column">Actions</th>
           </tr>
         </thead>
         <tbody>
