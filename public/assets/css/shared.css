@@ -403,7 +403,7 @@ canvas {
 .vs-modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.45);
+  background: rgba(255, 255, 255, 0.45);
   z-index: 1050;
   display: flex;
   align-items: center;
@@ -430,6 +430,12 @@ canvas {
   display: flex;
   flex-direction: column;
   animation: vs-slide-up 0.2s ease;
+}
+.vs-modal-lg {
+  max-width: 800px;
+}
+.vs-modal-md {
+  max-width: 600px;
 }
 .vs-modal > form {
   min-height: 0;

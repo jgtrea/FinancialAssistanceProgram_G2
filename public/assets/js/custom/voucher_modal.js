@@ -4,8 +4,6 @@ document.addEventListener("DOMContentLoaded", function () {
   var saveStudentUrl = cfg.saveUrl || "";
   var fetchStudentUrl = cfg.fetchUrl || "";
   var schoolOptionsUrl = cfg.schoolOptionsUrl || "";
-  var vmListingContext = cfg.listingContext || "vouchers";
-  var vmEntityLabel = vmListingContext === "students" ? "Student" : "Vouchers";
 
   var voucherModal = document.getElementById("voucherModal");
   var voucherModalForm = document.getElementById("voucherModalForm");
@@ -20,6 +18,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
   var vmVoucherNoWrap = document.getElementById("vmVoucherNoWrap");
   var vmVoucherNoDisplay = document.getElementById("vmVoucherNoDisplay");
+  var vmVoucherDateWrap = document.getElementById("vmVoucherDateWrap");
   var vmLastGeneratedByWrap = document.getElementById("vmLastGeneratedByWrap");
   var vmLastGeneratedByEl = document.getElementById("vmLastGeneratedBy");
   var vmLastGeneratedAtEl = document.getElementById("vmLastGeneratedAt");
@@ -31,8 +30,6 @@ document.addEventListener("DOMContentLoaded", function () {
   );
   var vmOtherRemarksWrap = document.getElementById("vmOtherRemarksWrap");
   var vmOtherRemarksInput = document.getElementById("vmOtherRemarks");
-  var vmEditBtn = document.getElementById("vmEditBtn");
-  var vmCurrentStudentId = null;
 
   var vmFieldIds = [
     "vmControlNo",
@@ -49,10 +46,11 @@ document.addEventListener("DOMContentLoaded", function () {
     "vmPreferredHs",
     "vmRemarks",
     "vmOtherRemarks",
-    /* 'vmEligibility', */
+    "vmEvaluatedBy" /* 'vmEligibility', */,
   ];
   var vmFieldToName = {
     vmControlNo: "control_no",
+    vmEvaluatedBy: "evaluated_by",
     vmVoucherDate: "voucher_date",
     vmFirstName: "first_name",
     vmMiddleName: "middle_name",
@@ -296,36 +294,30 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   function vmSetReadOnly(readOnly) {
-    if (readOnly) {
-      // Populate each readonly div with the current field value, then apply
-      // the view-mode class so CSS hides .vm-edit and shows .vm-view.
-      vmFieldIds.forEach(function (id) {
-        var el = document.getElementById(id);
-        var ro = document.getElementById(id + "Ro");
-        if (!el || !ro) return;
-        var val;
-        if (el.tagName === "SELECT") {
-          var idx = el.selectedIndex;
-          val = idx >= 0 && el.options[idx] ? el.options[idx].textContent.trim() : "";
-        } else {
-          val = el.value;
-        }
-        ro.textContent = val || "—";
-      });
-    }
-    voucherModal.classList.toggle("vm-view-mode", readOnly);
+    vmFieldIds.forEach(function (id) {
+      var el = document.getElementById(id);
+      if (!el) return;
+      if (
+        el.tagName === "SELECT" &&
+        el.classList.contains("js-school-select")
+      ) {
+        // <select> has no readOnly — disable instead. Form still submits the
+        // value because Select2 keeps the option selected when re-enabled.
+        el.disabled = readOnly;
+        if (window.jQuery)
+          $(el).prop("disabled", readOnly).trigger("change.select2");
+      } else {
+        el.readOnly = readOnly;
+      }
+    });
     voucherSubmitBtn.style.display = readOnly ? "none" : "inline-flex";
-    if (vmEditBtn) vmEditBtn.style.display = readOnly ? "inline-flex" : "none";
   }
 
   function vmApplyModeVisibility(mode) {
     var isView = mode === "view";
-    // Control No (add/edit) swaps with Voucher No (view) in the first col slot.
-    var controlNoWrap = document.getElementById("vmControlNoWrap");
-    if (controlNoWrap) controlNoWrap.style.display = isView ? "none" : "";
     if (vmVoucherNoWrap) vmVoucherNoWrap.style.display = isView ? "" : "none";
-    // Voucher Date wrap stays visible in all modes; .vm-edit/.vm-view handles input vs div.
-    // Generation history shown in view mode only.
+    if (vmVoucherDateWrap)
+      vmVoucherDateWrap.style.display = isView ? "none" : "";
     if (vmLastGeneratedByWrap)
       vmLastGeneratedByWrap.style.display = isView ? "" : "none";
   }
@@ -433,8 +425,8 @@ document.addEventListener("DOMContentLoaded", function () {
     vmApplyModeVisibility(mode);
 
     if (mode === "add") {
-      voucherModalTitle.textContent = "Add " + vmEntityLabel;
-      vmSubmitText.textContent = "Save";
+      voucherModalTitle.textContent = "Add Student";
+      vmSubmitText.textContent = "Save Student";
       vmSetReadOnly(false);
       document.getElementById("vmVoucherDate").value = new Date()
         .toISOString()
@@ -447,8 +439,8 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     voucherModalTitle.textContent =
-      mode === "edit" ? "Edit " + vmEntityLabel : "View " + vmEntityLabel;
-    vmSubmitText.textContent = "Update";
+      mode === "edit" ? "Edit Voucher" : "View Voucher";
+    vmSubmitText.textContent = "Update Voucher";
     vmSetReadOnly(mode === "view");
     initModalExtraSelects();
     voucherModal.style.display = "flex";
@@ -495,9 +487,6 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   voucherModalClose && voucherModalClose.addEventListener("click", vmClose);
   voucherModalCancel && voucherModalCancel.addEventListener("click", vmClose);
-  vmEditBtn && vmEditBtn.addEventListener("click", function () {
-    if (vmCurrentStudentId) vmOpen("edit", vmCurrentStudentId);
-  });
   voucherModal &&
     voucherModal.addEventListener("click", function (e) {
       if (e.target === voucherModal) vmClose();

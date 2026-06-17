@@ -207,9 +207,9 @@ var ModalInstance = (function () {
 
     voucherModal: function () {
       return `<div class="vs-modal-overlay" id="voucherModal" style="display:none">
-              <div class="vs-modal" style="max-width:680px">
+              <div class="vs-modal vs-modal-lg">
                 <div class="vs-modal-header">
-                  <h5 id="voucherModalTitle">Add Voucher</h5>
+                  <h5 id="voucherModalTitle">Add Student</h5>
                   <button class="vs-modal-close" id="voucherModalClose">&times;</button>
                 </div>
                 <form id="voucherModalForm" novalidate>
@@ -676,7 +676,7 @@ var ModalInstance = (function () {
       }
 
       return `<div class="vs-modal-overlay" id="signatoryModal" style="display:none">
-              <div class="vs-modal" style="max-width:680px">
+              <div class="vs-modal vs-modal-md">
                 <div class="vs-modal-header">
                   <h5 id="signatoryModalTitle">Add Signatory</h5>
                   <button class="vs-modal-close" id="signatoryModalClose">&times;</button>
@@ -967,7 +967,7 @@ var ModalInstance = (function () {
           function (s) {
             return s;
           },
-          _urlParam("school_year") || _currentSchoolYear(),
+          _urlParam("school_year"),
         );
         _buildOpts(
           "afJuniorHs",
@@ -1056,16 +1056,6 @@ var ModalInstance = (function () {
     });
   }
 
-  /* ── current school year helper (mirrors PHP archiveSchoolYearLabel) ── */
-
-  function _currentSchoolYear() {
-    var now = new Date();
-    var year = now.getFullYear();
-    var month = now.getMonth() + 1;
-    var startYear = month >= 6 ? year : year - 1;
-    return startYear + "-" + (startYear + 1);
-  }
-
   /* ── show/hide "Other Remarks" filter alongside Remarks=OTHERS ── */
 
   function _toggleOtherRemarksFilter(selectId, wrapId, inputId) {
@@ -1093,12 +1083,6 @@ var ModalInstance = (function () {
         if (e.target && e.target.id === selectId)
           _toggleOtherRemarksFilter(selectId, wrapId, inputId);
       });
-      // Select2 fires jQuery change events that don't always bubble as native DOM events
-      if (window.jQuery) {
-        $(document).on("change", "#" + selectId, function () {
-          _toggleOtherRemarksFilter(selectId, wrapId, inputId);
-        });
-      }
     });
   }
 
@@ -1187,7 +1171,7 @@ var ModalInstance = (function () {
         })
         .finally(function () {
           saveBtn.disabled = false;
-          saveBtn.textContent = "Save";
+          saveBtn.textContent = "Save Account";
         });
     });
   }

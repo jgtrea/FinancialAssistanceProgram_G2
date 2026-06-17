@@ -5616,6 +5616,8 @@ fieldset:disabled .btn {
   width: auto;
   margin: var(--bs-modal-margin);
   pointer-events: none;
+  background-color: #fff;
+  border-radius: 20px;
 }
 .modal.fade .modal-dialog {
   transition: transform 0.3s ease-out;

@@ -228,6 +228,16 @@ document.addEventListener('vs:modals:ready', function () {
         smPositionTitle: 'position_title',
     };
 
+    function smInitSelects() {
+        if (typeof window.initVsSelect2 === 'function') window.initVsSelect2(sigModal);
+    }
+
+    function smRefreshSelects() {
+        if (window.jQuery) {
+            $('#smPrefix, #smSuffix, #smDegree').trigger('change.select2');
+        }
+    }
+
     function escapeHtml(value) {
         return String(value || '').replace(/[&<>"']/g, function (ch) {
             return {'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;'}[ch];
@@ -256,6 +266,7 @@ document.addEventListener('vs:modals:ready', function () {
         document.getElementById('smAutoRemoveBg').checked = true;
         var dOther = document.getElementById('smDegreeOther');
         if (dOther) { dOther.value = ''; dOther.style.display = 'none'; }
+        smRefreshSelects();
     }
 
     function smPopulate(sig) {
@@ -268,6 +279,7 @@ document.addEventListener('vs:modals:ready', function () {
         });
 
         applyDegreeValue(sig.degree || '');
+        smRefreshSelects();
 
         var wrap = document.getElementById('smCurrentSignatureWrap');
         var img  = document.getElementById('smCurrentSignaturePreview');
@@ -280,12 +292,11 @@ document.addEventListener('vs:modals:ready', function () {
     }
 
     var smDegreeInput = document.getElementById('smDegree');
-    var smDegreeList  = document.getElementById('smDegree-list');
     var smDegreeOther = document.getElementById('smDegreeOther');
 
     function knownDegreeOption(value) {
-        if (!smDegreeList) return false;
-        return Array.from(smDegreeList.options).some(function (o) { return o.value === value; });
+        if (!smDegreeInput) return false;
+        return Array.from(smDegreeInput.options).some(function (o) { return o.value === value; });
     }
 
     function applyDegreeValue(value) {
@@ -303,7 +314,7 @@ document.addEventListener('vs:modals:ready', function () {
         }
     }
 
-    smDegreeInput && smDegreeInput.addEventListener('input', function () {
+    smDegreeInput && smDegreeInput.addEventListener('change', function () {
         if (smDegreeInput.value === 'Other') {
             smDegreeOther.style.display = 'block';
             smDegreeOther.focus();
@@ -315,6 +326,7 @@ document.addEventListener('vs:modals:ready', function () {
 
     function smOpen(mode, sigId) {
         smClearAlert();
+        smInitSelects();
         smResetForm();
 
         if (mode === 'add') {
