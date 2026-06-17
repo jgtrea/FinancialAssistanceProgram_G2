@@ -5,27 +5,28 @@
  * Modals are injected into <body> at DOMContentLoaded.
  */
 var ModalInstance = (function () {
-    'use strict';
+  "use strict";
 
-    var _VS   = window.__VS  || {};
-    var _csrf = _VS.csrf     || { name: '', hash: '' };
-    var _urls = _VS.urls     || {};
+  var _VS = window.__VS || {};
+  var _csrf = _VS.csrf || { name: "", hash: "" };
+  var _urls = _VS.urls || {};
 
-    /* ── shared helpers ─────────────────────────── */
+  /* ── shared helpers ─────────────────────────── */
 
-    function _csrfInput(id) {
-        id = id || '_miCsrf';
-        return `<input type="hidden" id="${id}" name="${_csrf.name}" value="${_csrf.hash}">`;
-    }
+  function _csrfInput(id) {
+    id = id || "_miCsrf";
+    return `<input type="hidden" id="${id}" name="${_csrf.name}" value="${_csrf.hash}">`;
+  }
 
-    function _u(key) { return _urls[key] || '#'; }
+  function _u(key) {
+    return _urls[key] || "#";
+  }
 
-    /* ── modal templates ────────────────────────── */
+  /* ── modal templates ────────────────────────── */
 
-    var _tpl = {
-
-        archiveModal: function () {
-            return `<div class="vs-modal-overlay" id="archiveModal" style="display:none">
+  var _tpl = {
+    archiveModal: function () {
+      return `<div class="vs-modal-overlay" id="archiveModal" style="display:none">
               <div class="vs-modal">
                 <div class="vs-modal-header">
                   <h5>Archive Students</h5>
@@ -45,10 +46,10 @@ var ModalInstance = (function () {
                 </div>
               </div>
             </div>`;
-        },
+    },
 
-        infoModal: function () {
-            return `<div class="vs-modal-overlay" id="infoModal" style="display:none">
+    infoModal: function () {
+      return `<div class="vs-modal-overlay" id="infoModal" style="display:none">
               <div class="vs-modal" style="max-width:680px">
                 <div class="vs-modal-header">
                   <h5 id="infoModalTitle">Notice</h5>
@@ -62,10 +63,10 @@ var ModalInstance = (function () {
                 </div>
               </div>
             </div>`;
-        },
+    },
 
-        bulkAllModal: function () {
-            return `<div class="vs-modal-overlay" id="bulkAllModal" style="display:none">
+    bulkAllModal: function () {
+      return `<div class="vs-modal-overlay" id="bulkAllModal" style="display:none">
               <div class="vs-modal">
                 <div class="vs-modal-header">
                   <h5 id="bulkAllTitle">Confirm</h5>
@@ -87,10 +88,10 @@ var ModalInstance = (function () {
                 </div>
               </div>
             </div>`;
-        },
+    },
 
-        importModal: function () {
-            return `<div class="vs-modal-overlay" id="importModal" style="display:none">
+    importModal: function () {
+      return `<div class="vs-modal-overlay" id="importModal" style="display:none">
               <div class="vs-modal">
                 <div class="vs-modal-header">
                   <h5>Import Students</h5>
@@ -112,10 +113,10 @@ var ModalInstance = (function () {
                 </div>
               </div>
             </div>`;
-        },
+    },
 
-        filterModal: function () {
-            return `<div class="vs-modal-overlay" id="filterModal" style="display:none">
+    filterModal: function () {
+      return `<div class="vs-modal-overlay" id="filterModal" style="display:none">
               <div class="vs-modal" style="max-width:680px">
                 <div class="vs-modal-header">
                   <h5>Advanced Filters</h5>
@@ -184,10 +185,10 @@ var ModalInstance = (function () {
                 </div>
               </div>
             </div>`;
-        },
+    },
 
-        exportVoucher: function () {
-            return `<div class="vs-modal-overlay" id="exportModal" style="display:none">
+    exportVoucher: function () {
+      return `<div class="vs-modal-overlay" id="exportModal" style="display:none">
               <div class="vs-modal">
                 <div class="vs-modal-header">
                   <h5>Export Students</h5>
@@ -196,23 +197,23 @@ var ModalInstance = (function () {
                 <div class="vs-modal-body">
                   <p>Choose the file format to export the selected student records.</p>
                   <div class="d-flex gap-3 mt-3">
-                    <a href="${_u('voucherExport')}?format=xlsx" data-export-format="xlsx" class="vs-btn vs-btn-outline flex-fill text-center">Excel (.xlsx)</a>
-                    <a href="${_u('voucherExport')}?format=csv" data-export-format="csv" class="vs-btn vs-btn-outline flex-fill text-center">CSV (.csv)</a>
+                    <a href="${_u("voucherExport")}?format=xlsx" data-export-format="xlsx" class="vs-btn vs-btn-outline flex-fill text-center">Excel (.xlsx)</a>
+                    <a href="${_u("voucherExport")}?format=csv" data-export-format="csv" class="vs-btn vs-btn-outline flex-fill text-center">CSV (.csv)</a>
                   </div>
                 </div>
               </div>
             </div>`;
-        },
+    },
 
-        voucherModal: function () {
-            return `<div class="vs-modal-overlay" id="voucherModal" style="display:none">
-              <div class="vs-modal" style="max-width:680px">
+    voucherModal: function () {
+      return `<div class="vs-modal-overlay" id="voucherModal" style="display:none">
+              <div class="vs-modal vs-modal-lg">
                 <div class="vs-modal-header">
-                  <h5 id="voucherModalTitle">Add Voucher</h5>
+                  <h5 id="voucherModalTitle">Add Student</h5>
                   <button class="vs-modal-close" id="voucherModalClose">&times;</button>
                 </div>
                 <form id="voucherModalForm" novalidate>
-                  ${_csrfInput('vmCsrf')}
+                  ${_csrfInput("vmCsrf")}
                   <input type="hidden" name="student_id" id="vmStudentId" value="">
                   <div class="vs-modal-body">
                     <div id="voucherModalAlert"></div>
@@ -305,17 +306,17 @@ var ModalInstance = (function () {
                 </form>
               </div>
             </div>`;
-        },
+    },
 
-        userModal: function () {
-            return `<div class="vs-modal-overlay" id="userModal" style="display:none">
+    userModal: function () {
+      return `<div class="vs-modal-overlay" id="userModal" style="display:none">
               <div class="vs-modal" style="max-width:680px">
                 <div class="vs-modal-header">
                   <h5 id="userModalTitle">Add User</h5>
                   <button class="vs-modal-close" id="userModalClose">&times;</button>
                 </div>
                 <form id="userModalForm" novalidate>
-                  ${_csrfInput('umCsrf')}
+                  ${_csrfInput("umCsrf")}
                   <input type="hidden" name="user_id" id="umUserId" value="">
                   <div class="vs-modal-body">
                     <div id="userModalAlert"></div>
@@ -363,10 +364,10 @@ var ModalInstance = (function () {
                 </form>
               </div>
             </div>`;
-        },
+    },
 
-        deactivateModal: function () {
-            return `<div class="vs-modal-overlay" id="deactivateModal" style="display:none">
+    deactivateModal: function () {
+      return `<div class="vs-modal-overlay" id="deactivateModal" style="display:none">
               <div class="vs-modal" style="max-width:680px">
                 <div class="vs-modal-header">
                   <h5>Deactivate User</h5>
@@ -384,10 +385,10 @@ var ModalInstance = (function () {
                 </div>
               </div>
             </div>`;
-        },
+    },
 
-        archiveCurrentModal: function () {
-            return `<div class="vs-modal-overlay" id="archiveCurrentModal" style="display:none">
+    archiveCurrentModal: function () {
+      return `<div class="vs-modal-overlay" id="archiveCurrentModal" style="display:none">
               <div class="vs-modal" style="max-width:480px">
                 <div class="vs-modal-header">
                   <h5 id="archiveCurrentModalTitle">Archive Current Data</h5>
@@ -409,10 +410,10 @@ var ModalInstance = (function () {
                 </div>
               </div>
             </div>`;
-        },
+    },
 
-        archiveFilterModal: function () {
-            return `<div class="vs-modal-overlay" id="archiveFilterModal" style="display:none">
+    archiveFilterModal: function () {
+      return `<div class="vs-modal-overlay" id="archiveFilterModal" style="display:none">
               <div class="vs-modal" style="max-width:680px">
                 <div class="vs-modal-header">
                   <h5>Advanced Filters</h5>
@@ -479,10 +480,10 @@ var ModalInstance = (function () {
                 </div>
               </div>
             </div>`;
-        },
+    },
 
-        auditFilterModal: function () {
-            return `<div class="vs-modal-overlay" id="auditFilterModal" style="display:none">
+    auditFilterModal: function () {
+      return `<div class="vs-modal-overlay" id="auditFilterModal" style="display:none">
                 <div class="vs-modal" style="max-width:680px">
                     <div class="vs-modal-header">
                         <h5>Advanced Filters</h5>
@@ -511,10 +512,10 @@ var ModalInstance = (function () {
                     </div>
                 </div>
             </div>`;
-        },
+    },
 
-        schoolArchiveModal: function () {
-            return `<div class="vs-modal-overlay" id="schoolArchiveModal" style="display:none">
+    schoolArchiveModal: function () {
+      return `<div class="vs-modal-overlay" id="schoolArchiveModal" style="display:none">
                 <div class="vs-modal">
                     <div class="vs-modal-header">
                         <h5>Archive Schools</h5>
@@ -533,10 +534,10 @@ var ModalInstance = (function () {
                     </div>
                 </div>
             </div>`;
-        },
+    },
 
-        schoolExportModal: function () {
-            return `<div class="vs-modal-overlay" id="schoolExportModal" style="display:none">
+    schoolExportModal: function () {
+      return `<div class="vs-modal-overlay" id="schoolExportModal" style="display:none">
                 <div class="vs-modal">
                     <div class="vs-modal-header">
                         <h5>Export Schools</h5>
@@ -545,23 +546,23 @@ var ModalInstance = (function () {
                     <div class="vs-modal-body">
                         <p>Choose the file format to export the selected school records.</p>
                         <div class="d-flex gap-3 mt-3">
-                            <a href="${_u('schoolExport')}?format=excel" id="exportExcelLink" class="vs-btn vs-btn-outline flex-fill text-center">Excel (.xlsx)</a>
-                            <a href="${_u('schoolExport')}?format=csv" id="exportCsvLink" class="vs-btn vs-btn-outline flex-fill text-center">CSV (.csv)</a>
+                            <a href="${_u("schoolExport")}?format=excel" id="exportExcelLink" class="vs-btn vs-btn-outline flex-fill text-center">Excel (.xlsx)</a>
+                            <a href="${_u("schoolExport")}?format=csv" id="exportCsvLink" class="vs-btn vs-btn-outline flex-fill text-center">CSV (.csv)</a>
                         </div>
                     </div>
                 </div>
             </div>`;
-        },
+    },
 
-        schoolModal: function () {
-            return `<div class="vs-modal-overlay" id="schoolModal" style="display:none">
+    schoolModal: function () {
+      return `<div class="vs-modal-overlay" id="schoolModal" style="display:none">
                 <div class="vs-modal" style="max-width:480px">
                     <div class="vs-modal-header">
                         <h5 id="schoolModalTitle">Add School</h5>
                         <button class="vs-modal-close" id="schoolModalClose">&times;</button>
                     </div>
                     <form id="schoolModalForm" novalidate>
-                        ${_csrfInput('smCsrf')}
+                        ${_csrfInput("smCsrf")}
                         <input type="hidden" name="school_id" id="smSchoolId" value="">
                         <div class="vs-modal-body">
                             <div id="schoolModalAlert"></div>
@@ -592,17 +593,17 @@ var ModalInstance = (function () {
                     </form>
                 </div>
             </div>`;
-        },
+    },
 
-        schoolImportModal: function () {
-            return `<div class="vs-modal-overlay" id="schoolImportModal" style="display:none">
+    schoolImportModal: function () {
+      return `<div class="vs-modal-overlay" id="schoolImportModal" style="display:none">
                 <div class="vs-modal">
                     <div class="vs-modal-header">
                         <h5>Import Schools</h5>
                         <button class="vs-modal-close" id="schoolImportClose">&times;</button>
                     </div>
                     <form id="schoolImportForm" novalidate enctype="multipart/form-data">
-                        ${_csrfInput('siCsrf')}
+                        ${_csrfInput("siCsrf")}
                         <div class="vs-modal-body">
                             <div id="schoolImportAlert"></div>
                             <p class="text-muted small mb-3">
@@ -621,10 +622,10 @@ var ModalInstance = (function () {
                     </form>
                 </div>
             </div>`;
-        },
+    },
 
-        sigArchiveModal: function () {
-            return `<div class="vs-modal-overlay" id="sigArchiveModal" style="display:none">
+    sigArchiveModal: function () {
+      return `<div class="vs-modal-overlay" id="sigArchiveModal" style="display:none">
               <div class="vs-modal">
                 <div class="vs-modal-header">
                   <h5>Archive Signatories</h5>
@@ -642,25 +643,46 @@ var ModalInstance = (function () {
                 </div>
               </div>
             </div>`;
-        },
+    },
 
-        signatoryModal: function () {
-            var prefixOpts = ['DR.', 'ENGR.', 'HON.', 'MR.', 'MRS.', 'MS.', 'PROF.'];
-            var suffixOpts = ['JR.', 'SR.', 'II', 'III', 'IV', 'V'];
-            var degreeOpts = ['None', 'MPA', 'BSc', 'BA', 'Master', 'MSc', 'MA', 'MBA', 'Doctorate', 'PhD', 'MD', 'JD', 'LLB', 'DDS', 'EdD', 'Other'];
+    signatoryModal: function () {
+      var prefixOpts = ["DR.", "ENGR.", "HON.", "MR.", "MRS.", "MS.", "PROF."];
+      var suffixOpts = ["JR.", "SR.", "II", "III", "IV", "V"];
+      var degreeOpts = [
+        "None",
+        "MPA",
+        "BSc",
+        "BA",
+        "Master",
+        "MSc",
+        "MA",
+        "MBA",
+        "Doctorate",
+        "PhD",
+        "MD",
+        "JD",
+        "LLB",
+        "DDS",
+        "EdD",
+        "Other",
+      ];
 
-            function _staticOpts(arr) {
-                return arr.map(function(v) { return `<option value="${v}">${v}</option>`; }).join('');
-            }
+      function _staticOpts(arr) {
+        return arr
+          .map(function (v) {
+            return `<option value="${v}">${v}</option>`;
+          })
+          .join("");
+      }
 
-            return `<div class="vs-modal-overlay" id="signatoryModal" style="display:none">
-              <div class="vs-modal" style="max-width:680px">
+      return `<div class="vs-modal-overlay" id="signatoryModal" style="display:none">
+              <div class="vs-modal vs-modal-md">
                 <div class="vs-modal-header">
                   <h5 id="signatoryModalTitle">Add Signatory</h5>
                   <button class="vs-modal-close" id="signatoryModalClose">&times;</button>
                 </div>
                 <form id="signatoryModalForm" novalidate enctype="multipart/form-data">
-                  ${_csrfInput('sigCsrf')}
+                  ${_csrfInput("sigCsrf")}
                   <input type="hidden" name="signatory_id" id="smSignatoryId" value="">
                   <div class="vs-modal-body">
                     <div id="signatoryModalAlert"></div>
@@ -729,10 +751,10 @@ var ModalInstance = (function () {
                 </form>
               </div>
             </div>`;
-        },
+    },
 
-        pdfStatusModal: function () {
-            return `<div class="vs-modal-overlay" id="pdfStatusModal" style="display:none">
+    pdfStatusModal: function () {
+      return `<div class="vs-modal-overlay" id="pdfStatusModal" style="display:none">
               <div class="vs-modal">
                 <div class="vs-modal-header">
                   <h5>Voucher Generation Status</h5>
@@ -752,10 +774,10 @@ var ModalInstance = (function () {
                 </div>
               </div>
             </div>`;
-        },
+    },
 
-        accountModal: function () {
-            return `<div class="vs-modal-overlay" id="accountModal" style="display:none">
+    accountModal: function () {
+      return `<div class="vs-modal-overlay" id="accountModal" style="display:none">
                 <div class="vs-modal" style="max-width:920px">
                     <div class="vs-modal-header align-items-start">
                         <div>
@@ -838,269 +860,359 @@ var ModalInstance = (function () {
                     </div>
                 </div>
             </div>`;
-        }
+    },
+  };
+
+  /* ── rendered registry ───────────────────────── */
+
+  var _rendered = {};
+
+  function render(names) {
+    if (!Array.isArray(names)) names = [names];
+    names.forEach(function (name) {
+      if (_rendered[name]) return;
+      var fn = _tpl[name];
+      if (!fn) {
+        console.warn('ModalInstance: unknown modal "' + name + '"');
+        return;
+      }
+      document.body.insertAdjacentHTML("beforeend", fn());
+      _rendered[name] = true;
+    });
+  }
+
+  /* ── option population helpers ───────────────── */
+
+  function _urlParam(key) {
+    return new URLSearchParams(window.location.search).get(key) || "";
+  }
+
+  function _buildOpts(selectId, items, getVal, getTxt, selectedVal) {
+    var sel = document.getElementById(selectId);
+    if (!sel) return;
+    var blank = sel.options[0];
+    sel.innerHTML = "";
+    if (blank) sel.appendChild(blank);
+    (items || []).forEach(function (item) {
+      var v = getVal(item),
+        t = getTxt(item);
+      var opt = document.createElement("option");
+      opt.value = v;
+      opt.textContent = t;
+      if (v && v === selectedVal) opt.selected = true;
+      sel.appendChild(opt);
+    });
+  }
+
+  function _schoolVal(s) {
+    return typeof s === "object"
+      ? s.school_id
+        ? String(s.school_id)
+        : s.school_name
+      : s;
+  }
+  function _schoolTxt(s) {
+    return typeof s === "object" ? s.school_name || "" : s;
+  }
+  function _schoolName(s) {
+    return typeof s === "object" ? s.school_name || "" : s;
+  }
+
+  function populate(name, data) {
+    data = data || {};
+    var fo = data.filterOptions || {};
+
+    switch (name) {
+      case "filterModal":
+        _buildOpts(
+          "filterJuniorHs",
+          fo.junior_high_schools,
+          _schoolVal,
+          _schoolTxt,
+          _urlParam("junior_hs"),
+        );
+        _buildOpts(
+          "filterPreferredHs",
+          fo.senior_high_schools,
+          _schoolVal,
+          _schoolTxt,
+          _urlParam("preferred_hs"),
+        );
+        break;
+
+      case "voucherModal":
+        _buildOpts(
+          "vmJuniorHs",
+          fo.junior_high_schools,
+          _schoolVal,
+          _schoolTxt,
+          null,
+        );
+        _buildOpts(
+          "vmPreferredHs",
+          fo.senior_high_schools,
+          _schoolVal,
+          _schoolTxt,
+          null,
+        );
+        break;
+
+      case "archiveFilterModal":
+        _buildOpts(
+          "afSchoolYear",
+          data.schoolYears,
+          function (s) {
+            return s;
+          },
+          function (s) {
+            return s;
+          },
+          _urlParam("school_year"),
+        );
+        _buildOpts(
+          "afJuniorHs",
+          data.juniorHighSchools,
+          _schoolName,
+          _schoolName,
+          _urlParam("junior_hs"),
+        );
+        _buildOpts(
+          "afPreferredHs",
+          data.seniorHighSchools,
+          _schoolName,
+          _schoolName,
+          _urlParam("preferred_hs"),
+        );
+        break;
+
+      case "auditFilterModal":
+        _buildOpts(
+          "auditFilterAction",
+          data.actionOptions,
+          function (s) {
+            return typeof s === "object" ? s.action || "" : s;
+          },
+          function (s) {
+            return typeof s === "object" ? s.action || "" : s;
+          },
+          _urlParam("action"),
+        );
+        var dtFrom = document.getElementById("auditFilterDateFrom");
+        var dtTo = document.getElementById("auditFilterDateTo");
+        if (dtFrom) dtFrom.value = _urlParam("date_from");
+        if (dtTo) dtTo.value = _urlParam("date_to");
+        break;
+    }
+  }
+
+  /* ── set static filter inputs from URL ───────── */
+
+  function _syncFilterInputs() {
+    var inputMap = {
+      filterDateFrom: "date_from",
+      filterDateTo: "date_to",
+      filterGwaMin: "gwa_min",
+      filterGwaMax: "gwa_max",
+      afDateFrom: "date_from",
+      afDateTo: "date_to",
+      afGwaMin: "gwa_min",
+      afGwaMax: "gwa_max",
+      filterOtherRemarks: "other_remarks",
+      afOtherRemarks: "other_remarks",
     };
+    Object.keys(inputMap).forEach(function (id) {
+      var el = document.getElementById(id);
+      if (el) el.value = _urlParam(inputMap[id]);
+    });
 
-    /* ── rendered registry ───────────────────────── */
-
-    var _rendered = {};
-
-    function render(names) {
-        if (!Array.isArray(names)) names = [names];
-        names.forEach(function (name) {
-            if (_rendered[name]) return;
-            var fn = _tpl[name];
-            if (!fn) { console.warn('ModalInstance: unknown modal "' + name + '"'); return; }
-            document.body.insertAdjacentHTML('beforeend', fn());
-            _rendered[name] = true;
-        });
-    }
-
-    /* ── option population helpers ───────────────── */
-
-    function _urlParam(key) {
-        return new URLSearchParams(window.location.search).get(key) || '';
-    }
-
-    function _buildOpts(selectId, items, getVal, getTxt, selectedVal) {
-        var sel = document.getElementById(selectId);
-        if (!sel) return;
-        var blank = sel.options[0];
-        sel.innerHTML = '';
-        if (blank) sel.appendChild(blank);
-        (items || []).forEach(function (item) {
-            var v = getVal(item), t = getTxt(item);
-            var opt = document.createElement('option');
-            opt.value = v; opt.textContent = t;
-            if (v && v === selectedVal) opt.selected = true;
-            sel.appendChild(opt);
-        });
-    }
-
-    function _schoolVal(s) { return typeof s === 'object' ? (s.school_id ? String(s.school_id) : s.school_name) : s; }
-    function _schoolTxt(s) { return typeof s === 'object' ? (s.school_name || '') : s; }
-    function _schoolName(s) { return typeof s === 'object' ? (s.school_name || '') : s; }
-
-    function populate(name, data) {
-        data = data || {};
-        var fo = data.filterOptions || {};
-
-        switch (name) {
-
-            case 'filterModal':
-                _buildOpts('filterJuniorHs',  fo.junior_high_schools, _schoolVal, _schoolTxt, _urlParam('junior_hs'));
-                _buildOpts('filterPreferredHs', fo.senior_high_schools, _schoolVal, _schoolTxt, _urlParam('preferred_hs'));
-                break;
-
-            case 'voucherModal':
-                _buildOpts('vmJuniorHs',   fo.junior_high_schools, _schoolVal, _schoolTxt, null);
-                _buildOpts('vmPreferredHs', fo.senior_high_schools, _schoolVal, _schoolTxt, null);
-                break;
-
-            case 'archiveFilterModal':
-                _buildOpts('afSchoolYear', data.schoolYears, function(s){return s;}, function(s){return s;}, _urlParam('school_year'));
-                _buildOpts('afJuniorHs',   data.juniorHighSchools, _schoolName, _schoolName, _urlParam('junior_hs'));
-                _buildOpts('afPreferredHs', data.seniorHighSchools, _schoolName, _schoolName, _urlParam('preferred_hs'));
-                break;
-
-            case 'auditFilterModal':
-                _buildOpts('auditFilterAction', data.actionOptions,
-                    function(s){ return typeof s === 'object' ? (s.action || '') : s; },
-                    function(s){ return typeof s === 'object' ? (s.action || '') : s; },
-                    _urlParam('action')
-                );
-                var dtFrom = document.getElementById('auditFilterDateFrom');
-                var dtTo   = document.getElementById('auditFilterDateTo');
-                if (dtFrom) dtFrom.value = _urlParam('date_from');
-                if (dtTo)   dtTo.value   = _urlParam('date_to');
-                break;
+    var selectMap = {
+      filterGender: "gender",
+      filterRemarks: "remarks",
+      filterVoucherStatus: "voucher_status",
+      // filterEligibility:   'eligibility',
+      afGender: "gender",
+      afRemarks: "remarks",
+      afVoucherStatus: "voucher_status",
+    };
+    Object.keys(selectMap).forEach(function (id) {
+      var el = document.getElementById(id);
+      var val = _urlParam(selectMap[id]);
+      if (!el || !val) return;
+      var matched = false;
+      for (var i = 0; i < el.options.length; i++) {
+        if (el.options[i].value === val) {
+          el.options[i].selected = true;
+          matched = true;
+          break;
         }
+      }
+      if (!matched && el.dataset.tags === "1") {
+        var opt = document.createElement("option");
+        opt.value = val;
+        opt.textContent = val;
+        opt.selected = true;
+        el.appendChild(opt);
+      }
+    });
+  }
+
+  /* ── show/hide "Other Remarks" filter alongside Remarks=OTHERS ── */
+
+  function _toggleOtherRemarksFilter(selectId, wrapId, inputId) {
+    var sel = document.getElementById(selectId);
+    var wrap = document.getElementById(wrapId);
+    var input = document.getElementById(inputId);
+    if (!sel || !wrap || !input) return;
+    var isOthers = String(sel.value || "").toUpperCase() === "OTHERS";
+    wrap.style.display = isOthers ? "" : "none";
+    input.disabled = !isOthers;
+    if (!isOthers) input.value = "";
+  }
+
+  function _initOtherRemarksFilters() {
+    [
+      ["filterRemarks", "filterOtherRemarksWrap", "filterOtherRemarks"],
+      ["afRemarks", "afOtherRemarksWrap", "afOtherRemarks"],
+    ].forEach(function (ids) {
+      var selectId = ids[0],
+        wrapId = ids[1],
+        inputId = ids[2];
+      if (!document.getElementById(selectId)) return;
+      _toggleOtherRemarksFilter(selectId, wrapId, inputId);
+      document.addEventListener("change", function (e) {
+        if (e.target && e.target.id === selectId)
+          _toggleOtherRemarksFilter(selectId, wrapId, inputId);
+      });
+    });
+  }
+
+  /* ── account modal logic ─────────────────────── */
+
+  function _initAccountModal() {
+    var overlay = document.getElementById("accountModal");
+    var closeBtn = document.getElementById("accountModalClose");
+    var cancelBtn = document.getElementById("accountModalCancel");
+    var saveBtn = document.getElementById("accountModalSave");
+    var openBtn = document.getElementById("btnOpenAccountModal");
+    var msgBox = document.getElementById("accountModalMsg");
+    var csrfInput = document.getElementById("amCsrf");
+    if (!overlay || !openBtn) return;
+
+    var dataUrl = _u("profileData");
+    var updateUrl = _u("profileUpdate");
+
+    function _open() {
+      overlay.style.display = "flex";
+      msgBox.style.display = "none";
+      msgBox.className = "mb-3";
+      document.getElementById("amCurrentPw").value = "";
+      document.getElementById("amNewPw").value = "";
+      document.getElementById("amConfirmPw").value = "";
+      fetch(dataUrl, { headers: { "X-Requested-With": "XMLHttpRequest" } })
+        .then(function (r) {
+          return r.json();
+        })
+        .then(function (d) {
+          document.getElementById("amUsername").value = d.username || "";
+          document.getElementById("amEmail").value = d.email || "";
+          document.getElementById("amRole").textContent = d.role || "";
+          document.getElementById("amFirstName").value = d.first_name || "";
+          document.getElementById("amMiddleName").value = d.middle_name || "";
+          document.getElementById("amLastName").value = d.last_name || "";
+        });
     }
 
-    /* ── set static filter inputs from URL ───────── */
+    function _close() {
+      overlay.style.display = "none";
+    }
 
-    function _syncFilterInputs() {
-        var inputMap = {
-            filterDateFrom: 'date_from',  filterDateTo: 'date_to',
-            filterGwaMin:   'gwa_min',    filterGwaMax: 'gwa_max',
-            afDateFrom:     'date_from',  afDateTo:     'date_to',
-            afGwaMin:       'gwa_min',    afGwaMax:     'gwa_max',
-            filterOtherRemarks: 'other_remarks',
-            afOtherRemarks:     'other_remarks',
-        };
-        Object.keys(inputMap).forEach(function (id) {
-            var el = document.getElementById(id);
-            if (el) el.value = _urlParam(inputMap[id]);
-        });
+    openBtn.addEventListener("click", _open);
+    closeBtn.addEventListener("click", _close);
+    cancelBtn.addEventListener("click", _close);
+    overlay.addEventListener("click", function (e) {
+      if (e.target === overlay) _close();
+    });
 
-        var selectMap = {
-            filterGender:        'gender',
-            filterRemarks:       'remarks',
-            filterVoucherStatus: 'voucher_status',
-            // filterEligibility:   'eligibility',
-            afGender:            'gender',
-            afRemarks:           'remarks',
-            afVoucherStatus:     'voucher_status',
-        };
-        Object.keys(selectMap).forEach(function (id) {
-            var el = document.getElementById(id);
-            var val = _urlParam(selectMap[id]);
-            if (!el || !val) return;
-            var matched = false;
-            for (var i = 0; i < el.options.length; i++) {
-                if (el.options[i].value === val) { el.options[i].selected = true; matched = true; break; }
+    saveBtn.addEventListener("click", function () {
+      if (typeof refreshCsrfToken === "function") refreshCsrfToken();
+      saveBtn.disabled = true;
+      saveBtn.textContent = "Saving…";
+      fetch(updateUrl, {
+        method: "POST",
+        headers: { "X-Requested-With": "XMLHttpRequest" },
+        body: new FormData(document.getElementById("accountModalForm")),
+      })
+        .then(function (r) {
+          return r.json();
+        })
+        .then(function (data) {
+          msgBox.style.display = "";
+          if (data.csrf_value) csrfInput.value = data.csrf_value;
+          if (data.success) {
+            msgBox.className = "mb-3 vs-alert vs-alert-success";
+            msgBox.textContent = data.message;
+            if (data.full_name) {
+              openBtn.textContent = (
+                data.full_name.trim().charAt(0) || "U"
+              ).toUpperCase();
+              openBtn.title = data.full_name;
             }
-            if (!matched && el.dataset.tags === '1') {
-                var opt = document.createElement('option');
-                opt.value = val;
-                opt.textContent = val;
-                opt.selected = true;
-                el.appendChild(opt);
-            }
+          } else {
+            msgBox.className = "mb-3 vs-alert vs-alert-error";
+            var msg = data.message || "An error occurred.";
+            if (data.errors) msg += " " + Object.values(data.errors).join(" ");
+            msgBox.textContent = msg;
+          }
+        })
+        .catch(function () {
+          msgBox.style.display = "";
+          msgBox.className = "mb-3 vs-alert vs-alert-error";
+          msgBox.textContent = "Network error. Please try again.";
+        })
+        .finally(function () {
+          saveBtn.disabled = false;
+          saveBtn.textContent = "Save Account";
         });
+    });
+  }
+
+  /* ── auto-initialise ─────────────────────────── */
+
+  function _autoInit() {
+    // Render modals declared by views via data-vs-modals attributes
+    document.querySelectorAll("[data-vs-modals]").forEach(function (el) {
+      var names = el
+        .getAttribute("data-vs-modals")
+        .split(",")
+        .map(function (n) {
+          return n.trim();
+        })
+        .filter(Boolean);
+      render(names);
+    });
+
+    // Populate dynamic selects using page-specific data
+    var pd = _VS.pageData || {};
+
+    if (pd.filterOptions) {
+      if (_rendered.filterModal) populate("filterModal", pd);
+      if (_rendered.voucherModal) populate("voucherModal", pd);
+    }
+    if (pd.schoolYears !== undefined || pd.juniorHighSchools !== undefined) {
+      if (_rendered.archiveFilterModal) populate("archiveFilterModal", pd);
+    }
+    if (pd.actionOptions) {
+      if (_rendered.auditFilterModal) populate("auditFilterModal", pd);
     }
 
-    /* ── show/hide "Other Remarks" filter alongside Remarks=OTHERS ── */
+    _syncFilterInputs();
+    _initOtherRemarksFilters();
 
-    function _toggleOtherRemarksFilter(selectId, wrapId, inputId) {
-        var sel   = document.getElementById(selectId);
-        var wrap  = document.getElementById(wrapId);
-        var input = document.getElementById(inputId);
-        if (!sel || !wrap || !input) return;
-        var isOthers = String(sel.value || '').toUpperCase() === 'OTHERS';
-        wrap.style.display = isOthers ? '' : 'none';
-        input.disabled = !isOthers;
-        if (!isOthers) input.value = '';
-    }
+    if (_rendered.accountModal) _initAccountModal();
+    document.dispatchEvent(new CustomEvent("vs:modals:ready"));
+  }
 
-    function _initOtherRemarksFilters() {
-        [
-            ['filterRemarks', 'filterOtherRemarksWrap', 'filterOtherRemarks'],
-            ['afRemarks',     'afOtherRemarksWrap',     'afOtherRemarks'],
-        ].forEach(function (ids) {
-            var selectId = ids[0], wrapId = ids[1], inputId = ids[2];
-            if (!document.getElementById(selectId)) return;
-            _toggleOtherRemarksFilter(selectId, wrapId, inputId);
-            document.addEventListener('change', function (e) {
-                if (e.target && e.target.id === selectId) _toggleOtherRemarksFilter(selectId, wrapId, inputId);
-            });
-        });
-    }
+  document.addEventListener("DOMContentLoaded", _autoInit);
 
-    /* ── account modal logic ─────────────────────── */
-
-    function _initAccountModal() {
-        var overlay   = document.getElementById('accountModal');
-        var closeBtn  = document.getElementById('accountModalClose');
-        var cancelBtn = document.getElementById('accountModalCancel');
-        var saveBtn   = document.getElementById('accountModalSave');
-        var openBtn   = document.getElementById('btnOpenAccountModal');
-        var msgBox    = document.getElementById('accountModalMsg');
-        var csrfInput = document.getElementById('amCsrf');
-        if (!overlay || !openBtn) return;
-
-        var dataUrl   = _u('profileData');
-        var updateUrl = _u('profileUpdate');
-
-        function _open() {
-            overlay.style.display = 'flex';
-            msgBox.style.display = 'none';
-            msgBox.className = 'mb-3';
-            document.getElementById('amCurrentPw').value = '';
-            document.getElementById('amNewPw').value = '';
-            document.getElementById('amConfirmPw').value = '';
-            fetch(dataUrl, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
-                .then(function (r) { return r.json(); })
-                .then(function (d) {
-                    document.getElementById('amUsername').value   = d.username    || '';
-                    document.getElementById('amEmail').value      = d.email       || '';
-                    document.getElementById('amRole').textContent = d.role        || '';
-                    document.getElementById('amFirstName').value  = d.first_name  || '';
-                    document.getElementById('amMiddleName').value = d.middle_name || '';
-                    document.getElementById('amLastName').value   = d.last_name   || '';
-                });
-        }
-
-        function _close() { overlay.style.display = 'none'; }
-
-        openBtn.addEventListener('click', _open);
-        closeBtn.addEventListener('click', _close);
-        cancelBtn.addEventListener('click', _close);
-        overlay.addEventListener('click', function (e) { if (e.target === overlay) _close(); });
-
-        saveBtn.addEventListener('click', function () {
-            if (typeof refreshCsrfToken === 'function') refreshCsrfToken();
-            saveBtn.disabled = true;
-            saveBtn.textContent = 'Saving…';
-            fetch(updateUrl, {
-                method: 'POST',
-                headers: { 'X-Requested-With': 'XMLHttpRequest' },
-                body: new FormData(document.getElementById('accountModalForm')),
-            })
-                .then(function (r) { return r.json(); })
-                .then(function (data) {
-                    msgBox.style.display = '';
-                    if (data.csrf_value) csrfInput.value = data.csrf_value;
-                    if (data.success) {
-                        msgBox.className = 'mb-3 vs-alert vs-alert-success';
-                        msgBox.textContent = data.message;
-                        if (data.full_name) {
-                            openBtn.textContent = (data.full_name.trim().charAt(0) || 'U').toUpperCase();
-                            openBtn.title = data.full_name;
-                        }
-                    } else {
-                        msgBox.className = 'mb-3 vs-alert vs-alert-error';
-                        var msg = data.message || 'An error occurred.';
-                        if (data.errors) msg += ' ' + Object.values(data.errors).join(' ');
-                        msgBox.textContent = msg;
-                    }
-                })
-                .catch(function () {
-                    msgBox.style.display = '';
-                    msgBox.className = 'mb-3 vs-alert vs-alert-error';
-                    msgBox.textContent = 'Network error. Please try again.';
-                })
-                .finally(function () {
-                    saveBtn.disabled = false;
-                    saveBtn.textContent = 'Save Account';
-                });
-        });
-    }
-
-    /* ── auto-initialise ─────────────────────────── */
-
-    function _autoInit() {
-        // Render modals declared by views via data-vs-modals attributes
-        document.querySelectorAll('[data-vs-modals]').forEach(function (el) {
-            var names = el.getAttribute('data-vs-modals').split(',')
-                .map(function (n) { return n.trim(); })
-                .filter(Boolean);
-            render(names);
-        });
-
-        // Populate dynamic selects using page-specific data
-        var pd = (_VS.pageData || {});
-
-        if (pd.filterOptions) {
-            if (_rendered.filterModal)  populate('filterModal',  pd);
-            if (_rendered.voucherModal) populate('voucherModal', pd);
-        }
-        if (pd.schoolYears !== undefined || pd.juniorHighSchools !== undefined) {
-            if (_rendered.archiveFilterModal) populate('archiveFilterModal', pd);
-        }
-        if (pd.actionOptions) {
-            if (_rendered.auditFilterModal) populate('auditFilterModal', pd);
-        }
-
-        _syncFilterInputs();
-        _initOtherRemarksFilters();
-
-        if (_rendered.accountModal) _initAccountModal();
-        document.dispatchEvent(new CustomEvent('vs:modals:ready'));
-    }
-
-    document.addEventListener('DOMContentLoaded', _autoInit);
-
-    return { render: render, populate: populate };
-
-}());
+  return { render: render, populate: populate };
+})();

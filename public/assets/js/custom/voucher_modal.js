@@ -1,113 +1,159 @@
 /* Voucher Add / View / Edit modal — loaded via scripts section after pre_script */
-document.addEventListener('DOMContentLoaded', function () {
-  var cfg              = window.VM_CONFIG || {};
-  var saveStudentUrl   = cfg.saveUrl          || '';
-  var fetchStudentUrl  = cfg.fetchUrl         || '';
-  var schoolOptionsUrl = cfg.schoolOptionsUrl || '';
+document.addEventListener("DOMContentLoaded", function () {
+  var cfg = window.VM_CONFIG || {};
+  var saveStudentUrl = cfg.saveUrl || "";
+  var fetchStudentUrl = cfg.fetchUrl || "";
+  var schoolOptionsUrl = cfg.schoolOptionsUrl || "";
 
-  var voucherModal       = document.getElementById('voucherModal');
-  var voucherModalForm   = document.getElementById('voucherModalForm');
-  var voucherModalTitle  = document.getElementById('voucherModalTitle');
-  var voucherModalClose  = document.getElementById('voucherModalClose');
-  var voucherModalCancel = document.getElementById('voucherModalCancel');
-  var voucherModalAlert  = document.getElementById('voucherModalAlert');
-  var voucherSubmitBtn   = document.getElementById('voucherModalSubmit');
-  var vmSubmitText       = document.getElementById('vmSubmitText');
-  var vmSubmitSpinner    = document.getElementById('vmSubmitSpinner');
-  var btnAddVoucher      = document.getElementById('btnAddVoucher');
+  var voucherModal = document.getElementById("voucherModal");
+  var voucherModalForm = document.getElementById("voucherModalForm");
+  var voucherModalTitle = document.getElementById("voucherModalTitle");
+  var voucherModalClose = document.getElementById("voucherModalClose");
+  var voucherModalCancel = document.getElementById("voucherModalCancel");
+  var voucherModalAlert = document.getElementById("voucherModalAlert");
+  var voucherSubmitBtn = document.getElementById("voucherModalSubmit");
+  var vmSubmitText = document.getElementById("vmSubmitText");
+  var vmSubmitSpinner = document.getElementById("vmSubmitSpinner");
+  var btnAddVoucher = document.getElementById("btnAddVoucher");
 
-  var vmVoucherNoWrap       = document.getElementById('vmVoucherNoWrap');
-  var vmVoucherNoDisplay    = document.getElementById('vmVoucherNoDisplay');
-  var vmVoucherDateWrap     = document.getElementById('vmVoucherDateWrap');
-  var vmLastGeneratedByWrap = document.getElementById('vmLastGeneratedByWrap');
-  var vmLastGeneratedByEl   = document.getElementById('vmLastGeneratedBy');
-  var vmLastGeneratedAtEl   = document.getElementById('vmLastGeneratedAt');
-  var vmGenerationHistoryDetails = document.getElementById('vmGenerationHistoryDetails');
-  var vmGenerationHistoryList = document.getElementById('vmGenerationHistoryList');
-  var vmOtherRemarksWrap = document.getElementById('vmOtherRemarksWrap');
-  var vmOtherRemarksInput = document.getElementById('vmOtherRemarks');
+  var vmVoucherNoWrap = document.getElementById("vmVoucherNoWrap");
+  var vmVoucherNoDisplay = document.getElementById("vmVoucherNoDisplay");
+  var vmVoucherDateWrap = document.getElementById("vmVoucherDateWrap");
+  var vmLastGeneratedByWrap = document.getElementById("vmLastGeneratedByWrap");
+  var vmLastGeneratedByEl = document.getElementById("vmLastGeneratedBy");
+  var vmLastGeneratedAtEl = document.getElementById("vmLastGeneratedAt");
+  var vmGenerationHistoryDetails = document.getElementById(
+    "vmGenerationHistoryDetails",
+  );
+  var vmGenerationHistoryList = document.getElementById(
+    "vmGenerationHistoryList",
+  );
+  var vmOtherRemarksWrap = document.getElementById("vmOtherRemarksWrap");
+  var vmOtherRemarksInput = document.getElementById("vmOtherRemarks");
 
   var vmFieldIds = [
-    'vmControlNo', 'vmVoucherDate', 'vmFirstName', 'vmMiddleName', 'vmLastName',
-    'vmSuffix', 'vmGender', 'vmGwa', 'vmRankNo', 'vmContactNumber',
-    'vmJuniorHs', 'vmPreferredHs', 'vmRemarks', 'vmOtherRemarks', 'vmEvaluatedBy', /* 'vmEligibility', */
+    "vmControlNo",
+    "vmVoucherDate",
+    "vmFirstName",
+    "vmMiddleName",
+    "vmLastName",
+    "vmSuffix",
+    "vmGender",
+    "vmGwa",
+    "vmRankNo",
+    "vmContactNumber",
+    "vmJuniorHs",
+    "vmPreferredHs",
+    "vmRemarks",
+    "vmOtherRemarks",
+    "vmEvaluatedBy" /* 'vmEligibility', */,
   ];
   var vmFieldToName = {
-    vmControlNo:     'control_no',
-    vmEvaluatedBy:   'evaluated_by',
-    vmVoucherDate:   'voucher_date',
-    vmFirstName:     'first_name',
-    vmMiddleName:    'middle_name',
-    vmLastName:      'last_name',
-    vmSuffix:        'suffix',
-    vmGender:        'gender',
-    vmGwa:           'gwa',
-    vmRankNo:        'rank_no',
-    vmContactNumber: 'contact_number',
-    vmJuniorHs:      'junior_high_school',
-    vmPreferredHs:   'preferred_senior_high_school',
-    vmRemarks:       'remarks_status',
-    vmOtherRemarks:  'other_remarks',
+    vmControlNo: "control_no",
+    vmEvaluatedBy: "evaluated_by",
+    vmVoucherDate: "voucher_date",
+    vmFirstName: "first_name",
+    vmMiddleName: "middle_name",
+    vmLastName: "last_name",
+    vmSuffix: "suffix",
+    vmGender: "gender",
+    vmGwa: "gwa",
+    vmRankNo: "rank_no",
+    vmContactNumber: "contact_number",
+    vmJuniorHs: "junior_high_school",
+    vmPreferredHs: "preferred_senior_high_school",
+    vmRemarks: "remarks_status",
+    vmOtherRemarks: "other_remarks",
     // vmEligibility:   'eligibility_status',
   };
 
   function escapeHtml(v) {
-    return String(v || '').replace(/[&<>"']/g, function (c) {
-      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[c];
+    return String(v || "").replace(/[&<>"']/g, function (c) {
+      return {
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        '"': "&quot;",
+        "'": "&#039;",
+      }[c];
     });
   }
 
   function vmFormatDateTime(value) {
-    if (!value) return '';
-    var normalized = String(value).replace(' ', 'T');
+    if (!value) return "";
+    var normalized = String(value).replace(" ", "T");
     var d = new Date(normalized);
     if (Number.isNaN(d.getTime())) return String(value);
     return d.toLocaleString(undefined, {
-      year: 'numeric',
-      month: 'short',
-      day: '2-digit',
-      hour: 'numeric',
-      minute: '2-digit'
+      year: "numeric",
+      month: "short",
+      day: "2-digit",
+      hour: "numeric",
+      minute: "2-digit",
     });
   }
 
   function vmRenderGenerationHistory(student) {
-    var history = Array.isArray(student.generation_history) ? student.generation_history : [];
-    var latestAt = student.last_generated_at || student.generated_at || '';
+    var history = Array.isArray(student.generation_history)
+      ? student.generation_history
+      : [];
+    var latestAt = student.last_generated_at || student.generated_at || "";
 
-    if (vmLastGeneratedByEl) vmLastGeneratedByEl.textContent = student.last_generated_by || '-';
-    if (vmLastGeneratedAtEl) vmLastGeneratedAtEl.textContent = latestAt ? ' | ' + vmFormatDateTime(latestAt) : '';
+    if (vmLastGeneratedByEl)
+      vmLastGeneratedByEl.textContent = student.last_generated_by || "-";
+    if (vmLastGeneratedAtEl)
+      vmLastGeneratedAtEl.textContent = latestAt
+        ? " | " + vmFormatDateTime(latestAt)
+        : "";
 
     if (!vmGenerationHistoryDetails || !vmGenerationHistoryList) return;
 
-    vmGenerationHistoryDetails.style.display = history.length > 0 ? '' : 'none';
+    vmGenerationHistoryDetails.style.display = history.length > 0 ? "" : "none";
     vmGenerationHistoryDetails.open = false;
 
     if (!history.length) {
-      vmGenerationHistoryList.innerHTML = '<div class="vm-generation-history-empty">No generation history yet.</div>';
+      vmGenerationHistoryList.innerHTML =
+        '<div class="vm-generation-history-empty">No generation history yet.</div>';
       return;
     }
 
-    vmGenerationHistoryList.innerHTML = history.map(function (item) {
-      var by = item.generated_by || '-';
-      var at = vmFormatDateTime(item.generated_at);
-      return '<div class="vm-generation-history-item">'
-        + '<span class="vm-generation-history-date">' + escapeHtml(at) + '</span>'
-        + '<span class="vm-generation-history-name">' + escapeHtml(by) + '</span>'
-        + '</div>';
-    }).join('');
+    vmGenerationHistoryList.innerHTML = history
+      .map(function (item) {
+        var by = item.generated_by || "-";
+        var at = vmFormatDateTime(item.generated_at);
+        return (
+          '<div class="vm-generation-history-item">' +
+          '<span class="vm-generation-history-date">' +
+          escapeHtml(at) +
+          "</span>" +
+          '<span class="vm-generation-history-name">' +
+          escapeHtml(by) +
+          "</span>" +
+          "</div>"
+        );
+      })
+      .join("");
   }
 
   function vmShowAlert(msg, type, errors) {
-    var html = '<div class="vs-alert vs-alert-' + (type || 'error') + ' mb-3">' + escapeHtml(msg);
+    var html =
+      '<div class="vs-alert vs-alert-' +
+      (type || "error") +
+      ' mb-3">' +
+      escapeHtml(msg);
     if (errors && Object.keys(errors).length) {
       html += '<ul class="mb-0 mt-2">';
       Object.keys(errors).forEach(function (f) {
-        html += '<li><strong>' + escapeHtml(f) + ':</strong> ' + escapeHtml(errors[f]) + '</li>';
+        html +=
+          "<li><strong>" +
+          escapeHtml(f) +
+          ":</strong> " +
+          escapeHtml(errors[f]) +
+          "</li>";
       });
-      html += '</ul>';
+      html += "</ul>";
     }
-    html += '</div>';
+    html += "</div>";
     voucherModalAlert.innerHTML = html;
   }
 
@@ -119,32 +165,43 @@ document.addEventListener('DOMContentLoaded', function () {
       input.value = token;
     });
   }
-  function vmClearAlert() { voucherModalAlert.innerHTML = ''; }
+  function vmClearAlert() {
+    voucherModalAlert.innerHTML = "";
+  }
 
   function vmToggleOtherRemarks() {
-    var remarksEl = document.getElementById('vmRemarks');
-    var isOther = remarksEl && String(remarksEl.value || '').toUpperCase() === 'OTHERS';
-    if (vmOtherRemarksWrap) vmOtherRemarksWrap.style.display = isOther ? '' : 'none';
+    var remarksEl = document.getElementById("vmRemarks");
+    var isOther =
+      remarksEl && String(remarksEl.value || "").toUpperCase() === "OTHERS";
+    if (vmOtherRemarksWrap)
+      vmOtherRemarksWrap.style.display = isOther ? "" : "none";
     if (vmOtherRemarksInput) {
       vmOtherRemarksInput.required = isOther;
       vmOtherRemarksInput.disabled = !isOther;
-      if (!isOther) vmOtherRemarksInput.value = '';
+      if (!isOther) vmOtherRemarksInput.value = "";
     }
   }
 
   function vmSetFieldValue(el, value) {
     if (!el) return;
-    var v = (value === null || value === undefined) ? '' : value;
-    if (el.tagName === 'SELECT' && el.classList.contains('js-school-select')) {
+    var v = value === null || value === undefined ? "" : value;
+    if (el.tagName === "SELECT" && el.classList.contains("js-school-select")) {
       // Select2 needs the option to exist before setting; add it on the fly.
-      if (v && !el.querySelector('option[value="' + (window.CSS && CSS.escape ? CSS.escape(v) : v) + '"]')) {
-        var opt = document.createElement('option');
+      if (
+        v &&
+        !el.querySelector(
+          'option[value="' +
+            (window.CSS && CSS.escape ? CSS.escape(v) : v) +
+            '"]',
+        )
+      ) {
+        var opt = document.createElement("option");
         opt.value = v;
         opt.textContent = v;
         el.appendChild(opt);
       }
       el.value = v;
-      if (window.jQuery) $(el).trigger('change.select2');
+      if (window.jQuery) $(el).trigger("change.select2");
     } else {
       el.value = v;
     }
@@ -200,21 +257,21 @@ document.addEventListener('DOMContentLoaded', function () {
   */
 
   function vmClearFields() {
-    document.getElementById('vmStudentId').value = '';
+    document.getElementById("vmStudentId").value = "";
     vmFieldIds.forEach(function (id) {
-      vmSetFieldValue(document.getElementById(id), '');
+      vmSetFieldValue(document.getElementById(id), "");
     });
     // document.getElementById('vmEligibility').value = '';
     // vmUpdateRemarksOptions('');
-    if (vmLastGeneratedByEl) vmLastGeneratedByEl.textContent = '-';
-    if (vmLastGeneratedAtEl) vmLastGeneratedAtEl.textContent = '';
+    if (vmLastGeneratedByEl) vmLastGeneratedByEl.textContent = "-";
+    if (vmLastGeneratedAtEl) vmLastGeneratedAtEl.textContent = "";
     if (vmGenerationHistoryDetails) vmGenerationHistoryDetails.open = false;
-    if (vmGenerationHistoryList) vmGenerationHistoryList.innerHTML = '';
+    if (vmGenerationHistoryList) vmGenerationHistoryList.innerHTML = "";
     vmToggleOtherRemarks();
   }
 
   function vmPopulateFields(student) {
-    document.getElementById('vmStudentId').value = student.student_id || '';
+    document.getElementById("vmStudentId").value = student.student_id || "";
     /* Set eligibility first so remarks options update correctly before remarks value is set.
     var eligEl = document.getElementById('vmEligibility');
     if (eligEl) {
@@ -235,56 +292,62 @@ document.addEventListener('DOMContentLoaded', function () {
     vmFieldIds.forEach(function (id) {
       var el = document.getElementById(id);
       if (!el) return;
-      if (el.tagName === 'SELECT' && el.classList.contains('js-school-select')) {
+      if (
+        el.tagName === "SELECT" &&
+        el.classList.contains("js-school-select")
+      ) {
         // <select> has no readOnly — disable instead. Form still submits the
         // value because Select2 keeps the option selected when re-enabled.
         el.disabled = readOnly;
-        if (window.jQuery) $(el).prop('disabled', readOnly).trigger('change.select2');
+        if (window.jQuery)
+          $(el).prop("disabled", readOnly).trigger("change.select2");
       } else {
         el.readOnly = readOnly;
       }
     });
-    voucherSubmitBtn.style.display = readOnly ? 'none' : 'inline-flex';
+    voucherSubmitBtn.style.display = readOnly ? "none" : "inline-flex";
   }
 
   function vmApplyModeVisibility(mode) {
-    var isView = mode === 'view';
-    if (vmVoucherNoWrap)       vmVoucherNoWrap.style.display       = isView ? ''     : 'none';
-    if (vmVoucherDateWrap)     vmVoucherDateWrap.style.display     = isView ? 'none' : '';
-    if (vmLastGeneratedByWrap) vmLastGeneratedByWrap.style.display = isView ? ''     : 'none';
+    var isView = mode === "view";
+    if (vmVoucherNoWrap) vmVoucherNoWrap.style.display = isView ? "" : "none";
+    if (vmVoucherDateWrap)
+      vmVoucherDateWrap.style.display = isView ? "none" : "";
+    if (vmLastGeneratedByWrap)
+      vmLastGeneratedByWrap.style.display = isView ? "" : "none";
   }
 
   function rebuildSelectOptions(select, options, selected) {
     if (!select) return;
     while (select.firstChild) select.removeChild(select.firstChild);
     // Blank option so placeholder shows when nothing selected.
-    select.appendChild(document.createElement('option'));
+    select.appendChild(document.createElement("option"));
     var seen = {};
     options.forEach(function (item) {
-      var value = '';
-      var label = '';
-      var acronym = '';
-      if (item && typeof item === 'object') {
-        value = String(item.school_id || item.id || item.value || '');
-        label = String(item.school_name || item.text || item.label || '');
-        acronym = String(item.acronym || '');
+      var value = "";
+      var label = "";
+      var acronym = "";
+      if (item && typeof item === "object") {
+        value = String(item.school_id || item.id || item.value || "");
+        label = String(item.school_name || item.text || item.label || "");
+        acronym = String(item.acronym || "");
       } else {
-        value = String(item || '');
+        value = String(item || "");
         label = value;
       }
       if (!value || seen[value]) return;
       seen[value] = true;
-      var opt = document.createElement('option');
+      var opt = document.createElement("option");
       opt.value = value;
       opt.textContent = label || value;
-      if (acronym) opt.setAttribute('data-acronym', acronym);
+      if (acronym) opt.setAttribute("data-acronym", acronym);
       if (selected && value === String(selected)) opt.selected = true;
       select.appendChild(opt);
     });
     // If a selected value isn't in the list, add it as a custom option so
     // Select2 can display it (and so submit keeps the value).
     if (selected && !seen[selected]) {
-      var opt = document.createElement('option');
+      var opt = document.createElement("option");
       opt.value = selected;
       opt.textContent = selected;
       opt.selected = true;
@@ -293,31 +356,43 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
   function initOrRefreshSelect2(select) {
-    if (!select || typeof $ === 'undefined' || !$.fn.select2) return;
+    if (!select || typeof $ === "undefined" || !$.fn.select2) return;
     var $sel = $(select);
-    if ($sel.hasClass('select2-hidden-accessible')) {
-      $sel.trigger('change.select2');
+    if ($sel.hasClass("select2-hidden-accessible")) {
+      $sel.trigger("change.select2");
       return;
     }
     $sel.select2({
-      tags: true,                  // allow user to type a NEW school
-      placeholder: select.dataset.placeholder || 'Type or select',
+      tags: true, // allow user to type a NEW school
+      placeholder: select.dataset.placeholder || "Type or select",
       allowClear: true,
-      width: '100%',
-      dropdownParent: $('#voucherModal'),
-      minimumResultsForSearch: select.dataset.noSearch === '1' ? Infinity : 0,
+      width: "100%",
+      dropdownParent: $("#voucherModal"),
+      minimumResultsForSearch: select.dataset.noSearch === "1" ? Infinity : 0,
     });
   }
 
   function loadSchoolOptions(selectedJhs, selectedShs) {
-    var jhsSel = document.getElementById('vmJuniorHs');
-    var shsSel = document.getElementById('vmPreferredHs');
+    var jhsSel = document.getElementById("vmJuniorHs");
+    var shsSel = document.getElementById("vmPreferredHs");
 
-    fetch(schoolOptionsUrl, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
-      .then(function (r) { return r.json(); })
+    fetch(schoolOptionsUrl, {
+      headers: { "X-Requested-With": "XMLHttpRequest" },
+    })
+      .then(function (r) {
+        return r.json();
+      })
       .then(function (data) {
-        rebuildSelectOptions(jhsSel, Array.isArray(data.jhs) ? data.jhs : [], selectedJhs || '');
-        rebuildSelectOptions(shsSel, Array.isArray(data.shs) ? data.shs : [], selectedShs || '');
+        rebuildSelectOptions(
+          jhsSel,
+          Array.isArray(data.jhs) ? data.jhs : [],
+          selectedJhs || "",
+        );
+        rebuildSelectOptions(
+          shsSel,
+          Array.isArray(data.shs) ? data.shs : [],
+          selectedShs || "",
+        );
         initOrRefreshSelect2(jhsSel);
         initOrRefreshSelect2(shsSel);
       })
@@ -332,7 +407,7 @@ document.addEventListener('DOMContentLoaded', function () {
   // Init Select2 for the non-school dropdowns inside the modal (Suffix, Sex,
   // Remarks, Eligibility). Idempotent — safe to call every open.
   function initModalExtraSelects() {
-    if (typeof window.initVsSelect2 === 'function') {
+    if (typeof window.initVsSelect2 === "function") {
       window.initVsSelect2(voucherModal);
     }
   }
@@ -342,106 +417,134 @@ document.addEventListener('DOMContentLoaded', function () {
     vmClearFields();
     vmApplyModeVisibility(mode);
 
-    if (mode === 'add') {
-      voucherModalTitle.textContent = 'Add Voucher';
-      vmSubmitText.textContent      = 'Save Voucher';
+    if (mode === "add") {
+      voucherModalTitle.textContent = "Add Student";
+      vmSubmitText.textContent = "Save Student";
       vmSetReadOnly(false);
-      document.getElementById('vmVoucherDate').value = new Date().toISOString().slice(0, 10);
-      loadSchoolOptions('', '');
+      document.getElementById("vmVoucherDate").value = new Date()
+        .toISOString()
+        .slice(0, 10);
+      loadSchoolOptions("", "");
       initModalExtraSelects();
       // vmUpdateRemarksOptions('');
-      voucherModal.style.display = 'flex';
+      voucherModal.style.display = "flex";
       return;
     }
 
-    voucherModalTitle.textContent = mode === 'edit' ? 'Edit Voucher' : 'View Voucher';
-    vmSubmitText.textContent      = 'Update Voucher';
-    vmSetReadOnly(mode === 'view');
+    voucherModalTitle.textContent =
+      mode === "edit" ? "Edit Voucher" : "View Voucher";
+    vmSubmitText.textContent = "Update Voucher";
+    vmSetReadOnly(mode === "view");
     initModalExtraSelects();
-    voucherModal.style.display = 'flex';
+    voucherModal.style.display = "flex";
 
-    fetch(fetchStudentUrl + '/' + studentId, ajaxOptions({ method: 'GET' }))
-      .then(function (r) { return r.json(); })
+    fetch(fetchStudentUrl + "/" + studentId, ajaxOptions({ method: "GET" }))
+      .then(function (r) {
+        return r.json();
+      })
       .then(function (data) {
-        if (data.status !== 'success') {
-          vmShowAlert(data.message || 'Failed to load student.', 'error');
+        if (data.status !== "success") {
+          vmShowAlert(data.message || "Failed to load student.", "error");
           return;
         }
         vmPopulateFields(data.student);
-        if (mode === 'view') {
-          if (vmVoucherNoDisplay) vmVoucherNoDisplay.textContent = data.student.voucher_no || '—';
+        if (mode === "view") {
+          if (vmVoucherNoDisplay)
+            vmVoucherNoDisplay.textContent = data.student.voucher_no || "—";
           vmRenderGenerationHistory(data.student);
         }
-        if (mode !== 'view') {
+        if (mode !== "view") {
           loadSchoolOptions(
-            data.student.junior_high_school_id || data.student.junior_high_school || '',
-            data.student.preferred_senior_high_school_id || data.student.preferred_senior_high_school || ''
+            data.student.junior_high_school_id ||
+              data.student.junior_high_school ||
+              "",
+            data.student.preferred_senior_high_school_id ||
+              data.student.preferred_senior_high_school ||
+              "",
           );
         }
-        vmSetReadOnly(mode === 'view');
+        vmSetReadOnly(mode === "view");
       })
       .catch(function () {
-        vmShowAlert('Failed to load student.', 'error');
+        vmShowAlert("Failed to load student.", "error");
       });
   }
 
-  function vmClose() { voucherModal.style.display = 'none'; }
+  function vmClose() {
+    voucherModal.style.display = "none";
+  }
 
-  btnAddVoucher      && btnAddVoucher.addEventListener('click',      function () { vmOpen('add'); });
-  voucherModalClose  && voucherModalClose.addEventListener('click',  vmClose);
-  voucherModalCancel && voucherModalCancel.addEventListener('click', vmClose);
-  voucherModal       && voucherModal.addEventListener('click',       function (e) { if (e.target === voucherModal) vmClose(); });
+  btnAddVoucher &&
+    btnAddVoucher.addEventListener("click", function () {
+      vmOpen("add");
+    });
+  voucherModalClose && voucherModalClose.addEventListener("click", vmClose);
+  voucherModalCancel && voucherModalCancel.addEventListener("click", vmClose);
+  voucherModal &&
+    voucherModal.addEventListener("click", function (e) {
+      if (e.target === voucherModal) vmClose();
+    });
   if (window.jQuery) {
-    $(document).off('change.vmRemarks', '#vmRemarks').on('change.vmRemarks', '#vmRemarks', vmToggleOtherRemarks);
+    $(document)
+      .off("change.vmRemarks", "#vmRemarks")
+      .on("change.vmRemarks", "#vmRemarks", vmToggleOtherRemarks);
   } else {
-    document.addEventListener('change', function (e) {
-      if (e.target && e.target.id === 'vmRemarks') vmToggleOtherRemarks();
+    document.addEventListener("change", function (e) {
+      if (e.target && e.target.id === "vmRemarks") vmToggleOtherRemarks();
     });
   }
 
   // Event delegation — works for AJAX-rendered rows (server-side DataTables)
-  document.addEventListener('click', function (e) {
-    var btn = e.target.closest('.js-voucher-action');
+  document.addEventListener("click", function (e) {
+    var btn = e.target.closest(".js-voucher-action");
     if (!btn) return;
-    vmOpen(btn.getAttribute('data-mode'), btn.getAttribute('data-id'));
+    vmOpen(btn.getAttribute("data-mode"), btn.getAttribute("data-id"));
   });
 
   window.vmOpen = vmOpen;
 
-  voucherModalForm && voucherModalForm.addEventListener('submit', function (e) {
-    e.preventDefault();
-    vmClearAlert();
-    vmToggleOtherRemarks();
+  voucherModalForm &&
+    voucherModalForm.addEventListener("submit", function (e) {
+      e.preventDefault();
+      vmClearAlert();
+      vmToggleOtherRemarks();
 
-    if (!voucherModalForm.checkValidity()) {
-      voucherModalForm.reportValidity();
-      return;
-    }
+      if (!voucherModalForm.checkValidity()) {
+        voucherModalForm.reportValidity();
+        return;
+      }
 
-    if (typeof refreshCsrfToken === 'function') refreshCsrfToken();
-    var fd = new FormData(voucherModalForm);
-    var csrf = getCsrfToken && getCsrfToken();
-    if (csrf && csrf.name && !fd.get(csrf.name)) fd.append(csrf.name, csrf.token);
+      if (typeof refreshCsrfToken === "function") refreshCsrfToken();
+      var fd = new FormData(voucherModalForm);
+      var csrf = getCsrfToken && getCsrfToken();
+      if (csrf && csrf.name && !fd.get(csrf.name))
+        fd.append(csrf.name, csrf.token);
 
-    voucherSubmitBtn.disabled    = true;
-    vmSubmitText.style.display   = 'none';
-    vmSubmitSpinner.style.display = 'inline-block';
+      voucherSubmitBtn.disabled = true;
+      vmSubmitText.style.display = "none";
+      vmSubmitSpinner.style.display = "inline-block";
 
-    fetch(saveStudentUrl, ajaxOptions({ method: 'POST', body: fd }))
-      .then(function (r) { return r.json(); })
-      .then(function (data) {
-        vmUpdateCsrfToken(data.csrf_token);
-        if (typeof refreshCsrfToken === 'function') refreshCsrfToken();
-        if (data.status === 'success') { vmClose(); location.reload(); return; }
-        vmShowAlert(data.message || 'Save failed.', 'error', data.errors);
-      })
-      .catch(function () {
-        vmShowAlert('An error occurred while saving.', 'error');
-      })
-      .finally(function () {
-        voucherSubmitBtn.disabled    = false;
-        vmSubmitText.style.display   = 'inline';
-        vmSubmitSpinner.style.display = 'none';
-      });
-  });
+      fetch(saveStudentUrl, ajaxOptions({ method: "POST", body: fd }))
+        .then(function (r) {
+          return r.json();
+        })
+        .then(function (data) {
+          vmUpdateCsrfToken(data.csrf_token);
+          if (typeof refreshCsrfToken === "function") refreshCsrfToken();
+          if (data.status === "success") {
+            vmClose();
+            location.reload();
+            return;
+          }
+          vmShowAlert(data.message || "Save failed.", "error", data.errors);
+        })
+        .catch(function () {
+          vmShowAlert("An error occurred while saving.", "error");
+        })
+        .finally(function () {
+          voucherSubmitBtn.disabled = false;
+          vmSubmitText.style.display = "inline";
+          vmSubmitSpinner.style.display = "none";
+        });
+    });
 });

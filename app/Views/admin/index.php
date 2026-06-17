@@ -191,9 +191,20 @@ document.addEventListener('vs:modals:ready', function () {
     }
     function umClearAlert() { userModalAlert.innerHTML = ''; }
 
+    function umInitSelects() {
+        if (typeof window.initVsSelect2 === 'function') window.initVsSelect2(userModal);
+    }
+
+    function umRefreshSelects() {
+        if (window.jQuery) {
+            jQuery('#umRole').trigger('change.select2');
+        }
+    }
+
     function umResetForm() {
         userModalForm.reset();
         document.getElementById('umUserId').value = '';
+        umRefreshSelects();
     }
 
     function umPopulate(user) {
@@ -205,6 +216,7 @@ document.addEventListener('vs:modals:ready', function () {
         document.getElementById('umEmail').value     = user.email      || '';
         document.getElementById('umRole').value      = user.role       || 'user';
         umPassword.value = '';
+        umRefreshSelects();
     }
 
     function umSetPasswordMode(isEdit) {
@@ -221,6 +233,7 @@ document.addEventListener('vs:modals:ready', function () {
 
     function umOpen(mode, userId) {
         umClearAlert();
+        umInitSelects();
         umResetForm();
 
         if (mode === 'add') {

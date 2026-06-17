@@ -514,6 +514,16 @@ document.addEventListener('vs:modals:ready', function () {
     var smSubmitSpin = document.getElementById('smSubmitSpinner');
     var smSubmitBtn  = document.getElementById('schoolModalSubmit');
 
+    function smInitSelects() {
+        if (typeof window.initVsSelect2 === 'function') window.initVsSelect2(schoolModal);
+    }
+
+    function smRefreshSelects() {
+        if (window.jQuery) {
+            jQuery('#smSchoolLevel').trigger('change.select2');
+        }
+    }
+
     function smOpenAlert(msg, type) {
         schoolAlert.innerHTML = '<div class="vs-alert vs-alert-' + (type || 'error') + ' mb-3">' + escHtml(msg) + '</div>';
     }
@@ -524,9 +534,11 @@ document.addEventListener('vs:modals:ready', function () {
         document.getElementById('smSchoolId').value = '';
         document.getElementById('smAcronym').value = '';
         smClearAlert();
+        smRefreshSelects();
     }
 
     function smOpen(mode, id) {
+        smInitSelects();
         smReset();
         if (mode === 'add') {
             schoolTitle.textContent  = 'Add School';
@@ -549,6 +561,7 @@ document.addEventListener('vs:modals:ready', function () {
             document.getElementById('smSchoolName').value  = s.school_name  || '';
             document.getElementById('smSchoolLevel').value = s.school_level || '';
             document.getElementById('smAcronym').value = s.acronym || '';
+            smRefreshSelects();
         })
         .catch(function () { smOpenAlert('Failed to load school.'); });
     }

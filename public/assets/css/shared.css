@@ -35,7 +35,11 @@
 body {
   font-family: var(--font);
   background:
-    linear-gradient(180deg, rgba(255, 246, 221, 0.65), rgba(238, 248, 251, 0.95) 14rem),
+    linear-gradient(
+      180deg,
+      rgba(255, 246, 221, 0.65),
+      rgba(238, 248, 251, 0.95) 14rem
+    ),
     var(--surface);
   color: var(--navy);
   margin: 0;
@@ -389,7 +393,7 @@ canvas {
 .vs-modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.45);
+  background: rgba(255, 255, 255, 0.45);
   z-index: 1050;
   display: flex;
   align-items: center;
@@ -416,6 +420,12 @@ canvas {
   display: flex;
   flex-direction: column;
   animation: vs-slide-up 0.2s ease;
+}
+.vs-modal-lg {
+  max-width: 800px;
+}
+.vs-modal-md {
+  max-width: 600px;
 }
 .vs-modal > form {
   min-height: 0;
@@ -660,12 +670,27 @@ canvas {
   background: var(--surface-md);
   color: var(--navy);
 }
-.vs-badge-done       { background: #d9f7ee; color: #075c49; }
-.vs-badge-failed     { background: #fff2ee; color: #9f2323; }
-.vs-badge-processing { background: var(--parchment); color: #7a5200; }
-.vs-badge-queued     { background: #dff5fb; color: var(--navy-md); }
+.vs-badge-done {
+  background: #d9f7ee;
+  color: #075c49;
+}
+.vs-badge-failed {
+  background: #fff2ee;
+  color: #9f2323;
+}
+.vs-badge-processing {
+  background: var(--parchment);
+  color: #7a5200;
+}
+.vs-badge-queued {
+  background: #dff5fb;
+  color: var(--navy-md);
+}
 .vs-badge-not_found,
-.vs-badge-forbidden  { background: #edf3f6; color: #506173; }
+.vs-badge-forbidden {
+  background: #edf3f6;
+  color: #506173;
+}
 
 /*
 ── Eligibility icon (unused) ──
@@ -806,7 +831,9 @@ canvas {
   background: #fff;
   cursor: pointer;
   flex-shrink: 0;
-  transition: background .12s, border-color .12s;
+  transition:
+    background 0.12s,
+    border-color 0.12s;
 }
 .vs-check:checked {
   background: var(--teal);
@@ -823,7 +850,7 @@ canvas {
   background-position: center;
 }
 .vs-check:disabled {
-  opacity: .45;
+  opacity: 0.45;
   cursor: not-allowed;
 }
 .vs-th-check {
