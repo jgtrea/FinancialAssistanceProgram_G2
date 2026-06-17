@@ -18,8 +18,6 @@ $icon = static fn (string $name): string => asset_icon($name, ['class' => 'vs-si
 <nav class="sb-sidenav accordion sb-sidenav-dark" id="sidenavAccordion">
     <div class="sb-sidenav-menu">
         <div class="nav">
-            <div class="sb-sidenav-menu-heading">Main</div>
-
             <?php if ($role === 'admin'): ?>
                 <a class="nav-link <?= $isActive('admin/dashboard') ?>" href="<?= site_url('admin/dashboard') ?>">
                     <div class="sb-nav-link-icon"><?= $icon('dashboard') ?></div>
@@ -38,7 +36,11 @@ $icon = static fn (string $name): string => asset_icon($name, ['class' => 'vs-si
                 <a class="nav-link <?= $isActive('signatories') ?>" href="<?= site_url('signatories') ?>">
                     <div class="sb-nav-link-icon"><?= $icon('sign') ?></div>
                     Signatories
-                </a>                                                
+                </a>              
+                <a class="nav-link <?= $isActive('archive') ?>" href="<?= site_url('archive?type=voucher') ?>">
+                    <div class="sb-nav-link-icon"><?= $icon('archive') ?></div>
+                    Archive
+                </a>                                  
 
                 <div class="sb-sidenav-menu-heading">Generate</div>
                 <a class="nav-link <?= $isActive('admin/vouchers') ?>" href="<?= site_url('admin/vouchers') ?>">
@@ -50,18 +52,13 @@ $icon = static fn (string $name): string => asset_icon($name, ['class' => 'vs-si
                 <a class="nav-link <?= $isActive('admin/user_management') ?>" href="<?= site_url('admin/user_management') ?>">
                     <div class="sb-nav-link-icon"><?= $icon('users') ?></div>
                     Users
-                </a>
-                <a class="nav-link <?= $isActive('archive') ?>" href="<?= site_url('archive?type=voucher') ?>">
-                    <div class="sb-nav-link-icon"><?= $icon('archive') ?></div>
-                    Archive
-                </a>
+                </a>                
                 <a class="nav-link <?= $isActive('admin/audit-logs') ?>" href="<?= site_url('admin/audit-logs') ?>">
                     <div class="sb-nav-link-icon"><?= $icon('logs') ?></div>
                     Audit Logs
                 </a>
 
             <?php else: ?>
-
                 <a class="nav-link <?= $isActive('user/dashboard') ?>" href="<?= site_url('user/dashboard') ?>">
                     <div class="sb-nav-link-icon"><?= $icon('dashboard') ?></div>
                     Dashboard
@@ -75,7 +72,11 @@ $icon = static fn (string $name): string => asset_icon($name, ['class' => 'vs-si
                 <a class="nav-link <?= $isActive('user/schools') ?>" href="<?= site_url('user/schools') ?>">
                     <div class="sb-nav-link-icon"><?= $icon('school') ?></div>
                     Schools
-                </a>                         
+                </a>    
+                <a class="nav-link <?= $isActive('archive') ?>" href="<?= site_url('archive?type=voucher') ?>">
+                    <div class="sb-nav-link-icon"><?= $icon('archive') ?></div>
+                    Archive
+                </a>                       
 
                 <div class="sb-sidenav-menu-heading">Generate</div>
                 <a class="nav-link <?= $isActive('user/vouchers') ?>" href="<?= site_url('user/vouchers') ?>">
@@ -83,11 +84,7 @@ $icon = static fn (string $name): string => asset_icon($name, ['class' => 'vs-si
                     Vouchers
                 </a>
 
-                <div class="sb-sidenav-menu-heading">System</div>
-                <a class="nav-link <?= $isActive('archive') ?>" href="<?= site_url('archive?type=voucher') ?>">
-                    <div class="sb-nav-link-icon"><?= $icon('archive') ?></div>
-                    Archive
-                </a>       
+                <div class="sb-sidenav-menu-heading">System</div>                 
                 <a class="nav-link <?= $isActive('user/audit-logs') ?>" href="<?= site_url('user/audit-logs') ?>">
                     <div class="sb-nav-link-icon"><?= $icon('logs') ?></div>
                     Audit Logs
