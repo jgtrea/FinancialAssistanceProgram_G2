@@ -39,7 +39,7 @@ var ModalInstance = (function () {
                 </div>
                 <div class="vs-modal-footer">
                   <button class="vs-btn vs-btn-danger" id="archiveModalCancel">Close</button>
-                  <button class="vs-btn vs-btn-success" id="archiveConfirm">
+                  <button class="vs-btn vs-btn-primary" id="archiveConfirm">
                     <span id="archiveBtnText">Confirm</span>
                     <span id="archiveBtnSpinner" class="vs-spinner" style="display:none"></span>
                   </button>
@@ -106,7 +106,7 @@ var ModalInstance = (function () {
                 </div>
                 <div class="vs-modal-footer">
                   <button class="vs-btn vs-btn-danger" id="importModalCancel">Close</button>
-                  <button class="vs-btn vs-btn-success" id="importConfirm">
+                  <button class="vs-btn vs-btn-primary" id="importConfirm">
                     <span id="importBtnText">Import</span>
                     <span id="importBtnSpinner" class="vs-spinner" style="display:none"></span>
                   </button>
@@ -132,7 +132,7 @@ var ModalInstance = (function () {
                     </div>                    
                     <div class="col-6">
                       <label class="vs-label" for="filterVoucherStatus">Generation Status</label>
-                      <select id="filterVoucherStatus" class="vs-input js-filter-select" data-placeholder="TYPE OR SELECT" data-tags="1">
+                      <select id="filterVoucherStatus" class="vs-input js-filter-select" data-placeholder="PRINTED / NOT PRINTED" data-tags="1">
                         <option></option><option value="generated">PRINTED</option><option value="not_generated">NOT PRINTED</option>
                       </select>
                     </div>
@@ -174,7 +174,7 @@ var ModalInstance = (function () {
                     </div>
                     <div class="col-6" id="filterOtherRemarksWrap" style="display:none">
                       <label class="vs-label" for="filterOtherRemarks">Other Remarks</label>
-                      <input id="filterOtherRemarks" type="text" class="vs-input vs-uppercase" placeholder="SEARCH OTHER REMARKS" maxlength="255" disabled>
+                      <select id="filterOtherRemarks" class="vs-input js-filter-select" data-placeholder="TYPE OR SELECT"><option></option></select>
                     </div>
                   </div>
                 </div>
@@ -218,14 +218,15 @@ var ModalInstance = (function () {
                   <div class="vs-modal-body">
                     <div id="voucherModalAlert"></div>
                     <div class="row g-3">
-                      <div class="col-6">
+                      <div class="col-4">
                         <label class="vs-label" for="vmControlNo">Control No.</label>
                         <input id="vmControlNo" name="control_no" type="text" class="vs-input vs-uppercase">
                       </div>
-                      <div id="vmVoucherDateWrap" class="col-6">
+                      <div id="vmVoucherDateWrap" class="col-4">
                         <label class="vs-label" for="vmVoucherDate">Voucher Date</label>
                         <input id="vmVoucherDate" name="voucher_date" type="date" class="vs-input"  >
                       </div>
+                      <div class="col-4"></div>
                       <div class="col-4">
                         <label class="vs-label required" for="vmFirstName">First Name</label>
                         <input id="vmFirstName" name="first_name" type="text" class="vs-input vs-uppercase" required>
@@ -234,7 +235,7 @@ var ModalInstance = (function () {
                         <label class="vs-label" for="vmMiddleName">Middle Name</label>
                         <input id="vmMiddleName" name="middle_name" type="text" class="vs-input vs-uppercase">
                       </div>
-                      <div class="col-4">
+                      <div class="col-4 ">
                         <label class="vs-label required" for="vmLastName">Last Name</label>
                         <input id="vmLastName" name="last_name" type="text" class="vs-input vs-uppercase" required>
                       </div>
@@ -255,14 +256,15 @@ var ModalInstance = (function () {
                         <label class="vs-label" for="vmContactNumber">Contact Number</label>
                         <input id="vmContactNumber" name="contact_number" type="text" class="vs-input vs-uppercase">
                       </div>
-                      <div class="col-6">
+                      <div class="col-4">
                         <label class="vs-label required" for="vmGwa">GWA</label>
                         <input id="vmGwa" name="gwa" type="number" step="0.01" class="vs-input" required>
                       </div>
-                      <div class="col-6">
+                      <div class="col-4">
                         <label class="vs-label required" for="vmRankNo">Rank No.</label>
                         <input id="vmRankNo" name="rank_no" type="number" step="any" class="vs-input" required>
                       </div>
+                      <div class="col-4"></div>
                       <div class="col-6">
                         <label class="vs-label required" for="vmJuniorHs">Junior High School</label>
                         <select id="vmJuniorHs" name="junior_high_school" class="vs-input js-school-select vs-uppercase" data-placeholder="TYPE OR SELECT" required><option></option></select>
@@ -277,17 +279,16 @@ var ModalInstance = (function () {
                           <option></option><option value="eligible">ELIGIBLE</option><option value="not_eligible">NOT ELIGIBLE</option>
                         </select>
                       </div> -->
-                      <div class="col-6 ">
+                      <div class="col-6">
                         <label class="vs-label" for="vmRemarks">Remarks</label>
                         <select id="vmRemarks" name="remarks_status" class="vs-input js-school-select vs-uppercase" data-placeholder="COMPLETE / INCOMPLETE / OTHERS" data-no-search="1">
                           <option></option><option value="COMPLETE">COMPLETE</option><option value="INCOMPLETE">INCOMPLETE</option><option value="OTHERS">OTHERS</option>
                         </select>
                       </div>
-                      <div class="col-6" id="vmOtherRemarksWrap" style="display:none">
+                      <div class="col-12" id="vmOtherRemarksWrap" style="display:none">
                         <label class="vs-label required" for="vmOtherRemarks">Other Remarks</label>
-                        <input id="vmOtherRemarks" name="other_remarks" type="text" class="vs-input vs-uppercase" maxlength="255">
+                        <textarea id="vmOtherRemarks" name="other_remarks" class="vs-input vs-uppercase" maxlength="500" rows="3" style="resize:vertical"></textarea>
                       </div>
-                      <div class="col-4"></div><div class="col-4"></div>
                     </div>
                   </div>
                   <div class="vs-modal-footer">
@@ -527,7 +528,7 @@ var ModalInstance = (function () {
                     </div>
                     <div class="vs-modal-footer">
                         <button class="vs-btn vs-btn-danger" id="schoolArchiveModalCancel">Close</button>
-                        <button class="vs-btn vs-btn-success" id="schoolArchiveConfirm">
+                        <button class="vs-btn vs-btn-primary" id="schoolArchiveConfirm">
                             <span id="schoolArchiveBtnText">Confirm</span>
                             <span id="schoolArchiveBtnSpinner" class="vs-spinner" style="display:none"></span>
                         </button>
@@ -614,7 +615,7 @@ var ModalInstance = (function () {
                         </div>
                         <div class="vs-modal-footer">
                             <button type="button" class="vs-btn vs-btn-danger" id="schoolImportCancel">Close</button>
-                            <button type="submit" class="vs-btn vs-btn-success" id="schoolImportSubmit">
+                            <button type="submit" class="vs-btn vs-btn-primary" id="schoolImportSubmit">
                                 <span id="siSubmitText">Import</span>
                                 <span id="siSubmitSpinner" class="vs-spinner" style="display:none"></span>
                             </button>
@@ -636,7 +637,7 @@ var ModalInstance = (function () {
                 </div>
                 <div class="vs-modal-footer">
                   <button class="vs-btn vs-btn-danger" id="sigArchiveModalCancel">Close</button>
-                  <button class="vs-btn vs-btn-success" id="sigArchiveConfirm">
+                  <button class="vs-btn vs-btn-primary" id="sigArchiveConfirm">
                     <span id="sigArchiveBtnText">Confirm</span>
                     <span id="sigArchiveBtnSpinner" class="vs-spinner" style="display:none"></span>
                   </button>
@@ -938,6 +939,17 @@ var ModalInstance = (function () {
           _schoolTxt,
           _urlParam("preferred_hs"),
         );
+        _buildOpts(
+          "filterOtherRemarks",
+          fo.other_remarks,
+          function (s) {
+            return s;
+          },
+          function (s) {
+            return s;
+          },
+          _urlParam("other_remarks"),
+        );
         break;
 
       case "voucherModal":
@@ -1017,7 +1029,6 @@ var ModalInstance = (function () {
       afDateTo: "date_to",
       afGwaMin: "gwa_min",
       afGwaMax: "gwa_max",
-      filterOtherRemarks: "other_remarks",
       afOtherRemarks: "other_remarks",
     };
     Object.keys(inputMap).forEach(function (id) {
@@ -1028,6 +1039,7 @@ var ModalInstance = (function () {
     var selectMap = {
       filterGender: "gender",
       filterRemarks: "remarks",
+      filterOtherRemarks: "other_remarks",
       filterVoucherStatus: "voucher_status",
       // filterEligibility:   'eligibility',
       afGender: "gender",
@@ -1066,7 +1078,15 @@ var ModalInstance = (function () {
     var isOthers = String(sel.value || "").toUpperCase() === "OTHERS";
     wrap.style.display = isOthers ? "" : "none";
     input.disabled = !isOthers;
-    if (!isOthers) input.value = "";
+    if (window.jQuery && input.classList.contains("js-filter-select")) {
+      jQuery(input).prop("disabled", !isOthers).trigger("change.select2");
+    }
+    if (!isOthers) {
+      input.value = "";
+      if (window.jQuery && input.classList.contains("js-filter-select")) {
+        jQuery(input).val("").trigger("change.select2");
+      }
+    }
   }
 
   function _initOtherRemarksFilters() {
@@ -1079,9 +1099,17 @@ var ModalInstance = (function () {
         inputId = ids[2];
       if (!document.getElementById(selectId)) return;
       _toggleOtherRemarksFilter(selectId, wrapId, inputId);
+      var selectEl = document.getElementById(selectId);
+      var sync = function () {
+        _toggleOtherRemarksFilter(selectId, wrapId, inputId);
+      };
+      selectEl.addEventListener("change", sync);
+      if (window.jQuery) {
+        jQuery(selectEl).on("select2:select select2:clear", sync);
+      }
       document.addEventListener("change", function (e) {
         if (e.target && e.target.id === selectId)
-          _toggleOtherRemarksFilter(selectId, wrapId, inputId);
+          sync();
       });
     });
   }

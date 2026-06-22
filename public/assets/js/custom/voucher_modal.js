@@ -317,7 +317,7 @@ document.addEventListener("DOMContentLoaded", function () {
     var isView = mode === "view";
     if (vmVoucherNoWrap) vmVoucherNoWrap.style.display = isView ? "" : "none";
     if (vmVoucherDateWrap)
-      vmVoucherDateWrap.style.display = isView ? "none" : "";
+      vmVoucherDateWrap.style.display = "";
     if (vmLastGeneratedByWrap)
       vmLastGeneratedByWrap.style.display = isView ? "" : "none";
   }
@@ -426,7 +426,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     if (mode === "add") {
       voucherModalTitle.textContent = "Add Student";
-      vmSubmitText.textContent = "Save Student";
+      vmSubmitText.textContent = "Save";
       vmSetReadOnly(false);
       document.getElementById("vmVoucherDate").value = new Date()
         .toISOString()
@@ -439,8 +439,8 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     voucherModalTitle.textContent =
-      mode === "edit" ? "Edit Voucher" : "View Voucher";
-    vmSubmitText.textContent = "Update Voucher";
+      mode === "edit" ? "Edit" : "View";
+    vmSubmitText.textContent = "Update";
     vmSetReadOnly(mode === "view");
     initModalExtraSelects();
     voucherModal.style.display = "flex";

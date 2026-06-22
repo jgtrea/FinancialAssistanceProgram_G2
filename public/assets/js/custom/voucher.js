@@ -567,7 +567,7 @@ document.addEventListener("DOMContentLoaded", function () {
           "</strong> selected student(s)?",
         plain: "Export " + selectedIds.size + " selected student(s)?",
         confirmLabel: "Export",
-        btnClass: "vs-btn vs-btn-success",
+        btnClass: "vs-btn vs-btn-primary",
         onConfirm: function () {
           updateExportLinks();
           exportModal.style.display = "flex";

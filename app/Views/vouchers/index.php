@@ -9,7 +9,7 @@
 <?php $allowGenerate = (bool) ($allowGenerate ?? true) ?>
 <?php $juniorHighSchools = $juniorHighSchools ?? [] ?>
 <?php $seniorHighSchools = $seniorHighSchools ?? [] ?>
-<?php $filterOptions = $filterOptions ?? ['junior_high_schools' => [], 'senior_high_schools' => []] ?>
+<?php $filterOptions = $filterOptions ?? ['junior_high_schools' => [], 'senior_high_schools' => [], 'other_remarks' => []] ?>
 <?php $filters = $filters ?? [] ?>
 <?php $filterKeys = ['gender','remarks','other_remarks','voucher_status','date_from','date_to','junior_hs','preferred_hs','gwa_min','gwa_max', /* 'eligibility' */] ?>
 <?php $f = static fn (string $k) => (string) ($filters[$k] ?? '') ?>

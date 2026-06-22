@@ -223,7 +223,7 @@ class ImportRunner
             $jhs     = $get($row, $colMap, 'jhs');
             $shs     = $get($row, $colMap, 'shs');
             $contact = $get($row, $colMap, 'contact');
-            $remarks = strtoupper($get($row, $colMap, 'remarks'));
+            [$remarks, $otherRemarks] = self::normalizeImportedRemarks($get($row, $colMap, 'remarks'));
             $evalBy  = $get($row, $colMap, 'evaluated');
             $sy      = $get($row, $colMap, 'sy');
 
@@ -249,6 +249,8 @@ class ImportRunner
                 $err = 'school name too long';
             } elseif (strlen($remarks) > 100) {
                 $err = 'remarks too long';
+            } elseif (strlen($otherRemarks ?? '') > 255) {
+                $err = 'other remarks too long';
             } elseif (strlen($evalBy) > 150) {
                 $err = 'evaluated by too long';
             } elseif ($sy !== '' && strlen($sy) > 20) {
@@ -298,6 +300,7 @@ class ImportRunner
                 'preferred_senior_high_school' => $shsId,
                 'contact_number'               => $contact,
                 'remarks_status'               => $remarks !== '' ? $remarks : null,
+                'other_remarks'                 => $otherRemarks,
                 'evaluated_by'                 => $evalBy !== '' ? $evalBy : null,
                 'school_year'                  => $sy !== '' ? $sy : null,
                 // 'eligibility_status'           => 'eligible',
@@ -318,6 +321,24 @@ class ImportRunner
 
         JsonPdfQueue::setProgress($jobId, $totalRows, max(1, $totalRows));
         return ['imported' => $imported, 'skipped' => $skipped, 'reasons' => $reasons];
+    }
+
+    /**
+     * @return array{0:string,1:?string}
+     */
+    private static function normalizeImportedRemarks(string $value): array
+    {
+        $value = trim($value);
+        if ($value === '') {
+            return ['', null];
+        }
+
+        $upper = strtoupper($value);
+        if (in_array($upper, ['COMPLETE', 'INCOMPLETE'], true)) {
+            return [$upper, null];
+        }
+
+        return ['OTHERS', $value];
     }
 
     protected static function cleanupUpload(string $filePath): void

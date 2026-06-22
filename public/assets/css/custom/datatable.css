@@ -44,6 +44,28 @@ table.js-data-table .badge,
   letter-spacing: 0.01em;
 }
 
+.vs-datatable .actions-column--sm,
+table.js-data-table .actions-column--sm {
+  width: 96px !important;
+  min-width: 96px !important;
+  max-width: 96px !important;
+}
+
+.vs-datatable .actions-cell .dropdown,
+table.js-data-table .actions-cell .dropdown,
+.vs-datatable .js-actions-cell .dropdown,
+table.js-data-table .js-actions-cell .dropdown {
+  display: inline-flex;
+  justify-content: center;
+  width: 100%;
+}
+
+.vs-datatable .vs-tbl-btn-actions,
+table.js-data-table .vs-tbl-btn-actions {
+  min-width: 88px;
+  width: 88px;
+}
+
 @media (min-width: 768px) {
   .vs-dt-table-row,
   .dataTables_wrapper .table-responsive {
@@ -70,6 +92,11 @@ table.js-data-table .badge,
   #studentsTable tbody td {
     padding-left: clamp(0.25rem, 0.18rem + 0.25vw, 0.55rem) !important;
     padding-right: clamp(0.25rem, 0.18rem + 0.25vw, 0.55rem) !important;
+  }
+  #studentsTable thead th:last-child,
+  #studentsTable tbody td:last-child {
+    padding-left: 0.75rem !important;
+    padding-right: 0.75rem !important;
   }
 
   #studentsTable .vs-check,

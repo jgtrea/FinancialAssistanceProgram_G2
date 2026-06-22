@@ -417,6 +417,7 @@ class VoucherModel extends Model
         return [
             'junior_high_schools' => $mergeSchools($fromSchoolTable('JHS'), $distinct('jhs.school_name')),
             'senior_high_schools' => $mergeSchools($fromSchoolTable('SHS'), $distinct('shs.school_name')),
+            'other_remarks'       => $distinct('other_remarks'),
         ];
     }
 

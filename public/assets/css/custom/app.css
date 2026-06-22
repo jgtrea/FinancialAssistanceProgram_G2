@@ -15,16 +15,6 @@
   margin-bottom: 0.25rem;
 }
 
-.actions-column,
-.actions-column--sm {
-  width: 112px;
-  min-width: 112px;
-}
-
-.actions-cell {
-  white-space: nowrap;
-}
-
 .navbar-logo {
   width: 34px;
   height: 34px;
