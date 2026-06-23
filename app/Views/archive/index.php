@@ -8,7 +8,10 @@
     $schoolYears       = $schoolYears ?? [];
     $filterKeys        = ['school_year','gender','remarks','other_remarks','voucher_status','date_from','date_to','junior_hs','preferred_hs','gwa_min','gwa_max'];
     $f                 = static fn (string $k) => (string) ($filters[$k] ?? '');
-    $activeFilterCount = count(array_filter($filterKeys, fn ($k) => $f($k) !== ''));
+    // school_year is the base scope (auto-defaulted to current SY by the
+    // controller), not a user-chosen filter — exclude it from the badge count.
+    $badgeKeys         = array_values(array_filter($filterKeys, fn ($k) => $k !== 'school_year'));
+    $activeFilterCount = count(array_filter($badgeKeys, fn ($k) => $f($k) !== ''));
     $hasSchoolYear     = $f('school_year') !== '';
 
     // Params the server-side DataTable forwards on every ajax draw so the slice

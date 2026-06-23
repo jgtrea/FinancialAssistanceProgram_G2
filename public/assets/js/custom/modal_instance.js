@@ -445,8 +445,8 @@ var ModalInstance = (function () {
                     </div>                    
                     <div class="col-12 col-lg-6">
                       <label class="form-label" for="afVoucherStatus">Voucher Status</label>
-                      <select id="afVoucherStatus" class="vs-input js-filter-select" data-placeholder="GENERATED / NOT GENERATED" data-no-search="1">
-                        <option></option><option value="generated">generated</option><option value="not_generated">not_generated</option>
+                      <select id="afVoucherStatus" class="vs-input js-filter-select" data-placeholder="PRINTED / NOT PRINTED" data-no-search="1">
+                        <option></option><option value="generated">PRINTED</option><option value="not_generated">NOT PRINTED</option>
                       </select>
                     </div>
                     <div class="col-12 col-lg-6">
