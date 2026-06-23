@@ -799,87 +799,84 @@ var ModalInstance = (function () {
 
     accountModal: function () {
       return `<div class="modal modal-dialog-centered modal-backdrop" id="accountModal" style="display:none">
-                <div class="modal-dialog">
+                <div class="modal-dialog modal-lg">
                     <div class="modal-content">
                         <div class="modal-header">
                             <h5 class="modal-title">My Account</h5>
                             <button type="button" class="btn-close" id="accountModalClose" data-bs-dismiss="modal" aria-label="Close"></button>
                         </div>
                         <div class="modal-body">
+                            <div id="accountModalMsg" class="mb-3" style="display:none"></div>
+                            <form id="accountModalForm" autocomplete="off">
+                                <input type="hidden" id="amCsrf" name="${_csrf.name}" value="${_csrf.hash}">
+                                <div class="row g-4">
+                                    <div class="col-12">
+                                        <div class="bg-light border rounded-2 p-3 p-md-4">
+                                            <div class="d-flex align-items-center justify-content-between gap-3 mb-3">
+                                                <div>
+                                                    <h6 class="mb-1 fw-bold">Profile Information</h6>
+                                                    <p class="mb-0 text-muted small">This information appears in logs and account activity.</p>
+                                                </div>
+                                            </div>
+                                            <div class="row g-3">
+                                                <div class="col-6">
+                                                    <label class="form-label fw-semibold small text-uppercase" for="amUsername">Username</label>
+                                                    <input id="amUsername" name="username" type="text" class="form-control" required>
+                                                </div>
+                                                <div class="col-6">
+                                                    <label class="form-label fw-semibold small text-uppercase" for="amEmail">Email</label>
+                                                    <input id="amEmail" name="email" type="email" class="form-control" required>
+                                                </div>
+                                                <div class="col-4">
+                                                    <label class="form-label fw-semibold small text-uppercase" for="amFirstName">First Name</label>
+                                                    <input id="amFirstName" name="first_name" type="text" class="form-control vs-uppercase" required>
+                                                </div>
+                                                <div class="col-4">
+                                                    <label class="form-label fw-semibold small text-uppercase" for="amMiddleName">Middle Name</label>
+                                                    <input id="amMiddleName" name="middle_name" type="text" class="form-control vs-uppercase">
+                                                </div>
+                                                <div class="col-4">
+                                                    <label class="form-label fw-semibold small text-uppercase" for="amLastName">Last Name</label>
+                                                    <input id="amLastName" name="last_name" type="text" class="form-control vs-uppercase" required>
+                                                </div>
+                                                <div class="col-4">
+                                                    <label class="form-label fw-semibold small text-uppercase" for="amRole">Account Level</label>
+                                                    <div id="amRole" class="form-control bg-white text-muted" style="cursor:default"></div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-12">
+                                        <div class="border rounded-2 p-3 p-md-4">
+                                            <div class="d-flex align-items-center justify-content-between gap-3 mb-3">
+                                                <div>
+                                                    <h6 class="mb-1 fw-bold">Change Password</h6>
+                                                    <p class="mb-0 text-muted small">Leave these fields blank if you do not want to change your password.</p>
+                                                </div>
+                                            </div>
+                                            <div class="row g-3">
+                                                <div class="col-4">
+                                                    <label class="form-label fw-semibold small text-uppercase" for="amCurrentPw">Current Password</label>
+                                                    <input id="amCurrentPw" name="current_password" type="password" class="form-control" autocomplete="current-password">
+                                                </div>
+                                                <div class="col-4">
+                                                    <label class="form-label fw-semibold small text-uppercase" for="amNewPw">New Password</label>
+                                                    <input id="amNewPw" name="new_password" type="password" class="form-control" autocomplete="new-password">
+                                                </div>
+                                                <div class="col-4">
+                                                    <label class="form-label fw-semibold small text-uppercase" for="amConfirmPw">Confirm Password</label>
+                                                    <input id="amConfirmPw" name="confirm_password" type="password" class="form-control" autocomplete="new-password">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </form>
                         </div>
-                        <button class="vs-modal-close" id="accountModalClose">&times;</button>
-                    </div>
-                    <div class="vs-modal-body">
-                        <div id="accountModalMsg" class="mb-3" style="display:none"></div>
-                        <form id="accountModalForm" autocomplete="off">
-                            <input type="hidden" id="amCsrf" name="${_csrf.name}" value="${_csrf.hash}">
-                            <div class="row g-4">
-                                <div class="col-12">
-                                    <div class="bg-light border rounded-2 p-3 p-md-4">
-                                        <div class="d-flex align-items-center justify-content-between gap-3 mb-3">
-                                            <div>
-                                                <h6 class="mb-1 fw-bold">Profile Information</h6>
-                                                <p class="mb-0 text-muted small">This information appears in logs and account activity.</p>
-                                            </div>
-                                        </div>
-                                        <div class="row g-3">
-                                            <div class="col-12 col-lg-6">
-                                                <label class="form-label fw-semibold small text-uppercase" for="amUsername">Username</label>
-                                                <input id="amUsername" name="username" type="text" class="form-control" required>
-                                            </div>
-                                            <div class="col-12 col-lg-6">
-                                                <label class="form-label fw-semibold small text-uppercase" for="amEmail">Email</label>
-                                                <input id="amEmail" name="email" type="email" class="form-control" required>
-                                            </div>
-                                            <div class="col-12 col-md-4">
-                                                <label class="form-label fw-semibold small text-uppercase" for="amFirstName">First Name</label>
-                                                <input id="amFirstName" name="first_name" type="text" class="form-control vs-uppercase" required>
-                                            </div>
-                                            <div class="col-12 col-md-4">
-                                                <label class="form-label fw-semibold small text-uppercase" for="amMiddleName">Middle Name</label>
-                                                <input id="amMiddleName" name="middle_name" type="text" class="form-control vs-uppercase">
-                                            </div>
-                                            <div class="col-12 col-md-4">
-                                                <label class="form-label fw-semibold small text-uppercase" for="amLastName">Last Name</label>
-                                                <input id="amLastName" name="last_name" type="text" class="form-control vs-uppercase" required>
-                                            </div>
-                                            <div class="col-12 col-md-4">
-                                                <label class="form-label fw-semibold small text-uppercase" for="amRole">Account Level</label>
-                                                <div id="amRole" class="form-control bg-white text-muted" style="cursor:default"></div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="col-12">
-                                    <div class="border rounded-2 p-3 p-md-4">
-                                        <div class="d-flex align-items-center justify-content-between gap-3 mb-3">
-                                            <div>
-                                                <h6 class="mb-1 fw-bold">Change Password</h6>
-                                                <p class="mb-0 text-muted small">Leave these fields blank if you do not want to change your password.</p>
-                                            </div>
-                                        </div>
-                                        <div class="row g-3">
-                                            <div class="col-12 col-lg-4">
-                                                <label class="form-label fw-semibold small text-uppercase" for="amCurrentPw">Current Password</label>
-                                                <input id="amCurrentPw" name="current_password" type="password" class="form-control" autocomplete="current-password">
-                                            </div>
-                                            <div class="col-12 col-lg-4">
-                                                <label class="form-label fw-semibold small text-uppercase" for="amNewPw">New Password</label>
-                                                <input id="amNewPw" name="new_password" type="password" class="form-control" autocomplete="new-password">
-                                            </div>
-                                            <div class="col-12 col-lg-4">
-                                                <label class="form-label fw-semibold small text-uppercase" for="amConfirmPw">Confirm Password</label>
-                                                <input id="amConfirmPw" name="confirm_password" type="password" class="form-control" autocomplete="new-password">
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </form>
-                    </div>
-                    <div class="modal-footer d-flex justify-content-end gap-2">
-                        <button type="button" class="vs-btn vs-btn-danger" id="accountModalCancel">Close</button>
-                        <button type="button" class="btn btn-primary px-4" id="accountModalSave">Save</button>
+                        <div class="modal-footer d-flex justify-content-end gap-2">
+                            <button type="button" class="vs-btn vs-btn-danger" id="accountModalCancel">Close</button>
+                            <button type="button" class="btn btn-primary px-4" id="accountModalSave">Save</button>
+                        </div>
                     </div>
                 </div>
             </div>`;
