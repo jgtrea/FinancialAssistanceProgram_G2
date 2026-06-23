@@ -131,7 +131,7 @@ class PdfJobRunner
                 log_action(
                     (int) $job->created_by,
                     'GENERATE_PDF',
-                    'Generated PDF for ' . count($ids) . ' student(s) (job #' . $jobId . ')'
+                    'Generated PDF for ' . count($ids) . ' student(s): ' . audit_student_ids($ids) . ' (job #' . $jobId . ')'
                 );
             }
 

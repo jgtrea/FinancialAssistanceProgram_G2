@@ -84,3 +84,29 @@
   border-radius: 4px;
   padding: 0.1rem 0.4rem;
 }
+
+/* Clickable rows → open detail modal */
+.vs-clickable-row {
+  cursor: pointer;
+}
+.vs-clickable-row:hover {
+  background: var(--parchment, #fff6dd);
+}
+
+/* Detail modal definition list */
+.vs-detail-list {
+  display: grid;
+  grid-template-columns: 130px 1fr;
+  gap: 0.5rem 1rem;
+  margin: 0;
+}
+.vs-detail-list dt {
+  font-weight: 700;
+  color: var(--navy);
+  font-size: 0.82rem;
+}
+.vs-detail-list dd {
+  margin: 0;
+  color: var(--text, #1f2937);
+  font-size: 0.85rem;
+}

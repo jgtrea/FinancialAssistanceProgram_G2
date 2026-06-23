@@ -60,11 +60,15 @@
                             $createdDate = !empty($log['created_at']) ? date('Y-m-d', strtotime($log['created_at'])) : '';
                             $userLabel = trim((string) ($log['full_name'] ?? $log['username'] ?? ''));
                         ?>
-                        <tr data-action="<?= esc((string) ($log['action'] ?? ''), 'attr') ?>"
-                            data-created-date="<?= esc($createdDate, 'attr') ?>">
+                        <tr class="vs-clickable-row" data-action="<?= esc((string) ($log['action'] ?? ''), 'attr') ?>"
+                            data-created-date="<?= esc($createdDate, 'attr') ?>"
+                            data-detail-date="<?= !empty($log['created_at']) ? esc(date('M d, Y h:i A', strtotime($log['created_at'])), 'attr') : '-' ?>"
+                            data-detail-user="<?= esc(trim(($log['full_name'] ?? $log['email'] ?? '-') . (!empty($log['user_id']) ? ' #' . $log['user_id'] : '')), 'attr') ?>"
+                            data-detail-desc="<?= esc((string) $log['description'], 'attr') ?>"
+                            data-detail-ua="<?= esc((string) ($log['user_agent'] ?? '-'), 'attr') ?>">
                             <td><?= !empty($log['created_at']) ? esc(date('M d, Y h:i A', strtotime($log['created_at']))) : '-' ?></td>
                             <td><span class="badge text-bg-dark"><?= esc($log['action']) ?></span></td>
-                            <td>
+                            <td title="<?= esc((string) $log['description'], 'attr') ?>">
                                 <?= esc($log['description']) ?>
                                 <?php if (!empty($log['student_id']) || !empty($log['voucher_id'])): ?>
                                     <div class="text-muted small">
@@ -74,7 +78,7 @@
                                     </div>
                                 <?php endif; ?>
                             </td>
-                            <td class="small"><?= esc($log['user_agent']) ?></td>
+                            <td class="small" title="<?= esc((string) ($log['user_agent'] ?? ''), 'attr') ?>"><?= esc($log['user_agent']) ?></td>
                             <td>
                                 <?= esc($log['full_name'] ?? $log['email'] ?? '-') ?>
                                 <?php if (!empty($log['user_id'])): ?>
@@ -153,6 +157,33 @@ document.addEventListener('vs:modals:ready', function () {
             }
             closeFilter();
             window.location.href = '<?= site_url($resetUrl ?? 'user/audit-logs') ?>';
+        });
+
+        // Row click → detail modal
+        var detailModal = document.getElementById('auditDetailModal');
+        function closeDetail() { if (detailModal) detailModal.style.display = 'none'; }
+        var dClose  = document.getElementById('auditDetailModalClose');
+        var dCancel = document.getElementById('auditDetailModalCancel');
+        dClose  && dClose.addEventListener('click', closeDetail);
+        dCancel && dCancel.addEventListener('click', closeDetail);
+        detailModal && detailModal.addEventListener('click', function (e) {
+            if (e.target === detailModal) closeDetail();
+        });
+
+        var auditTable = document.getElementById('auditLogsTable');
+        auditTable && auditTable.addEventListener('click', function (e) {
+            var row = e.target.closest('tr.vs-clickable-row');
+            if (!row || !detailModal) return;
+            var set = function (id, val) {
+                var el = document.getElementById(id);
+                if (el) el.textContent = val || '-';
+            };
+            set('auditDetailDate',      row.getAttribute('data-detail-date'));
+            set('auditDetailAction',    row.getAttribute('data-action'));
+            set('auditDetailUser',      row.getAttribute('data-detail-user'));
+            set('auditDetailDescription', row.getAttribute('data-detail-desc'));
+            set('auditDetailUserAgent', row.getAttribute('data-detail-ua'));
+            detailModal.style.display = 'flex';
         });
 });
 </script>

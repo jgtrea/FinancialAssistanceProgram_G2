@@ -126,7 +126,7 @@ if (!function_exists('pre_modal')) {
             case 'archive':
                 return modal_assets('archiveCurrentModal', 'archiveFilterModal');
             case 'audit':
-                return modal_assets('auditFilterModal');
+                return modal_assets('auditFilterModal', 'auditDetailModal');
             case 'schools':
                 return modal_assets('schoolArchiveModal', 'schoolExportModal', 'schoolModal', 'schoolImportModal');
             case 'signatories':

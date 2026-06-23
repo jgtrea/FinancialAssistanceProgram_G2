@@ -1357,7 +1357,7 @@ class Voucher extends Controller
         } else {
             foreach ($students as $s) {
                 log_action($userId, 'ARCHIVE_STUDENT',
-                    "Student {$s['full_name']} (Voucher {$s['voucher_no']}) archived",
+                    'Archived student ' . audit_student_summary([$s]) . " (Voucher {$s['voucher_no']}).",
                     null);
             }
         }

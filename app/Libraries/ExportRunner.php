@@ -42,7 +42,9 @@ class ExportRunner
         try {
             $filename = self::buildFile($ids, $format);
 
-            log_action($userId ?? 0, 'EXPORT_RECORDS', "Exported students ({$format}) (queued job #{$jobId})");
+            $idList = audit_student_ids($ids);
+            $idText = $idList !== '' ? ': ' . $idList : '';
+            log_action($userId ?? 0, 'EXPORT_RECORDS', "Exported " . count($ids) . " student(s) ({$format}){$idText} (queued job #{$jobId})");
 
             JsonPdfQueue::finishSingle($jobId, function (array $rec) use ($filename) {
                 $rec['status']       = 'done';

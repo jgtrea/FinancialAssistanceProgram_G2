@@ -100,7 +100,8 @@ class Authentication extends BaseController
             'session_last_active' => $now,
         ]);
 
-        log_action($user['user_id'], 'LOGIN', "User {$input} logged in");
+        $loginName = $validator->fullName($user);
+        log_action($user['user_id'], 'LOGIN', "User {$loginName} logged in");
 
         if ($user['role'] === 'admin') {
             return redirect()->to('admin/dashboard')->with('success', 'Logged as Admin.');

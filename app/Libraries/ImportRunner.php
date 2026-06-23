@@ -92,7 +92,9 @@ class ImportRunner
             $imported = (int) $res['imported'];
             $skipped  = (int) $res['skipped'];
 
-            log_action($userId ?? 0, 'IMPORT_RECORDS', "Imported {$imported} record(s), skipped {$skipped}, from {$clientNm} (queued job #{$jobId})");
+            $idList   = audit_student_ids($res['ids'] ?? []);
+            $idText   = $idList !== '' ? ': ' . $idList : '';
+            log_action($userId ?? 0, 'IMPORT_RECORDS', "Imported {$imported} record(s){$idText}, skipped {$skipped}, from {$clientNm} (queued job #{$jobId})");
 
             JsonPdfQueue::finishSingle($jobId, function (array $rec) use ($imported, $skipped, $res) {
                 $rec['status']       = 'done';
@@ -193,6 +195,7 @@ class ImportRunner
         $imported    = 0;
         $skipped     = 0;
         $reasons     = [];
+        $importedIds = [];
         $addReason   = static function (string $r) use (&$reasons) {
             if (count($reasons) < 10) {
                 $reasons[] = $r;
@@ -313,6 +316,7 @@ class ImportRunner
             if ($vkey !== null) $seenVoucher[$vkey] = true;
             $seenNames[$nkey] = true;
 
+            $importedIds[] = (int) $voucherModel->getInsertID();
             $imported++;
             if (($imported + $skipped) % 100 === 0) {
                 JsonPdfQueue::setProgress($jobId, $n + 1, max(1, $totalRows));
@@ -320,7 +324,7 @@ class ImportRunner
         }
 
         JsonPdfQueue::setProgress($jobId, $totalRows, max(1, $totalRows));
-        return ['imported' => $imported, 'skipped' => $skipped, 'reasons' => $reasons];
+        return ['imported' => $imported, 'skipped' => $skipped, 'reasons' => $reasons, 'ids' => $importedIds];
     }
 
     /**

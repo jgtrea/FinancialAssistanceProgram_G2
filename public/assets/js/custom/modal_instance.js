@@ -97,24 +97,26 @@ var ModalInstance = (function () {
     importModal: function () {
       return `<div class="modal modal-dialog-centered modal-backdrop" id="importModal" style="display:none">
               <div class="modal-dialog ">
-                <div class="modal-header">
-                  <h5>Import Students</h5>
-                  <button class="btn-close" id="importModalClose" aria-label="Close"></button>
-                </div>
-                
-                <div class="modal-body">
-                  <p class="vs-page-sub">
-                    Upload a <strong>.xlsx</strong>, <strong>.xls</strong>, or <strong>.csv</strong> file.<br>
-                  </p>
-                  <label class="form-label" for="importFile">File</label>
-                  <input type="file" id="importFile" class="form-control" accept=".xlsx,.xls,.csv">
-                </div>
-                <div class="modal-footer">
-                  <button class="vs-btn vs-btn-danger" id="importModalCancel">Close</button>
-                  <button class="vs-btn vs-btn-primary" id="importConfirm">
-                    <span id="importBtnText">Import</span>
-                    <span id="importBtnSpinner" class="vs-spinner" style="display:none"></span>
-                  </button>
+                <div class="modal-content">
+                  <div class="modal-header">
+                    <h5>Import Students</h5>
+                    <button class="btn-close" id="importModalClose" aria-label="Close"></button>
+                  </div>
+
+                  <div class="modal-body">
+                    <p class="vs-page-sub">
+                      Upload a <strong>.xlsx</strong>, <strong>.xls</strong>, or <strong>.csv</strong> file.<br>
+                    </p>
+                    <label class="form-label" for="importFile">File</label>
+                    <input type="file" id="importFile" class="form-control" accept=".xlsx,.xls,.csv">
+                  </div>
+                  <div class="modal-footer">
+                    <button class="vs-btn vs-btn-danger" id="importModalCancel">Close</button>
+                    <button class="vs-btn vs-btn-primary" id="importConfirm">
+                      <span id="importBtnText">Import</span>
+                      <span id="importBtnSpinner" class="vs-spinner" style="display:none"></span>
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>`;
@@ -527,6 +529,31 @@ var ModalInstance = (function () {
             </div>`;
     },
 
+    auditDetailModal: function () {
+      return `<div class="modal modal-dialog-centered modal-backdrop" id="auditDetailModal" style="display:none">
+                <div class="modal-dialog" style="max-width:640px">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5>Log Details</h5>
+                            <button class="btn-close" id="auditDetailModalClose" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <dl class="vs-detail-list">
+                                <dt>Date/Time</dt><dd id="auditDetailDate">-</dd>
+                                <dt>Action</dt><dd id="auditDetailAction">-</dd>
+                                <dt>User</dt><dd id="auditDetailUser">-</dd>
+                                <dt>Description</dt><dd id="auditDetailDescription">-</dd>
+                                <dt>User Agent</dt><dd id="auditDetailUserAgent" style="word-break:break-word">-</dd>
+                            </dl>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="vs-btn vs-btn-danger" id="auditDetailModalCancel">Close</button>
+                        </div>
+                    </div>
+                </div>
+            </div>`;
+    },
+
     schoolArchiveModal: function () {
       return `<div class="modal modal-dialog-centered modal-backdrop" id="schoolArchiveModal" style="display:none">
                 <div class="modal-dialog">
@@ -578,36 +605,36 @@ var ModalInstance = (function () {
                             <h5 id="schoolModalTitle">Add School</h5>
                             <button class="btn-close" id="schoolModalClose" aria-label="Close"></button>
                         </div>
-                        <div class="modal-body">
-                            <form id="schoolModalForm" novalidate>
-                                ${_csrfInput("smCsrf")}
-                                <input type="hidden" name="school_id" id="smSchoolId" value="">
+                        <form id="schoolModalForm" novalidate>
+                            ${_csrfInput("smCsrf")}
+                            <input type="hidden" name="school_id" id="smSchoolId" value="">
+                            <div class="modal-body">
                                 <div id="schoolModalAlert"></div>
-                            <div class="row g-3">
-                                <div class="col-12">
-                                    <label class="form-label required" for="smSchoolName">School Name</label>
-                                    <input id="smSchoolName" name="school_name" type="text" class="vs-input vs-uppercase" required placeholder="e.g. TANDAG NATIONAL HIGH SCHOOL">
-                                </div>
-                                <div class="col-6">
-                                    <label class="form-label required" for="smAcronym">Acronym</label>
-                                    <input id="smAcronym" name="acronym" type="text" class="vs-input vs-uppercase" required placeholder="e.g. TNHS">
-                                </div>
-                                <div class="col-6">
-                                    <label class="form-label required" for="smSchoolLevel">Level</label>
-                                    <select id="smSchoolLevel" name="school_level" class="vs-input js-filter-select" data-placeholder="JHS / SHS" data-no-search="1" required>
-                                        <option></option><option value="JHS">JHS</option><option value="SHS">SHS</option>
-                                    </select>
+                                <div class="row g-3">
+                                    <div class="col-12">
+                                        <label class="form-label required" for="smSchoolName">School Name</label>
+                                        <input id="smSchoolName" name="school_name" type="text" class="vs-input vs-uppercase" required placeholder="e.g. TANDAG NATIONAL HIGH SCHOOL">
+                                    </div>
+                                    <div class="col-6">
+                                        <label class="form-label required" for="smAcronym">Acronym</label>
+                                        <input id="smAcronym" name="acronym" type="text" class="vs-input vs-uppercase" required placeholder="e.g. TNHS">
+                                    </div>
+                                    <div class="col-6">
+                                        <label class="form-label required" for="smSchoolLevel">Level</label>
+                                        <select id="smSchoolLevel" name="school_level" class="vs-input js-filter-select" data-placeholder="JHS / SHS" data-no-search="1" required>
+                                            <option></option><option value="JHS">JHS</option><option value="SHS">SHS</option>
+                                        </select>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-danger" id="schoolModalCancel">Close</button>
-                            <button type="submit" class="btn btn-primary" id="schoolModalSubmit">
-                                <span id="smSubmitText">Save</span>
-                                <span id="smSubmitSpinner" class="spinner-border spinner-border-sm" style="display:none" role="status" aria-hidden="true"></span>
-                            </button>
-                        </div>
-                    </form>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-danger" id="schoolModalCancel">Close</button>
+                                <button type="submit" class="btn btn-primary" id="schoolModalSubmit">
+                                    <span id="smSubmitText">Save</span>
+                                    <span id="smSubmitSpinner" class="spinner-border spinner-border-sm" style="display:none" role="status" aria-hidden="true"></span>
+                                </button>
+                            </div>
+                        </form>
                 </div>
             </div>`;
     },
