@@ -5577,13 +5577,23 @@ fieldset:disabled .btn {
   word-wrap: break-word;
 }
 
+@keyframes slide-up {
+  from {
+    transform: translateY(12px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
 .modal {
   --bs-modal-zindex: 1055;
   --bs-modal-width: 500px;
   --bs-modal-padding: 1rem;
   --bs-modal-margin: 0.5rem;
   --bs-modal-color: ;
-  --bs-modal-bg: #fff;
   --bs-modal-border-color: var(--bs-border-color-translucent);
   --bs-modal-border-width: 1px;
   --bs-modal-border-radius: 0.5rem;
@@ -5609,13 +5619,16 @@ fieldset:disabled .btn {
   overflow-x: hidden;
   overflow-y: auto;
   outline: 0;
+
+  animation: slide-up 0.2s ease;
+  border-radius: 14px;
 }
 
 .modal-dialog {
   position: relative;
   width: auto;
   margin: var(--bs-modal-margin);
-  pointer-events: none;
+  pointer-events: none; 
   background-color: #fff;
   border-radius: 20px;
 }
@@ -5668,16 +5681,16 @@ fieldset:disabled .btn {
 
 .modal-backdrop {
   --bs-backdrop-zindex: 1050;
-  --bs-backdrop-bg: #000;
+  --bs-backdrop-bg: rgba(0, 0, 0, 0.5);
   --bs-backdrop-opacity: 0.5;
   position: fixed;
-  top: 0;
-  left: 0;
+  inset: -10%;           
   z-index: var(--bs-backdrop-zindex);
-  width: 100vw;
-  height: 100vh;
+  width: 120%;
+  height: 120%;
   background-color: var(--bs-backdrop-bg);
 }
+
 .modal-backdrop.fade {
   opacity: 0;
 }
@@ -5735,7 +5748,7 @@ fieldset:disabled .btn {
 @media (min-width: 576px) {
   .modal {
     --bs-modal-margin: 1.75rem;
-    --bs-modal-box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+    --bs-modal-box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);    
   }
   .modal-dialog {
     max-width: var(--bs-modal-width);

@@ -26,18 +26,19 @@ var ModalInstance = (function () {
 
   var _tpl = {
     archiveModal: function () {
-      return `<div class="vs-modal-overlay" id="archiveModal" style="display:none">
-              <div class="vs-modal">
-                <div class="vs-modal-header">
-                  <h5>Archive Students</h5>
-                  <button class="vs-modal-close" id="archiveModalClose">&times;</button>
-                </div>
-                <div class="vs-modal-body">
+      return `<div class="modal modal-dialog-centered modal-backdrop" id="archiveModal" style="display:none">
+              <div class="modal-dialog">
+                <div class="modal-content">
+                  <div class="modal-header">
+                    <h5>Archive Students</h5>
+                    <button class="btn-close" id="archiveModalClose" aria-label="Close"></button>
+                  </div>
+                  <div class="modal-body">
                   <p>You are about to archive <strong id="archiveCount">0</strong> student(s). This will move them to the archive.</p>
-                  <label class="vs-label" for="archiveReason">Reason (optional)</label>
+                  <label class="form-label" for="archiveReason">Reason (optional)</label>
                   <input type="text" id="archiveReason" class="vs-input" placeholder="e.g. End of school year">
                 </div>
-                <div class="vs-modal-footer">
+                <div class="modal-footer">
                   <button class="vs-btn vs-btn-danger" id="archiveModalCancel">Close</button>
                   <button class="vs-btn vs-btn-primary" id="archiveConfirm">
                     <span id="archiveBtnText">Confirm</span>
@@ -49,39 +50,42 @@ var ModalInstance = (function () {
     },
 
     infoModal: function () {
-      return `<div class="vs-modal-overlay" id="infoModal" style="display:none">
-              <div class="vs-modal" style="max-width:680px">
-                <div class="vs-modal-header">
-                  <h5 id="infoModalTitle">Notice</h5>
-                  <button class="vs-modal-close" id="infoModalClose">&times;</button>
-                </div>
-                <div class="vs-modal-body">
-                  <p id="infoModalMessage" class="mb-0"></p>
-                </div>
-                <div class="vs-modal-footer">
-                  <button class="vs-btn vs-btn-primary" id="infoModalOk">OK</button>
+      return `<div class="modal modal-dialog-centered modal-backdrop" id="infoModal" style="display:none">
+              <div class="modal-dialog" style="max-width:680px">
+                <div class="modal-content">
+                  <div class="modal-header">
+                    <h5 id="infoModalTitle">Notice</h5>
+                    <button class="btn-close" id="infoModalClose" aria-label="Close"></button>
+                  </div>
+                  <div class="modal-body">
+                    <p id="infoModalMessage" class="mb-0"></p>
+                  </div>
+                  <div class="modal-footer">
+                    <button class="vs-btn vs-btn-primary" id="infoModalOk">OK</button>
+                  </div>
                 </div>
               </div>
             </div>`;
     },
 
     bulkAllModal: function () {
-      return `<div class="vs-modal-overlay" id="bulkAllModal" style="display:none">
-              <div class="vs-modal">
-                <div class="vs-modal-header">
-                  <h5 id="bulkAllTitle">Confirm</h5>
-                  <button class="vs-modal-close" id="bulkAllModalClose">&times;</button>
-                </div>
-                <div class="vs-modal-body">
-                  <p id="bulkAllMessage">You are about to update <strong id="bulkAllCount">0</strong> student(s) matching the current search/filters.</p>
-                  <div id="bulkAllReasonWrap" style="display:none">
-                    <label class="vs-label" for="bulkAllReason">Reason (optional)</label>
-                    <input type="text" id="bulkAllReason" class="vs-input" placeholder="e.g. End of school year">
+      return `<div class="modal modal-dialog-centered modal-backdrop" id="bulkAllModal" style="display:none">
+              <div class="modal-dialog">
+                <div class="modal-content">
+                  <div class="modal-header">
+                    <h5 id="bulkAllTitle">Confirm</h5>
+                    <button class="btn-close" id="bulkAllModalClose" aria-label="Close"></button>
                   </div>
-                </div>
-                <div class="vs-modal-footer">
-                  <button class="vs-btn vs-btn-danger" id="bulkAllCancel">Close</button>
-                  <button class="vs-btn vs-btn-primary" id="bulkAllConfirm">
+                  <div class="modal-body">
+                    <p id="bulkAllMessage">You are about to update <strong id="bulkAllCount">0</strong> student(s) matching the current search/filters.</p>
+                    <div id="bulkAllReasonWrap" style="display:none">
+                      <label class="form-label" for="bulkAllReason">Reason (optional)</label>
+                      <input type="text" id="bulkAllReason" class="vs-input" placeholder="e.g. End of school year">
+                    </div>
+                  </div>
+                  <div class="modal-footer">
+                    <button class="btn btn-danger" id="bulkAllCancel">Close</button>
+                    <button class="btn btn-primary" id="bulkAllConfirm">
                     <span id="bulkAllBtnText">Confirm</span>
                     <span id="bulkAllBtnSpinner" class="vs-spinner" style="display:none"></span>
                   </button>
@@ -91,20 +95,21 @@ var ModalInstance = (function () {
     },
 
     importModal: function () {
-      return `<div class="vs-modal-overlay" id="importModal" style="display:none">
-              <div class="vs-modal">
-                <div class="vs-modal-header">
+      return `<div class="modal modal-dialog-centered modal-backdrop" id="importModal" style="display:none">
+              <div class="modal-dialog ">
+                <div class="modal-header">
                   <h5>Import Students</h5>
-                  <button class="vs-modal-close" id="importModalClose">&times;</button>
+                  <button class="btn-close" id="importModalClose" aria-label="Close"></button>
                 </div>
-                <div class="vs-modal-body">
-                  <p class="text-muted small mb-3">
-                    Upload an <strong>.xlsx</strong>, <strong>.xls</strong>, or <strong>.csv</strong> file.<br>
+                
+                <div class="modal-body">
+                  <p class="vs-page-sub">
+                    Upload a <strong>.xlsx</strong>, <strong>.xls</strong>, or <strong>.csv</strong> file.<br>
                   </p>
-                  <label class="vs-label" for="importFile">File</label>
-                  <input type="file" id="importFile" class="vs-input" accept=".xlsx,.xls,.csv">
+                  <label class="form-label" for="importFile">File</label>
+                  <input type="file" id="importFile" class="form-control" accept=".xlsx,.xls,.csv">
                 </div>
-                <div class="vs-modal-footer">
+                <div class="modal-footer">
                   <button class="vs-btn vs-btn-danger" id="importModalCancel">Close</button>
                   <button class="vs-btn vs-btn-primary" id="importConfirm">
                     <span id="importBtnText">Import</span>
@@ -116,69 +121,70 @@ var ModalInstance = (function () {
     },
 
     filterModal: function () {
-      return `<div class="vs-modal-overlay" id="filterModal" style="display:none">
-              <div class="vs-modal" style="max-width:680px">
-                <div class="vs-modal-header">
-                  <h5>Advanced Filters</h5>
-                  <button class="vs-modal-close" id="filterModalClose">&times;</button>
-                </div>  
-                <div class="vs-modal-body">
+      return `<div class="modal modal-dialog-centered modal-backdrop" id="filterModal" style="display:none">
+              <div class="modal-dialog" style="max-width:680px">
+                <div class="modal-content">
+                  <div class="modal-header">
+                    <h5>Advanced Filters</h5>
+                    <button class="btn-close" id="filterModalClose" aria-label="Close"></button>
+                  </div>  
+                <div class="modal-body">
                   <div class="row g-3">
                     <div class="col-6">
-                      <label class="vs-label" for="filterGender">Sex</label>
+                      <label class="form-label" for="filterGender">Sex</label>
                       <select id="filterGender" class="vs-input js-filter-select" data-placeholder="MALE / FEMALE" data-no-search="1">
                         <option></option><option value="MALE">MALE</option><option value="FEMALE">FEMALE</option>
                       </select>
                     </div>                    
                     <div class="col-6">
-                      <label class="vs-label" for="filterVoucherStatus">Generation Status</label>
+                      <label class="form-label" for="filterVoucherStatus">Generation Status</label>
                       <select id="filterVoucherStatus" class="vs-input js-filter-select" data-placeholder="PRINTED / NOT PRINTED" data-tags="1">
                         <option></option><option value="generated">PRINTED</option><option value="not_generated">NOT PRINTED</option>
                       </select>
                     </div>
                     <div class="col-6">
-                      <label class="vs-label" for="filterDateFrom">Date Added From</label>
+                      <label class="form-label" for="filterDateFrom">Date Added From</label>
                       <input type="date" id="filterDateFrom" class="vs-input">
                     </div>
                     <div class="col-6">
-                      <label class="vs-label" for="filterDateTo">Date Added To</label>
+                      <label class="form-label" for="filterDateTo">Date Added To</label>
                       <input type="date" id="filterDateTo" class="vs-input">
                     </div>
                     <div class="col-6">
-                      <label class="vs-label" for="filterJuniorHs">Junior High School</label>
+                      <label class="form-label" for="filterJuniorHs">Junior High School</label>
                       <select id="filterJuniorHs" class="vs-input js-filter-select" data-placeholder="TYPE OR SELECT"><option></option></select>
                     </div>
                     <div class="col-6">
-                      <label class="vs-label" for="filterPreferredHs">Preferred Senior HS</label>
+                      <label class="form-label" for="filterPreferredHs">Preferred Senior HS</label>
                       <select id="filterPreferredHs" class="vs-input js-filter-select" data-placeholder="TYPE OR SELECT"><option></option></select>
                     </div>
                     <div class="col-6">
-                      <label class="vs-label" for="filterGwaMin">GWA Min</label>
+                      <label class="form-label" for="filterGwaMin">GWA Min</label>
                       <input type="number" step="0.01" id="filterGwaMin" class="vs-input" placeholder="E.G. 80">
                     </div>
                     <div class="col-6">
-                      <label class="vs-label" for="filterGwaMax">GWA Max</label>
+                      <label class="form-label" for="filterGwaMax">GWA Max</label>
                       <input type="number" step="0.01" id="filterGwaMax" class="vs-input" placeholder="E.G. 100">
                     </div>
                     <!-- <div class="col-6">
-                      <label class="vs-label" for="filterEligibility">Eligibility Status</label>
+                      <label class="form-label" for="filterEligibility">Eligibility Status</label>
                       <select id="filterEligibility" class="vs-input js-filter-select" data-placeholder="ELIGIBLE / NOT ELIGIBLE" data-no-search="1">
                         <option></option><option value="eligible">eligible</option><option value="not_eligible">not_eligible</option>
                       </select>
                     </div> -->
                     <div class="col-6">
-                      <label class="vs-label" for="filterRemarks">Remarks</label>
+                      <label class="form-label" for="filterRemarks">Remarks</label>
                       <select id="filterRemarks" class="vs-input js-filter-select" data-placeholder="COMPLETE / INCOMPLETE / OTHERS" data-no-search="1">
                         <option></option><option value="COMPLETE">COMPLETE</option><option value="INCOMPLETE">INCOMPLETE</option><option value="OTHERS">OTHERS</option>
                       </select>
                     </div>
                     <div class="col-6" id="filterOtherRemarksWrap" style="display:none">
-                      <label class="vs-label" for="filterOtherRemarks">Other Remarks</label>
+                      <label class="form-label" for="filterOtherRemarks">Other Remarks</label>
                       <select id="filterOtherRemarks" class="vs-input js-filter-select" data-placeholder="TYPE OR SELECT"><option></option></select>
                     </div>
                   </div>
                 </div>
-                <div class="vs-modal-footer">
+                <div class="modal-footer">
                   <button type="button" class="vs-btn vs-btn-danger" id="filterClear">Clear All</button>
                   <button type="button" class="vs-btn vs-btn-danger" id="filterModalCancel">Close</button>
                   <button type="button" class="vs-btn vs-btn-primary" id="filterApply">Apply Filters</button>
@@ -188,17 +194,19 @@ var ModalInstance = (function () {
     },
 
     exportVoucher: function () {
-      return `<div class="vs-modal-overlay" id="exportModal" style="display:none">
-              <div class="vs-modal">
-                <div class="vs-modal-header">
-                  <h5>Export Students</h5>
-                  <button class="vs-modal-close" id="exportModalClose">&times;</button>
-                </div>
-                <div class="vs-modal-body">
-                  <p>Choose the file format to export the selected student records.</p>
-                  <div class="d-flex gap-3 mt-3">
-                    <a href="${_u("voucherExport")}?format=xlsx" data-export-format="xlsx" class="vs-btn vs-btn-outline flex-fill text-center">Excel (.xlsx)</a>
-                    <a href="${_u("voucherExport")}?format=csv" data-export-format="csv" class="vs-btn vs-btn-outline flex-fill text-center">CSV (.csv)</a>
+      return `<div class="modal modal-dialog-centered modal-backdrop" id="exportModal" style="display:none">
+              <div class="modal-dialog">
+                <div class="modal-content">
+                  <div class="modal-header">
+                    <h5>Export Students</h5>
+                    <button class="btn-close" id="exportModalClose" aria-label="Close"></button>
+                  </div>
+                  <div class="modal-body">
+                    <p>Choose the file format to export the selected student records.</p>                    
+                    <div class="d-flex gap-3 mt-3">
+                      <a href="${_u("voucherExport")}?format=xlsx" data-export-format="xlsx" class="vs-btn vs-btn-outline flex-fill text-center">Excel (.xlsx)</a>
+                      <a href="${_u("voucherExport")}?format=csv" data-export-format="csv" class="vs-btn vs-btn-outline flex-fill text-center">CSV (.csv)</a>
+                    </div>                    
                   </div>
                 </div>
               </div>
@@ -206,92 +214,91 @@ var ModalInstance = (function () {
     },
 
     voucherModal: function () {
-      return `<div class="vs-modal-overlay" id="voucherModal" style="display:none">
-              <div class="vs-modal vs-modal-lg">
-                <div class="vs-modal-header">
-                  <h5 id="voucherModalTitle">Add Student</h5>
-                  <button class="vs-modal-close" id="voucherModalClose">&times;</button>
-                </div>
-                <form id="voucherModalForm" novalidate>
-                  ${_csrfInput("vmCsrf")}
-                  <input type="hidden" name="student_id" id="vmStudentId" value="">
-                  <div class="vs-modal-body">
-                    <div id="voucherModalAlert"></div>
+      return `<div class="modal modal-dialog-centered modal-backdrop" id="voucherModal" style="display:none">
+              <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                  <div class="modal-header">
+                    <h5 id="voucherModalTitle">Add Student</h5>
+                    <button class="btn-close" id="voucherModalClose" aria-label="Close"></button>
+                  </div>
+                  <form id="voucherModalForm" novalidate>
+                    ${_csrfInput("vmCsrf")}
+                    <input type="hidden" name="student_id" id="vmStudentId" value="">
+                    <div class="modal-body">
+                      <div id="voucherModalAlert"></div>
                     <div class="row g-3">
-                      <div class="col-4">
-                        <label class="vs-label" for="vmControlNo">Control No.</label>
+                      <div class="col-6">
+                        <label class="form-label" for="vmControlNo">Control No.</label>
                         <input id="vmControlNo" name="control_no" type="text" class="vs-input vs-uppercase">
                       </div>
-                      <div id="vmVoucherDateWrap" class="col-4">
-                        <label class="vs-label" for="vmVoucherDate">Voucher Date</label>
+                      <div id="vmVoucherDateWrap" class="col-6">
+                        <label class="form-label" for="vmVoucherDate">Voucher Date</label>
                         <input id="vmVoucherDate" name="voucher_date" type="date" class="vs-input"  >
-                      </div>
-                      <div class="col-4"></div>
+                      </div>                      
                       <div class="col-4">
-                        <label class="vs-label required" for="vmFirstName">First Name</label>
+                        <label class="form-label required" for="vmFirstName">First Name</label>
                         <input id="vmFirstName" name="first_name" type="text" class="vs-input vs-uppercase" required>
                       </div>
                       <div class="col-4">
-                        <label class="vs-label" for="vmMiddleName">Middle Name</label>
+                        <label class="form-label" for="vmMiddleName">Middle Name</label>
                         <input id="vmMiddleName" name="middle_name" type="text" class="vs-input vs-uppercase">
                       </div>
                       <div class="col-4 ">
-                        <label class="vs-label required" for="vmLastName">Last Name</label>
+                        <label class="form-label required" for="vmLastName">Last Name</label>
                         <input id="vmLastName" name="last_name" type="text" class="vs-input vs-uppercase" required>
                       </div>
                       <div class="col-4">
-                        <label class="vs-label" for="vmSuffix">Suffix</label>
+                        <label class="form-label" for="vmSuffix">Suffix</label>
                         <select id="vmSuffix" name="suffix" class="vs-input js-school-select vs-uppercase" data-placeholder="- SELECT -" data-no-search="1">
                           <option></option><option value="JR.">JR.</option><option value="SR.">SR.</option>
                           <option value="II">II</option><option value="III">III</option><option value="IV">IV</option>
                         </select>
                       </div>
                       <div class="col-4">
-                        <label class="vs-label" for="vmGender">Sex</label>
+                        <label class="form-label" for="vmGender">Sex</label>
                         <select id="vmGender" name="gender" class="vs-input js-school-select" data-placeholder="MALE / FEMALE" data-no-search="1">
                           <option></option><option value="MALE">MALE</option><option value="FEMALE">FEMALE</option>
                         </select>
                       </div>
                       <div class="col-4">
-                        <label class="vs-label" for="vmContactNumber">Contact Number</label>
+                        <label class="form-label" for="vmContactNumber">Contact Number</label>
                         <input id="vmContactNumber" name="contact_number" type="text" class="vs-input vs-uppercase">
                       </div>
-                      <div class="col-4">
-                        <label class="vs-label required" for="vmGwa">GWA</label>
+                      <div class="col-6">
+                        <label class="form-label required" for="vmGwa">GWA</label>
                         <input id="vmGwa" name="gwa" type="number" step="0.01" class="vs-input" required>
                       </div>
-                      <div class="col-4">
-                        <label class="vs-label required" for="vmRankNo">Rank No.</label>
+                      <div class="col-6">
+                        <label class="form-label required" for="vmRankNo">Rank No.</label>
                         <input id="vmRankNo" name="rank_no" type="number" step="any" class="vs-input" required>
                       </div>
-                      <div class="col-4"></div>
                       <div class="col-6">
-                        <label class="vs-label required" for="vmJuniorHs">Junior High School</label>
+                        <label class="form-label required" for="vmJuniorHs">Junior High School</label>
                         <select id="vmJuniorHs" name="junior_high_school" class="vs-input js-school-select vs-uppercase" data-placeholder="TYPE OR SELECT" required><option></option></select>
                       </div>
                       <div class="col-6">
-                        <label class="vs-label" for="vmPreferredHs">Preferred Senior High School</label>
+                        <label class="form-label" for="vmPreferredHs">Preferred Senior High School</label>
                         <select id="vmPreferredHs" name="preferred_senior_high_school" class="vs-input js-school-select vs-uppercase" data-placeholder="TYPE OR SELECT"><option></option></select>
                       </div>
                       <!-- <div class="col-6">
-                        <label class="vs-label required" for="vmEligibility">Eligibility</label>
+                        <label class="form-label required" for="vmEligibility">Eligibility</label>
                         <select id="vmEligibility" name="eligibility_status" class="vs-input js-school-select" data-placeholder="ELIGIBLE / NOT ELIGIBLE" data-no-search="1" required>
                           <option></option><option value="eligible">ELIGIBLE</option><option value="not_eligible">NOT ELIGIBLE</option>
                         </select>
                       </div> -->
                       <div class="col-6">
-                        <label class="vs-label" for="vmRemarks">Remarks</label>
+                        <label class="form-label" for="vmRemarks">Remarks</label>
                         <select id="vmRemarks" name="remarks_status" class="vs-input js-school-select vs-uppercase" data-placeholder="COMPLETE / INCOMPLETE / OTHERS" data-no-search="1">
                           <option></option><option value="COMPLETE">COMPLETE</option><option value="INCOMPLETE">INCOMPLETE</option><option value="OTHERS">OTHERS</option>
                         </select>
                       </div>
                       <div class="col-12" id="vmOtherRemarksWrap" style="display:none">
-                        <label class="vs-label required" for="vmOtherRemarks">Other Remarks</label>
+                        <label class="form-label required" for="vmOtherRemarks">Other Remarks</label>
                         <textarea id="vmOtherRemarks" name="other_remarks" class="vs-input vs-uppercase" maxlength="500" rows="3" style="resize:vertical"></textarea>
                       </div>
                     </div>
                   </div>
-                  <div class="vs-modal-footer">
+                  <div class="modal-footer">
                     <div id="vmLastGeneratedByWrap" class="vm-generation-summary me-auto" style="display:none">
                       <details id="vmGenerationHistoryDetails" class="vm-generation-history">
                         <summary>Generation history</summary>
@@ -310,52 +317,53 @@ var ModalInstance = (function () {
     },
 
     userModal: function () {
-      return `<div class="vs-modal-overlay" id="userModal" style="display:none">
-              <div class="vs-modal" style="max-width:680px">
-                <div class="vs-modal-header">
-                  <h5 id="userModalTitle">Add User</h5>
-                  <button class="vs-modal-close" id="userModalClose">&times;</button>
-                </div>
+      return `<div class="modal modal-dialog-centered modal-backdrop" id="userModal" style="display:none">
+              <div class="modal-dialog" style="max-width:680px">
+                <div class="modal-content">
+                  <div class="modal-header">
+                    <h5 id="userModalTitle">Add User</h5>
+                    <button class="btn-close" id="userModalClose" aria-label="Close"></button>
+                  </div>
                 <form id="userModalForm" novalidate>
                   ${_csrfInput("umCsrf")}
                   <input type="hidden" name="user_id" id="umUserId" value="">
-                  <div class="vs-modal-body">
+                  <div class="modal-body">
                     <div id="userModalAlert"></div>
                     <div class="row g-3">
                       <div class="col-4">
-                        <label class="vs-label required" for="umFirstName">First Name</label>
+                        <label class="form-label required" for="umFirstName">First Name</label>
                         <input type="text" id="umFirstName" name="first_name" class="vs-input vs-uppercase" required spellcheck="false">
                       </div>
                       <div class="col-4">
-                        <label class="vs-label" for="umMiddleName">Middle Name</label>
+                        <label class="form-label" for="umMiddleName">Middle Name</label>
                         <input type="text" id="umMiddleName" name="middle_name" class="vs-input vs-uppercase" spellcheck="false">
                       </div>
                       <div class="col-4">
-                        <label class="vs-label required" for="umLastName">Last Name</label>
+                        <label class="form-label required" for="umLastName">Last Name</label>
                         <input type="text" id="umLastName" name="last_name" class="vs-input vs-uppercase" required spellcheck="false">
                       </div>                      
                       <div class="col-6 ">
-                        <label class="vs-label required" for="umEmail">Email</label>
+                        <label class="form-label required" for="umEmail">Email</label>
                         <input type="email" id="umEmail" name="email" class="vs-input" required autocomplete="email" autocapitalize="none" spellcheck="false">
                       </div>
                       <div class="col-6">
-                        <label class="vs-label required" for="umRole">Account Level</label>
+                        <label class="form-label required" for="umRole">Account Level</label>
                         <select id="umRole" name="role" class="vs-input js-filter-select" data-placeholder="ADMIN / USER" data-no-search="1" required>
                           <option></option><option value="admin">ADMIN</option><option value="user">USER</option>
                         </select>
                       </div>
                       <div class="col-6">
-                        <label class="vs-label required" for="umUsername">Username</label>
+                        <label class="form-label required" for="umUsername">Username</label>
                         <input type="text" id="umUsername" name="username" class="vs-input" required spellcheck="false" autocomplete="off">
                       </div>
                       <div class="col-6">
-                        <label class="vs-label" id="umPasswordLabel" for="umPassword">Password</label>
+                        <label class="form-label" id="umPasswordLabel" for="umPassword">Password</label>
                         <input type="password" id="umPassword" name="password" class="vs-input" autocomplete="new-password" autocapitalize="none" spellcheck="false">
                       </div>                      
                       <div class="col-4"></div>
                     </div>
                   </div>
-                  <div class="vs-modal-footer">
+                  <div class="modal-footer">
                     <button type="button" class="vs-btn vs-btn-danger" id="userModalCancel">Close</button>
                     <button type="submit" class="vs-btn vs-btn-primary" id="userModalSubmit">
                       <span id="umSubmitText">Save</span>
@@ -368,43 +376,45 @@ var ModalInstance = (function () {
     },
 
     deactivateModal: function () {
-      return `<div class="vs-modal-overlay" id="deactivateModal" style="display:none">
-              <div class="vs-modal" style="max-width:680px">
-                <div class="vs-modal-header">
-                  <h5>Deactivate User</h5>
-                  <button class="vs-modal-close" id="deactivateModalClose">&times;</button>
-                </div>
-                <div class="vs-modal-body">
-                  <p>You are about to deactivate 1 user(s). This will move them to the archive.</p>
-                </div>
-                <div class="vs-modal-footer">
-                  <button class="vs-btn vs-btn-danger" id="deactivateModalCancel">Close</button>
-                  <button class="vs-btn vs-btn-danger" id="deactivateModalConfirm">
-                    <span id="deactivateBtnText">Deactivate</span>
-                    <span id="deactivateBtnSpinner" class="vs-spinner" style="display:none"></span>
-                  </button>
-                </div>
+      return `<div class="modal modal-dialog-centered modal-backdrop" id="deactivateModal" style="display:none">
+              <div class="modal-dialog" style="max-width:680px">
+                <div class="modal-content">
+                  <div class="modal-header">
+                    <h5>Deactivate User</h5>
+                    <button class="btn-close" id="deactivateModalClose" aria-label="Close"></button>
+                  </div>
+                  <div class="modal-body">
+                    <p>You are about to deactivate 1 user(s). This will move them to the archive.</p>
+                  </div>
+                  <div class="modal-footer">
+                    <button class="btn btn-danger" id="deactivateModalCancel">Close</button>
+                    <button class="btn btn-danger" id="deactivateModalConfirm">
+                      <span id="deactivateBtnText">Deactivate</span>
+                      <span id="deactivateBtnSpinner" class="spinner-border spinner-border-sm" style="display:none" role="status"></span>
+                    </button>
+                  </div>
               </div>
             </div>`;
     },
 
     archiveCurrentModal: function () {
-      return `<div class="vs-modal-overlay" id="archiveCurrentModal" style="display:none">
-              <div class="vs-modal" style="max-width:480px">
-                <div class="vs-modal-header">
-                  <h5 id="archiveCurrentModalTitle">Archive Current Data</h5>
-                  <button class="vs-modal-close" id="archiveCurrentModalClose">&times;</button>
-                </div>
-                <div class="vs-modal-body">
-                  <div id="archiveCurrentModalBody"></div>
-                  <div class="mt-3">
-                    <label class="vs-label" for="archiveCurrentReason">Reason (optional)</label>
-                    <input type="text" id="archiveCurrentReason" class="vs-input" placeholder="e.g. End of school year">
+      return `<div class="modal modal-dialog-centered modal-backdrop" id="archiveCurrentModal" style="display:none">
+              <div class="modal-dialog" style="max-width:480px">
+                <div class="modal-content">
+                  <div class="modal-header">
+                    <h5 id="archiveCurrentModalTitle">Archive Current Data</h5>
+                    <button class="btn-close" id="archiveCurrentModalClose" aria-label="Close"></button>
                   </div>
-                </div>
-                <div class="vs-modal-footer">
-                  <button class="vs-btn vs-btn-danger" id="archiveCurrentModalCancel">Close</button>
-                  <button class="vs-btn vs-btn-primary" id="archiveCurrentModalConfirm">
+                  <div class="modal-body">
+                    <div id="archiveCurrentModalBody"></div>
+                    <div class="mt-3">
+                      <label class="form-label" for="archiveCurrentReason">Reason (optional)</label>
+                      <input type="text" id="archiveCurrentReason" class="form-control" placeholder="e.g. End of school year">
+                    </div>
+                  </div>
+                  <div class="modal-footer">
+                    <button class="btn btn-danger" id="archiveCurrentModalCancel">Close</button>
+                    <button class="btn btn-primary" id="archiveCurrentModalConfirm">
                     <span id="archiveCurrentBtnText">Confirm</span>
                     <span id="archiveCurrentBtnSpinner" class="vs-spinner" style="display:none"></span>
                   </button>
@@ -414,67 +424,68 @@ var ModalInstance = (function () {
     },
 
     archiveFilterModal: function () {
-      return `<div class="vs-modal-overlay" id="archiveFilterModal" style="display:none">
-              <div class="vs-modal" style="max-width:680px">
-                <div class="vs-modal-header">
-                  <h5>Advanced Filters</h5>
-                  <button class="vs-modal-close" id="archiveFilterClose">&times;</button>
-                </div>
-                <div class="vs-modal-body">
-                  <div class="row g-3">
-                    <div class="col-12 col-lg-6">
-                      <label class="vs-label required" for="afSchoolYear">School Year</label>
-                      <select id="afSchoolYear" class="vs-input js-filter-select" data-placeholder="TYPE OR SELECT"><option></option></select>
-                    </div>
-                    <div class="col-12 col-lg-6">
-                      <label class="vs-label" for="afGender">Sex</label>
-                      <select id="afGender" class="vs-input js-filter-select" data-placeholder="MALE / FEMALE" data-no-search="1">
-                        <option></option><option value="MALE">MALE</option><option value="FEMALE">FEMALE</option>
+      return `<div class="modal modal-dialog-centered modal-backdrop" id="archiveFilterModal" style="display:none">
+              <div class="modal-dialog" style="max-width:680px">
+                <div class="modal-content">
+                  <div class="modal-header">
+                    <h5>Advanced Filters</h5>
+                    <button class="btn-close" id="archiveFilterClose" aria-label="Close"></button>
+                  </div>
+                  <div class="modal-body">
+                    <div class="row g-3">
+                      <div class="col-12 col-lg-6">
+                        <label class="form-label required" for="afSchoolYear">School Year</label>
+                        <select id="afSchoolYear" class="form-control js-filter-select" data-placeholder="TYPE OR SELECT"><option></option></select>
+                      </div>
+                      <div class="col-12 col-lg-6">
+                        <label class="form-label" for="afGender">Sex</label>
+                        <select id="afGender" class="form-control js-filter-select" data-placeholder="MALE / FEMALE" data-no-search="1">
+                          <option></option><option value="MALE">MALE</option><option value="FEMALE">FEMALE</option>
                       </select>
                     </div>                    
                     <div class="col-12 col-lg-6">
-                      <label class="vs-label" for="afVoucherStatus">Voucher Status</label>
+                      <label class="form-label" for="afVoucherStatus">Voucher Status</label>
                       <select id="afVoucherStatus" class="vs-input js-filter-select" data-placeholder="GENERATED / NOT GENERATED" data-no-search="1">
                         <option></option><option value="generated">generated</option><option value="not_generated">not_generated</option>
                       </select>
                     </div>
                     <div class="col-12 col-lg-6">
-                      <label class="vs-label" for="afDateFrom"> Date Added From</label>
+                      <label class="form-label" for="afDateFrom"> Date Added From</label>
                       <input type="date" id="afDateFrom" class="vs-input">
                     </div>
                     <div class="col-12 col-lg-6">
-                      <label class="vs-label" for="afDateTo">Date Added To</label>
+                      <label class="form-label" for="afDateTo">Date Added To</label>
                       <input type="date" id="afDateTo" class="vs-input">
                     </div>
                     <div class="col-12 col-lg-6">
-                      <label class="vs-label" for="afJuniorHs">Junior High School</label>
+                      <label class="form-label" for="afJuniorHs">Junior High School</label>
                       <select id="afJuniorHs" class="vs-input js-filter-select" data-placeholder="TYPE OR SELECT"><option></option></select>
                     </div>
                     <div class="col-12 col-lg-6">
-                      <label class="vs-label" for="afPreferredHs">Preferred Senior HS</label>
+                      <label class="form-label" for="afPreferredHs">Preferred Senior HS</label>
                       <select id="afPreferredHs" class="vs-input js-filter-select" data-placeholder="TYPE OR SELECT"><option></option></select>
                     </div>
                     <div class="col-12 col-lg-6">
-                      <label class="vs-label" for="afGwaMin">GWA Min</label>
+                      <label class="form-label" for="afGwaMin">GWA Min</label>
                       <input type="number" step="0.01" id="afGwaMin" class="vs-input" placeholder="e.g. 80">
                     </div>
                     <div class="col-12 col-lg-6">
-                      <label class="vs-label" for="afGwaMax">GWA Max</label>
+                      <label class="form-label" for="afGwaMax">GWA Max</label>
                       <input type="number" step="0.01" id="afGwaMax" class="vs-input" placeholder="e.g. 100">
                     </div>
                     <div class="col-12 col-lg-6">
-                      <label class="vs-label" for="afRemarks">Remarks</label>
+                      <label class="form-label" for="afRemarks">Remarks</label>
                       <select id="afRemarks" class="vs-input js-filter-select" data-placeholder="COMPLETE / INCOMPLETE / OTHERS" data-no-search="1">
                         <option></option><option value="COMPLETE">COMPLETE</option><option value="INCOMPLETE">INCOMPLETE</option><option value="OTHERS">OTHERS</option>
                       </select>
                     </div>
                     <div class="col-12 col-lg-6" id="afOtherRemarksWrap" style="display:none">
-                      <label class="vs-label" for="afOtherRemarks">Other Remarks</label>
+                      <label class="form-label" for="afOtherRemarks">Other Remarks</label>
                       <input id="afOtherRemarks" type="text" class="vs-input vs-uppercase" placeholder="SEARCH OTHER REMARKS" maxlength="255" disabled>
                     </div>  
                   </div>
                 </div>
-                <div class="vs-modal-footer">
+                <div class="modal-footer">
                   <button type="button" class="vs-btn vs-btn-danger" id="archiveFilterClear">Clear All</button>
                   <button type="button" class="vs-btn vs-btn-danger" id="archiveFilterCancel">Close</button>
                   <button type="button" class="vs-btn vs-btn-primary" id="archiveFilterApply">Apply Filters</button>
@@ -484,29 +495,30 @@ var ModalInstance = (function () {
     },
 
     auditFilterModal: function () {
-      return `<div class="vs-modal-overlay" id="auditFilterModal" style="display:none">
-                <div class="vs-modal" style="max-width:680px">
-                    <div class="vs-modal-header">
-                        <h5>Advanced Filters</h5>
-                        <button class="vs-modal-close" id="auditFilterModalClose">&times;</button>
-                    </div>
-                    <div class="vs-modal-body">
+      return `<div class="modal modal-dialog-centered modal-backdrop" id="auditFilterModal" style="display:none">
+                <div class="modal-dialog" style="max-width:680px">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5>Advanced Filters</h5>
+                            <button class="btn-close" id="auditFilterModalClose" aria-label="Close"></button>
+                        </div>
+                    <div class="modal-body">
                         <div class="row g-3">
                             <div class="col-12">
-                                <label class="vs-label" for="auditFilterAction">Action</label>
-                                <select id="auditFilterAction" class="vs-input js-filter-select" data-placeholder="TYPE OR SELECT"><option></option></select>
+                                <label class="form-label" for="auditFilterAction">Action</label>
+                                <select id="auditFilterAction" class="form-control js-filter-select" data-placeholder="TYPE OR SELECT"><option></option></select>
                             </div>
                             <div class="col-12 col-lg-6">
-                                <label class="vs-label" for="auditFilterDateFrom">Date From</label>
-                                <input type="date" id="auditFilterDateFrom" class="vs-input">
+                                <label class="form-label" for="auditFilterDateFrom">Date From</label>
+                                <input type="date" id="auditFilterDateFrom" class="form-control">
                             </div>
                             <div class="col-12 col-lg-6">
-                                <label class="vs-label" for="auditFilterDateTo">Date To</label>
-                                <input type="date" id="auditFilterDateTo" class="vs-input">
+                                <label class="form-label" for="auditFilterDateTo">Date To</label>
+                                <input type="date" id="auditFilterDateTo" class="form-control">
                             </div>
                         </div>
                     </div>
-                    <div class="vs-modal-footer">
+                    <div class="modal-footer">
                         <button type="button" class="vs-btn vs-btn-danger" id="auditFilterClear">Clear All</button>
                         <button type="button" class="vs-btn vs-btn-danger" id="auditFilterModalCancel">Close</button>
                         <button type="button" class="vs-btn vs-btn-primary" id="auditFilterApply">Apply Filters</button>
@@ -516,39 +528,42 @@ var ModalInstance = (function () {
     },
 
     schoolArchiveModal: function () {
-      return `<div class="vs-modal-overlay" id="schoolArchiveModal" style="display:none">
-                <div class="vs-modal">
-                    <div class="vs-modal-header">
-                        <h5>Deactivate Schools</h5>
-                        <button class="vs-modal-close" id="schoolArchiveModalClose">&times;</button>
-                    </div>
-                    <div class="vs-modal-body">
-                        <p>You are about to deactivate <strong id="schoolArchiveCount">0</strong> school(s).
-                           Inactive schools will no longer appear in the voucher school picker.</p>
-                    </div>
-                    <div class="vs-modal-footer">
-                        <button class="vs-btn vs-btn-danger" id="schoolArchiveModalCancel">Close</button>
-                        <button class="vs-btn vs-btn-primary" id="schoolArchiveConfirm">
-                            <span id="schoolArchiveBtnText">Confirm</span>
-                            <span id="schoolArchiveBtnSpinner" class="vs-spinner" style="display:none"></span>
-                        </button>
+      return `<div class="modal modal-dialog-centered modal-backdrop" id="schoolArchiveModal" style="display:none">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5>Deactivate Schools</h5>
+                            <button class="btn-close" id="schoolArchiveModalClose" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <p>You are about to deactivate <strong id="schoolArchiveCount">0</strong> school(s).
+                               Inactive schools will no longer appear in the voucher school picker.</p>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="vs-btn vs-btn-danger" id="schoolArchiveModalCancel">Close</button>
+                            <button type="button" class="vs-btn vs-btn-primary" id="schoolArchiveConfirm">
+                                <span id="schoolArchiveBtnText">Confirm</span>
+                                <span id="schoolArchiveBtnSpinner" class="vs-spinner" style="display:none"></span>
+                            </button>
                     </div>
                 </div>
             </div>`;
     },
 
     schoolExportModal: function () {
-      return `<div class="vs-modal-overlay" id="schoolExportModal" style="display:none">
-                <div class="vs-modal">
-                    <div class="vs-modal-header">
-                        <h5>Export Schools</h5>
-                        <button class="vs-modal-close" id="schoolExportModalClose">&times;</button>
-                    </div>
-                    <div class="vs-modal-body">
-                        <p>Choose the file format to export the selected school records.</p>
-                        <div class="d-flex gap-3 mt-3">
-                            <a href="${_u("schoolExport")}?format=excel" id="exportExcelLink" class="vs-btn vs-btn-outline flex-fill text-center">Excel (.xlsx)</a>
-                            <a href="${_u("schoolExport")}?format=csv" id="exportCsvLink" class="vs-btn vs-btn-outline flex-fill text-center">CSV (.csv)</a>
+      return `<div class="modal modal-dialog-centered modal-backdrop" id="schoolExportModal" style="display:none">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5>Export Schools</h5>
+                            <button class="btn-close" id="schoolExportModalClose" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <p>Choose the file format to export the selected school records.</p>
+                            <div class="d-flex gap-3 mt-3">
+                                <a href="${_u("schoolExport")}?format=excel" id="exportExcelLink" class="vs-btn vs-btn-outline flex-fill text-center">Excel (.xlsx)</a>
+                                <a href="${_u("schoolExport")}?format=csv" id="exportCsvLink" class="vs-btn vs-btn-outline flex-fill text-center">CSV (.csv)</a>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -556,39 +571,40 @@ var ModalInstance = (function () {
     },
 
     schoolModal: function () {
-      return `<div class="vs-modal-overlay" id="schoolModal" style="display:none">
-                <div class="vs-modal" style="max-width:480px">
-                    <div class="vs-modal-header">
-                        <h5 id="schoolModalTitle">Add School</h5>
-                        <button class="vs-modal-close" id="schoolModalClose">&times;</button>
-                    </div>
-                    <form id="schoolModalForm" novalidate>
-                        ${_csrfInput("smCsrf")}
-                        <input type="hidden" name="school_id" id="smSchoolId" value="">
-                        <div class="vs-modal-body">
-                            <div id="schoolModalAlert"></div>
+      return `<div class="modal modal-dialog-centered modal-backdrop" id="schoolModal" style="display:none">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 id="schoolModalTitle">Add School</h5>
+                            <button class="btn-close" id="schoolModalClose" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <form id="schoolModalForm" novalidate>
+                                ${_csrfInput("smCsrf")}
+                                <input type="hidden" name="school_id" id="smSchoolId" value="">
+                                <div id="schoolModalAlert"></div>
                             <div class="row g-3">
                                 <div class="col-12">
-                                    <label class="vs-label required" for="smSchoolName">School Name</label>
+                                    <label class="form-label required" for="smSchoolName">School Name</label>
                                     <input id="smSchoolName" name="school_name" type="text" class="vs-input vs-uppercase" required placeholder="e.g. TANDAG NATIONAL HIGH SCHOOL">
                                 </div>
                                 <div class="col-6">
-                                    <label class="vs-label required" for="smAcronym">Acronym</label>
+                                    <label class="form-label required" for="smAcronym">Acronym</label>
                                     <input id="smAcronym" name="acronym" type="text" class="vs-input vs-uppercase" required placeholder="e.g. TNHS">
                                 </div>
                                 <div class="col-6">
-                                    <label class="vs-label required" for="smSchoolLevel">Level</label>
+                                    <label class="form-label required" for="smSchoolLevel">Level</label>
                                     <select id="smSchoolLevel" name="school_level" class="vs-input js-filter-select" data-placeholder="JHS / SHS" data-no-search="1" required>
                                         <option></option><option value="JHS">JHS</option><option value="SHS">SHS</option>
                                     </select>
                                 </div>
                             </div>
                         </div>
-                        <div class="vs-modal-footer">
-                            <button type="button" class="vs-btn vs-btn-danger" id="schoolModalCancel">Close</button>
-                            <button type="submit" class="vs-btn vs-btn-primary" id="schoolModalSubmit">
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-danger" id="schoolModalCancel">Close</button>
+                            <button type="submit" class="btn btn-primary" id="schoolModalSubmit">
                                 <span id="smSubmitText">Save</span>
-                                <span id="smSubmitSpinner" class="vs-spinner" style="display:none"></span>
+                                <span id="smSubmitSpinner" class="spinner-border spinner-border-sm" style="display:none" role="status" aria-hidden="true"></span>
                             </button>
                         </div>
                     </form>
@@ -597,27 +613,28 @@ var ModalInstance = (function () {
     },
 
     schoolImportModal: function () {
-      return `<div class="vs-modal-overlay" id="schoolImportModal" style="display:none">
-                <div class="vs-modal">
-                    <div class="vs-modal-header">
-                        <h5>Import Schools</h5>
-                        <button class="vs-modal-close" id="schoolImportClose">&times;</button>
-                    </div>
+      return `<div class="modal modal-dialog-centered modal-backdrop" id="schoolImportModal" style="display:none">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5>Import Schools</h5>
+                            <button class="btn-close" id="schoolImportClose" aria-label="Close"></button>
+                        </div>
                     <form id="schoolImportForm" novalidate enctype="multipart/form-data">
                         ${_csrfInput("siCsrf")}
-                        <div class="vs-modal-body">
+                        <div class="modal-body">
                             <div id="schoolImportAlert"></div>
-                            <p class="text-muted small mb-3">
-                                Upload an <strong>.xlsx</strong>, <strong>.xls</strong>, or <strong>.csv</strong> file.<br>
+                            <p class="vs-page-sub">
+                                Upload a <strong>.xlsx</strong>, <strong>.xls</strong>, or <strong>.csv</strong> file.<br>
                             </p>
-                            <label class="vs-label" for="schoolFileInput">File</label>
-                            <input id="schoolFileInput" name="school_file" type="file" class="vs-input" accept=".csv,.xlsx,.xls" required>
+                            <label class="form-label" for="schoolFileInput">File</label>
+                            <input id="schoolFileInput" name="school_file" type="file" class="form-control" accept=".csv,.xlsx,.xls" required>
                         </div>
-                        <div class="vs-modal-footer">
-                            <button type="button" class="vs-btn vs-btn-danger" id="schoolImportCancel">Close</button>
-                            <button type="submit" class="vs-btn vs-btn-primary" id="schoolImportSubmit">
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-danger" id="schoolImportCancel">Close</button>
+                            <button type="submit" class="btn btn-primary" id="schoolImportSubmit">
                                 <span id="siSubmitText">Import</span>
-                                <span id="siSubmitSpinner" class="vs-spinner" style="display:none"></span>
+                                <span id="siSubmitSpinner" class="spinner-border spinner-border-sm" style="display:none" role="status" aria-hidden="true"></span>
                             </button>
                         </div>
                     </form>
@@ -626,20 +643,21 @@ var ModalInstance = (function () {
     },
 
     sigArchiveModal: function () {
-      return `<div class="vs-modal-overlay" id="sigArchiveModal" style="display:none">
-              <div class="vs-modal">
-                <div class="vs-modal-header">
-                  <h5>Deactivate Signatories</h5>
-                  <button class="vs-modal-close" id="sigArchiveModalClose">&times;</button>
-                </div>
-                <div class="vs-modal-body">
+      return `<div class="modal modal-dialog-centered modal-backdrop" id="sigArchiveModal" style="display:none">
+              <div class="modal-dialog">
+                <div class="modal-content">
+                  <div class="modal-header">
+                    <h5>Deactivate Signatories</h5>
+                    <button class="btn-close" id="sigArchiveModalClose" aria-label="Close"></button>
+                  </div>
+                <div class="modal-body">
                   <p>You are about to deactivate <strong id="sigArchiveCount">0</strong> signatory(ies).</p>
                 </div>
-                <div class="vs-modal-footer">
-                  <button class="vs-btn vs-btn-danger" id="sigArchiveModalCancel">Close</button>
-                  <button class="vs-btn vs-btn-primary" id="sigArchiveConfirm">
+                <div class="modal-footer">
+                  <button class="btn btn-danger" id="sigArchiveModalCancel">Close</button>
+                  <button class="btn btn-primary" id="sigArchiveConfirm">
                     <span id="sigArchiveBtnText">Confirm</span>
-                    <span id="sigArchiveBtnSpinner" class="vs-spinner" style="display:none"></span>
+                    <span id="sigArchiveBtnSpinner" class="spinner-border spinner-border-sm" style="display:none" role="status" aria-hidden="true"></span>
                   </button>
                 </div>
               </div>
@@ -676,63 +694,64 @@ var ModalInstance = (function () {
           .join("");
       }
 
-      return `<div class="vs-modal-overlay" id="signatoryModal" style="display:none">
-              <div class="vs-modal vs-modal-md">
-                <div class="vs-modal-header">
-                  <h5 id="signatoryModalTitle">Add Signatory</h5>
-                  <button class="vs-modal-close" id="signatoryModalClose">&times;</button>
-                </div>
-                <form id="signatoryModalForm" novalidate enctype="multipart/form-data">
-                  ${_csrfInput("sigCsrf")}
-                  <input type="hidden" name="signatory_id" id="smSignatoryId" value="">
-                  <div class="vs-modal-body">
-                    <div id="signatoryModalAlert"></div>
+      return `<div class="modal modal-dialog-centered modal-backdrop" id="signatoryModal" style="display:none">
+              <div class="modal-dialog modal-md">
+                <div class="modal-content">
+                  <div class="modal-header">
+                    <h5 id="signatoryModalTitle">Add Signatory</h5>
+                    <button class="btn-close" id="signatoryModalClose" aria-label="Close"></button>
+                  </div>
+                  <form id="signatoryModalForm" novalidate enctype="multipart/form-data">
+                    ${_csrfInput("sigCsrf")}
+                    <input type="hidden" name="signatory_id" id="smSignatoryId" value="">
+                    <div class="modal-body">
+                      <div id="signatoryModalAlert"></div>
                     <div class="row g-3">
                       <div class="col-4">
-                        <label class="vs-label required" for="smFirstName">First Name</label>
+                        <label class="form-label required" for="smFirstName">First Name</label>
                         <input id="smFirstName" name="first_name" type="text" class="vs-input vs-uppercase" required>
                       </div>
                       <div class="col-4">
-                        <label class="vs-label" for="smMiddleName">Middle Name</label>
+                        <label class="form-label" for="smMiddleName">Middle Name</label>
                         <input id="smMiddleName" name="middle_name" type="text" class="vs-input vs-uppercase">
                       </div>
                       <div class="col-4">
-                        <label class="vs-label required" for="smLastName">Last Name</label>
+                        <label class="form-label required" for="smLastName">Last Name</label>
                         <input id="smLastName" name="last_name" type="text" class="vs-input vs-uppercase" required>
                       </div>
                       <div class="col-6">
-                        <label class="vs-label" for="smPrefix">Prefix</label>
+                        <label class="form-label" for="smPrefix">Prefix</label>
                         <select id="smPrefix" name="prefix" class="vs-input js-filter-select" data-placeholder="- SELECT -" data-no-search="1">
                           <option></option>${_staticOpts(prefixOpts)}
                         </select>
                       </div>
                       <div class="col-6">
-                        <label class="vs-label" for="smSuffix">Suffix</label>
+                        <label class="form-label" for="smSuffix">Suffix</label>
                         <select id="smSuffix" name="suffix" class="vs-input js-filter-select" data-placeholder="- SELECT -" data-no-search="1">
                           <option></option>${_staticOpts(suffixOpts)}
                         </select>
                       </div>
                       <div class="col-6">
-                        <label class="vs-label" for="smDegree">Degree</label>
+                        <label class="form-label" for="smDegree">Degree</label>
                         <select id="smDegree" name="degree" class="vs-input js-filter-select" data-placeholder="TYPE OR SELECT">
                           <option></option>${_staticOpts(degreeOpts)}
                         </select>
                         <input id="smDegreeOther" name="degree_other" type="text" class="vs-input mt-2" placeholder="Specify degree" style="display:none">
                       </div>
                       <div class="col-6">
-                        <label class="vs-label required" for="smPositionTitle">Position Title</label>
+                        <label class="form-label required" for="smPositionTitle">Position Title</label>
                         <input id="smPositionTitle" name="position_title" type="text" class="vs-input vs-uppercase" required>
                       </div>
                       <div class="col-12">
-                        <label class="vs-label" for="smSignatureImage">Signature Image</label>
-                        <input id="smSignatureImage" name="signature_image" type="file" class="vs-input" accept="image/png,image/jpeg,image/jpg,image/webp">
+                        <label class="form-label" for="smSignatureImage">Signature Image</label>
+                        <input id="smSignatureImage" name="signature_image" type="file" class="form-control" accept="image/png,image/jpeg,image/jpg,image/webp">
                         <small class="text-muted">PNG, JPG, or WEBP — max 2 MB. Leave empty to keep the current image.</small>
                         <div class="form-check mt-2">
                           <input class="form-check-input" type="checkbox" name="auto_remove_bg" value="1" id="smAutoRemoveBg" checked>
                           <label class="form-check-label" for="smAutoRemoveBg">Remove background automatically (best for signatures on plain white paper)</label>
                         </div>
                         <div id="smCurrentSignatureWrap" class="mt-3" style="display:none">
-                          <p class="vs-label mb-1">Current Signature</p>
+                          <p class="form-label mb-1">Current Signature</p>
                           <img id="smCurrentSignaturePreview" src="" alt="Current signature" style="max-height:80px;background:#fff;padding:4px;border:1px solid #ddd;border-radius:4px;">
                           <div class="form-check mt-2">
                             <input class="form-check-input" type="checkbox" name="remove_signature" value="1" id="smRemoveSignature">
@@ -742,7 +761,7 @@ var ModalInstance = (function () {
                       </div>
                     </div>
                   </div>
-                  <div class="vs-modal-footer">
+                  <div class="modal-footer">
                     <button type="button" class="vs-btn vs-btn-danger" id="signatoryModalCancel">Close</button>
                     <button type="submit" class="vs-btn vs-btn-primary" id="signatoryModalSubmit">
                       <span id="smSubmitText">Save</span>
@@ -755,13 +774,14 @@ var ModalInstance = (function () {
     },
 
     pdfStatusModal: function () {
-      return `<div class="vs-modal-overlay" id="pdfStatusModal" style="display:none">
-              <div class="vs-modal">
-                <div class="vs-modal-header">
-                  <h5>Voucher Generation Status</h5>
-                  <button class="vs-modal-close" id="pdfStatusModalClose">&times;</button>
-                </div>
-                <div class="vs-modal-body">
+      return `<div class="modal modal-dialog-centered modal-backdrop" id="pdfStatusModal" style="display:none">
+              <div class="modal-dialog">
+                <div class="modal-content">
+                  <div class="modal-header">
+                    <h5 class="modal-title">Voucher Generation Status</h5>
+                    <button type="button" class="btn-close" id="pdfStatusModalClose" data-bs-dismiss="modal" aria-label="Close"></button>
+                  </div>
+                  <div class="modal-body">
                   <p id="pdfStatusEmpty" style="display:none">No recent generation job for this session.</p>
                   <div id="pdfStatusContent" style="display:none">
                     <p><strong>Job #:</strong> <span id="pdfStatusJobId">-</span></p>
@@ -778,12 +798,14 @@ var ModalInstance = (function () {
     },
 
     accountModal: function () {
-      return `<div class="vs-modal-overlay" id="accountModal" style="display:none">
-                <div class="vs-modal" style="max-width:920px">
-                    <div class="vs-modal-header align-items-start">
-                        <div>
-                            <h5 class="mb-1">My Account</h5>
-                            <p class="mb-0 text-muted small">Update your profile details and password.</p>
+      return `<div class="modal modal-dialog-centered modal-backdrop" id="accountModal" style="display:none">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title">My Account</h5>
+                            <button type="button" class="btn-close" id="accountModalClose" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
                         </div>
                         <button class="vs-modal-close" id="accountModalClose">&times;</button>
                     </div>
@@ -855,7 +877,7 @@ var ModalInstance = (function () {
                             </div>
                         </form>
                     </div>
-                    <div class="vs-modal-footer d-flex justify-content-end gap-2">
+                    <div class="modal-footer d-flex justify-content-end gap-2">
                         <button type="button" class="vs-btn vs-btn-danger" id="accountModalCancel">Close</button>
                         <button type="button" class="btn btn-primary px-4" id="accountModalSave">Save</button>
                     </div>
