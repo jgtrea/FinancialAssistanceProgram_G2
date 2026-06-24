@@ -1290,3 +1290,5 @@ var ModalInstance = (function () {
 
   return { render: render, populate: populate };
 })();
+
+

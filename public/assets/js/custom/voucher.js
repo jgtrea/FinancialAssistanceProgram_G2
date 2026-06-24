@@ -556,7 +556,19 @@ document.addEventListener("DOMContentLoaded", function () {
   if (btnOpenExport && exportModal) {
     btnOpenExport.addEventListener("click", function () {
       if (!selectedIds.size) {
-        showAlert("Select at least one student to export.", "warning");
+        const existing = document.getElementById('vs-inline-alert');
+        if (existing) existing.remove();
+
+        const alert = document.createElement('div');
+        alert.id = 'vs-inline-alert';
+        alert.className = 'vs-alert vs-alert-warning mb-3';
+        alert.style.cssText = 'display:flex; justify-content:space-between; align-items:center;';
+        alert.innerHTML = 'Select at least one student to export. <button onclick="this.parentElement.remove()" style="background:none;border:none;cursor:pointer;font-weight:bold;">Dismiss</button>';
+
+        const header = document.querySelector('.vs-page-header');
+        if (header) header.insertAdjacentElement('afterend', alert);
+
+        setTimeout(() => alert && alert.remove(), 4000);
         return;
       }
       vsConfirm({
@@ -765,18 +777,33 @@ document.addEventListener("DOMContentLoaded", function () {
 
     btnGeneratePdf.addEventListener("click", function () {
       if (!selectedIds.size) {
-        showAlert("Select at least one student to print vouchers.", "warning");
+        const existing = document.getElementById('vs-inline-alert');
+        if (existing) existing.remove();
+
+        const alert = document.createElement('div');
+        alert.id = 'vs-inline-alert';
+        alert.className = 'vs-alert vs-alert-warning mb-3';
+        alert.style.cssText = 'display:flex; justify-content:space-between; align-items:center;';
+        alert.innerHTML = 'Select at least one student to print vouchers. <button onclick="this.parentElement.remove()" style="background:none;border:none;cursor:pointer;font-weight:bold;">Dismiss</button>';
+
+        const header = document.querySelector('.vs-page-header');
+        if (header) header.insertAdjacentElement('afterend', alert);
+        setTimeout(() => { const el = document.getElementById('vs-inline-alert'); if (el) el.remove(); }, 4000);
         return;
       }
       if (selectedIds.size > MAX_BATCH) {
-        showAlert(
-          "You can only print PDFs for up to " +
-            MAX_BATCH +
-            " students at a time. You have " +
-            selectedIds.size +
-            " selected.",
-          "warning",
-        );
+        const existing = document.getElementById('vs-inline-alert');
+        if (existing) existing.remove();
+
+        const alert = document.createElement('div');
+        alert.id = 'vs-inline-alert';
+        alert.className = 'vs-alert vs-alert-warning mb-3';
+        alert.style.cssText = 'display:flex; justify-content:space-between; align-items:center;';
+        alert.innerHTML = 'You can only print PDFs for up to ' + MAX_BATCH + ' students at a time. You have ' + selectedIds.size + ' selected. <button onclick="this.parentElement.remove()" style="background:none;border:none;cursor:pointer;font-weight:bold;">Dismiss</button>';
+
+        const header = document.querySelector('.vs-page-header');
+        if (header) header.insertAdjacentElement('afterend', alert);
+        setTimeout(() => { const el = document.getElementById('vs-inline-alert'); if (el) el.remove(); }, 4000);
         return;
       }
       vsConfirm({
