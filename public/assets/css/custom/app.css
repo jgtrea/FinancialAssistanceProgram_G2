@@ -651,3 +651,12 @@
   color: inherit;
 }
 .vs-alert-dismiss:hover { background: rgba(0,0,0,.15); }
+
+/* ── btn-warning white text ─────────────────────────────────────────────── */
+.btn-warning,
+.btn-warning:hover,
+.btn-warning:focus,
+.btn-warning:active,
+.btn-warning:focus-visible {
+  color: #fff !important;
+}

@@ -50,7 +50,7 @@
 
     <div class="vs-card">
         <div class="vs-card-body">
-            <table id="auditLogsTable" class="vs-datatable js-data-table vs-mobile-primary" data-mobile-primary="4" data-page-search="customAuditSearch" data-search-placeholder="Search audit logs..." data-col-defs='[{"className":"text-start","targets":[1,2,3]},{"className":"text-center","targets":[0,4]}]' style="width:100%">
+            <table id="auditLogsTable" class="vs-datatable js-data-table vs-mobile-primary" data-mobile-primary="4" data-page-search="customAuditSearch" data-search-placeholder="Search audit logs..." data-col-defs='[{"className":"text-start","targets":[2,3]},{"className":"text-center","targets":[0,1,4]}]' style="width:100%">
                 <thead>
                     <tr>
                         <th style="width: 170px;">Date/Time</th>
