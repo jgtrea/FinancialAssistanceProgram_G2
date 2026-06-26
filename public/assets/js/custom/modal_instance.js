@@ -902,8 +902,8 @@ var ModalInstance = (function () {
                                 </div>
                             </form>
                         </div>
-                        <div class="modal-footer d-flex justify-content-end gap-2">
-                            <button type="button" class="vs-btn vs-btn-danger" id="accountModalCancel">Close</button>
+                        <div class="modal-footer d-flex justify-content-end gap-1 py-2">
+                            <button type="button" class="btn btn-danger px-4" id="accountModalCancel">Close</button>
                             <button type="button" class="btn btn-primary px-4" id="accountModalSave">Save</button>
                         </div>
                     </div>
@@ -1201,11 +1201,10 @@ var ModalInstance = (function () {
           return r.json();
         })
         .then(function (data) {
-          msgBox.style.display = "";
           if (data.csrf_value) csrfInput.value = data.csrf_value;
           if (data.success) {
-            msgBox.className = "mb-3 vs-alert vs-alert-success";
-            msgBox.textContent = data.message;
+            msgBox.style.display = "none";
+            showToast(data.message || "Account updated successfully.", "success");
             if (data.full_name) {
               openBtn.textContent = (
                 data.full_name.trim().charAt(0) || "U"
@@ -1213,9 +1212,10 @@ var ModalInstance = (function () {
               openBtn.title = data.full_name;
             }
           } else {
-            msgBox.className = "mb-3 vs-alert vs-alert-error";
             var msg = data.message || "An error occurred.";
             if (data.errors) msg += " " + Object.values(data.errors).join(" ");
+            msgBox.style.display = "";
+            msgBox.className = "mb-3 vs-alert vs-alert-error";
             msgBox.textContent = msg;
           }
         })
@@ -1226,7 +1226,7 @@ var ModalInstance = (function () {
         })
         .finally(function () {
           saveBtn.disabled = false;
-          saveBtn.textContent = "Save Account";
+          saveBtn.textContent = "Save";
         });
     });
   }

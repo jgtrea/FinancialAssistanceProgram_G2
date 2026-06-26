@@ -23,17 +23,16 @@
       data: $form.serialize(),
       dataType: "json",
       success: function (response) {
-        alert(response.message);
-
         if (response.status === "success") {
+          try { sessionStorage.setItem("__pendingToast", JSON.stringify({ msg: response.message, type: "success" })); } catch (e) {}
           window.location.href = $form.data("redirect-url");
+        } else {
+          showToast(response.message, "error");
         }
       },
       error: function (xhr) {
         console.log(xhr.responseText);
-        $("#alertBox").html(
-          '<div class="alert alert-danger">Something went wrong. Check console.</div>',
-        );
+        showToast('Something went wrong. Check console.', 'error');
       },
     });
   });
@@ -52,14 +51,14 @@
       data: getCsrfData(),
       dataType: "json",
       success: function (response) {
-        alert(response.message);
+        showToast(response.message, "error");
         if (response.status === "success") {
           location.reload();
         }
       },
       error: function (xhr) {
         console.log(xhr.responseText);
-        alert("Failed to archive user. Check console.");
+        showToast('Failed to archive user. Check console.', 'error');
       },
     });
   });
@@ -78,14 +77,14 @@
       data: getCsrfData(),
       dataType: "json",
       success: function (response) {
-        alert(response.message);
+        showToast(response.message, response.status === "success" ? "success" : "error");
         if (response.status === "success") {
           location.reload();
         }
       },
       error: function (xhr) {
         console.log(xhr.responseText);
-        alert("Failed to restore user. Check console.");
+        showToast('Failed to restore user. Check console.', 'error');
       },
     });
   });

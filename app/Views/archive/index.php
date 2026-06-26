@@ -383,11 +383,11 @@ document.addEventListener('vs:modals:ready', function () {
         .then(function (data) {
             btnArchiveCurrent.disabled = false;
             if (!data.success) {
-                alert(data.message || 'Could not load preview.');
+                showToast(data.message || 'Could not load preview.', 'error');
                 return;
             }
             if (!data.count) {
-                alert('No active students match the current filters — nothing to archive.');
+                showToast('No active students match the current filters — nothing to archive.', 'info');
                 return;
             }
 
@@ -409,7 +409,7 @@ document.addEventListener('vs:modals:ready', function () {
         })
         .catch(function () {
             btnArchiveCurrent.disabled = false;
-            alert('An error occurred while loading preview.');
+            showToast('An error occurred while loading preview.', 'error');
         });
     });
 
@@ -436,7 +436,7 @@ document.addEventListener('vs:modals:ready', function () {
         .then(function (data) {
             closeArchCurrentModal();
             if (!data.success) {
-                alert(data.message || 'Archive failed.');
+                showToast(data.message || 'Archive failed.', 'error');
                 return;
             }
             // Archiving runs on the background worker now — show a live progress
@@ -444,15 +444,15 @@ document.addEventListener('vs:modals:ready', function () {
             // reflects the moved rows.
             if (data.queued && data.status_url && typeof trackArchiveJob === 'function') {
                 trackArchiveJob(data.status_url, data.count || 0, {
-                    jobId:   data.job_id,    // survive page navigation
-                    onDone:  function () { location.reload(); },
-                    onError: function (msg) { alert('Archive failed: ' + msg); },
+                    jobId:   data.job_id,
+                    onDone:  function () { toastAndReload('Students archived successfully.', 'error'); },
+                    onError: function (msg) { showToast('Archive failed: ' + msg, 'error'); },
                 });
                 return;
             }
-            location.reload();
+            toastAndReload('Students archived successfully.', 'error');
         })
-        .catch(function () { alert('An error occurred.'); })
+        .catch(function () { showToast('An error occurred.', 'error'); })
         .finally(function () {
             archCurrentConfirm.disabled = false;
             if (archCurrentBtnText) archCurrentBtnText.style.display = 'inline';

@@ -23,10 +23,10 @@
   </div>
 
   <?php if (session()->getFlashdata('error')): ?>
-    <div class="vs-alert vs-alert-error mb-3"><?= esc(session()->getFlashdata('error')) ?></div>
+  <script>document.addEventListener('DOMContentLoaded',function(){showToast(<?= json_encode(esc(session()->getFlashdata('error'))) ?>,'error');});</script>
   <?php endif ?>
   <?php if (session()->getFlashdata('message')): ?>
-    <div class="vs-alert vs-alert-success mb-3"><?= esc(session()->getFlashdata('message')) ?></div>
+  <script>document.addEventListener('DOMContentLoaded',function(){showToast(<?= json_encode(esc(session()->getFlashdata('message'))) ?>,'success');});</script>
   <?php endif ?>
 
   <div id="studentsAlertBox"></div>
@@ -442,18 +442,7 @@ document.addEventListener('vs:modals:ready', function () {
   */
 
   function flashSuccess(msg) {
-    var alertBox = document.getElementById('studentsAlertBox');
-    if (!alertBox) return;
-    var el = document.createElement('div');
-    el.className = 'vs-alert vs-alert-success mb-3';
-    var btn = document.createElement('button');
-    btn.type = 'button'; btn.className = 'vs-alert-dismiss';
-    btn.setAttribute('onclick', "this.closest('.vs-alert').remove()");
-    btn.textContent = '×';
-    el.textContent = msg;
-    el.appendChild(btn);
-    alertBox.innerHTML = '';
-    alertBox.appendChild(el);
+    showToast(msg, 'success');
   }
 
   function handleToggleActive(btn) {
@@ -823,18 +812,7 @@ document.addEventListener('vs:modals:ready', function () {
   var schoolSaveUrl = '<?= site_url($prefix . '/schools/save') ?>';
 
   function vsSchoolAlert(msg, type) {
-    var box = document.getElementById('schoolModalAlert');
-    if (!box) return;
-    var el = document.createElement('div');
-    el.className = 'vs-alert vs-alert-' + (type || 'error') + ' mb-3';
-    el.appendChild(document.createTextNode(msg));
-    var btn = document.createElement('button');
-    btn.type = 'button'; btn.className = 'vs-alert-dismiss';
-    btn.setAttribute('onclick', "this.closest('.vs-alert').remove()");
-    btn.textContent = '×';
-    el.appendChild(btn);
-    box.innerHTML = '';
-    box.appendChild(el);
+    showToast(msg, type || 'error');
   }
 
   function vsCloseSchoolModal() {
