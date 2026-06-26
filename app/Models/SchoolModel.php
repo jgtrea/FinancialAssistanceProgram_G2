@@ -61,4 +61,24 @@ class SchoolModel extends Model
         }
         return $builder->countAllResults() > 0;
     }
+
+    public function findByNameForLevel(string $level, string $name): ?array
+    {
+        $upper = function_exists('mb_strtoupper') ? mb_strtoupper(trim($name), 'UTF-8') : strtoupper(trim($name));
+        if ($upper === '') return null;
+        return $this->db->table('school')
+            ->where('school_level', $level)
+            ->where('school_name', $upper)
+            ->get()->getRowArray() ?: null;
+    }
+
+    public function findByAcronymForLevel(string $level, string $acronym): ?array
+    {
+        $upper = strtoupper(trim($acronym));
+        if ($upper === '') return null;
+        return $this->db->table('school')
+            ->where('school_level', $level)
+            ->where('acronym', $upper)
+            ->get()->getRowArray() ?: null;
+    }
 }

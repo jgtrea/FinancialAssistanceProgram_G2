@@ -654,7 +654,7 @@ document.getElementById('btnAddSchool')    && document.getElementById('btnAddSch
             if (data.success) {
                 closeImport();
                 showAlert(data.message || 'Import successful.', 'success');
-                schoolDtRedraw();
+                setTimeout(function () { window.location.reload(); }, 1200);
             } else {
                 importAlert.innerHTML = '<div class="vs-alert vs-alert-error mb-3">' + escHtml(data.message || 'Import failed.') +
                     '<button type="button" class="vs-alert-dismiss" onclick="this.closest(\'.vs-alert\').remove()">×</button></div>';
