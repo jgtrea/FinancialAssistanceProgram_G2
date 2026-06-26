@@ -65,9 +65,7 @@ document.addEventListener("DOMContentLoaded", function () {
     cleanSearch.dataset.fullTableSearchBound = "";
     currentPageSearch.parentNode.replaceChild(cleanSearch, currentPageSearch);
 
-    if (datatableUrl && window.VS.bindFullTableSearch) {
-      window.VS.bindFullTableSearch(dt, cleanSearch);
-    } else if (window.VS.bindCurrentPageSearch) {
+    if (window.VS.bindCurrentPageSearch) {
       window.VS.bindCurrentPageSearch(dt, cleanSearch);
     }
   }

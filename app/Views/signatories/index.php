@@ -362,6 +362,11 @@ document.addEventListener('vs:modals:ready', function () {
         e.preventDefault();
         smClearAlert();
 
+        if (!sigModalForm.checkValidity()) {
+            sigModalForm.reportValidity();
+            return;
+        }
+
         var fd = new FormData(sigModalForm);
         var csrf = getCsrf();
         if (csrf.name && !fd.get(csrf.name)) {

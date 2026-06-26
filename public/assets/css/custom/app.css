@@ -652,6 +652,22 @@
 }
 .vs-alert-dismiss:hover { background: rgba(0,0,0,.15); }
 
+/* ── Select2 required validation tooltip positioning ───────────────────── */
+/* Select2 clips the native <select> to 1px at top-left, so reportValidity()
+   anchors the tooltip there instead of below the visible dropdown.
+   Unclip and pin it to bottom:0 of the col wrapper so the tooltip appears
+   just below the Select2 UI, matching text input behaviour. */
+
+/* ── Required field asterisk ────────────────────────────────────────────── */
+.form-label.required::after {
+  content: ' *';
+  color: #dc3545;
+  font-weight: 700;
+}
+.form-label.required.vm-filled::after {
+  display: none;
+}
+
 /* ── btn-warning white text ─────────────────────────────────────────────── */
 .btn-warning,
 .btn-warning:hover,

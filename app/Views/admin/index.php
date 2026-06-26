@@ -283,6 +283,11 @@ document.addEventListener('vs:modals:ready', function () {
         e.preventDefault();
         umClearAlert();
 
+        if (!userModalForm.checkValidity()) {
+            userModalForm.reportValidity();
+            return;
+        }
+
         var fd = new FormData(userModalForm);
         var csrf = getCsrf();
         if (csrf.name && !fd.get(csrf.name)) {

@@ -34,13 +34,7 @@
 
 body {
   font-family: var(--font);
-  background:
-    linear-gradient(
-      180deg,
-      rgba(255, 246, 221, 0.65),
-      rgba(238, 248, 251, 0.95) 14rem
-    ),
-    var(--surface);
+  background: var(--surface);
   color: var(--navy);
   margin: 0;
   padding: 0;

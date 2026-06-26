@@ -87,9 +87,8 @@
                         <th>JHS</th>
                         <th>SHS</th>
                         <th>Remarks</th>
-                        <th>Printed</th>
-                        <th>Last Printed</th>
                         <th>Status</th>
+                        <th>School Year</th>
                     </tr>
                 </thead>
                 <tbody></tbody>
@@ -154,9 +153,8 @@ document.addEventListener('DOMContentLoaded', function () {
                 { data: 'jhs' },
                 { data: 'shs' },
                 { data: 'remarks' },
-                { data: 'printed' },
-                { data: 'last_generated' },
                 { data: 'voucher_status' },
+                { data: 'sy' },
             ],
             order:      [[2, 'asc']],
             columnDefs: [
@@ -312,6 +310,13 @@ document.addEventListener('vs:modals:ready', function () {
         }
 
         btnApply && btnApply.addEventListener('click', function () {
+            var syEl = document.getElementById('afSchoolYear');
+            if (!syEl || !syEl.value) {
+                syEl && syEl.focus();
+                var syLabel = document.querySelector('label[for="afSchoolYear"]');
+                if (syLabel) syLabel.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                return;
+            }
             syncFormFromModal();
             filterForm.submit();
         });

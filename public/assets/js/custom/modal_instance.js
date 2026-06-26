@@ -276,12 +276,12 @@ var ModalInstance = (function () {
                         <select id="vmJuniorHs" name="junior_high_school" class="vs-input js-school-select vs-uppercase" data-placeholder="Select Junior High School" required><option></option></select>
                       </div>
                       <div class="col-12">
-                        <label class="form-label" for="vmPreferredHs">Preferred Senior High School</label>
-                        <select id="vmPreferredHs" name="preferred_senior_high_school" class="vs-input js-school-select vs-uppercase" data-placeholder="Select Preferred Senior High School"><option></option></select>
+                        <label class="form-label required" for="vmPreferredHs">Preferred Senior High School</label>
+                        <select id="vmPreferredHs" name="preferred_senior_high_school" class="vs-input js-school-select vs-uppercase" data-placeholder="Select Preferred Senior High School" required><option></option></select>
                       </div>
                       <div class="col-4">
-                        <label class="form-label" for="vmRemarks">Remarks</label>
-                        <select id="vmRemarks" name="remarks_status" class="vs-input js-school-select vs-uppercase" data-placeholder="Select Remarks" data-no-search="1">
+                        <label class="form-label required" for="vmRemarks">Remarks</label>
+                        <select id="vmRemarks" name="remarks_status" class="vs-input js-school-select vs-uppercase" data-placeholder="Select Remarks" data-no-search="1" required>
                           <option></option><option value="COMPLETE">COMPLETE</option><option value="INCOMPLETE">INCOMPLETE</option><option value="OTHERS">OTHERS</option>
                         </select>
                       </div>
@@ -432,6 +432,11 @@ var ModalInstance = (function () {
                   <div class="modal-body">
                     <div class="row g-3">
                       <div class="col-6">
+                        <label class="form-label required" for="afSchoolYear">School Year</label>
+                        <select id="afSchoolYear" class="vs-input js-filter-select" data-placeholder="Select School Year" required><option></option></select>
+                      </div>
+                      <div class="col-6"></div>
+                      <div class="col-6">
                         <label class="form-label" for="afJuniorHs">Junior High School</label>
                         <select id="afJuniorHs" class="vs-input js-filter-select" data-placeholder="Select Junior High School"><option></option></select>
                       </div>
@@ -464,10 +469,6 @@ var ModalInstance = (function () {
                         <select id="afRemarks" class="vs-input js-filter-select" data-placeholder="Select Remarks" data-no-search="1">
                           <option></option><option value="COMPLETE">COMPLETE</option><option value="INCOMPLETE">INCOMPLETE</option><option value="OTHERS">OTHERS</option>
                         </select>
-                      </div>
-                      <div class="col-6">
-                        <label class="form-label" for="afSchoolYear">School Year</label>
-                        <select id="afSchoolYear" class="vs-input js-filter-select" data-placeholder="Select School Year"><option></option></select>
                       </div>
                       <div class="col-12">
                         <label class="form-label" for="afOtherRemarks">Other Remarks</label>

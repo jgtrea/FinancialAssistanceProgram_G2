@@ -590,6 +590,11 @@ document.getElementById('btnAddSchool')    && document.getElementById('btnAddSch
         e.preventDefault();
         smClearAlert();
 
+        if (!schoolForm.checkValidity()) {
+            schoolForm.reportValidity();
+            return;
+        }
+
         var fd   = new FormData(schoolForm);
         var csrf = getCsrf();
         if (csrf.name && !fd.get(csrf.name)) fd.append(csrf.name, csrf.token);

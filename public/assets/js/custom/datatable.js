@@ -302,6 +302,8 @@ function initGenericDataTables() {
         }),
       });
 
+      window.VS.bindCustomLengthInput(state.dt);
+
       if (table.classList.contains("vs-mobile-primary")) {
         const wrapper = state.dt.table().container();
         if (wrapper) wrapper.classList.add("vs-mobile-primary-wrapper");
@@ -383,6 +385,37 @@ window.VS.dtLengthMenuSS = [
   [10, 25, 50, 100, 250],
   [10, 25, 50, 100, 250],
 ]; // server-side
+
+// Replaces the DataTables length <select> with a typable <input type="number">.
+window.VS.bindCustomLengthInput = function bindCustomLengthInput(dt) {
+  if (!dt) return;
+  const container = dt.table().container();
+  if (!container) return;
+  const lengthWrap = container.querySelector(".dataTables_length");
+  if (!lengthWrap) return;
+
+  const currentLen = dt.page.len();
+  const label = document.createElement("label");
+  label.className = "vs-length-label";
+  const numInput = document.createElement("input");
+  numInput.type = "number";
+  numInput.className = "vs-length-input";
+  numInput.value = currentLen > 0 ? currentLen : 10;
+  numInput.min = 1;
+  numInput.max = 500;
+  label.append("Show ", numInput, " entries");
+  lengthWrap.innerHTML = "";
+  lengthWrap.appendChild(label);
+
+  function applyLen() {
+    const v = parseInt(numInput.value, 10);
+    if (!isNaN(v) && v > 0) dt.page.len(v).draw();
+  }
+  numInput.addEventListener("change", applyLen);
+  numInput.addEventListener("keydown", function (e) {
+    if (e.key === "Enter") applyLen();
+  });
+};
 
 // Filters only the currently visible page of a DataTable.
 window.VS.bindCurrentPageSearch = function bindCurrentPageSearch(dt, input) {

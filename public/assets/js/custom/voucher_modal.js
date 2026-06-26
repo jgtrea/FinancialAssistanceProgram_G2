@@ -434,6 +434,7 @@ document.addEventListener("DOMContentLoaded", function () {
       loadSchoolOptions("", "");
       initModalExtraSelects();
       // vmUpdateRemarksOptions('');
+      vmUpdateRequiredIndicators();
       voucherModal.style.display = "flex";
       return;
     }
@@ -455,6 +456,7 @@ document.addEventListener("DOMContentLoaded", function () {
           return;
         }
         vmPopulateFields(data.student);
+        vmUpdateRequiredIndicators();
         if (mode === "view") {
           if (vmVoucherNoDisplay)
             vmVoucherNoDisplay.textContent = data.student.voucher_no || "—";
@@ -477,8 +479,27 @@ document.addEventListener("DOMContentLoaded", function () {
       });
   }
 
+  function vmUpdateRequiredIndicators() {
+    if (!voucherModalForm) return;
+    voucherModalForm.querySelectorAll("[required]").forEach(function (field) {
+      var label = voucherModalForm.querySelector('label[for="' + field.id + '"]');
+      if (label) label.classList.toggle("vm-filled", field.value.trim() !== "");
+    });
+  }
+
+  function vmBindRequiredIndicators() {
+    if (!voucherModalForm) return;
+    voucherModalForm.querySelectorAll("[required]").forEach(function (field) {
+      field.addEventListener("input", vmUpdateRequiredIndicators);
+      field.addEventListener("change", vmUpdateRequiredIndicators);
+    });
+  }
+
   function vmClose() {
     voucherModal.style.display = "none";
+    voucherModalForm && voucherModalForm.querySelectorAll(
+      "select.select2-hidden-accessible[required]"
+    ).forEach(function (sel) { sel.removeAttribute("style"); });
   }
 
   btnAddVoucher &&
@@ -508,6 +529,7 @@ document.addEventListener("DOMContentLoaded", function () {
     vmOpen(btn.getAttribute("data-mode"), btn.getAttribute("data-id"));
   });
 
+  vmBindRequiredIndicators();
   window.vmOpen = vmOpen;
 
   voucherModalForm &&
@@ -517,7 +539,44 @@ document.addEventListener("DOMContentLoaded", function () {
       vmToggleOtherRemarks();
 
       if (!voucherModalForm.checkValidity()) {
-        voucherModalForm.reportValidity();
+        // Text/number inputs: use native reportValidity() — tooltip anchors correctly.
+        var firstVisibleInvalid = voucherModalForm.querySelector(
+          ":invalid:not(.select2-hidden-accessible)"
+        );
+        if (firstVisibleInvalid) {
+          firstVisibleInvalid.reportValidity();
+          return;
+        }
+        // Select2 selects: native select is clipped to 1px so tooltip
+        // appears in wrong place. Temporarily pin it via position:fixed to
+        // the bottom of the Select2 container, then call reportValidity().
+        var invalidSelects = voucherModalForm.querySelectorAll(
+          "select.select2-hidden-accessible[required]"
+        );
+        for (var si = 0; si < invalidSelects.length; si++) {
+          var sel = invalidSelects[si];
+          if (sel.value) continue;
+          var s2container = sel.nextElementSibling;
+          var rect = s2container
+            ? s2container.getBoundingClientRect()
+            : sel.getBoundingClientRect();
+          sel.setAttribute(
+            "style",
+            "position:fixed!important;top:" +
+              Math.round(rect.bottom - 1) +
+              "px!important;left:" +
+              Math.round(rect.left) +
+              "px!important;width:" +
+              Math.round(rect.width) +
+              "px!important;height:1px!important;" +
+              "opacity:0!important;pointer-events:none!important;" +
+              "clip:auto!important;clip-path:none!important;" +
+              "-webkit-clip-path:none!important;overflow:visible!important;" +
+              "margin:0!important;border:0!important;z-index:9999!important;"
+          );
+          sel.reportValidity();
+          return;
+        }
         return;
       }
 
