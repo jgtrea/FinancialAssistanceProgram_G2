@@ -23,36 +23,42 @@
 
     <div id="userAlertBox"></div>
 
-<form method="get" class="row g-2 align-items-center mb-3">
-    <div class="col">
-        <input type="text" name="q" class="vs-input vs-advanced-search-input w-100" placeholder="Enter keyword to search (name, email)" value="<?= esc((string) ($keyword ?? ''), 'attr') ?>">
+<form method="get" class="row g-2 mb-3">
+    <div class="col-12 col-lg">
+        <input type="text" name="q" class="form-control vs-advanced-search-input" placeholder="Enter keyword to search (name, email)" value="<?= esc((string) ($keyword ?? ''), 'attr') ?>">
     </div>
-    <div class="col-auto">
-        <select id="ufRole" name="role" class="js-filter-select" data-placeholder="Select Role" data-no-search="1" style="width:130px">
+    <div class="col-6 col-lg-auto">
+        <select id="ufRole" name="role" class="js-filter-select" data-placeholder="Select Role" data-no-search="1" data-width="100%" style="min-width:120px">
             <option value=""></option>
             <option value="admin" <?= ($filterRole ?? '') === 'admin' ? 'selected' : '' ?>>Admin</option>
             <option value="user"  <?= ($filterRole ?? '') === 'user'  ? 'selected' : '' ?>>User</option>
         </select>
     </div>
-    <div class="col-auto">
-        <select id="ufStatus" name="status" class="js-filter-select" data-placeholder="Select Status" data-no-search="1" style="width:140px">
+    <div class="col-6 col-lg-auto">
+        <select id="ufStatus" name="status" class="js-filter-select" data-placeholder="Select Status" data-no-search="1" data-width="100%" style="min-width:120px">
             <option value=""></option>
             <option value="active"   <?= ($filterStatus ?? '') === 'active'   ? 'selected' : '' ?>>Active</option>
             <option value="inactive" <?= ($filterStatus ?? '') === 'inactive' ? 'selected' : '' ?>>Inactive</option>
         </select>
     </div>
-    <div class="col-auto d-flex align-items-center">
+    <div class="col-auto d-none d-lg-flex align-items-center">
         <span style="color:var(--border);font-size:1.2rem;line-height:1;user-select:none">|</span>
     </div>
-    <div class="col-auto d-flex gap-2">
-        <button type="submit" class="vs-btn vs-btn-primary">Search</button>
-        <a href="<?= site_url('admin/user_management') ?>" class="vs-btn vs-btn-danger" id="userFilterClear">Clear</a>
+    <div class="col-12 col-lg-auto">
+        <div class="row g-2 row-cols-2 row-cols-lg-auto">
+            <div class="col">
+                <button type="submit" class="btn btn-primary w-100" style="min-width:90px">Search</button>
+            </div>
+            <div class="col">
+                <a href="<?= site_url('admin/user_management') ?>" class="btn btn-danger w-100 d-block text-center" style="min-width:90px" id="userFilterClear">Clear</a>
+            </div>
+        </div>
     </div>
-    <div class="col-auto d-flex align-items-center gap-2">
+    <div class="col-auto d-none d-lg-flex align-items-center">
         <span style="color:var(--border);font-size:1.2rem;line-height:1;user-select:none">|</span>
-        <button type="button" class="vs-btn vs-btn-success" id="btnAddUser">
-            Add User
-        </button>
+    </div>
+    <div class="col-12 col-lg-auto d-grid d-lg-block">
+        <button type="button" class="btn btn-success" style="min-width:110px" id="btnAddUser">Add User</button>
     </div>
 </form>
 

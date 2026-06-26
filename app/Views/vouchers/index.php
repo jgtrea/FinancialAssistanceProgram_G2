@@ -31,43 +31,51 @@
 
   <div id="studentsAlertBox"></div>
 
-  <form method="get" id="vouchersFilterForm" class="vs-page-toolbar row g-2 align-items-center mb-3">
+  <form method="get" id="vouchersFilterForm" class="vs-page-toolbar row g-2 mb-3">
     <?php foreach ($filterKeys as $k): ?>
       <input type="hidden" name="<?= esc($k, 'attr') ?>" value="<?= esc($f($k), 'attr') ?>">
     <?php endforeach ?>
-    <div class="col">
-      <input type="text" name="q" class="vs-input vs-advanced-search-input w-100" placeholder="Enter keyword to search (voucher no, name)" value="<?= esc((string) ($keyword ?? ''), 'attr') ?>">
+    <div class="col-12 col-lg">
+      <input type="text" name="q" class="form-control vs-advanced-search-input" placeholder="Enter keyword to search (voucher no, name)" value="<?= esc((string) ($keyword ?? ''), 'attr') ?>">
     </div>
-    <div class="col-auto">
-      <button type="button" class="vs-btn vs-btn-outline" id="btnOpenFilter">
+    <div class="col-12 col-lg-auto d-grid d-lg-block">
+      <button type="button" class="btn btn-outline-secondary" style="min-width:90px" id="btnOpenFilter">
         Filters
         <span id="filterBadge" class="badge bg-primary" style="display:<?= $activeFilterCount > 0 ? 'inline-block' : 'none' ?>;margin-left:.35rem"><?= $activeFilterCount > 0 ? esc($activeFilterCount) : '' ?></span>
       </button>
     </div>
-    <div class="col-auto d-flex align-items-center">
+    <div class="col-auto d-none d-lg-flex align-items-center">
       <span style="color:var(--border);font-size:1.2rem;line-height:1;user-select:none">|</span>
     </div>
-    <div class="col-auto d-flex gap-2">
-      <button type="submit" class="vs-btn vs-btn-primary">Search</button>
-      <a href="<?= $listingUrl ?>" class="vs-btn vs-btn-danger">Clear</a>
+    <div class="col-12 col-lg-auto">
+      <div class="row g-2 row-cols-2 row-cols-lg-auto">
+        <div class="col">
+          <button type="submit" class="btn btn-primary w-100" style="min-width:90px">Search</button>
+        </div>
+        <div class="col">
+          <a href="<?= $listingUrl ?>" class="btn btn-danger w-100 d-block text-center" style="min-width:90px">Clear</a>
+        </div>
+      </div>
     </div>
-    <div class="col-auto d-flex align-items-center gap-2">
+    <div class="col-auto d-none d-lg-flex align-items-center">
       <span style="color:var(--border);font-size:1.2rem;line-height:1;user-select:none">|</span>
-      <div class="d-flex gap-2">
+    </div>
+    <div class="col-12 col-lg-auto">
+      <div class="row g-2 row-cols-2 row-cols-lg-auto">
 <?php if ($allowGenerate): ?>
-        <button type="button" class="vs-btn vs-btn-warning" style="min-width:96px" id="btnExportAll">
-          Export
-        </button>
-        <button type="button" class="vs-btn vs-btn-success" style="min-width:96px" id="btnGenerateAll">
-          Print Voucher
-        </button>
+        <div class="col">
+          <button type="button" class="btn btn-warning w-100" style="min-width:90px" id="btnExportAll">Export</button>
+        </div>
+        <div class="col">
+          <button type="button" class="btn btn-success w-100" style="min-width:110px" id="btnGenerateAll">Print Voucher</button>
+        </div>
 <?php else: ?>
-        <button type="button" class="vs-btn vs-btn-warning" style="min-width:96px" id="btnOpenImport">
-          Import
-        </button>
-        <button type="button" class="vs-btn vs-btn-success" style="min-width:96px" id="btnAddVoucher" data-mode="add">
-          Add Student
-        </button>
+        <div class="col">
+          <button type="button" class="btn btn-warning w-100" style="min-width:90px" id="btnOpenImport">Import</button>
+        </div>
+        <div class="col">
+          <button type="button" class="btn btn-success w-100" style="min-width:110px" id="btnAddVoucher" data-mode="add">Add Student</button>
+        </div>
 <?php endif ?>
       </div>
     </div>

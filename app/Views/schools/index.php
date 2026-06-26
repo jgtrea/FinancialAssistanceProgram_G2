@@ -33,35 +33,43 @@
 </div>
 
 <!-- Search + Level quick filter + action buttons -->
-<form method="get" id="schoolSearchForm" class="row g-2 align-items-center mb-3">
-    <div class="col">
-        <input type="text" name="q" class="vs-input vs-advanced-search-input w-100"
+<form method="get" id="schoolSearchForm" class="row g-2 mb-3">
+    <div class="col-12 col-lg">
+        <input type="text" name="q" class="form-control vs-advanced-search-input"
                placeholder="Enter keyword to search (name, acronym, level)"
                value="<?= esc($keyword, 'attr') ?>">
     </div>
-    <div class="col-auto">
-        <select id="schoolLevelFilter" name="level" class="js-filter-select" data-placeholder="Select Level" data-no-search="1" style="width:130px">
+    <div class="col-12 col-lg-auto">
+        <select id="schoolLevelFilter" name="level" class="js-filter-select" data-placeholder="Select Level" data-no-search="1" data-width="100%" style="min-width:130px">
             <option value="" <?= $filterLevel === ''    ? 'selected' : '' ?>></option>
             <option value="JHS" <?= $filterLevel === 'JHS' ? 'selected' : '' ?>>JHS</option>
             <option value="SHS" <?= $filterLevel === 'SHS' ? 'selected' : '' ?>>SHS</option>
         </select>
     </div>
-    <div class="col-auto d-flex align-items-center">
+    <div class="col-auto d-none d-lg-flex align-items-center">
         <span style="color:var(--border);font-size:1.2rem;line-height:1;user-select:none">|</span>
     </div>
-    <div class="col-auto d-flex gap-2">
-        <button type="submit" class="vs-btn vs-btn-primary">Search</button>
-        <a href="<?= site_url('admin/schools') ?>" class="vs-btn vs-btn-danger">Clear</a>
+    <div class="col-12 col-lg-auto">
+        <div class="row g-2 row-cols-2 row-cols-lg-auto">
+            <div class="col">
+                <button type="submit" class="btn btn-primary w-100" style="min-width:90px">Search</button>
+            </div>
+            <div class="col">
+                <a href="<?= site_url('admin/schools') ?>" class="btn btn-danger w-100 d-block text-center" style="min-width:90px">Clear</a>
+            </div>
+        </div>
     </div>
-    <div class="col-auto d-flex align-items-center gap-2">
+    <div class="col-auto d-none d-lg-flex align-items-center">
         <span style="color:var(--border);font-size:1.2rem;line-height:1;user-select:none">|</span>
-        <div class="d-flex gap-2">
-            <button type="button" class="vs-btn vs-btn-warning" id="btnOpenImport">
-                Import
-            </button>
-            <button type="button" class="vs-btn vs-btn-success" id="btnAddSchool">
-                Add School
-            </button>
+    </div>
+    <div class="col-12 col-lg-auto">
+        <div class="row g-2 row-cols-2 row-cols-lg-auto">
+            <div class="col">
+                <button type="button" class="btn btn-warning w-100" style="min-width:90px" id="btnOpenImport">Import</button>
+            </div>
+            <div class="col">
+                <button type="button" class="btn btn-success w-100" style="min-width:110px" id="btnAddSchool">Add School</button>
+            </div>
         </div>
     </div>
 </form>
