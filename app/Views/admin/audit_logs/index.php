@@ -24,11 +24,11 @@
          change so the user sees results immediately, matching the Schools
          page quick-filter pattern. -->
     <form method="get" id="auditFilterForm" class="row g-2 align-items-center mb-3">
-        <div class="col-12 col-md">
-            <input type="text" name="q" class="vs-input vs-advanced-search-input w-100" placeholder="Enter keyword to search (action, description)" value="<?= esc((string) ($keyword ?? ''), 'attr') ?>">
+        <div class="col">
+            <input type="text" name="q" class="vs-input vs-advanced-search-input w-100" placeholder="Enter keyword to search (action, description, user)" value="<?= esc((string) ($keyword ?? ''), 'attr') ?>">
         </div>
-        <div class="col-6 col-md-2">
-            <select name="action" id="auditFilterAction" class="js-filter-select" data-placeholder="Select Action Status" style="width:100%">
+        <div class="col-auto">
+            <select name="action" id="auditFilterAction" class="js-filter-select" data-placeholder="Select Action" style="width:160px">
                 <option></option>
                 <?php foreach ($actionOptions as $option): ?>
                     <?php $val = is_array($option) ? ($option['action'] ?? '') : $option ?>
@@ -36,18 +36,18 @@
                 <?php endforeach ?>
             </select>
         </div>
-        <div class="col-6 col-md-2">
-            <input type="date" name="date_from" id="auditFilterDateFrom" class="vs-input w-100" value="<?= esc((string) $filterValues['date_from'], 'attr') ?>" title="Date From">
+        <div class="col-auto">
+            <input type="date" name="date_from" id="auditFilterDateFrom" class="vs-input" value="<?= esc((string) $filterValues['date_from'], 'attr') ?>" title="Date From">
         </div>
-        <div class="col-6 col-md-2">
-            <input type="date" name="date_to" id="auditFilterDateTo" class="vs-input w-100" value="<?= esc((string) $filterValues['date_to'], 'attr') ?>" title="Date To">
+        <div class="col-auto">
+            <input type="date" name="date_to" id="auditFilterDateTo" class="vs-input" value="<?= esc((string) $filterValues['date_to'], 'attr') ?>" title="Date To">
         </div>
-        <div class="col-auto d-none d-md-flex align-items-center">
+        <div class="col-auto d-flex align-items-center">
             <span style="color:var(--border);font-size:1.2rem;line-height:1;user-select:none">|</span>
         </div>
-        <div class="col-6 col-md-2 d-flex gap-2">
-            <button type="submit" class="vs-btn vs-btn-primary flex-fill">Search</button>
-            <a href="<?= site_url('admin/audit-logs') ?>" class="vs-btn vs-btn-danger flex-fill">Clear</a>
+        <div class="col-auto d-flex gap-2">
+            <button type="submit" class="vs-btn vs-btn-primary">Search</button>
+            <a href="<?= site_url('admin/audit-logs') ?>" class="vs-btn vs-btn-danger">Clear</a>
         </div>
     </form>
 

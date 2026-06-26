@@ -24,27 +24,27 @@
         <?php foreach ($filterKeys as $k): ?>
             <input type="hidden" name="<?= esc($k, 'attr') ?>" value="<?= esc((string) $filterValues[$k], 'attr') ?>">
         <?php endforeach ?>
-        <div class="col-12 col-md">
-            <input type="text" name="q" class="vs-input vs-advanced-search-input w-100" placeholder="Enter keyword to search (action, description)" value="<?= esc((string) ($keyword ?? ''), 'attr') ?>">
+        <div class="col">
+            <input type="text" name="q" class="vs-input vs-advanced-search-input w-100" placeholder="Enter keyword to search (action, description, user)" value="<?= esc((string) ($keyword ?? ''), 'attr') ?>">
         </div>
-        <div class="col-6 col-md-auto">
-            <button type="button" class="vs-btn vs-btn-outline w-100" id="auditBtnOpenFilter">
+        <div class="col-auto">
+            <button type="button" class="vs-btn vs-btn-outline" id="auditBtnOpenFilter">
                 Filters
                 <span id="auditFilterBadge" class="badge bg-primary" style="display:<?= $activeFilterCount > 0 ? 'inline-block' : 'none' ?>;margin-left:.35rem"><?= $activeFilterCount > 0 ? esc($activeFilterCount) : '' ?></span>
             </button>
         </div>
-        <div class="col-auto d-none d-md-flex align-items-center">
+        <div class="col-auto d-flex align-items-center">
             <span style="color:var(--border);font-size:1.2rem;line-height:1;user-select:none">|</span>
         </div>
-        <div class="col-6 col-md-2 d-flex gap-2">
-            <button type="submit" class="vs-btn vs-btn-primary flex-fill">Search</button>
-            <a href="<?= site_url('user/audit-logs') ?>" class="vs-btn vs-btn-danger flex-fill">Clear</a>
+        <div class="col-auto d-flex gap-2">
+            <button type="submit" class="vs-btn vs-btn-primary">Search</button>
+            <a href="<?= site_url('user/audit-logs') ?>" class="vs-btn vs-btn-danger">Clear</a>
         </div>
     </form>
 
     <div class="vs-card">
         <div class="vs-card-body">
-            <table id="auditLogsTable" class="vs-datatable js-data-table vs-mobile-primary" data-mobile-primary="4" data-page-search="customAuditSearch" data-search-placeholder="Search audit logs..." data-col-defs='[{"className":"text-start","targets":[0,2,3,4]}]' style="width:100%">
+            <table id="auditLogsTable" class="vs-datatable js-data-table vs-mobile-primary" data-mobile-primary="4" data-page-search="customAuditSearch" data-search-placeholder="Search audit logs..." data-col-defs='[{"className":"text-start","targets":[1,2,3]},{"className":"text-center","targets":[0,4]}]' style="width:100%">
                 <thead>
                     <tr>
                         <th style="width: 170px;">Date/Time</th>

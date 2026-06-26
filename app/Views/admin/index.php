@@ -24,33 +24,33 @@
     <div id="userAlertBox"></div>
 
 <form method="get" class="row g-2 align-items-center mb-3">
-    <div class="col-12 col-md">
+    <div class="col">
         <input type="text" name="q" class="vs-input vs-advanced-search-input w-100" placeholder="Enter keyword to search (name, email)" value="<?= esc((string) ($keyword ?? ''), 'attr') ?>">
     </div>
-    <div class="col-12 col-md-2">
-        <select id="ufRole" name="role" class="js-filter-select" data-placeholder="Select Role" data-no-search="1" style="width:100%">
+    <div class="col-auto">
+        <select id="ufRole" name="role" class="js-filter-select" data-placeholder="Select Role" data-no-search="1" style="width:130px">
             <option value=""></option>
             <option value="admin" <?= ($filterRole ?? '') === 'admin' ? 'selected' : '' ?>>Admin</option>
             <option value="user"  <?= ($filterRole ?? '') === 'user'  ? 'selected' : '' ?>>User</option>
         </select>
     </div>
-    <div class="col-12 col-md-2">
-        <select id="ufStatus" name="status" class="js-filter-select" data-placeholder="Select Status" data-no-search="1" style="width:100%">
+    <div class="col-auto">
+        <select id="ufStatus" name="status" class="js-filter-select" data-placeholder="Select Status" data-no-search="1" style="width:140px">
             <option value=""></option>
             <option value="active"   <?= ($filterStatus ?? '') === 'active'   ? 'selected' : '' ?>>Active</option>
             <option value="inactive" <?= ($filterStatus ?? '') === 'inactive' ? 'selected' : '' ?>>Inactive</option>
         </select>
     </div>
-    <div class="col-auto d-none d-md-flex align-items-center">
+    <div class="col-auto d-flex align-items-center">
         <span style="color:var(--border);font-size:1.2rem;line-height:1;user-select:none">|</span>
     </div>
-    <div class="col-12 col-md-2 d-flex gap-2">
-        <button type="submit" class="vs-btn vs-btn-primary flex-fill">Search</button>
-        <a href="<?= site_url('admin/user_management') ?>" class="vs-btn vs-btn-danger flex-fill" id="userFilterClear">Clear</a>
+    <div class="col-auto d-flex gap-2">
+        <button type="submit" class="vs-btn vs-btn-primary">Search</button>
+        <a href="<?= site_url('admin/user_management') ?>" class="vs-btn vs-btn-danger" id="userFilterClear">Clear</a>
     </div>
-    <div class="col-12 col-md-auto d-flex align-items-center gap-2">
-        <span class="d-none d-md-inline-flex align-items-center" style="color:var(--border);font-size:1.2rem;line-height:1;user-select:none">|</span>
-        <button type="button" class="vs-btn vs-btn-success" style="min-width:96px" id="btnAddUser">
+    <div class="col-auto d-flex align-items-center gap-2">
+        <span style="color:var(--border);font-size:1.2rem;line-height:1;user-select:none">|</span>
+        <button type="button" class="vs-btn vs-btn-success" id="btnAddUser">
             Add User
         </button>
     </div>
@@ -58,13 +58,13 @@
 
     <div class="vs-card">
         <div class="vs-card-body">
-            <table id="userManagementTable" class="vs-datatable js-data-table vs-mobile-primary" data-mobile-primary="0" data-page-search="customUsersSearch" data-search-placeholder="Search users..." data-order='[[6,"desc"],[1,"asc"]]' data-col-defs='[{"orderable":false,"targets":5},{"visible":false,"targets":6},{"width":"18%","targets":0},{"width":"15%","targets":1},{"width":"39%","targets":2},{"width":"9%","targets":3},{"width":"9%","targets":4},{"width":"10%","targets":5},{"className":"text-start","targets":[0,1,2]}]' style="width:100%">
+            <table id="userManagementTable" class="vs-datatable js-data-table vs-mobile-primary" data-mobile-primary="0" data-page-search="customUsersSearch" data-search-placeholder="Search users..." data-order='[[6,"desc"],[1,"asc"]]' data-col-defs='[{"orderable":false,"targets":5},{"visible":false,"targets":6},{"width":"18%","targets":0},{"width":"15%","targets":1},{"width":"34%","targets":2},{"width":"14%","targets":3},{"width":"9%","targets":4},{"width":"10%","targets":5},{"className":"text-start","targets":[0,1,2]}]' style="width:100%">
             <thead>
                 <tr>
                     <th>Full Name</th>
                     <th>Username</th>
                     <th>Email</th>
-                    <th>Role</th>
+                    <th>Account Level</th>
                     <th>Status</th>
                     <th class="actions-column">Actions</th>
                     <th style="display:none"></th>
@@ -81,7 +81,7 @@
                         data-active="<?= $isActive ? '1' : '0' ?>"
                         data-last-login="<?= !empty($user['last_login']) ? esc(date('Y-m-d', strtotime($user['last_login']))) : '' ?>"
                         <?= !$isActive ? 'class="vs-row-archived"' : '' ?>>
-                        <td><?= esc(trim(implode(' ', array_filter([($user['last_name'] ?? ''). ', ', $user['first_name'] ?? '', $user['middle_name'] ?? ''])))) ?></td>
+                        <td><?= esc(trim(implode(' ', array_filter([($user['last_name'] ?? '') . ', ', $user['first_name'] ?? '', $user['middle_name'] ?? '', $user['suffix'] ?? ''])))) ?></td>
                         <td><?= esc($user['username'] ?? '') ?></td>
                         <td><?= esc($user['email']) ?></td>
                         <td>
@@ -143,8 +143,8 @@ document.addEventListener('vs:modals:ready', function () {
 
     function showAlert(msg, type) {
         var box = document.getElementById('userAlertBox');
-        box.innerHTML = '<div class="vs-alert vs-alert-' + (type || 'success') + ' mb-3">' + msg + '</div>';
-        setTimeout(function () { box.innerHTML = ''; }, 4000);
+        box.innerHTML = '<div class="vs-alert vs-alert-' + (type || 'success') + ' mb-3">' + msg +
+            '<button type="button" class="vs-alert-dismiss" onclick="this.closest(\'.vs-alert\').remove()">×</button></div>';
     }
 
     // ── User Add / Edit modal ──────────────────────────────────────────────
@@ -178,7 +178,7 @@ document.addEventListener('vs:modals:ready', function () {
             });
             html += '</ul>';
         }
-        html += '</div>';
+        html += '<button type="button" class="vs-alert-dismiss" onclick="this.closest(\'.vs-alert\').remove()">×</button></div>';
         userModalAlert.innerHTML = html;
     }
     function umClearAlert() { userModalAlert.innerHTML = ''; }
@@ -190,6 +190,7 @@ document.addEventListener('vs:modals:ready', function () {
     function umRefreshSelects() {
         if (window.jQuery) {
             jQuery('#umRole').trigger('change.select2');
+            jQuery('#umSuffix').trigger('change.select2');
         }
     }
 
@@ -205,8 +206,10 @@ document.addEventListener('vs:modals:ready', function () {
         document.getElementById('umMiddleName').value = user.middle_name || '';
         document.getElementById('umLastName').value   = user.last_name   || '';
         document.getElementById('umUsername').value   = user.username    || '';
-        document.getElementById('umEmail').value     = user.email      || '';
-        document.getElementById('umRole').value      = user.role       || 'user';
+        document.getElementById('umEmail').value      = user.email       || '';
+        document.getElementById('umRole').value       = user.role        || 'user';
+        var umSuffixEl = document.getElementById('umSuffix');
+        if (umSuffixEl) { umSuffixEl.value = user.suffix || ''; }
         umPassword.value = '';
         umRefreshSelects();
     }

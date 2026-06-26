@@ -59,11 +59,6 @@ $icon = static fn (string $name): string => asset_icon($name, ['class' => 'vs-si
                 </a>
 
             <?php else: ?>
-                <a class="nav-link <?= $isActive('user/dashboard') ?>" href="<?= site_url('user/dashboard') ?>">
-                    <div class="sb-nav-link-icon"><?= $icon('dashboard') ?></div>
-                    Dashboard
-                </a>                
-
                 <div class="sb-sidenav-menu-heading">Manage</div>
                 <a class="nav-link <?= $isActive('user/students') ?>" href="<?= site_url('user/students') ?>">
                     <div class="sb-nav-link-icon"><?= $icon('users') ?></div>
@@ -72,11 +67,7 @@ $icon = static fn (string $name): string => asset_icon($name, ['class' => 'vs-si
                 <a class="nav-link <?= $isActive('user/schools') ?>" href="<?= site_url('user/schools') ?>">
                     <div class="sb-nav-link-icon"><?= $icon('school') ?></div>
                     Schools
-                </a>    
-                <a class="nav-link <?= $isActive('archive') ?>" href="<?= site_url('archive?type=voucher') ?>">
-                    <div class="sb-nav-link-icon"><?= $icon('archive') ?></div>
-                    Archive
-                </a>                       
+                </a>
 
                 <div class="sb-sidenav-menu-heading">Generate</div>
                 <a class="nav-link <?= $isActive('user/vouchers') ?>" href="<?= site_url('user/vouchers') ?>">

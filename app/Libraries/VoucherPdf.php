@@ -142,7 +142,6 @@ class VoucherPdf
     {
         $rows = (new SignatoryModel())
             ->where('is_active', 1)
-            ->where('is_selected', 1) // admins can toggle which signatories appear
             ->orderBy('signatory_id', 'ASC')
             ->findAll();
 

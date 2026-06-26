@@ -605,3 +605,49 @@
   background-color: #c93131 !important;
   color: #fff !important;
 }
+
+/* ── Modal layout ───────────────────────────────────────────────────────── */
+/* Bootstrap .modal-backdrop sets inset:-10%; width:120%; height:120% — reset
+   to full-viewport. Backdrop scrolls; modal grows to fit all content. */
+.modal.modal-backdrop {
+  inset: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  overflow-y: auto !important;
+  align-items: flex-start !important;
+  justify-content: center !important;
+  padding: 1rem !important;
+}
+.modal.modal-backdrop .modal-dialog {
+  margin: auto !important;
+  min-height: 0 !important;
+  max-height: none;
+  width: 100%;
+}
+.modal.modal-backdrop .modal-content {
+  overflow: visible;
+}
+.modal.modal-backdrop .modal-body {
+  overflow-y: visible;
+}
+
+/* ── Alert dismiss ──────────────────────────────────────────────────────── */
+.vs-alert {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: .5rem;
+}
+.vs-alert-dismiss {
+  flex: none;
+  background: rgba(0,0,0,.08);
+  border: 1px solid rgba(0,0,0,.15);
+  border-radius: .35rem;
+  font-size: .85rem;
+  font-weight: 700;
+  line-height: 1;
+  cursor: pointer;
+  padding: .25rem .6rem;
+  color: inherit;
+}
+.vs-alert-dismiss:hover { background: rgba(0,0,0,.15); }

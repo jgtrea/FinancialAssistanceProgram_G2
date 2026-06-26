@@ -218,7 +218,7 @@ class School extends Controller
                 continue;
             }
 
-            if ($this->schoolModel->nameExistsForLevel($level, $name)) {
+            if ($this->schoolModel->nameExistsForLevel($level, $name) || $this->schoolModel->acronymExistsForLevel($level, $acronym)) {
                 $skipped++;
                 continue;
             }

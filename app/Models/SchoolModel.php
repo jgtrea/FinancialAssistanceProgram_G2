@@ -48,4 +48,17 @@ class SchoolModel extends Model
         }
         return $builder->countAllResults() > 0;
     }
+
+    public function acronymExistsForLevel(string $level, string $acronym, ?int $excludeId = null): bool
+    {
+        $upper = strtoupper(trim($acronym));
+        if ($upper === '') return false;
+        $builder = $this->db->table('school')
+            ->where('school_level', $level)
+            ->where('acronym', $upper);
+        if ($excludeId !== null) {
+            $builder->where('school_id !=', $excludeId);
+        }
+        return $builder->countAllResults() > 0;
+    }
 }

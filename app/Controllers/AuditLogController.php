@@ -25,7 +25,7 @@ class AuditLogController extends BaseController
         $hasKeyword = $keyword !== '';
 
         $auditModel
-            ->select("audit_log.*, users.email, TRIM(CONCAT_WS(' ', NULLIF(users.first_name,''), NULLIF(users.middle_name,''), NULLIF(users.last_name,''))) AS full_name")
+            ->select("audit_log.*, users.email, TRIM(CONCAT_WS(' ', NULLIF(users.first_name,''), NULLIF(users.middle_name,''), NULLIF(users.last_name,''), NULLIF(users.suffix,''))) AS full_name")
             ->join('users', 'users.user_id = audit_log.user_id', 'left');
 
         if (!$isAdminRoute) {

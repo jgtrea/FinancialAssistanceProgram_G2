@@ -133,32 +133,24 @@ var ModalInstance = (function () {
                 <div class="modal-body">
                   <div class="row g-3">
                     <div class="col-6">
-                      <label class="form-label" for="filterGender">Sex</label>
-                      <select id="filterGender" class="vs-input js-filter-select" data-placeholder="MALE / FEMALE" data-no-search="1">
-                        <option></option><option value="MALE">MALE</option><option value="FEMALE">FEMALE</option>
-                      </select>
-                    </div>                    
-                    <div class="col-6">
-                      <label class="form-label" for="filterVoucherStatus">Generation Status</label>
-                      <select id="filterVoucherStatus" class="vs-input js-filter-select" data-placeholder="PRINTED / NOT PRINTED" data-tags="1">
-                        <option></option><option value="generated">PRINTED</option><option value="not_generated">NOT PRINTED</option>
-                      </select>
-                    </div>
-                    <div class="col-6">
-                      <label class="form-label" for="filterDateFrom">Date Added From</label>
-                      <input type="date" id="filterDateFrom" class="vs-input">
-                    </div>
-                    <div class="col-6">
-                      <label class="form-label" for="filterDateTo">Date Added To</label>
-                      <input type="date" id="filterDateTo" class="vs-input">
-                    </div>
-                    <div class="col-6">
                       <label class="form-label" for="filterJuniorHs">Junior High School</label>
-                      <select id="filterJuniorHs" class="vs-input js-filter-select" data-placeholder="TYPE OR SELECT"><option></option></select>
+                      <select id="filterJuniorHs" class="vs-input js-filter-select" data-placeholder="Select Junior High School"><option></option></select>
                     </div>
                     <div class="col-6">
                       <label class="form-label" for="filterPreferredHs">Preferred Senior HS</label>
-                      <select id="filterPreferredHs" class="vs-input js-filter-select" data-placeholder="TYPE OR SELECT"><option></option></select>
+                      <select id="filterPreferredHs" class="vs-input js-filter-select" data-placeholder="Select Preferred Senior HS"><option></option></select>
+                    </div>
+                    <div class="col-6">
+                      <label class="form-label" for="filterGender">Sex</label>
+                      <select id="filterGender" class="vs-input js-filter-select" data-placeholder="Select Sex" data-no-search="1">
+                        <option></option><option value="MALE">MALE</option><option value="FEMALE">FEMALE</option>
+                      </select>
+                    </div>
+                    <div class="col-6">
+                      <label class="form-label" for="filterVoucherStatus">Generation Status</label>
+                      <select id="filterVoucherStatus" class="vs-input js-filter-select" data-placeholder="Select Generation Status" data-tags="1">
+                        <option></option><option value="generated">PRINTED</option><option value="not_generated">NOT PRINTED</option>
+                      </select>
                     </div>
                     <div class="col-6">
                       <label class="form-label" for="filterGwaMin">GWA Min</label>
@@ -168,21 +160,24 @@ var ModalInstance = (function () {
                       <label class="form-label" for="filterGwaMax">GWA Max</label>
                       <input type="number" step="0.01" id="filterGwaMax" class="vs-input" placeholder="E.G. 100">
                     </div>
-                    <!-- <div class="col-6">
-                      <label class="form-label" for="filterEligibility">Eligibility Status</label>
-                      <select id="filterEligibility" class="vs-input js-filter-select" data-placeholder="ELIGIBLE / NOT ELIGIBLE" data-no-search="1">
-                        <option></option><option value="eligible">eligible</option><option value="not_eligible">not_eligible</option>
-                      </select>
-                    </div> -->
                     <div class="col-6">
                       <label class="form-label" for="filterRemarks">Remarks</label>
-                      <select id="filterRemarks" class="vs-input js-filter-select" data-placeholder="COMPLETE / INCOMPLETE / OTHERS" data-no-search="1">
+                      <select id="filterRemarks" class="vs-input js-filter-select" data-placeholder="Select Remarks" data-no-search="1">
                         <option></option><option value="COMPLETE">COMPLETE</option><option value="INCOMPLETE">INCOMPLETE</option><option value="OTHERS">OTHERS</option>
                       </select>
                     </div>
-                    <div class="col-6" id="filterOtherRemarksWrap" style="display:none">
+                    <div class="col-6"></div>
+                    <div class="col-12">
                       <label class="form-label" for="filterOtherRemarks">Other Remarks</label>
-                      <select id="filterOtherRemarks" class="vs-input js-filter-select" data-placeholder="TYPE OR SELECT"><option></option></select>
+                      <textarea id="filterOtherRemarks" class="vs-input vs-uppercase" maxlength="500" rows="3" style="resize:vertical"></textarea>
+                    </div>
+                    <div class="col-6">
+                      <label class="form-label" for="filterDateFrom">Date Added From</label>
+                      <input type="date" id="filterDateFrom" class="vs-input">
+                    </div>
+                    <div class="col-6">
+                      <label class="form-label" for="filterDateTo">Date Added To</label>
+                      <input type="date" id="filterDateTo" class="vs-input">
                     </div>
                   </div>
                 </div>
@@ -229,14 +224,15 @@ var ModalInstance = (function () {
                     <div class="modal-body">
                       <div id="voucherModalAlert"></div>
                     <div class="row g-3">
-                      <div class="col-6">
+                      <div class="col-4">
                         <label class="form-label" for="vmControlNo">Control No.</label>
                         <input id="vmControlNo" name="control_no" type="text" class="vs-input vs-uppercase">
                       </div>
-                      <div id="vmVoucherDateWrap" class="col-6">
+                      <div id="vmVoucherDateWrap" class="col-4">
                         <label class="form-label" for="vmVoucherDate">Voucher Date</label>
-                        <input id="vmVoucherDate" name="voucher_date" type="date" class="vs-input"  >
-                      </div>                      
+                        <input id="vmVoucherDate" name="voucher_date" type="date" class="vs-input">
+                      </div>
+                      <div class="col-4"></div>
                       <div class="col-4">
                         <label class="form-label required" for="vmFirstName">First Name</label>
                         <input id="vmFirstName" name="first_name" type="text" class="vs-input vs-uppercase" required>
@@ -245,20 +241,20 @@ var ModalInstance = (function () {
                         <label class="form-label" for="vmMiddleName">Middle Name</label>
                         <input id="vmMiddleName" name="middle_name" type="text" class="vs-input vs-uppercase">
                       </div>
-                      <div class="col-4 ">
+                      <div class="col-4">
                         <label class="form-label required" for="vmLastName">Last Name</label>
                         <input id="vmLastName" name="last_name" type="text" class="vs-input vs-uppercase" required>
                       </div>
                       <div class="col-4">
                         <label class="form-label" for="vmSuffix">Suffix</label>
-                        <select id="vmSuffix" name="suffix" class="vs-input js-school-select vs-uppercase" data-placeholder="- SELECT -" data-no-search="1">
+                        <select id="vmSuffix" name="suffix" class="vs-input js-school-select vs-uppercase" data-placeholder="Select Suffix" data-no-search="1">
                           <option></option><option value="JR.">JR.</option><option value="SR.">SR.</option>
                           <option value="II">II</option><option value="III">III</option><option value="IV">IV</option>
                         </select>
                       </div>
                       <div class="col-4">
                         <label class="form-label" for="vmGender">Sex</label>
-                        <select id="vmGender" name="gender" class="vs-input js-school-select" data-placeholder="MALE / FEMALE" data-no-search="1">
+                        <select id="vmGender" name="gender" class="vs-input js-school-select" data-placeholder="Select Sex" data-no-search="1">
                           <option></option><option value="MALE">MALE</option><option value="FEMALE">FEMALE</option>
                         </select>
                       </div>
@@ -266,31 +262,26 @@ var ModalInstance = (function () {
                         <label class="form-label" for="vmContactNumber">Contact Number</label>
                         <input id="vmContactNumber" name="contact_number" type="text" class="vs-input vs-uppercase">
                       </div>
-                      <div class="col-6">
+                      <div class="col-4">
                         <label class="form-label required" for="vmGwa">GWA</label>
                         <input id="vmGwa" name="gwa" type="number" step="0.01" class="vs-input" required>
                       </div>
-                      <div class="col-6">
+                      <div class="col-4">
                         <label class="form-label required" for="vmRankNo">Rank No.</label>
                         <input id="vmRankNo" name="rank_no" type="number" step="any" class="vs-input" required>
                       </div>
-                      <div class="col-6">
+                      <div class="col-4"></div>
+                      <div class="col-12">
                         <label class="form-label required" for="vmJuniorHs">Junior High School</label>
-                        <select id="vmJuniorHs" name="junior_high_school" class="vs-input js-school-select vs-uppercase" data-placeholder="TYPE OR SELECT" required><option></option></select>
+                        <select id="vmJuniorHs" name="junior_high_school" class="vs-input js-school-select vs-uppercase" data-placeholder="Select Junior High School" required><option></option></select>
                       </div>
-                      <div class="col-6">
+                      <div class="col-12">
                         <label class="form-label" for="vmPreferredHs">Preferred Senior High School</label>
-                        <select id="vmPreferredHs" name="preferred_senior_high_school" class="vs-input js-school-select vs-uppercase" data-placeholder="TYPE OR SELECT"><option></option></select>
+                        <select id="vmPreferredHs" name="preferred_senior_high_school" class="vs-input js-school-select vs-uppercase" data-placeholder="Select Preferred Senior High School"><option></option></select>
                       </div>
-                      <!-- <div class="col-6">
-                        <label class="form-label required" for="vmEligibility">Eligibility</label>
-                        <select id="vmEligibility" name="eligibility_status" class="vs-input js-school-select" data-placeholder="ELIGIBLE / NOT ELIGIBLE" data-no-search="1" required>
-                          <option></option><option value="eligible">ELIGIBLE</option><option value="not_eligible">NOT ELIGIBLE</option>
-                        </select>
-                      </div> -->
-                      <div class="col-6">
+                      <div class="col-4">
                         <label class="form-label" for="vmRemarks">Remarks</label>
-                        <select id="vmRemarks" name="remarks_status" class="vs-input js-school-select vs-uppercase" data-placeholder="COMPLETE / INCOMPLETE / OTHERS" data-no-search="1">
+                        <select id="vmRemarks" name="remarks_status" class="vs-input js-school-select vs-uppercase" data-placeholder="Select Remarks" data-no-search="1">
                           <option></option><option value="COMPLETE">COMPLETE</option><option value="INCOMPLETE">INCOMPLETE</option><option value="OTHERS">OTHERS</option>
                         </select>
                       </div>
@@ -332,25 +323,31 @@ var ModalInstance = (function () {
                   <div class="modal-body">
                     <div id="userModalAlert"></div>
                     <div class="row g-3">
-                      <div class="col-4">
+                      <div class="col-6">
                         <label class="form-label required" for="umFirstName">First Name</label>
                         <input type="text" id="umFirstName" name="first_name" class="vs-input vs-uppercase" required spellcheck="false">
                       </div>
-                      <div class="col-4">
+                      <div class="col-6">
                         <label class="form-label" for="umMiddleName">Middle Name</label>
                         <input type="text" id="umMiddleName" name="middle_name" class="vs-input vs-uppercase" spellcheck="false">
                       </div>
-                      <div class="col-4">
+                      <div class="col-6">
                         <label class="form-label required" for="umLastName">Last Name</label>
                         <input type="text" id="umLastName" name="last_name" class="vs-input vs-uppercase" required spellcheck="false">
-                      </div>                      
+                      </div>
+                      <div class="col-6">
+                        <label class="form-label" for="umSuffix">Suffix</label>
+                        <select id="umSuffix" name="suffix" class="vs-input js-filter-select" data-placeholder="Select Suffix" data-no-search="1">
+                          <option></option><option value="JR.">JR.</option><option value="SR.">SR.</option><option value="II">II</option><option value="III">III</option><option value="IV">IV</option><option value="V">V</option>
+                        </select>
+                      </div>
                       <div class="col-6 ">
                         <label class="form-label required" for="umEmail">Email</label>
                         <input type="email" id="umEmail" name="email" class="vs-input" required autocomplete="email" autocapitalize="none" spellcheck="false">
                       </div>
                       <div class="col-6">
                         <label class="form-label required" for="umRole">Account Level</label>
-                        <select id="umRole" name="role" class="vs-input js-filter-select" data-placeholder="ADMIN / USER" data-no-search="1" required>
+                        <select id="umRole" name="role" class="vs-input js-filter-select" data-placeholder="Select Account Level" data-no-search="1" required>
                           <option></option><option value="admin">ADMIN</option><option value="user">USER</option>
                         </select>
                       </div>
@@ -361,8 +358,7 @@ var ModalInstance = (function () {
                       <div class="col-6">
                         <label class="form-label" id="umPasswordLabel" for="umPassword">Password</label>
                         <input type="password" id="umPassword" name="password" class="vs-input" autocomplete="new-password" autocapitalize="none" spellcheck="false">
-                      </div>                      
-                      <div class="col-4"></div>
+                      </div>
                     </div>
                   </div>
                   <div class="modal-footer">
@@ -435,62 +431,63 @@ var ModalInstance = (function () {
                   </div>
                   <div class="modal-body">
                     <div class="row g-3">
-                      <div class="col-12 col-lg-6">
-                        <label class="form-label required" for="afSchoolYear">School Year</label>
-                        <select id="afSchoolYear" class="form-control js-filter-select" data-placeholder="TYPE OR SELECT"><option></option></select>
+                      <div class="col-6">
+                        <label class="form-label" for="afJuniorHs">Junior High School</label>
+                        <select id="afJuniorHs" class="vs-input js-filter-select" data-placeholder="Select Junior High School"><option></option></select>
                       </div>
-                      <div class="col-12 col-lg-6">
+                      <div class="col-6">
+                        <label class="form-label" for="afPreferredHs">Preferred Senior HS</label>
+                        <select id="afPreferredHs" class="vs-input js-filter-select" data-placeholder="Select Preferred Senior HS"><option></option></select>
+                      </div>
+                      <div class="col-6">
                         <label class="form-label" for="afGender">Sex</label>
-                        <select id="afGender" class="form-control js-filter-select" data-placeholder="MALE / FEMALE" data-no-search="1">
+                        <select id="afGender" class="vs-input js-filter-select" data-placeholder="Select Sex" data-no-search="1">
                           <option></option><option value="MALE">MALE</option><option value="FEMALE">FEMALE</option>
-                      </select>
-                    </div>                    
-                    <div class="col-12 col-lg-6">
-                      <label class="form-label" for="afVoucherStatus">Voucher Status</label>
-                      <select id="afVoucherStatus" class="vs-input js-filter-select" data-placeholder="PRINTED / NOT PRINTED" data-no-search="1">
-                        <option></option><option value="generated">PRINTED</option><option value="not_generated">NOT PRINTED</option>
-                      </select>
+                        </select>
+                      </div>
+                      <div class="col-6">
+                        <label class="form-label" for="afVoucherStatus">Voucher Status</label>
+                        <select id="afVoucherStatus" class="vs-input js-filter-select" data-placeholder="Select Voucher Status" data-no-search="1">
+                          <option></option><option value="generated">PRINTED</option><option value="not_generated">NOT PRINTED</option>
+                        </select>
+                      </div>
+                      <div class="col-6">
+                        <label class="form-label" for="afGwaMin">GWA Min</label>
+                        <input type="number" step="0.01" id="afGwaMin" class="vs-input" placeholder="E.G. 80">
+                      </div>
+                      <div class="col-6">
+                        <label class="form-label" for="afGwaMax">GWA Max</label>
+                        <input type="number" step="0.01" id="afGwaMax" class="vs-input" placeholder="E.G. 100">
+                      </div>
+                      <div class="col-6">
+                        <label class="form-label" for="afRemarks">Remarks</label>
+                        <select id="afRemarks" class="vs-input js-filter-select" data-placeholder="Select Remarks" data-no-search="1">
+                          <option></option><option value="COMPLETE">COMPLETE</option><option value="INCOMPLETE">INCOMPLETE</option><option value="OTHERS">OTHERS</option>
+                        </select>
+                      </div>
+                      <div class="col-6">
+                        <label class="form-label" for="afSchoolYear">School Year</label>
+                        <select id="afSchoolYear" class="vs-input js-filter-select" data-placeholder="Select School Year"><option></option></select>
+                      </div>
+                      <div class="col-12">
+                        <label class="form-label" for="afOtherRemarks">Other Remarks</label>
+                        <textarea id="afOtherRemarks" class="vs-input vs-uppercase" maxlength="500" rows="3" style="resize:vertical"></textarea>
+                      </div>
+                      <div class="col-6">
+                        <label class="form-label" for="afDateFrom">Date Added From</label>
+                        <input type="date" id="afDateFrom" class="vs-input">
+                      </div>
+                      <div class="col-6">
+                        <label class="form-label" for="afDateTo">Date Added To</label>
+                        <input type="date" id="afDateTo" class="vs-input">
+                      </div>
                     </div>
-                    <div class="col-12 col-lg-6">
-                      <label class="form-label" for="afDateFrom"> Date Added From</label>
-                      <input type="date" id="afDateFrom" class="vs-input">
-                    </div>
-                    <div class="col-12 col-lg-6">
-                      <label class="form-label" for="afDateTo">Date Added To</label>
-                      <input type="date" id="afDateTo" class="vs-input">
-                    </div>
-                    <div class="col-12 col-lg-6">
-                      <label class="form-label" for="afJuniorHs">Junior High School</label>
-                      <select id="afJuniorHs" class="vs-input js-filter-select" data-placeholder="TYPE OR SELECT"><option></option></select>
-                    </div>
-                    <div class="col-12 col-lg-6">
-                      <label class="form-label" for="afPreferredHs">Preferred Senior HS</label>
-                      <select id="afPreferredHs" class="vs-input js-filter-select" data-placeholder="TYPE OR SELECT"><option></option></select>
-                    </div>
-                    <div class="col-12 col-lg-6">
-                      <label class="form-label" for="afGwaMin">GWA Min</label>
-                      <input type="number" step="0.01" id="afGwaMin" class="vs-input" placeholder="e.g. 80">
-                    </div>
-                    <div class="col-12 col-lg-6">
-                      <label class="form-label" for="afGwaMax">GWA Max</label>
-                      <input type="number" step="0.01" id="afGwaMax" class="vs-input" placeholder="e.g. 100">
-                    </div>
-                    <div class="col-12 col-lg-6">
-                      <label class="form-label" for="afRemarks">Remarks</label>
-                      <select id="afRemarks" class="vs-input js-filter-select" data-placeholder="COMPLETE / INCOMPLETE / OTHERS" data-no-search="1">
-                        <option></option><option value="COMPLETE">COMPLETE</option><option value="INCOMPLETE">INCOMPLETE</option><option value="OTHERS">OTHERS</option>
-                      </select>
-                    </div>
-                    <div class="col-12 col-lg-6" id="afOtherRemarksWrap" style="display:none">
-                      <label class="form-label" for="afOtherRemarks">Other Remarks</label>
-                      <input id="afOtherRemarks" type="text" class="vs-input vs-uppercase" placeholder="SEARCH OTHER REMARKS" maxlength="255" disabled>
-                    </div>  
                   </div>
-                </div>
-                <div class="modal-footer">
-                  <button type="button" class="vs-btn vs-btn-danger" id="archiveFilterClear">Clear All</button>
-                  <button type="button" class="vs-btn vs-btn-danger" id="archiveFilterCancel">Close</button>
-                  <button type="button" class="vs-btn vs-btn-primary" id="archiveFilterApply">Apply Filters</button>
+                  <div class="modal-footer">
+                    <button type="button" class="vs-btn vs-btn-danger" id="archiveFilterClear">Clear All</button>
+                    <button type="button" class="vs-btn vs-btn-danger" id="archiveFilterCancel">Close</button>
+                    <button type="button" class="vs-btn vs-btn-primary" id="archiveFilterApply">Apply Filters</button>
+                  </div>
                 </div>
               </div>
             </div>`;
@@ -508,7 +505,7 @@ var ModalInstance = (function () {
                         <div class="row g-3">
                             <div class="col-12">
                                 <label class="form-label" for="auditFilterAction">Action</label>
-                                <select id="auditFilterAction" class="form-control js-filter-select" data-placeholder="TYPE OR SELECT"><option></option></select>
+                                <select id="auditFilterAction" class="vs-input js-filter-select" data-placeholder="Select Actions"><option value="">Select Actions</option></select>
                             </div>
                             <div class="col-12 col-lg-6">
                                 <label class="form-label" for="auditFilterDateFrom">Date From</label>
@@ -621,7 +618,7 @@ var ModalInstance = (function () {
                                     </div>
                                     <div class="col-6">
                                         <label class="form-label required" for="smSchoolLevel">Level</label>
-                                        <select id="smSchoolLevel" name="school_level" class="vs-input js-filter-select" data-placeholder="JHS / SHS" data-no-search="1" required>
+                                        <select id="smSchoolLevel" name="school_level" class="vs-input js-filter-select" data-placeholder="Select Level" data-no-search="1" required>
                                             <option></option><option value="JHS">JHS</option><option value="SHS">SHS</option>
                                         </select>
                                     </div>
@@ -748,19 +745,19 @@ var ModalInstance = (function () {
                       </div>
                       <div class="col-6">
                         <label class="form-label" for="smPrefix">Prefix</label>
-                        <select id="smPrefix" name="prefix" class="vs-input js-filter-select" data-placeholder="- SELECT -" data-no-search="1">
+                        <select id="smPrefix" name="prefix" class="vs-input js-filter-select" data-placeholder="Select Prefix" data-no-search="1">
                           <option></option>${_staticOpts(prefixOpts)}
                         </select>
                       </div>
                       <div class="col-6">
                         <label class="form-label" for="smSuffix">Suffix</label>
-                        <select id="smSuffix" name="suffix" class="vs-input js-filter-select" data-placeholder="- SELECT -" data-no-search="1">
+                        <select id="smSuffix" name="suffix" class="vs-input js-filter-select" data-placeholder="Select Suffix" data-no-search="1">
                           <option></option>${_staticOpts(suffixOpts)}
                         </select>
                       </div>
                       <div class="col-6">
                         <label class="form-label" for="smDegree">Degree</label>
-                        <select id="smDegree" name="degree" class="vs-input js-filter-select" data-placeholder="TYPE OR SELECT">
+                        <select id="smDegree" name="degree" class="vs-input js-filter-select" data-placeholder="Select Degree">
                           <option></option>${_staticOpts(degreeOpts)}
                         </select>
                         <input id="smDegreeOther" name="degree_other" type="text" class="vs-input mt-2" placeholder="Specify degree" style="display:none">
@@ -854,22 +851,25 @@ var ModalInstance = (function () {
                                                     <label class="form-label fw-semibold small text-uppercase" for="amEmail">Email</label>
                                                     <input id="amEmail" name="email" type="email" class="form-control" required>
                                                 </div>
-                                                <div class="col-4">
+                                                <div class="col-6">
                                                     <label class="form-label fw-semibold small text-uppercase" for="amFirstName">First Name</label>
                                                     <input id="amFirstName" name="first_name" type="text" class="form-control vs-uppercase" required>
                                                 </div>
-                                                <div class="col-4">
+                                                <div class="col-6">
                                                     <label class="form-label fw-semibold small text-uppercase" for="amMiddleName">Middle Name</label>
                                                     <input id="amMiddleName" name="middle_name" type="text" class="form-control vs-uppercase">
                                                 </div>
-                                                <div class="col-4">
+                                                <div class="col-6">
                                                     <label class="form-label fw-semibold small text-uppercase" for="amLastName">Last Name</label>
                                                     <input id="amLastName" name="last_name" type="text" class="form-control vs-uppercase" required>
                                                 </div>
-                                                <div class="col-4">
-                                                    <label class="form-label fw-semibold small text-uppercase" for="amRole">Account Level</label>
-                                                    <div id="amRole" class="form-control bg-white text-muted" style="cursor:default"></div>
+                                                <div class="col-6">
+                                                    <label class="form-label fw-semibold small text-uppercase" for="amSuffix">Suffix</label>
+                                                    <select id="amSuffix" name="suffix" class="form-control js-filter-select" data-placeholder="Select Suffix" data-no-search="1">
+                                                        <option></option><option value="JR.">JR.</option><option value="SR.">SR.</option><option value="II">II</option><option value="III">III</option><option value="IV">IV</option><option value="V">V</option>
+                                                    </select>
                                                 </div>
+                                                <div id="amRole" style="display:none"></div>
                                             </div>
                                         </div>
                                     </div>
@@ -882,15 +882,16 @@ var ModalInstance = (function () {
                                                 </div>
                                             </div>
                                             <div class="row g-3">
-                                                <div class="col-4">
+                                                <div class="col-6">
                                                     <label class="form-label fw-semibold small text-uppercase" for="amCurrentPw">Current Password</label>
                                                     <input id="amCurrentPw" name="current_password" type="password" class="form-control" autocomplete="current-password">
                                                 </div>
-                                                <div class="col-4">
+                                                <div class="col-6"></div>
+                                                <div class="col-6">
                                                     <label class="form-label fw-semibold small text-uppercase" for="amNewPw">New Password</label>
                                                     <input id="amNewPw" name="new_password" type="password" class="form-control" autocomplete="new-password">
                                                 </div>
-                                                <div class="col-4">
+                                                <div class="col-6">
                                                     <label class="form-label fw-semibold small text-uppercase" for="amConfirmPw">Confirm Password</label>
                                                     <input id="amConfirmPw" name="confirm_password" type="password" class="form-control" autocomplete="new-password">
                                                 </div>
@@ -961,6 +962,12 @@ var ModalInstance = (function () {
   function _schoolTxt(s) {
     return typeof s === "object" ? s.school_name || "" : s;
   }
+  function _schoolTxtFull(s) {
+    if (typeof s !== "object") return s || "";
+    var acr  = (s.acronym     || "").trim();
+    var name = (s.school_name || "").trim();
+    return acr ? acr + " - " + name : name;
+  }
   function _schoolName(s) {
     return typeof s === "object" ? s.school_name || "" : s;
   }
@@ -985,17 +992,8 @@ var ModalInstance = (function () {
           _schoolTxt,
           _urlParam("preferred_hs"),
         );
-        _buildOpts(
-          "filterOtherRemarks",
-          fo.other_remarks,
-          function (s) {
-            return s;
-          },
-          function (s) {
-            return s;
-          },
-          _urlParam("other_remarks"),
-        );
+        var forEl = document.getElementById("filterOtherRemarks");
+        if (forEl) forEl.value = _urlParam("other_remarks");
         break;
 
       case "voucherModal":
@@ -1003,14 +1001,14 @@ var ModalInstance = (function () {
           "vmJuniorHs",
           fo.junior_high_schools,
           _schoolVal,
-          _schoolTxt,
+          _schoolTxtFull,
           null,
         );
         _buildOpts(
           "vmPreferredHs",
           fo.senior_high_schools,
           _schoolVal,
-          _schoolTxt,
+          _schoolTxtFull,
           null,
         );
         break;
@@ -1076,6 +1074,7 @@ var ModalInstance = (function () {
       afGwaMin: "gwa_min",
       afGwaMax: "gwa_max",
       afOtherRemarks: "other_remarks",
+      filterOtherRemarks: "other_remarks",
     };
     Object.keys(inputMap).forEach(function (id) {
       var el = document.getElementById(id);
@@ -1085,7 +1084,6 @@ var ModalInstance = (function () {
     var selectMap = {
       filterGender: "gender",
       filterRemarks: "remarks",
-      filterOtherRemarks: "other_remarks",
       filterVoucherStatus: "voucher_status",
       // filterEligibility:   'eligibility',
       afGender: "gender",
@@ -1135,30 +1133,7 @@ var ModalInstance = (function () {
     }
   }
 
-  function _initOtherRemarksFilters() {
-    [
-      ["filterRemarks", "filterOtherRemarksWrap", "filterOtherRemarks"],
-      ["afRemarks", "afOtherRemarksWrap", "afOtherRemarks"],
-    ].forEach(function (ids) {
-      var selectId = ids[0],
-        wrapId = ids[1],
-        inputId = ids[2];
-      if (!document.getElementById(selectId)) return;
-      _toggleOtherRemarksFilter(selectId, wrapId, inputId);
-      var selectEl = document.getElementById(selectId);
-      var sync = function () {
-        _toggleOtherRemarksFilter(selectId, wrapId, inputId);
-      };
-      selectEl.addEventListener("change", sync);
-      if (window.jQuery) {
-        jQuery(selectEl).on("select2:select select2:clear", sync);
-      }
-      document.addEventListener("change", function (e) {
-        if (e.target && e.target.id === selectId)
-          sync();
-      });
-    });
-  }
+  function _initOtherRemarksFilters() {}
 
   /* ── account modal logic ─────────────────────── */
 
@@ -1193,6 +1168,11 @@ var ModalInstance = (function () {
           document.getElementById("amFirstName").value = d.first_name || "";
           document.getElementById("amMiddleName").value = d.middle_name || "";
           document.getElementById("amLastName").value = d.last_name || "";
+          var amSuffixEl = document.getElementById("amSuffix");
+          if (amSuffixEl) {
+            amSuffixEl.value = d.suffix || "";
+            if (window.jQuery) jQuery(amSuffixEl).trigger("change.select2");
+          }
         });
     }
 
@@ -1283,6 +1263,7 @@ var ModalInstance = (function () {
     _initOtherRemarksFilters();
 
     if (_rendered.accountModal) _initAccountModal();
+    if (window.initVsSelect2) window.initVsSelect2(document.body);
     document.dispatchEvent(new CustomEvent("vs:modals:ready"));
   }
 

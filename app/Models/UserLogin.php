@@ -6,7 +6,7 @@ class UserLogin extends Model {
     protected $primaryKey = 'user_id';
     protected $allowedFields = [
         'username',
-        'first_name', 'middle_name', 'last_name',
+        'first_name', 'middle_name', 'last_name', 'suffix',
         'email', 'password', 'role',
         'is_active', 'last_login', 'session_token', 'session_last_active',
     ];

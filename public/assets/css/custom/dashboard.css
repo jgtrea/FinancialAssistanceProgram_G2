@@ -135,7 +135,7 @@
 
 .vs-dashboard-table .vs-student-name {
   color: var(--navy);
-  font-weight: 700;
+  font-weight: 400;
   line-height: 1.35;
   overflow-wrap: normal;
   white-space: nowrap;

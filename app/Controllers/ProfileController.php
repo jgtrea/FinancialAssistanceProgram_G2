@@ -10,7 +10,7 @@ class ProfileController extends BaseController
     public function edit()
     {
         $role = session('role');
-        return redirect()->to($role === 'admin' ? 'admin/dashboard' : 'user/dashboard');
+        return redirect()->to($role === 'admin' ? 'admin/dashboard' : 'user/students');
     }
 
     public function apiGet()
@@ -27,6 +27,7 @@ class ProfileController extends BaseController
             'first_name'  => $user['first_name'] ?? '',
             'middle_name' => $user['middle_name'] ?? '',
             'last_name'   => $user['last_name'] ?? '',
+            'suffix'      => $user['suffix'] ?? '',
         ]);
     }
 
@@ -106,6 +107,7 @@ class ProfileController extends BaseController
             'first_name'  => strtoupper(trim((string) $this->request->getPost('first_name'))),
             'middle_name' => strtoupper(trim((string) $this->request->getPost('middle_name'))),
             'last_name'   => strtoupper(trim((string) $this->request->getPost('last_name'))),
+            'suffix'      => strtoupper(trim((string) $this->request->getPost('suffix'))),
             'email'       => $email,
         ];
 

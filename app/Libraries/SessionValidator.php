@@ -90,6 +90,7 @@ class SessionValidator
             $user['first_name'] ?? '',
             $user['middle_name'] ?? '',
             $user['last_name'] ?? '',
+            $user['suffix'] ?? '',
         ])));
 
         return $fullName ?: (string) ($user['username'] ?? $user['email'] ?? 'User');

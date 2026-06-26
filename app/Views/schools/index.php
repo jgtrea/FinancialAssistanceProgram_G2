@@ -21,7 +21,7 @@
 <div class="vs-action-bar" id="schoolActionBar" style="display:none">
     <span class="vs-action-bar-count"><span id="schoolSelectedCount">0</span> selected</span>
     <div class="d-flex gap-2 ms-auto">
-        <button type="button" class="vs-btn vs-btn-success" id="btnOpenExport">
+        <button type="button" class="vs-btn vs-btn-warning" id="btnOpenExport">
             <?= asset_icon('export') ?>
             Export
         </button>
@@ -34,32 +34,32 @@
 
 <!-- Search + Level quick filter + action buttons -->
 <form method="get" id="schoolSearchForm" class="row g-2 align-items-center mb-3">
-    <div class="col-12 col-md">
+    <div class="col">
         <input type="text" name="q" class="vs-input vs-advanced-search-input w-100"
                placeholder="Enter keyword to search (name, acronym, level)"
                value="<?= esc($keyword, 'attr') ?>">
     </div>
-    <div class="col-12 col-md-2">
-        <select id="schoolLevelFilter" name="level" class="js-filter-select" data-placeholder="Select Level" data-no-search="1" style="width:100%">
+    <div class="col-auto">
+        <select id="schoolLevelFilter" name="level" class="js-filter-select" data-placeholder="Select Level" data-no-search="1" style="width:130px">
             <option value="" <?= $filterLevel === ''    ? 'selected' : '' ?>></option>
             <option value="JHS" <?= $filterLevel === 'JHS' ? 'selected' : '' ?>>JHS</option>
             <option value="SHS" <?= $filterLevel === 'SHS' ? 'selected' : '' ?>>SHS</option>
         </select>
     </div>
-    <div class="col-auto d-none d-md-flex align-items-center">
+    <div class="col-auto d-flex align-items-center">
         <span style="color:var(--border);font-size:1.2rem;line-height:1;user-select:none">|</span>
     </div>
-    <div class="col-12 col-md-2 d-flex gap-2">
-        <button type="submit" class="vs-btn vs-btn-primary flex-fill">Search</button>
-        <a href="<?= site_url('admin/schools') ?>" class="vs-btn vs-btn-danger flex-fill">Clear</a>
+    <div class="col-auto d-flex gap-2">
+        <button type="submit" class="vs-btn vs-btn-primary">Search</button>
+        <a href="<?= site_url('admin/schools') ?>" class="vs-btn vs-btn-danger">Clear</a>
     </div>
-    <div class="col-12 col-md-auto d-flex align-items-center gap-2">
-        <span class="d-none d-md-inline-flex align-items-center" style="color:var(--border);font-size:1.2rem;line-height:1;user-select:none">|</span>
+    <div class="col-auto d-flex align-items-center gap-2">
+        <span style="color:var(--border);font-size:1.2rem;line-height:1;user-select:none">|</span>
         <div class="d-flex gap-2">
-            <button type="button" class="vs-btn vs-btn-success" style="min-width:96px" id="btnOpenImport">
+            <button type="button" class="vs-btn vs-btn-warning" id="btnOpenImport">
                 Import
             </button>
-            <button type="button" class="vs-btn vs-btn-dark-green" style="min-width:96px" id="btnAddSchool">
+            <button type="button" class="vs-btn vs-btn-success" id="btnAddSchool">
                 Add School
             </button>
         </div>
@@ -161,8 +161,8 @@ document.addEventListener('vs:modals:ready', function () {
 
     function showAlert(msg, type) {
         var box = document.getElementById('schoolAlertBox');
-        box.innerHTML = '<div class="vs-alert vs-alert-' + (type || 'success') + ' mb-3">' + msg + '</div>';
-        setTimeout(function () { box.innerHTML = ''; }, 5000);
+        box.innerHTML = '<div class="vs-alert vs-alert-' + (type || 'success') + ' mb-3">' + msg +
+            '<button type="button" class="vs-alert-dismiss" onclick="this.closest(\'.vs-alert\').remove()">×</button></div>';
     }
 
     function escHtml(v) {
@@ -270,9 +270,9 @@ document.addEventListener('vs:modals:ready', function () {
             if (cb && !cb.disabled) pageIds.push(cb.value);
         });
 
-        var allOnPageSelected = pageIds.length > 0 && pageIds.every(function (id) { return schoolSelected.has(id); });
+        var anyOnPageSelected = pageIds.some(function (id) { return schoolSelected.has(id); });
         pageIds.forEach(function (id) {
-            if (allOnPageSelected) schoolSelected.delete(id);
+            if (anyOnPageSelected) schoolSelected.delete(id);
             else schoolSelected.add(id);
         });
         syncSchoolPageCheckboxes();
@@ -525,7 +525,8 @@ document.addEventListener('vs:modals:ready', function () {
     }
 
     function smOpenAlert(msg, type) {
-        schoolAlert.innerHTML = '<div class="vs-alert vs-alert-' + (type || 'error') + ' mb-3">' + escHtml(msg) + '</div>';
+        schoolAlert.innerHTML = '<div class="vs-alert vs-alert-' + (type || 'error') + ' mb-3">' + escHtml(msg) +
+            '<button type="button" class="vs-alert-dismiss" onclick="this.closest(\'.vs-alert\').remove()">×</button></div>';
     }
     function smClearAlert() { schoolAlert.innerHTML = ''; }
 
@@ -599,7 +600,7 @@ document.getElementById('btnAddSchool')    && document.getElementById('btnAddSch
             if (data.success) {
                 smClose();
                 showAlert(data.message || 'School saved successfully.', 'success');
-                setTimeout(function () { location.reload(); }, 800);
+                schoolDtRedraw();
                 return;
             }
             smOpenAlert(data.message || 'Save failed.');
@@ -653,13 +654,15 @@ document.getElementById('btnAddSchool')    && document.getElementById('btnAddSch
             if (data.success) {
                 closeImport();
                 showAlert(data.message || 'Import successful.', 'success');
-                setTimeout(function () { location.reload(); }, 1200);
+                schoolDtRedraw();
             } else {
-                importAlert.innerHTML = '<div class="vs-alert vs-alert-error mb-3">' + escHtml(data.message || 'Import failed.') + '</div>';
+                importAlert.innerHTML = '<div class="vs-alert vs-alert-error mb-3">' + escHtml(data.message || 'Import failed.') +
+                    '<button type="button" class="vs-alert-dismiss" onclick="this.closest(\'.vs-alert\').remove()">×</button></div>';
             }
         })
         .catch(function () {
-            importAlert.innerHTML = '<div class="vs-alert vs-alert-error mb-3">An error occurred during import.</div>';
+            importAlert.innerHTML = '<div class="vs-alert vs-alert-error mb-3">An error occurred during import.' +
+                '<button type="button" class="vs-alert-dismiss" onclick="this.closest(\'.vs-alert\').remove()">×</button></div>';
         })
         .finally(function () {
             siSubmitBtn.disabled       = false;

@@ -28,7 +28,7 @@
     <button type="button" class="vs-btn vs-btn-outline" id="btnOpenStatus">
       Status
     </button>
-    <button type="button" class="vs-btn vs-btn-outline" id="btnOpenExport">
+    <button type="button" class="vs-btn vs-btn-warning" id="btnOpenExport">
       <?= asset_icon('export') ?>
       Export
     </button>

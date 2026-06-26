@@ -33,24 +33,24 @@
         <?php foreach ($filterKeys as $k): ?>
           <input type="hidden" name="<?= esc($k, 'attr') ?>" value="<?= esc($f($k), 'attr') ?>">
         <?php endforeach ?>
-        <div class="col-12 col-md">
+        <div class="col">
             <input type="text" name="q" class="vs-input vs-advanced-search-input w-100" placeholder="Enter keyword to search (name, school)" value="<?= esc((string) ($keyword ?? ''), 'attr') ?>">
         </div>
-        <div class="col-6 col-md-auto">
-            <button type="button" class="vs-btn vs-btn-outline w-100" id="btnOpenArchiveFilter">
+        <div class="col-auto">
+            <button type="button" class="vs-btn vs-btn-outline" id="btnOpenArchiveFilter">
                 Filters
                 <span id="archiveFilterBadge" class="badge bg-primary" style="display:<?= $activeFilterCount > 0 ? 'inline-block' : 'none' ?>;margin-left:.35rem"><?= $activeFilterCount > 0 ? esc($activeFilterCount) : '' ?></span>
             </button>
         </div>
-        <div class="col-auto d-none d-md-flex align-items-center">
+        <div class="col-auto d-flex align-items-center">
             <span style="color:var(--border);font-size:1.2rem;line-height:1;user-select:none">|</span>
         </div>
-        <div class="col-6 col-md-2 d-flex gap-2">
-            <button type="submit" class="vs-btn vs-btn-primary flex-fill">Search</button>
-            <a href="<?= site_url('admin/archive') ?>" class="vs-btn vs-btn-danger flex-fill">Clear</a>
+        <div class="col-auto d-flex gap-2">
+            <button type="submit" class="vs-btn vs-btn-primary">Search</button>
+            <a href="<?= site_url('admin/archive') ?>" class="vs-btn vs-btn-danger">Clear</a>
         </div>
-        <div class="col-12 col-md-auto d-flex align-items-center gap-2">
-            <span class="d-none d-md-inline-flex align-items-center" style="color:var(--border);font-size:1.2rem;line-height:1;user-select:none">|</span>
+        <div class="col-auto d-flex align-items-center gap-2">
+            <span style="color:var(--border);font-size:1.2rem;line-height:1;user-select:none">|</span>
             <button type="button" class="vs-btn vs-btn-warning" id="btnArchiveCurrentData">
                 Archive Current Data
             </button>
@@ -74,13 +74,15 @@
                    style="width:100%">
                 <thead>
                     <tr>
+                        <th>Voucher No.</th>
                         <th>Full Name</th>
                         <th style="display:none">Name Sort</th>
                         <th>Rank</th>
                         <th>JHS</th>
                         <th>SHS</th>
-                        <th>School Year</th>
                         <th>Remarks</th>
+                        <th>Printed</th>
+                        <th>Last Printed</th>
                         <th>Status</th>
                     </tr>
                 </thead>
@@ -122,19 +124,21 @@ document.addEventListener('DOMContentLoaded', function () {
             data: function (d) { Object.assign(d, filterParams); },
         },
         columns: [
+            { data: 'voucher_no' },
             { data: 'name' },
             { data: 'name_sort', visible: false },
             { data: 'rank_no' },
             { data: 'jhs' },
             { data: 'shs' },
-            { data: 'sy' },
             { data: 'remarks' },
+            { data: 'printed' },
+            { data: 'last_generated' },
             { data: 'voucher_status' },
         ],
-        order:      [[1, 'asc']],
+        order:      [[2, 'asc']],
         columnDefs: [
-            { orderData: [1], targets: [0] },
-            { className: 'text-start', targets: [0] },
+            { orderData: [2], targets: [1] },
+            { className: 'text-start', targets: [1] },
         ],
         dom:        window.VS.dtBodyDom,
         pageLength: 10,

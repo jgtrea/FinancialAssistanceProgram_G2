@@ -35,37 +35,37 @@
     <?php foreach ($filterKeys as $k): ?>
       <input type="hidden" name="<?= esc($k, 'attr') ?>" value="<?= esc($f($k), 'attr') ?>">
     <?php endforeach ?>
-    <div class="col-12 col-md">
+    <div class="col">
       <input type="text" name="q" class="vs-input vs-advanced-search-input w-100" placeholder="Enter keyword to search (voucher no, name)" value="<?= esc((string) ($keyword ?? ''), 'attr') ?>">
     </div>
-    <div class="col-12 col-md-auto">
-      <button type="button" class="vs-btn vs-btn-outline w-100" id="btnOpenFilter">
+    <div class="col-auto">
+      <button type="button" class="vs-btn vs-btn-outline" id="btnOpenFilter">
         Filters
         <span id="filterBadge" class="badge bg-primary" style="display:<?= $activeFilterCount > 0 ? 'inline-block' : 'none' ?>;margin-left:.35rem"><?= $activeFilterCount > 0 ? esc($activeFilterCount) : '' ?></span>
       </button>
     </div>
-    <div class="col-auto d-none d-md-flex align-items-center">
+    <div class="col-auto d-flex align-items-center">
       <span style="color:var(--border);font-size:1.2rem;line-height:1;user-select:none">|</span>
     </div>
-    <div class="col-12 col-md-2 d-flex gap-2">
-      <button type="submit" class="vs-btn vs-btn-primary flex-fill">Search</button>
-      <a href="<?= $listingUrl ?>" class="vs-btn vs-btn-danger flex-fill">Clear</a>
+    <div class="col-auto d-flex gap-2">
+      <button type="submit" class="vs-btn vs-btn-primary">Search</button>
+      <a href="<?= $listingUrl ?>" class="vs-btn vs-btn-danger">Clear</a>
     </div>
-    <div class="col-12 col-md-auto d-flex align-items-center gap-2">
-      <span class="d-none d-md-inline-flex align-items-center" style="color:var(--border);font-size:1.2rem;line-height:1;user-select:none">|</span>
+    <div class="col-auto d-flex align-items-center gap-2">
+      <span style="color:var(--border);font-size:1.2rem;line-height:1;user-select:none">|</span>
       <div class="d-flex gap-2">
 <?php if ($allowGenerate): ?>
-        <button type="button" class="vs-btn vs-btn-success" style="min-width:96px" id="btnExportAll">
+        <button type="button" class="vs-btn vs-btn-warning" style="min-width:96px" id="btnExportAll">
           Export
         </button>
-        <button type="button" class="vs-btn vs-btn-dark-green" style="min-width:96px" id="btnGenerateAll">
+        <button type="button" class="vs-btn vs-btn-success" style="min-width:96px" id="btnGenerateAll">
           Print Voucher
         </button>
 <?php else: ?>
-        <button type="button" class="vs-btn vs-btn-success" style="min-width:96px" id="btnOpenImport">
+        <button type="button" class="vs-btn vs-btn-warning" style="min-width:96px" id="btnOpenImport">
           Import
         </button>
-        <button type="button" class="vs-btn vs-btn-dark-green" style="min-width:96px" id="btnAddVoucher" data-mode="add">
+        <button type="button" class="vs-btn vs-btn-success" style="min-width:96px" id="btnAddVoucher" data-mode="add">
           Add Student
         </button>
 <?php endif ?>
@@ -90,7 +90,7 @@
              data-mobile-primary="2"
              data-allow-generate="<?= $allowGenerate ? '1' : '0' ?>"
              data-search-placeholder="Search students..."
-             data-datatable-url="<?= site_url($prefix . '/students/datatable') ?>"
+             data-datatable-url="<?= site_url($prefix . '/students/datatable') ?>?page=<?= esc($listingPath, 'url') ?>"
              data-matching-ids-url="<?= site_url($prefix . '/students/matching-ids') ?>"
              data-filter-params='<?= json_encode($filters ?? []) ?>'
              data-initial-search="<?= esc((string) ($keyword ?? ''), 'attr') ?>"
@@ -438,10 +438,14 @@ document.addEventListener('vs:modals:ready', function () {
     if (!alertBox) return;
     var el = document.createElement('div');
     el.className = 'vs-alert vs-alert-success mb-3';
+    var btn = document.createElement('button');
+    btn.type = 'button'; btn.className = 'vs-alert-dismiss';
+    btn.setAttribute('onclick', "this.closest('.vs-alert').remove()");
+    btn.textContent = '×';
     el.textContent = msg;
+    el.appendChild(btn);
     alertBox.innerHTML = '';
     alertBox.appendChild(el);
-    setTimeout(function () { el.remove(); }, 5000);
   }
 
   function handleToggleActive(btn) {
@@ -681,7 +685,7 @@ document.addEventListener('vs:modals:ready', function () {
   function openBulkAllModal(action, count) {
     var titleMap = { activate: 'Activate All', deactivate: 'Deactivate All', archive: 'Archive All', generate: 'Generate Vouchers' };
     var verbMap  = { activate: 'activate', deactivate: 'deactivate', archive: 'archive', generate: 'generate vouchers for' };
-    var btnClass = action === 'archive' ? 'vs-btn vs-btn-danger' : (action === 'generate' ? 'vs-btn vs-btn-dark-green' : 'vs-btn vs-btn-primary');
+    var btnClass = action === 'archive' ? 'vs-btn vs-btn-danger' : (action === 'generate' ? 'vs-btn vs-btn-success' : 'vs-btn vs-btn-primary');
 
     bulkAllTitle.textContent   = titleMap[action] || 'Confirm';
     bulkAllCount.textContent   = count;
@@ -812,8 +816,17 @@ document.addEventListener('vs:modals:ready', function () {
 
   function vsSchoolAlert(msg, type) {
     var box = document.getElementById('schoolModalAlert');
-    if (box) box.innerHTML = '<div class="vs-alert vs-alert-' + (type || 'error') + ' mb-3"></div>';
-    if (box && box.firstChild) box.firstChild.textContent = msg;
+    if (!box) return;
+    var el = document.createElement('div');
+    el.className = 'vs-alert vs-alert-' + (type || 'error') + ' mb-3';
+    el.appendChild(document.createTextNode(msg));
+    var btn = document.createElement('button');
+    btn.type = 'button'; btn.className = 'vs-alert-dismiss';
+    btn.setAttribute('onclick', "this.closest('.vs-alert').remove()");
+    btn.textContent = '×';
+    el.appendChild(btn);
+    box.innerHTML = '';
+    box.appendChild(el);
   }
 
   function vsCloseSchoolModal() {

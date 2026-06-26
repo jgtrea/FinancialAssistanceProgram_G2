@@ -37,34 +37,34 @@
     </div>
 
     <form method="get" id="sigSearchForm" class="row g-2 align-items-center mb-3">
-        <div class="col-12 col-md">
+        <div class="col">
             <input type="text" name="q" class="vs-input vs-advanced-search-input w-100" placeholder="Enter keyword to search (name, position)" value="<?= esc((string) ($keyword ?? ''), 'attr') ?>">
         </div>
-        <div class="col-12 col-md-2">
-            <select id="sfStatus" name="status" class="js-filter-select" data-placeholder="Select Active" data-no-search="1" style="width:100%">
+        <div class="col-auto">
+            <select id="sfStatus" name="status" class="js-filter-select" data-placeholder="Select Status" data-no-search="1" style="width:140px">
                 <option></option>
-                <option value="selected"   <?= ($filterStatus ?? '') === 'selected'   ? 'selected' : '' ?>>Selected</option>
-                <option value="unselected" <?= ($filterStatus ?? '') === 'unselected' ? 'selected' : '' ?>>Unselected</option>
+                <option value="active"   <?= ($filterStatus ?? '') === 'active'   ? 'selected' : '' ?>>Active</option>
+                <option value="inactive" <?= ($filterStatus ?? '') === 'inactive' ? 'selected' : '' ?>>Inactive</option>
             </select>
         </div>
-        <div class="col-12 col-md-2">
-            <select id="sfPosition" name="position" class="js-filter-select" data-placeholder="Select Position" style="width:100%">
+        <div class="col-auto">
+            <select id="sfPosition" name="position" class="js-filter-select" data-placeholder="Select Position" style="width:160px">
                 <option></option>
                 <?php foreach (($allPositions ?? []) as $pos): ?>
                     <option value="<?= esc($pos) ?>" <?= ($filterPosition ?? '') === $pos ? 'selected' : '' ?>><?= esc($pos) ?></option>
                 <?php endforeach ?>
             </select>
         </div>
-        <div class="col-auto d-none d-md-flex align-items-center">
+        <div class="col-auto d-flex align-items-center">
             <span style="color:var(--border);font-size:1.2rem;line-height:1;user-select:none">|</span>
         </div>
-        <div class="col-12 col-md-2 d-flex gap-2">
-            <button type="submit" class="vs-btn vs-btn-primary flex-fill">Search</button>
-            <a href="<?= site_url('signatories') ?>" class="vs-btn vs-btn-danger flex-fill">Clear</a>
+        <div class="col-auto d-flex gap-2">
+            <button type="submit" class="vs-btn vs-btn-primary">Search</button>
+            <a href="<?= site_url('signatories') ?>" class="vs-btn vs-btn-danger">Clear</a>
         </div>
-        <div class="col-12 col-md-auto d-flex align-items-center gap-2">
-            <span class="d-none d-md-inline-flex align-items-center" style="color:var(--border);font-size:1.2rem;line-height:1;user-select:none">|</span>
-            <button type="button" class="vs-btn vs-btn-success" style="min-width:96px" id="btnAddSignatory">
+        <div class="col-auto d-flex align-items-center gap-2">
+            <span style="color:var(--border);font-size:1.2rem;line-height:1;user-select:none">|</span>
+            <button type="button" class="vs-btn vs-btn-success" id="btnAddSignatory">
                 Add Signatory
             </button>
         </div>
@@ -79,8 +79,8 @@
             </div>
             <table id="signatoriesTable" class="vs-datatable js-data-table vs-mobile-primary" data-mobile-primary="1" data-page-search="customSignatoriesSearch"
                    data-search-placeholder="Search signatories..."
-                   data-order='[[8,"desc"],[7,"asc"]]'
-                   data-col-defs='[{"orderData":[7],"targets":[1]},{"orderData":[9],"targets":[4]},{"orderData":[8],"targets":[5]},{"visible":false,"targets":7},{"visible":false,"targets":8},{"visible":false,"targets":9},{"width":"4%","targets":0},{"width":"35%","targets":1},{"width":"22%","targets":2},{"width":"13%","targets":3},{"width":"8%","targets":4},{"width":"8%","targets":5},{"width":"10%","targets":6},{"className":"text-start","targets":[1]}]'
+                   data-order='[[7,"desc"],[6,"asc"]]'
+                   data-col-defs='[{"orderData":[6],"targets":[1]},{"orderData":[7],"targets":[4]},{"visible":false,"targets":6},{"visible":false,"targets":7},{"width":"4%","targets":0},{"width":"35%","targets":1},{"width":"22%","targets":2},{"width":"13%","targets":3},{"width":"8%","targets":4},{"width":"10%","targets":5},{"className":"text-start","targets":[1]}]'
                    style="width:100%">
             <thead>
                 <tr>
@@ -88,10 +88,8 @@
                     <th>Full Name</th>
                     <th>Position Title</th>
                     <th data-orderable="false">Signature</th>
-                    <th>Selected</th>
                     <th>Status</th>
                     <th class="actions-column actions-column--sm">Actions</th>
-                    <th style="display:none"></th>
                     <th style="display:none"></th>
                     <th style="display:none"></th>
                 </tr>
@@ -109,13 +107,12 @@
                         if ($sigDegree !== '' && strcasecmp($sigDegree, 'None') !== 0) {
                             $fullName .= ', ' . $sigDegree;
                         }
-                        $isSelected  = !empty($signatory['is_selected']);
                         $isArchived  = empty($signatory['is_active']);
                         $sid         = (int) $signatory['signatory_id'];
                         $nameSortKey = trim(implode(' ', array_filter([$sLn, $sFn, $sMn])));
                     ?>
 
-                    <tr id="sig-row-<?= $sid ?>" data-archived="<?= $isArchived ? '1' : '0' ?>" data-selected="<?= $isSelected ? '1' : '0' ?>"<?= $isArchived ? ' class="vs-row-archived"' : '' ?>>
+                    <tr id="sig-row-<?= $sid ?>" data-archived="<?= $isArchived ? '1' : '0' ?>"<?= $isArchived ? ' class="vs-row-archived"' : '' ?>>
                         <td><input type="checkbox" class="vs-check sig-row-check" value="<?= $sid ?>"<?= $isArchived ? ' disabled title="Archived signatories cannot be bulk-archived"' : '' ?>></td>
                         <td><?= esc($fullName) ?></td>
                         <td><span class="sig-position-value"><?= esc($signatory['position_title']) ?></span></td>
@@ -127,11 +124,6 @@
                             <?php else: ?>
                                 <span class="text-muted">—</span>
                             <?php endif; ?>
-                        </td>
-                        <td>
-                            <span class="badge <?= (!$isArchived && $isSelected) ? 'bg-success' : 'bg-secondary' ?>" id="sig-badge-<?= $sid ?>">
-                                <?= (!$isArchived && $isSelected) ? 'Selected' : 'Unselected' ?>
-                            </span>
                         </td>
                         <td>
                             <span class="badge <?= $isArchived ? 'bg-danger' : 'bg-success' ?>" id="sig-status-<?= $sid ?>">
@@ -152,17 +144,9 @@
                                         <li>
                                             <button class="dropdown-item sig-restore-btn"
                                                     data-id="<?= $sid ?>"
-                                                    id="sig-restore-<?= $sid ?>">Restore</button>
+                                                    id="sig-restore-<?= $sid ?>">Activate</button>
                                         </li>
                                     <?php else: ?>
-                                        <li>
-                                            <button class="dropdown-item sig-toggle-btn"
-                                                    data-id="<?= $sid ?>"
-                                                    data-selected="<?= $isSelected ? '1' : '0' ?>"
-                                                    id="sig-toggle-<?= $sid ?>">
-                                                <?= $isSelected ? 'Unselect' : 'Select' ?>
-                                            </button>
-                                        </li>
                                         <li><hr class="dropdown-divider"></li>
                                         <li>
                                             <button class="dropdown-item text-danger js-sig-archive-single"
@@ -174,7 +158,6 @@
                         </td>
                         <td style="display:none"><?= esc($nameSortKey) ?></td>
                         <td style="display:none"><?= $isArchived ? '0' : '1' ?></td>
-                        <td style="display:none"><?= (!$isArchived && $isSelected) ? '1' : '0' ?></td>
                     </tr>
                 <?php endforeach; ?>
             </tbody>
@@ -199,8 +182,8 @@ document.addEventListener('vs:modals:ready', function () {
 
     function showAlert(msg, type) {
         var box = document.getElementById('sigAlertBox');
-        box.innerHTML = '<div class="vs-alert vs-alert-' + (type || 'success') + ' mb-3">' + msg + '</div>';
-        setTimeout(function () { box.innerHTML = ''; }, 4000);
+        box.innerHTML = '<div class="vs-alert vs-alert-' + (type || 'success') + ' mb-3">' + msg +
+            '<button type="button" class="vs-alert-dismiss" onclick="this.closest(\'.vs-alert\').remove()">×</button></div>';
     }
 
     // ── Signatory Add / Edit modal ──────────────────────────────────────────
@@ -253,7 +236,7 @@ document.addEventListener('vs:modals:ready', function () {
             });
             html += '</ul>';
         }
-        html += '</div>';
+        html += '<button type="button" class="vs-alert-dismiss" onclick="this.closest(\'.vs-alert\').remove()">×</button></div>';
         sigModalAlert.innerHTML = html;
     }
     function smClearAlert() { sigModalAlert.innerHTML = ''; }
@@ -513,11 +496,9 @@ document.addEventListener('vs:modals:ready', function () {
             if (cb && !cb.disabled) pageIds.push(cb.value);
         });
 
-        var allOnPageSelected = pageIds.length > 0 && pageIds.every(function (id) {
-            return selectedIds.has(id);
-        });
+        var anyOnPageSelected = pageIds.some(function (id) { return selectedIds.has(id); });
         pageIds.forEach(function (id) {
-            if (allOnPageSelected) selectedIds.delete(id);
+            if (anyOnPageSelected) selectedIds.delete(id);
             else selectedIds.add(id);
         });
         syncPageCheckboxes();
@@ -557,39 +538,6 @@ document.addEventListener('vs:modals:ready', function () {
         selectedIds.clear();
         syncPageCheckboxes();
         updateActionBar();
-    });
-
-    // ── Select / Unselect toggle ──────────────────────────────────────────────
-    document.querySelectorAll('.sig-toggle-btn').forEach(function (btn) {
-        btn.addEventListener('click', function () {
-            var id       = btn.getAttribute('data-id');
-            var selected = btn.getAttribute('data-selected') === '1';
-            var action   = selected ? 'deselect' : 'select';
-            var csrf     = getCsrf();
-
-            btn.disabled = true;
-
-            fetch('<?= base_url('signatories/status') ?>/' + id + '/' + action, {
-                method:  'POST',
-                headers: { 'X-Requested-With': 'XMLHttpRequest', 'Content-Type': 'application/x-www-form-urlencoded' },
-                body:    csrf.name + '=' + csrf.token,
-            })
-            .then(function (r) { return r.json(); })
-            .then(function (data) {
-                if (!data.success) {
-                    showAlert(data.message || 'Failed.', 'error');
-                    btn.disabled = false;
-                    return;
-                }
-                // Reload so the table re-renders with the new sort order
-                // (selected rows bubble to the top server-side).
-                window.location.reload();
-            })
-            .catch(function () {
-                showAlert('An error occurred.', 'error');
-                btn.disabled = false;
-            });
-        });
     });
 
     // ── Restore (unarchive) ───────────────────────────────────────────────────
@@ -645,17 +593,6 @@ document.addEventListener('vs:modals:ready', function () {
 
     btnArchive && btnArchive.addEventListener('click', function () {
         if (!selectedIds.size) return;
-
-        var hasSelected = false;
-        selectedIds.forEach(function (id) {
-            var toggle = document.getElementById('sig-toggle-' + id);
-            if (toggle && toggle.getAttribute('data-selected') === '1') hasSelected = true;
-        });
-        if (hasSelected) {
-            showAlert('Cannot archive a signatory that is currently selected. Please unselect it first.', 'error');
-            return;
-        }
-
         if (sigArchCount) sigArchCount.textContent = selectedIds.size;
         if (sigArchModal) sigArchModal.style.display = 'flex';
     });
@@ -664,11 +601,6 @@ document.addEventListener('vs:modals:ready', function () {
         var btn = e.target.closest('.js-sig-archive-single');
         if (!btn) return;
         var id = btn.getAttribute('data-id');
-        var toggle = document.getElementById('sig-toggle-' + id);
-        if (toggle && toggle.getAttribute('data-selected') === '1') {
-            showAlert('Cannot archive a signatory that is currently selected. Please unselect it first.', 'error');
-            return;
-        }
         pendingSigArchiveId = id;
         if (sigArchCount) sigArchCount.textContent = '1';
         if (sigArchModal) sigArchModal.style.display = 'flex';
@@ -685,17 +617,15 @@ document.addEventListener('vs:modals:ready', function () {
         if (!row) return;
         row.classList.add('vs-row-archived');
         row.setAttribute('data-archived', '1');
-        // Col 8 (is_active sort) is hidden — use DT API so Actions cell isn't clobbered.
+        // Col 7 (is_active sort) is hidden — use DT API so Actions cell isn't clobbered.
         if (window.jQuery && $.fn.DataTable) {
             var tbl = document.getElementById('signatoriesTable');
             if (tbl && $.fn.DataTable.isDataTable(tbl)) {
-                $(tbl).DataTable().cell(row, 8).data('0');
+                $(tbl).DataTable().cell(row, 7).data('0');
             }
         }
         var cb = row.querySelector('.sig-row-check');
         if (cb) { cb.disabled = true; cb.checked = false; }
-        var badge = document.getElementById('sig-badge-' + id);
-        if (badge) { badge.textContent = 'Unselected'; badge.className = 'badge bg-secondary'; }
         var statusBadge = document.getElementById('sig-status-' + id);
         if (statusBadge) { statusBadge.textContent = 'Inactive'; statusBadge.className = 'badge bg-danger'; }
         var ul = row.querySelector('.actions-cell .dropdown-menu');
@@ -703,11 +633,9 @@ document.addEventListener('vs:modals:ready', function () {
             ul.innerHTML =
                 '<li><button type="button" class="dropdown-item js-sig-edit" data-id="' + id + '">Edit</button></li>' +
                 '<li><hr class="dropdown-divider"></li>' +
-                '<li><button class="dropdown-item sig-restore-btn" data-id="' + id + '" id="sig-restore-' + id + '">Restore</button></li>';
-            var newEdit = ul.querySelector('.js-sig-edit');
-            if (newEdit) newEdit.addEventListener('click', function () { smOpen('edit', id); });
-            var restBtn = ul.querySelector('.sig-restore-btn');
-            if (restBtn) wireSigRestoreBtn(restBtn);
+                '<li><button class="dropdown-item sig-restore-btn" data-id="' + id + '" id="sig-restore-' + id + '">Activate</button></li>';
+            ul.querySelector('.js-sig-edit').addEventListener('click', function () { smOpen('edit', id); });
+            wireSigRestoreBtn(ul.querySelector('.sig-restore-btn'));
         }
     }
 
@@ -736,9 +664,9 @@ document.addEventListener('vs:modals:ready', function () {
                 });
                 sigDtRedraw();
                 updateActionBar();
-                showAlert(data.message || 'Archived successfully.', 'success');
+                showAlert(data.message || 'Deactivated successfully.', 'success');
             } else {
-                showAlert(data.message || 'Failed to archive.', 'error');
+                showAlert(data.message || 'Failed to deactivate.', 'error');
                 closeSigArchModal();
             }
         })

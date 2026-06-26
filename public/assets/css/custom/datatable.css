@@ -32,6 +32,10 @@ table.js-data-table tbody td {
 table.js-data-table tbody td.text-start {
   text-align: left !important;
 }
+.vs-datatable tbody td.text-center,
+table.js-data-table tbody td.text-center {
+  text-align: center !important;
+}
 .vs-datatable .badge,
 table.js-data-table .badge,
 .vs-dashboard-table .badge {

@@ -266,14 +266,15 @@ class Voucher extends Controller
         }
 
 
-        // Exclude inactive rows — their checkboxes are disabled in the UI.
+        // Mirror JS checkbox-disable rules: inactive, INCOMPLETE, and OTHERS rows
+        // are not selectable in the UI — exclude them from the selectable count.
         if (!empty($ids)) {
             $db  = \Config\Database::connect();
             $ids = $db->table('students')
                 ->select('student_id')
                 ->whereIn('student_id', $ids)
-                // ->where('eligibility_status', 'eligible')
                 ->where('is_active', 1)
+                ->whereNotIn('remarks_status', ['INCOMPLETE', 'OTHERS'])
                 ->get()
                 ->getResultArray();
             $ids = array_map(static fn($r) => (int) $r['student_id'], $ids);
@@ -394,17 +395,19 @@ class Voucher extends Controller
         $lastGen   = !empty($v['generated_at']) ? date('M d, Y', strtotime($v['generated_at'])) : '-';
         $lastGenCell = '<span class="js-last-generated">' . esc($lastGen) . '</span>';
 
-        // $eligAttr   = esc($elig, 'attr');
-        // $toggleText = $elig === 'not_eligible' ? 'Mark Eligible' : 'Mark Not Eligible';
-        $actCell = '<div class="js-actions-cell"><div class="dropdown">'
-            . '<button type="button" class="vs-tbl-btn vs-tbl-btn-actions dropdown-toggle" data-bs-toggle="dropdown" data-bs-popper-config=\'{"strategy":"fixed"}\' aria-expanded="false">Actions</button>'
-            . '<ul class="dropdown-menu dropdown-menu-end">'
-            . '<li><button class="dropdown-item js-voucher-action" type="button" data-mode="view" data-id="' . $studentId . '">View</button></li>'
-            . '<li><button class="dropdown-item js-voucher-action" type="button" data-mode="edit" data-id="' . $studentId . '">Edit</button></li>'
-            // . '<li><button class="dropdown-item js-toggle-eligibility" type="button" data-id="' . $studentId . '" data-eligibility="' . $eligAttr . '">' . $toggleText . '</button></li>'
-            . '<li><hr class="dropdown-divider"></li>'
-            . '<li><button class="dropdown-item ' . ($isActive ? 'text-danger' : '') . ' js-toggle-active" type="button" data-id="' . $studentId . '" data-active="' . ($isActive ? '1' : '0') . '">' . ($isActive ? 'Deactivate' : 'Activate') . '</button></li>'
-            . '</ul></div></div>';
+        $page = trim((string) ($this->request->getGet('page') ?? ''));
+        if ($page === 'students') {
+            $actCell = '<div class="js-actions-cell"><div class="dropdown">'
+                . '<button type="button" class="vs-tbl-btn vs-tbl-btn-actions dropdown-toggle" data-bs-toggle="dropdown" data-bs-popper-config=\'{"strategy":"fixed"}\' aria-expanded="false">Actions</button>'
+                . '<ul class="dropdown-menu dropdown-menu-end">'
+                . '<li><button class="dropdown-item js-voucher-action" type="button" data-mode="view" data-id="' . $studentId . '">View</button></li>'
+                . '<li><button class="dropdown-item js-voucher-action" type="button" data-mode="edit" data-id="' . $studentId . '">Edit</button></li>'
+                . '<li><hr class="dropdown-divider"></li>'
+                . '<li><button class="dropdown-item ' . ($isActive ? 'text-danger' : '') . ' js-toggle-active" type="button" data-id="' . $studentId . '" data-active="' . ($isActive ? '1' : '0') . '">' . ($isActive ? 'Deactivate' : 'Activate') . '</button></li>'
+                . '</ul></div></div>';
+        } else {
+            $actCell = '<button class="vs-tbl-btn vs-tbl-btn-actions js-voucher-action" type="button" data-mode="view" data-id="' . $studentId . '">View</button>';
+        }
 
         return [
             'DT_RowId'    => 'row-' . $studentId,

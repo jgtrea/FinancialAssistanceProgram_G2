@@ -126,6 +126,7 @@ document.addEventListener("DOMContentLoaded", function () {
         ? parseInt(lenInputEl.value, 10) || 10
         : 10;
 
+      const listingCtx = (window.__VS && window.__VS.pageData && window.__VS.pageData.listingContext) || '';
       dt = $(vouchersTable).DataTable({
         destroy: true,
         serverSide: true,
@@ -156,6 +157,7 @@ document.addEventListener("DOMContentLoaded", function () {
           ...voucherMobileColumnDefs(),
           { orderData: [3], targets: [2] },
           { className: "text-start", targets: [2, 9] },
+          ...(listingCtx === 'vouchers' ? [{ visible: false, targets: 10 }] : []),
           ...(showCheckboxColumn ? [] : [{ visible: false, targets: 0 }]),
           ...(showCheckboxColumn
             ? []
@@ -266,6 +268,9 @@ document.addEventListener("DOMContentLoaded", function () {
     pageNodes.forEach(function (row) {
       const cb = row.querySelector(".vs-row-check");
       if (!cb) return;
+      const remarks = (row.dataset.remarks || "").toUpperCase();
+      cb.disabled = remarks === "INCOMPLETE" || remarks === "OTHERS";
+      if (cb.disabled) { cb.checked = false; selectedIds.delete(cb.value); }
       cb.checked = !cb.disabled && selectedIds.has(cb.value);
       row.classList.toggle("vs-row-selected", cb.checked);
       if (!cb.disabled) pageIds.push(cb.value);
@@ -296,13 +301,11 @@ document.addEventListener("DOMContentLoaded", function () {
       if (cb && !cb.disabled) pageIds.push(cb.value);
     });
 
-    // Check current page if not all on this page are selected; uncheck if all are.
-    const allOnPageSelected =
-      pageIds.length > 0 &&
-      pageIds.every(function (id) {
-        return selectedIds.has(id);
-      });
-    if (allOnPageSelected) {
+    // Any selected (including indeterminate) → deselect all. None selected → select all.
+    const anyOnPageSelected = pageIds.some(function (id) {
+      return selectedIds.has(id);
+    });
+    if (anyOnPageSelected) {
       pageIds.forEach(function (id) {
         selectedIds.delete(id);
       });
@@ -571,20 +574,8 @@ document.addEventListener("DOMContentLoaded", function () {
         setTimeout(() => alert && alert.remove(), 4000);
         return;
       }
-      vsConfirm({
-        title: "Export Students",
-        html:
-          "Export <strong>" +
-          selectedIds.size +
-          "</strong> selected student(s)?",
-        plain: "Export " + selectedIds.size + " selected student(s)?",
-        confirmLabel: "Export",
-        btnClass: "vs-btn vs-btn-primary",
-        onConfirm: function () {
-          updateExportLinks();
-          exportModal.style.display = "flex";
-        },
-      });
+      updateExportLinks();
+      exportModal.style.display = "flex";
     });
   }
   exportModalClose &&
@@ -815,7 +806,7 @@ document.addEventListener("DOMContentLoaded", function () {
         plain:
           "Print vouchers for " + selectedIds.size + " selected student(s)?",
         confirmLabel: "Print",
-        btnClass: "vs-btn vs-btn-dark-green",
+        btnClass: "vs-btn vs-btn-success",
         onConfirm: doGeneratePdf,
       });
     });

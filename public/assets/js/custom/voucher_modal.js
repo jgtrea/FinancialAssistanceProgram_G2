@@ -344,7 +344,7 @@ document.addEventListener("DOMContentLoaded", function () {
       seen[value] = true;
       var opt = document.createElement("option");
       opt.value = value;
-      opt.textContent = label || value;
+      opt.textContent = acronym ? acronym + " - " + (label || value) : (label || value);
       if (acronym) opt.setAttribute("data-acronym", acronym);
       if (selected && value === String(selected)) opt.selected = true;
       select.appendChild(opt);

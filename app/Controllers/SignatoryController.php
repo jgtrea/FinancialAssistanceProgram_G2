@@ -38,10 +38,10 @@ class SignatoryController extends BaseController
                 ->groupEnd();
         }
 
-        if ($filterStatus === 'selected') {
-            $signatoryModel->where('is_selected', 1);
-        } elseif ($filterStatus === 'unselected') {
-            $signatoryModel->where('is_selected', 0);
+        if ($filterStatus === 'active') {
+            $signatoryModel->where('is_active', 1);
+        } elseif ($filterStatus === 'inactive') {
+            $signatoryModel->where('is_active', 0);
         }
 
         if ($filterPosition !== '') {
@@ -59,7 +59,6 @@ class SignatoryController extends BaseController
             'title'          => 'Signatories',
             'signatories'    => $signatoryModel
                 ->orderBy('is_active', 'DESC')
-                ->orderBy('is_selected', 'DESC')
                 ->orderBy('signatory_id', 'DESC')
                 ->findAll(),
             'keyword'        => $keyword,
@@ -159,8 +158,41 @@ class SignatoryController extends BaseController
             'suffix'         => $suffix,
             'degree'         => $degree,
             'position_title' => trim((string) $this->request->getPost('position_title')),
-            'is_active'      => $this->request->getPost('is_active') ?? 1,
+            'is_active'      => $this->request->getPost('is_active') ?? ($existing ? ($existing['is_active'] ?? 0) : 0),
         ];
+
+        if ((int) $data['is_active'] === 1) {
+            $activeQuery = (new SignatoryModel())->where('is_active', 1);
+            if ($id) {
+                $activeQuery->where('signatory_id !=', (int) $id);
+            }
+            if ($activeQuery->countAllResults() >= 3) {
+                return $this->signatorySaveError(
+                    'Maximum of 3 active signatories allowed. Deactivate one before activating another.',
+                    $id,
+                    $isAjax
+                );
+            }
+
+            $positionTitle = $data['position_title'];
+            $posQuery = (new SignatoryModel())->where('is_active', 1)->where('position_title', $positionTitle);
+            if ($id) {
+                $posQuery->where('signatory_id !=', (int) $id);
+            }
+            $positionHolder = $posQuery->first();
+            if ($positionHolder) {
+                $holderName = trim(implode(' ', array_filter([
+                    $positionHolder['prefix']     ?? null,
+                    $positionHolder['first_name'] ?? null,
+                    $positionHolder['last_name']  ?? null,
+                ])));
+                return $this->signatorySaveError(
+                    "Position \"{$positionTitle}\" is already held by active signatory {$holderName}. Each active signatory must have a unique position title.",
+                    $id,
+                    $isAjax
+                );
+            }
+        }
 
         $userId = session()->get('user_id');
         $name   = trim($this->request->getPost('first_name') . ' ' . $this->request->getPost('last_name'));
@@ -265,9 +297,9 @@ class SignatoryController extends BaseController
     public function deactivate($id)
     {
         $signatoryModel = new SignatoryModel();
-        $signatoryModel->update($id, ['is_active' => 0, 'is_selected' => 0]);
+        $signatoryModel->update($id, ['is_active' => 0]);
         log_action(session()->get('user_id'), 'DEACTIVATE_SIGNATORY', "Deactivated signatory #{$id}");
-        return redirect()->to('/signatories')->with('success', 'Signatory archived.');
+        return redirect()->to('/signatories')->with('success', 'Signatory deactivated.');
     }
 
     public function restore($id)
@@ -277,6 +309,33 @@ class SignatoryController extends BaseController
 
         if (!$signatory) {
             return $this->response->setJSON(['success' => false, 'message' => 'Signatory not found.']);
+        }
+
+        $activeCount = $signatoryModel->where('is_active', 1)->countAllResults();
+        if ($activeCount >= 3) {
+            return $this->response->setJSON([
+                'success' => false,
+                'message' => 'Maximum of 3 signatories can be active at once. Deactivate one first.',
+            ]);
+        }
+
+        $positionTitle = trim((string) ($signatory['position_title'] ?? ''));
+        if ($positionTitle !== '') {
+            $positionHolder = (new SignatoryModel())
+                ->where('is_active', 1)
+                ->where('position_title', $positionTitle)
+                ->first();
+            if ($positionHolder) {
+                $holderName = trim(implode(' ', array_filter([
+                    $positionHolder['prefix']     ?? null,
+                    $positionHolder['first_name'] ?? null,
+                    $positionHolder['last_name']  ?? null,
+                ])));
+                return $this->response->setJSON([
+                    'success' => false,
+                    'message' => "Position \"{$positionTitle}\" is already held by active signatory {$holderName}. Each active signatory must have a unique position title.",
+                ]);
+            }
         }
 
         $signatoryModel->update($id, ['is_active' => 1]);
@@ -352,12 +411,12 @@ class SignatoryController extends BaseController
         foreach ($ids as $id) {
             $id = (int) $id;
             if ($id > 0) {
-                $signatoryModel->update($id, ['is_active' => 0, 'is_selected' => 0]);
-                log_action($userId, 'DEACTIVATE_SIGNATORY', "Archived signatory #{$id}");
+                $signatoryModel->update($id, ['is_active' => 0]);
+                log_action($userId, 'DEACTIVATE_SIGNATORY', "Deactivated signatory #{$id}");
             }
         }
 
-        return $this->response->setJSON(['success' => true, 'message' => count($ids) . ' signatory(ies) archived.']);
+        return $this->response->setJSON(['success' => true, 'message' => count($ids) . ' signatory(ies) deactivated.']);
     }
 
     public function signature($id)

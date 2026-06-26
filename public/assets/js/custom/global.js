@@ -196,8 +196,7 @@ function showAlert(message, type = "success", opts = {}) {
     document.querySelector(".vs-content") || document.querySelector("main");
   if (main) {
     main.prepend(el);
-    // opts.persist keeps the alert until manually dismissed (no auto-timer).
-    if (!opts.persist) setTimeout(() => el.remove(), 5000);
+    // Always manual-dismiss only — no auto-timer.
   }
 }
 
@@ -223,7 +222,14 @@ function initPasswordToggles() {
 
 function initAlertDismiss() {
   document.querySelectorAll(".vs-alert:not(.vs-alert-static)").forEach((el) => {
-    setTimeout(() => el.remove(), 4000);
+    if (el.querySelector(".vs-alert-dismiss")) return;
+    var btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "vs-alert-dismiss";
+    btn.setAttribute("aria-label", "Dismiss");
+    btn.textContent = "×";
+    btn.addEventListener("click", function () { el.remove(); });
+    el.appendChild(btn);
   });
 }
 
@@ -294,6 +300,7 @@ window.initVsSelect2 = function initVsSelect2(root) {
 document.addEventListener("DOMContentLoaded", function () {
   if (typeof window.initVsSelect2 === "function")
     window.initVsSelect2(document);
+  initAlertDismiss();
 });
 
 // Allow Bootstrap dropdowns to overflow .vs-card (overflow:hidden) while open.
