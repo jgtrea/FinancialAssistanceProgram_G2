@@ -202,6 +202,7 @@ class School extends Controller
 
         $userId   = session()->get('user_id');
         $inserted = 0;
+        $updated  = 0;
         $skipped  = 0;
 
         for ($i = 1, $total = count($sheetData); $i < $total; $i++) {
@@ -213,12 +214,44 @@ class School extends Controller
 
             $acronym = strtoupper(trim((string) ($row[$acronymIdx] ?? '')));
 
-            if ($name === '' || $acronym === '' || !in_array($level, ['JHS', 'SHS'], true)) {
+            // Need a valid level and at least one of name/acronym to do anything.
+            if (!in_array($level, ['JHS', 'SHS'], true) || ($name === '' && $acronym === '')) {
                 $skipped++;
                 continue;
             }
 
-            if ($this->schoolModel->nameExistsForLevel($level, $name) || $this->schoolModel->acronymExistsForLevel($level, $acronym)) {
+            // Try matching an existing school by name first, then by acronym.
+            $existing = $name !== '' ? $this->schoolModel->findByNameForLevel($level, $name) : null;
+            if ($existing === null && $acronym !== '') {
+                $existing = $this->schoolModel->findByAcronymForLevel($level, $acronym);
+            }
+
+            if ($existing !== null) {
+                // Fill only blank fields on the matched record.
+                $fill = [];
+                if ($name !== '' && trim((string) ($existing['school_name'] ?? '')) === '') {
+                    $fill['school_name'] = $name;
+                }
+                if ($acronym !== '' && trim((string) ($existing['acronym'] ?? '')) === '') {
+                    $fill['acronym'] = $acronym;
+                }
+
+                if ($fill !== []) {
+                    $this->schoolModel->update((int) $existing['school_id'], $fill);
+                    log_action($userId, 'IMPORT_SCHOOL', "Filled school #{$existing['school_id']}: " . implode(', ', array_map(
+                        static fn ($k, $v) => "{$k}={$v}",
+                        array_keys($fill),
+                        array_values($fill)
+                    )));
+                    $updated++;
+                } else {
+                    $skipped++;
+                }
+                continue;
+            }
+
+            // No match — only insert when both fields are present.
+            if ($name === '' || $acronym === '') {
                 $skipped++;
                 continue;
             }
@@ -230,7 +263,7 @@ class School extends Controller
 
         return $this->response->setJSON([
             'success' => true,
-            'message' => "Import complete: {$inserted} added, {$skipped} skipped.",
+            'message' => "Import complete: {$inserted} added, {$updated} updated, {$skipped} skipped.",
         ]);
     }
 
