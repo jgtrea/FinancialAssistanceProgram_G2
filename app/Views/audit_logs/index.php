@@ -20,25 +20,31 @@
         </div>
     </div>
 
-    <form method="get" id="auditFilterForm" class="row g-2 align-items-center mb-3">
+    <form method="get" id="auditFilterForm" class="row g-2 mb-3">
         <?php foreach ($filterKeys as $k): ?>
             <input type="hidden" name="<?= esc($k, 'attr') ?>" value="<?= esc((string) $filterValues[$k], 'attr') ?>">
         <?php endforeach ?>
-        <div class="col">
-            <input type="text" name="q" class="vs-input vs-advanced-search-input w-100" placeholder="Enter keyword to search (action, description, user)" value="<?= esc((string) ($keyword ?? ''), 'attr') ?>">
+        <div class="col-12 col-lg">
+            <input type="text" name="q" class="form-control vs-advanced-search-input" placeholder="Enter keyword to search (action, description, user)" value="<?= esc((string) ($keyword ?? ''), 'attr') ?>">
         </div>
-        <div class="col-auto">
-            <button type="button" class="vs-btn vs-btn-outline" id="auditBtnOpenFilter">
+        <div class="col-12 col-lg-auto d-grid d-lg-block">
+            <button type="button" class="btn btn-outline-secondary" style="min-width:90px" id="auditBtnOpenFilter">
                 Filters
                 <span id="auditFilterBadge" class="badge bg-primary" style="display:<?= $activeFilterCount > 0 ? 'inline-block' : 'none' ?>;margin-left:.35rem"><?= $activeFilterCount > 0 ? esc($activeFilterCount) : '' ?></span>
             </button>
         </div>
-        <div class="col-auto d-flex align-items-center">
+        <div class="col-auto d-none d-lg-flex align-items-center">
             <span style="color:var(--border);font-size:1.2rem;line-height:1;user-select:none">|</span>
         </div>
-        <div class="col-auto d-flex gap-2">
-            <button type="submit" class="vs-btn vs-btn-primary">Search</button>
-            <a href="<?= site_url('user/audit-logs') ?>" class="vs-btn vs-btn-danger">Clear</a>
+        <div class="col-12 col-lg-auto">
+            <div class="row g-2 row-cols-2 row-cols-lg-auto">
+                <div class="col">
+                    <button type="submit" class="btn btn-primary w-100" style="min-width:90px">Search</button>
+                </div>
+                <div class="col">
+                    <a href="<?= site_url('user/audit-logs') ?>" class="btn btn-danger w-100 d-block text-center" style="min-width:90px">Clear</a>
+                </div>
+            </div>
         </div>
     </form>
 
