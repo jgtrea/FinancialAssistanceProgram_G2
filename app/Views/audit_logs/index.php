@@ -4,13 +4,11 @@
 <?php
     $actionOptions = $actionOptions ?? [];
 
-    $filterKeys = ['action', 'date_from', 'date_to'];
     $filterValues = [
         'action'    => $selectedAction ?? '',
         'date_from' => $dateFrom       ?? '',
         'date_to'   => $dateTo         ?? '',
     ];
-    $activeFilterCount = count(array_filter($filterValues, static fn ($v) => trim((string) $v) !== ''));
 ?>
 
 <div class="vs-page-header mb-4">
@@ -20,18 +18,27 @@
         </div>
     </div>
 
+    <!-- Inline audit filters (Action select + date range). Auto-submits on
+         change so the user sees results immediately, matching the Schools
+         page quick-filter pattern. -->
     <form method="get" id="auditFilterForm" class="row g-2 mb-3">
-        <?php foreach ($filterKeys as $k): ?>
-            <input type="hidden" name="<?= esc($k, 'attr') ?>" value="<?= esc((string) $filterValues[$k], 'attr') ?>">
-        <?php endforeach ?>
         <div class="col-12 col-lg">
             <input type="text" name="q" class="form-control vs-advanced-search-input" placeholder="Enter keyword to search (action, description, user)" value="<?= esc((string) ($keyword ?? ''), 'attr') ?>">
         </div>
-        <div class="col-12 col-lg-auto d-grid d-lg-block">
-            <button type="button" class="btn btn-outline-secondary" style="min-width:90px" id="auditBtnOpenFilter">
-                Filters
-                <span id="auditFilterBadge" class="badge bg-primary" style="display:<?= $activeFilterCount > 0 ? 'inline-block' : 'none' ?>;margin-left:.35rem"><?= $activeFilterCount > 0 ? esc($activeFilterCount) : '' ?></span>
-            </button>
+        <div class="col-12 col-lg-auto">
+            <select name="action" id="auditFilterAction" class="js-filter-select" data-placeholder="Select Action" data-width="100%" style="min-width:140px">
+                <option></option>
+                <?php foreach ($actionOptions as $option): ?>
+                    <?php $val = is_array($option) ? ($option['action'] ?? '') : $option ?>
+                    <option value="<?= esc($val) ?>" <?= (string) $filterValues['action'] === $val ? 'selected' : '' ?>><?= esc($val) ?></option>
+                <?php endforeach ?>
+            </select>
+        </div>
+        <div class="col-6 col-lg-auto">
+            <input type="date" name="date_from" id="auditFilterDateFrom" class="form-control" value="<?= esc((string) $filterValues['date_from'], 'attr') ?>" title="Date From">
+        </div>
+        <div class="col-6 col-lg-auto">
+            <input type="date" name="date_to" id="auditFilterDateTo" class="form-control" value="<?= esc((string) $filterValues['date_to'], 'attr') ?>" title="Date To">
         </div>
         <div class="col-auto d-none d-lg-flex align-items-center">
             <span style="color:var(--border);font-size:1.2rem;line-height:1;user-select:none">|</span>
@@ -98,99 +105,34 @@
         </div>
     </div>
 
-<?= pre_modal('audit') ?>
-<script>
-window.__VS.pageData = { actionOptions: <?= json_encode($actionOptions) ?> };
-</script>
-
+<?= modal_assets('auditDetailModal') ?>
 <script>
 document.addEventListener('vs:modals:ready', function () {
-    var filterForm = document.getElementById('auditFilterForm');
-    var fields = {
-        action:   document.getElementById('auditFilterAction'),
-        dateFrom: document.getElementById('auditFilterDateFrom'),
-        dateTo:   document.getElementById('auditFilterDateTo'),
-    };
-    var filterFieldToParam = {
-        action:   'action',
-        dateFrom: 'date_from',
-        dateTo:   'date_to',
-    };
+    var detailModal = document.getElementById('auditDetailModal');
+    function closeDetail() { if (detailModal) detailModal.style.display = 'none'; }
+    var dClose  = document.getElementById('auditDetailModalClose');
+    var dCancel = document.getElementById('auditDetailModalCancel');
+    dClose  && dClose.addEventListener('click', closeDetail);
+    dCancel && dCancel.addEventListener('click', closeDetail);
+    detailModal && detailModal.addEventListener('click', function (e) {
+        if (e.target === detailModal) closeDetail();
+    });
 
-    var modal = document.getElementById('auditFilterModal');
-        function openFilter() { if (modal) modal.style.display = 'flex'; }
-        function closeFilter() { if (modal) modal.style.display = 'none'; }
-
-        var openButton = document.getElementById('auditBtnOpenFilter');
-        var closeButton = document.getElementById('auditFilterModalClose');
-        var cancelButton = document.getElementById('auditFilterModalCancel');
-        var applyButton = document.getElementById('auditFilterApply');
-        var clearButton = document.getElementById('auditFilterClear');
-
-        openButton && openButton.addEventListener('click', openFilter);
-        closeButton && closeButton.addEventListener('click', closeFilter);
-        cancelButton && cancelButton.addEventListener('click', closeFilter);
-        modal && modal.addEventListener('click', function (event) {
-            if (event.target === modal) closeFilter();
-        });
-
-        // Filters are applied server-side — copy modal values into the hidden
-        // inputs in #auditFilterForm and submit. The form GETs the same page
-        // with q + filter params; the controller skips the row cap when any
-        // filter is active so the result reflects the whole DB.
-        function syncFormFromModal() {
-            if (!filterForm) return;
-            Object.keys(filterFieldToParam).forEach(function (k) {
-                var input = filterForm.elements[filterFieldToParam[k]];
-                if (input && fields[k]) input.value = fields[k].value;
-            });
-        }
-
-        applyButton && applyButton.addEventListener('click', function () {
-            syncFormFromModal();
-            if (filterForm) filterForm.submit();
-        });
-
-        clearButton && clearButton.addEventListener('click', function () {
-            Object.keys(fields).forEach(function (k) {
-                if (fields[k]) fields[k].value = '';
-            });
-            if (filterForm) {
-                Object.keys(filterFieldToParam).forEach(function (k) {
-                    var input = filterForm.elements[filterFieldToParam[k]];
-                    if (input) input.value = '';
-                });
-            }
-            closeFilter();
-            window.location.href = '<?= site_url($resetUrl ?? 'user/audit-logs') ?>';
-        });
-
-        // Row click → detail modal
-        var detailModal = document.getElementById('auditDetailModal');
-        function closeDetail() { if (detailModal) detailModal.style.display = 'none'; }
-        var dClose  = document.getElementById('auditDetailModalClose');
-        var dCancel = document.getElementById('auditDetailModalCancel');
-        dClose  && dClose.addEventListener('click', closeDetail);
-        dCancel && dCancel.addEventListener('click', closeDetail);
-        detailModal && detailModal.addEventListener('click', function (e) {
-            if (e.target === detailModal) closeDetail();
-        });
-
-        var auditTable = document.getElementById('auditLogsTable');
-        auditTable && auditTable.addEventListener('click', function (e) {
-            var row = e.target.closest('tr.vs-clickable-row');
-            if (!row || !detailModal) return;
-            var set = function (id, val) {
-                var el = document.getElementById(id);
-                if (el) el.textContent = val || '-';
-            };
-            set('auditDetailDate',      row.getAttribute('data-detail-date'));
-            set('auditDetailAction',    row.getAttribute('data-action'));
-            set('auditDetailUser',      row.getAttribute('data-detail-user'));
-            set('auditDetailDescription', row.getAttribute('data-detail-desc'));
-            set('auditDetailUserAgent', row.getAttribute('data-detail-ua'));
-            detailModal.style.display = 'flex';
-        });
+    var auditTable = document.getElementById('auditLogsTable');
+    auditTable && auditTable.addEventListener('click', function (e) {
+        var row = e.target.closest('tr.vs-clickable-row');
+        if (!row || !detailModal) return;
+        var set = function (id, val) {
+            var el = document.getElementById(id);
+            if (el) el.textContent = val || '-';
+        };
+        set('auditDetailDate',        row.getAttribute('data-detail-date'));
+        set('auditDetailAction',      row.getAttribute('data-action'));
+        set('auditDetailUser',        row.getAttribute('data-detail-user'));
+        set('auditDetailDescription', row.getAttribute('data-detail-desc'));
+        set('auditDetailUserAgent',   row.getAttribute('data-detail-ua'));
+        detailModal.style.display = 'flex';
+    });
 });
 </script>
 
