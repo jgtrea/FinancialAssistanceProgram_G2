@@ -157,47 +157,72 @@ function showPdfToast(message, key, job, opts) {
   };
 }
 
-function showAlert(message, type = "success", opts = {}) {
-  const map = {
-    success: "vs-alert-success",
-    error: "vs-alert-error",
-    warning: "vs-alert-warning",
-  };
-  const el = document.createElement("div");
-  el.className = `vs-alert ${map[type] ?? map.success} mb-3 mt-2`;
-  el.style.display = "flex";
-  el.style.alignItems = "center";
-  el.style.gap = "1rem";
+// Toast types:
+//   'success' (green)  — add, update, import, export, activate/restore
+//   'error'   (red)    — deactivate, archive, failures
+//   'info'    (blue)   — cannot-do notices ("select at least one...", limits, etc.)
+//   'warning' (amber)  — edge-case caution (rarely used)
+function showToast(message, type, opts) {
+  opts = opts || {};
+  var bgMap = { success: "#15803d", error: "#b91c1c", info: "#b91c1c", warning: "#b45309" };
+  var bg = bgMap[type] || bgMap.info;
+  var autoMs = (type === "success") ? 10000 : 15000;
 
-  const text = document.createElement("span");
-  text.textContent = message;
-  text.style.flex = "1";
-  el.appendChild(text);
-
-  // Manual dismiss button — always present so the user can close the alert.
-  const close = document.createElement("button");
-  close.type = "button";
-  close.textContent = "Dismiss";
-  close.setAttribute("aria-label", "Dismiss");
-  close.style.cssText =
-    "flex:none;background:rgba(0,0,0,.06);border:1px solid rgba(0,0,0,.15);" +
-    "border-radius:.35rem;font-size:.8rem;font-weight:600;line-height:1;cursor:pointer;" +
-    "color:inherit;padding:.35rem .75rem;white-space:nowrap";
-  close.addEventListener("mouseenter", () => {
-    close.style.background = "rgba(0,0,0,.12)";
-  });
-  close.addEventListener("mouseleave", () => {
-    close.style.background = "rgba(0,0,0,.06)";
-  });
-  close.addEventListener("click", () => el.remove());
-  el.appendChild(close);
-
-  const main =
-    document.querySelector(".vs-content") || document.querySelector("main");
-  if (main) {
-    main.prepend(el);
-    // Always manual-dismiss only — no auto-timer.
+  var stack = document.getElementById("pdfToastStack");
+  if (!stack) {
+    stack = document.createElement("div");
+    stack.id = "pdfToastStack";
+    stack.style.cssText = "position:fixed;bottom:24px;right:24px;z-index:9999;display:flex;flex-direction:column-reverse;gap:10px;max-width:360px;";
+    document.body.appendChild(stack);
   }
+
+  var toast = document.createElement("div");
+  toast.style.cssText = "background:" + bg + ";color:#fff;border-radius:10px;padding:14px 20px;" +
+    "display:flex;align-items:center;gap:12px;box-shadow:0 4px 20px rgba(0,0,0,.35);" +
+    "font-size:14px;min-width:220px;max-width:360px;transition:opacity .3s ease;";
+  toast.innerHTML = '<span style="flex:1">' + message + '</span>' +
+    '<button type="button" style="background:none;color:rgba(255,255,255,.6);border:none;' +
+    'font-size:18px;line-height:1;cursor:pointer;padding:0 2px;flex-shrink:0">&times;</button>';
+  stack.appendChild(toast);
+
+  function removeToast() {
+    toast.style.opacity = "0";
+    setTimeout(function () {
+      if (toast.parentNode) toast.remove();
+      if (stack.parentNode && stack.children.length === 0) stack.remove();
+    }, 300);
+  }
+
+  toast.querySelector("button").addEventListener("click", removeToast);
+  if (!opts.persist) setTimeout(removeToast, autoMs);
+}
+window.showToast = showToast;
+
+// Persist a toast across a page reload via sessionStorage.
+// Call instead of location.reload() when you need to show a result after reload.
+window.toastAndReload = function (msg, type) {
+  try { sessionStorage.setItem("__pendingToast", JSON.stringify({ msg: msg, type: type })); } catch (e) {}
+  location.reload();
+};
+
+// Fire any pending post-reload toast immediately on load.
+(function () {
+  var raw = sessionStorage.getItem("__pendingToast");
+  if (!raw) return;
+  try {
+    var p = JSON.parse(raw);
+    sessionStorage.removeItem("__pendingToast");
+    function fire() { showToast(p.msg, p.type); }
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", fire);
+    } else {
+      fire();
+    }
+  } catch (e) {}
+})();
+
+function showAlert(message, type, opts) {
+  showToast(message, type || "success", opts || {});
 }
 
 function ajaxOptions(options = {}) {

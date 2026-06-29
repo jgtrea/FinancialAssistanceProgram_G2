@@ -42,15 +42,11 @@
                 <?php $lockedNotice = $lockedNotice ?? ''; ?>
 
                 <?php if (session()->getFlashdata('error')): ?>
-                    <div class="alert alert-danger small py-2">
-                        <?= esc(session()->getFlashdata('error')) ?>
-                    </div>
+                <script>document.addEventListener('DOMContentLoaded',function(){showToast(<?= json_encode(esc(session()->getFlashdata('error'))) ?>,'error');});</script>
                 <?php endif; ?>
 
                 <?php if ($lockedNotice !== ''): ?>
-                    <div class="alert alert-warning small py-2">
-                        <?= esc($lockedNotice) ?> If that was you, you can log out the other device and continue here.
-                    </div>
+                <script>document.addEventListener('DOMContentLoaded',function(){showToast(<?= json_encode(esc($lockedNotice) . ' If that was you, you can log out the other device and continue here.') ?>,'info',{persist:true});});</script>
 
                     <form class="login-form-modern" action="<?= base_url('auth_login') ?>" method="POST">
                         <?= csrf_field() ?>
@@ -89,5 +85,6 @@
         </section>
     </main>
 
+    <script src="<?= base_url('assets/js/custom/global.js') ?>"></script>
 </body>
 </html>

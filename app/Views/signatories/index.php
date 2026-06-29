@@ -20,9 +20,7 @@
     </div>
 
     <?php if (session()->getFlashdata('success')): ?>
-        <div class="vs-alert vs-alert-success mb-3">
-            <?= session()->getFlashdata('success') ?>
-        </div>
+    <script>document.addEventListener('DOMContentLoaded',function(){showToast(<?= json_encode(session()->getFlashdata('success')) ?>,'success');});</script>
     <?php endif; ?>
 
     <div id="sigAlertBox"></div>
@@ -187,9 +185,7 @@ document.addEventListener('vs:modals:ready', function () {
     }
 
     function showAlert(msg, type) {
-        var box = document.getElementById('sigAlertBox');
-        box.innerHTML = '<div class="vs-alert vs-alert-' + (type || 'success') + ' mb-3">' + msg +
-            '<button type="button" class="vs-alert-dismiss" onclick="this.closest(\'.vs-alert\').remove()">×</button></div>';
+        showToast(msg, type || 'success');
     }
 
     // ── Signatory Add / Edit modal ──────────────────────────────────────────
@@ -362,6 +358,11 @@ document.addEventListener('vs:modals:ready', function () {
         e.preventDefault();
         smClearAlert();
 
+        if (!sigModalForm.checkValidity()) {
+            sigModalForm.reportValidity();
+            return;
+        }
+
         var fd = new FormData(sigModalForm);
         var csrf = getCsrf();
         if (csrf.name && !fd.get(csrf.name)) {
@@ -381,7 +382,7 @@ document.addEventListener('vs:modals:ready', function () {
             .then(function (data) {
                 if (data.success) {
                     smClose();
-                    location.reload();
+                    toastAndReload(data.message || 'Signatory saved successfully.', 'success');
                     return;
                 }
                 smShowAlert(data.message || 'Save failed.', 'error', data.errors);
@@ -564,7 +565,7 @@ document.addEventListener('vs:modals:ready', function () {
                     btn.disabled = false;
                     return;
                 }
-                window.location.reload();
+                toastAndReload(data.message || 'Signatory activated successfully.', 'success');
             })
             .catch(function () {
                 showAlert('An error occurred.', 'error');
@@ -670,7 +671,7 @@ document.addEventListener('vs:modals:ready', function () {
                 });
                 sigDtRedraw();
                 updateActionBar();
-                showAlert(data.message || 'Deactivated successfully.', 'success');
+                showAlert(data.message || 'Deactivated successfully.', 'error');
             } else {
                 showAlert(data.message || 'Failed to deactivate.', 'error');
                 closeSigArchModal();

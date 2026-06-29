@@ -65,9 +65,7 @@ document.addEventListener("DOMContentLoaded", function () {
     cleanSearch.dataset.fullTableSearchBound = "";
     currentPageSearch.parentNode.replaceChild(cleanSearch, currentPageSearch);
 
-    if (datatableUrl && window.VS.bindFullTableSearch) {
-      window.VS.bindFullTableSearch(dt, cleanSearch);
-    } else if (window.VS.bindCurrentPageSearch) {
+    if (window.VS.bindCurrentPageSearch) {
       window.VS.bindCurrentPageSearch(dt, cleanSearch);
     }
   }
@@ -457,7 +455,7 @@ document.addEventListener("DOMContentLoaded", function () {
               " of " +
               _selectableCount +
               " matching; narrow your filters to reach the rest.",
-            "warning",
+            "info",
           );
         }
 
@@ -559,19 +557,7 @@ document.addEventListener("DOMContentLoaded", function () {
   if (btnOpenExport && exportModal) {
     btnOpenExport.addEventListener("click", function () {
       if (!selectedIds.size) {
-        const existing = document.getElementById('vs-inline-alert');
-        if (existing) existing.remove();
-
-        const alert = document.createElement('div');
-        alert.id = 'vs-inline-alert';
-        alert.className = 'vs-alert vs-alert-warning mb-3';
-        alert.style.cssText = 'display:flex; justify-content:space-between; align-items:center;';
-        alert.innerHTML = 'Select at least one student to export. <button onclick="this.parentElement.remove()" style="background:none;border:none;cursor:pointer;font-weight:bold;">Dismiss</button>';
-
-        const header = document.querySelector('.vs-page-header');
-        if (header) header.insertAdjacentElement('afterend', alert);
-
-        setTimeout(() => alert && alert.remove(), 4000);
+        showToast('Select at least one student to export.', 'info');
         return;
       }
       updateExportLinks();
@@ -768,33 +754,11 @@ document.addEventListener("DOMContentLoaded", function () {
 
     btnGeneratePdf.addEventListener("click", function () {
       if (!selectedIds.size) {
-        const existing = document.getElementById('vs-inline-alert');
-        if (existing) existing.remove();
-
-        const alert = document.createElement('div');
-        alert.id = 'vs-inline-alert';
-        alert.className = 'vs-alert vs-alert-warning mb-3';
-        alert.style.cssText = 'display:flex; justify-content:space-between; align-items:center;';
-        alert.innerHTML = 'Select at least one student to print vouchers. <button onclick="this.parentElement.remove()" style="background:none;border:none;cursor:pointer;font-weight:bold;">Dismiss</button>';
-
-        const header = document.querySelector('.vs-page-header');
-        if (header) header.insertAdjacentElement('afterend', alert);
-        setTimeout(() => { const el = document.getElementById('vs-inline-alert'); if (el) el.remove(); }, 4000);
+        showToast('Select at least one student to print vouchers.', 'info');
         return;
       }
       if (selectedIds.size > MAX_BATCH) {
-        const existing = document.getElementById('vs-inline-alert');
-        if (existing) existing.remove();
-
-        const alert = document.createElement('div');
-        alert.id = 'vs-inline-alert';
-        alert.className = 'vs-alert vs-alert-warning mb-3';
-        alert.style.cssText = 'display:flex; justify-content:space-between; align-items:center;';
-        alert.innerHTML = 'You can only print PDFs for up to ' + MAX_BATCH + ' students at a time. You have ' + selectedIds.size + ' selected. <button onclick="this.parentElement.remove()" style="background:none;border:none;cursor:pointer;font-weight:bold;">Dismiss</button>';
-
-        const header = document.querySelector('.vs-page-header');
-        if (header) header.insertAdjacentElement('afterend', alert);
-        setTimeout(() => { const el = document.getElementById('vs-inline-alert'); if (el) el.remove(); }, 4000);
+        showToast('You can only print PDFs for up to ' + MAX_BATCH + ' students at a time. You have ' + selectedIds.size + ' selected.', 'warning');
         return;
       }
       vsConfirm({

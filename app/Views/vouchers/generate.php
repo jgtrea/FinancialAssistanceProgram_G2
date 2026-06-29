@@ -13,10 +13,10 @@
   </div>
 
   <?php if (session()->getFlashdata('error')): ?>
-    <div class="vs-alert vs-alert-error mb-3"><?= esc(session()->getFlashdata('error')) ?></div>
+  <script>document.addEventListener('DOMContentLoaded',function(){showToast(<?= json_encode(esc(session()->getFlashdata('error'))) ?>,'error');});</script>
   <?php endif ?>
   <?php if (session()->getFlashdata('message')): ?>
-    <div class="vs-alert vs-alert-success mb-3"><?= esc(session()->getFlashdata('message')) ?></div>
+  <script>document.addEventListener('DOMContentLoaded',function(){showToast(<?= json_encode(esc(session()->getFlashdata('message'))) ?>,'success');});</script>
   <?php endif ?>
 
   <div class="vs-action-bar" id="actionBar" style="display:none">

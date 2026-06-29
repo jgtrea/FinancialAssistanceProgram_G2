@@ -10,15 +10,10 @@
     </div>
 
     <?php if (session()->getFlashdata('success')): ?>
-        <div class="vs-alert vs-alert-success mb-3">
-            <?= session()->getFlashdata('success') ?>
-        </div>
+    <script>document.addEventListener('DOMContentLoaded',function(){showToast(<?= json_encode(session()->getFlashdata('success')) ?>,'success');});</script>
     <?php endif; ?>
-
     <?php if (session()->getFlashdata('error')): ?>
-        <div class="vs-alert vs-alert-error mb-3">
-            <?= session()->getFlashdata('error') ?>
-        </div>
+    <script>document.addEventListener('DOMContentLoaded',function(){showToast(<?= json_encode(session()->getFlashdata('error')) ?>,'error');});</script>
     <?php endif; ?>
 
     <div id="userAlertBox"></div>
@@ -148,9 +143,7 @@ document.addEventListener('vs:modals:ready', function () {
     }
 
     function showAlert(msg, type) {
-        var box = document.getElementById('userAlertBox');
-        box.innerHTML = '<div class="vs-alert vs-alert-' + (type || 'success') + ' mb-3">' + msg +
-            '<button type="button" class="vs-alert-dismiss" onclick="this.closest(\'.vs-alert\').remove()">×</button></div>';
+        showToast(msg, type || 'success');
     }
 
     // ── User Add / Edit modal ──────────────────────────────────────────────
@@ -239,14 +232,14 @@ document.addEventListener('vs:modals:ready', function () {
 
         if (mode === 'add') {
             userModalTitle.textContent = 'Add User';
-            umSubmitText.textContent = 'Save User';
+            umSubmitText.textContent = 'Save';
             umSetPasswordMode(false);
             userModal.style.display = 'flex';
             return;
         }
 
         userModalTitle.textContent = 'Edit User';
-        umSubmitText.textContent = 'Update User';
+        umSubmitText.textContent = 'Update';
         umSetPasswordMode(true);
         userModal.style.display = 'flex';
 
@@ -283,6 +276,11 @@ document.addEventListener('vs:modals:ready', function () {
         e.preventDefault();
         umClearAlert();
 
+        if (!userModalForm.checkValidity()) {
+            userModalForm.reportValidity();
+            return;
+        }
+
         var fd = new FormData(userModalForm);
         var csrf = getCsrf();
         if (csrf.name && !fd.get(csrf.name)) {
@@ -302,7 +300,7 @@ document.addEventListener('vs:modals:ready', function () {
             .then(function (data) {
                 if (data.status === 'success') {
                     umClose();
-                    location.reload();
+                    toastAndReload(data.message || 'User saved successfully.', 'success');
                     return;
                 }
                 umShowAlert(data.message || 'Save failed.', 'error', data.errors);
@@ -384,6 +382,11 @@ document.addEventListener('vs:modals:ready', function () {
 
             var metaEl = document.querySelector('meta[name="csrf-token-value"]');
             if (metaEl && data.csrf_token) metaEl.setAttribute('content', data.csrf_token);
+
+            showAlert(
+                data.message || (nowActive ? 'User activated.' : 'User deactivated.'),
+                nowActive ? 'success' : 'error'
+            );
 
             btn.disabled = false;
         })

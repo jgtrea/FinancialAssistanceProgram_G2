@@ -17,21 +17,6 @@
 
 <div id="schoolAlertBox"></div>
 
-<!-- Action bar — appears when rows are checked -->
-<div class="vs-action-bar" id="schoolActionBar" style="display:none">
-    <span class="vs-action-bar-count"><span id="schoolSelectedCount">0</span> selected</span>
-    <div class="d-flex gap-2 ms-auto">
-        <button type="button" class="vs-btn vs-btn-warning" id="btnOpenExport">
-            <?= asset_icon('export') ?>
-            Export
-        </button>
-        <button class="vs-btn vs-btn-danger" id="btnArchiveSelected">
-            <?= asset_icon('archive') ?>
-            Deactivate
-        </button>
-    </div>
-</div>
-
 <!-- Search + Level quick filter + action buttons -->
 <form method="get" id="schoolSearchForm" class="row g-2 mb-3">
     <div class="col-12 col-lg">
@@ -68,25 +53,20 @@
                 <button type="button" class="btn btn-warning w-100" style="min-width:90px" id="btnOpenImport">Import</button>
             </div>
             <div class="col">
-                <button type="button" class="btn btn-success w-100" style="min-width:110px" id="btnAddSchool">Add School</button>
+                <button type="button" class="btn btn-warning w-100" style="min-width:90px" id="btnOpenExport">Export</button>
             </div>
         </div>
+    </div>
+    <div class="col-12 col-lg-auto d-grid d-lg-block">
+        <button type="button" class="btn btn-success" style="min-width:110px" id="btnAddSchool">Add School</button>
     </div>
 </form>
 
 <div class="vs-card">
     <div class="vs-card-body">
-        <div id="schoolSelectAllBanner" style="display:none;margin-bottom:8px;padding:8px 12px;background:#fef3c7;border:1px solid #fcd34d;border-radius:6px;font-size:.875rem">
-            <span id="schoolSelectAllBannerText"></span>
-            <a href="#" id="schoolSelectAllMatchingLink" style="font-weight:600;margin-left:.5rem;display:none"></a>
-            <a href="#" id="schoolClearLink" style="margin-left:.5rem;display:none">Clear</a>
-        </div>
-        <table id="schoolsTable" class="vs-datatable js-data-table vs-mobile-primary" data-mobile-primary="1" data-page-search="customSchoolsSearch" data-order='[[6,"desc"],[1,"asc"]]' data-col-defs='[{"orderable":false,"targets":5},{"visible":false,"targets":6},{"width":"4%","targets":0},{"width":"52%","targets":1},{"width":"16%","targets":2},{"width":"9%","targets":3},{"width":"9%","targets":4},{"width":"10%","targets":5},{"className":"text-start","targets":[1]}]' style="width:100%">
+        <table id="schoolsTable" class="vs-datatable js-data-table vs-mobile-primary" data-mobile-primary="1" data-page-search="customSchoolsSearch" data-order='[[5,"desc"],[0,"asc"]]' data-col-defs='[{"orderable":false,"targets":4},{"visible":false,"targets":5},{"width":"58%","targets":0},{"width":"16%","targets":1},{"width":"9%","targets":2},{"width":"9%","targets":3},{"width":"10%","targets":4},{"className":"text-start","targets":[0]}]' style="width:100%">
             <thead>
                 <tr>
-                    <th class="vs-th-check">
-                        <input type="checkbox" class="vs-check" id="schoolCheckAll" aria-label="Select all schools">
-                    </th>
                     <th>School Name</th>
                     <th>Acronym</th>
                     <th>Level</th>
@@ -110,12 +90,6 @@
                         data-level="<?= esc($level, 'attr') ?>"
                         data-active="<?= $isActive ? '1' : '0' ?>"
                         <?= !$isActive ? 'class="vs-row-archived"' : '' ?>>
-                        <td>
-                            <input type="checkbox"
-                                   class="vs-check school-row-check"
-                                   value="<?= $sid ?>"
-                                   <?= !$isActive ? 'disabled title="Inactive schools cannot be archived"' : '' ?>>
-                        </td>
                         <td><?= esc($school['school_name']) ?></td>
                         <td><?= esc($school['acronym'] ?? '') ?></td>
                         <td><?= esc($level) ?></td>
@@ -168,9 +142,7 @@ document.addEventListener('vs:modals:ready', function () {
     }
 
     function showAlert(msg, type) {
-        var box = document.getElementById('schoolAlertBox');
-        box.innerHTML = '<div class="vs-alert vs-alert-' + (type || 'success') + ' mb-3">' + msg +
-            '<button type="button" class="vs-alert-dismiss" onclick="this.closest(\'.vs-alert\').remove()">×</button></div>';
+        showToast(msg, type || 'success');
     }
 
     function escHtml(v) {
@@ -179,163 +151,13 @@ document.addEventListener('vs:modals:ready', function () {
         });
     }
 
-    // ── Single selection set ──────────────────────────────────────────────────
-    var schoolSelected = new Set();
-    var actionBar      = document.getElementById('schoolActionBar');
-    var countLabel     = document.getElementById('schoolSelectedCount');
-
-    function updateBar() {
-        if (countLabel) countLabel.textContent = schoolSelected.size;
-        if (actionBar)  actionBar.style.display = schoolSelected.size > 0 ? 'flex' : 'none';
-        updateSchoolSelectAllBanner();
-    }
-
-    function updateSchoolSelectAllBanner() {
-        var banner     = document.getElementById('schoolSelectAllBanner');
-        var bannerText = document.getElementById('schoolSelectAllBannerText');
-        var selectLink = document.getElementById('schoolSelectAllMatchingLink');
-        var clearLink  = document.getElementById('schoolClearLink');
-        if (!banner) return;
-
-        var selSize = schoolSelected.size;
-        if (selSize === 0) { banner.style.display = 'none'; return; }
-        banner.style.display = '';
-
-        var totalFiltered = 0;
-        var allFilteredIds = [];
-        if (window.jQuery && $.fn.DataTable) {
-            var tbl = document.getElementById('schoolsTable');
-            if (tbl && $.fn.DataTable.isDataTable(tbl)) {
-                var dt = $(tbl).DataTable();
-                totalFiltered = dt.rows({ search: 'applied' }).count();
-                dt.rows({ search: 'applied' }).every(function () {
-                    var node = this.node();
-                    var cb = node ? node.querySelector('.school-row-check') : null;
-                    if (cb && !cb.disabled) allFilteredIds.push(cb.value);
-                });
-            }
-        }
-
-        if (bannerText) bannerText.textContent = selSize + ' selected. ' + totalFiltered + ' total matching.';
-        var allSelected = allFilteredIds.length > 0 && allFilteredIds.every(function (id) { return schoolSelected.has(id); });
-        if (selectLink) {
-            selectLink.textContent = 'Select all ' + allFilteredIds.length + ' matching across all pages';
-            selectLink.style.display = allSelected ? 'none' : '';
-        }
-        if (clearLink) clearLink.style.display = '';
-    }
-
-    function updateCheckAll() {
-        var tbl = document.getElementById('schoolsTable');
-        var pageIds = [];
-        if (window.jQuery && tbl && $.fn.DataTable && $.fn.DataTable.isDataTable(tbl)) {
-            $(tbl).DataTable().rows({ page: 'current' }).nodes().each(function (row) {
-                var cb = row.querySelector('.school-row-check');
-                if (cb && !cb.disabled) pageIds.push(cb.value);
-            });
-        } else {
-            document.querySelectorAll('.school-row-check:not(:disabled)').forEach(function (cb) {
-                pageIds.push(cb.value);
-            });
-        }
-        var all = document.getElementById('schoolCheckAll');
-        if (!all) return;
-        var n = pageIds.filter(function (id) { return schoolSelected.has(id); }).length;
-        all.checked       = false;
-        all.indeterminate = n > 0;
-    }
-
-    function syncSchoolPageCheckboxes() {
-        if (!window.jQuery || !$.fn.DataTable) return;
-        var tbl = document.getElementById('schoolsTable');
-        if (!tbl || !$.fn.DataTable.isDataTable(tbl)) return;
-        var pageNodes = $(tbl).DataTable().rows({ page: 'current' }).nodes().toArray();
-        var pageIds = [];
-        pageNodes.forEach(function (row) {
-            var cb = row.querySelector('.school-row-check');
-            if (!cb) return;
-            cb.checked = schoolSelected.has(cb.value);
-            row.classList.toggle('vs-row-selected', cb.checked);
-            if (!cb.disabled) pageIds.push(cb.value);
-        });
-        updateCheckAll();
-        updateBar();
-    }
-
-    var _schoolTbl = document.getElementById('schoolsTable');
-    if (_schoolTbl && window.jQuery) $(_schoolTbl).on('draw.dt', syncSchoolPageCheckboxes);
-
-    var checkAll = document.getElementById('schoolCheckAll');
-    checkAll && checkAll.addEventListener('change', function () {
-        var tbl = document.getElementById('schoolsTable');
-        var currentNodes = (window.jQuery && tbl && $.fn.DataTable && $.fn.DataTable.isDataTable(tbl))
-            ? $(tbl).DataTable().rows({ page: 'current' }).nodes().toArray()
-            : Array.from(document.querySelectorAll('.school-row-check:not(:disabled)')).map(function (cb) { return cb.closest('tr'); });
-
-        var pageIds = [];
-        currentNodes.forEach(function (row) {
-            var cb = row.querySelector('.school-row-check');
-            if (cb && !cb.disabled) pageIds.push(cb.value);
-        });
-
-        var anyOnPageSelected = pageIds.some(function (id) { return schoolSelected.has(id); });
-        pageIds.forEach(function (id) {
-            if (anyOnPageSelected) schoolSelected.delete(id);
-            else schoolSelected.add(id);
-        });
-        syncSchoolPageCheckboxes();
-    });
-
-    // Delegated so a row checkbox on ANY DataTables page works. Per-node binding
-    // misses off-page rows: DataTables detaches them from the live DOM, so they
-    // aren't found when listeners are attached and clicking them on later pages
-    // never updates schoolSelected (selection silently capped to page 1).
-    document.addEventListener('change', function (e) {
-        var cb = e.target;
-        if (!cb || !cb.classList || !cb.classList.contains('school-row-check')) return;
-        if (cb.checked) schoolSelected.add(cb.value);
-        else            schoolSelected.delete(cb.value);
-        var tr = cb.closest('tr');
-        if (tr) tr.classList.toggle('vs-row-selected', cb.checked);
-        updateBar();
-        updateCheckAll();
-    });
-
-    // ── Select-all-matching + Clear links ────────────────────────────────────
-    var _schoolSelectAllLink = document.getElementById('schoolSelectAllMatchingLink');
-    var _schoolClearLink     = document.getElementById('schoolClearLink');
-
-    _schoolSelectAllLink && _schoolSelectAllLink.addEventListener('click', function (e) {
-        e.preventDefault();
-        if (!window.jQuery || !$.fn.DataTable) return;
-        var tbl = document.getElementById('schoolsTable');
-        if (!tbl || !$.fn.DataTable.isDataTable(tbl)) return;
-        $(tbl).DataTable().rows({ search: 'applied' }).every(function () {
-            var node = this.node();
-            var cb = node ? node.querySelector('.school-row-check') : null;
-            if (cb && !cb.disabled) schoolSelected.add(cb.value);
-        });
-        syncSchoolPageCheckboxes();
-        updateBar();
-    });
-
-    _schoolClearLink && _schoolClearLink.addEventListener('click', function (e) {
-        e.preventDefault();
-        schoolSelected.clear();
-        syncSchoolPageCheckboxes();
-        updateBar();
-    });
-
     // No auto-submit on level change — user clicks Search button.
 
     // ── Export modal ──────────────────────────────────────────────────────────
     var exportModal = document.getElementById('schoolExportModal');
 
     function buildExportUrl(format) {
-        var base   = '<?= site_url('admin/schools/export') ?>';
-        var params = ['format=' + format];
-        schoolSelected.forEach(function (id) { params.push('ids[]=' + id); });
-        return base + '?' + params.join('&');
+        return '<?= site_url('admin/schools/export') ?>?format=' + format;
     }
 
     function openExportModal() {
@@ -366,13 +188,6 @@ document.addEventListener('vs:modals:ready', function () {
     document.getElementById('schoolArchiveModalCancel') && document.getElementById('schoolArchiveModalCancel').addEventListener('click', closeArchModal);
     archModal && archModal.addEventListener('click', function (e) { if (e.target === archModal) closeArchModal(); });
 
-    document.getElementById('btnArchiveSelected') && document.getElementById('btnArchiveSelected').addEventListener('click', function () {
-        if (!schoolSelected.size) return;
-        var ct = document.getElementById('schoolArchiveCount');
-        if (ct) ct.textContent = schoolSelected.size;
-        if (archModal) archModal.style.display = 'flex';
-    });
-
     document.addEventListener('click', function (e) {
         var btn = e.target.closest('.js-school-archive-single');
         if (!btn) return;
@@ -397,11 +212,9 @@ document.addEventListener('vs:modals:ready', function () {
         if (window.jQuery && $.fn.DataTable) {
             var tbl = document.getElementById('schoolsTable');
             if (tbl && $.fn.DataTable.isDataTable(tbl)) {
-                $(tbl).DataTable().cell(row, 6).data('0');
+                $(tbl).DataTable().cell(row, 5).data('0');
             }
         }
-        var cb = row.querySelector('.school-row-check');
-        if (cb) { cb.disabled = true; cb.checked = false; }
         var statusBadge = document.getElementById('school-status-' + id);
         if (statusBadge) { statusBadge.textContent = 'Inactive'; statusBadge.className = 'badge bg-danger'; }
         var actionsCell = row.querySelector('.actions-cell');
@@ -422,7 +235,7 @@ document.addEventListener('vs:modals:ready', function () {
     }
 
     archConfirm && archConfirm.addEventListener('click', function () {
-        var idsToArchive = pendingArchiveSchoolId ? [pendingArchiveSchoolId] : Array.from(schoolSelected);
+        var idsToArchive = [pendingArchiveSchoolId];
         var csrf = getCsrf();
         var body = csrf.name + '=' + csrf.token;
         idsToArchive.forEach(function (id) { body += '&ids[]=' + id; });
@@ -440,16 +253,11 @@ document.addEventListener('vs:modals:ready', function () {
         .then(function (data) {
             closeArchModal();
             if (data.success) {
-                idsToArchive.forEach(function (id) {
-                    applySchoolArchiveDom(id);
-                    schoolSelected.delete(id);
-                });
+                idsToArchive.forEach(function (id) { applySchoolArchiveDom(id); });
                 schoolDtRedraw();
-                updateBar();
-                updateCheckAll();
-                showAlert(data.message || 'Archived successfully.', 'success');
+                showAlert(data.message || 'Deactivated successfully.', 'error');
             } else {
-                showAlert(data.message || 'Failed to archive.', 'error');
+                showAlert(data.message || 'Failed to deactivate.', 'error');
             }
         })
         .catch(function () { showAlert('An error occurred.', 'error'); closeArchModal(); })
@@ -481,8 +289,6 @@ document.addEventListener('vs:modals:ready', function () {
                     row.setAttribute('data-active', '1');
                     var sortCell = row.cells[row.cells.length - 1];
                     if (sortCell) sortCell.textContent = '1';
-                    var cb = row.querySelector('.school-row-check');
-                    if (cb) { cb.disabled = false; }
                     var statusBadgeR = document.getElementById('school-status-' + id);
                     if (statusBadgeR) { statusBadgeR.textContent = 'Active'; statusBadgeR.className = 'badge bg-success'; }
                     var actionsCell = row.querySelector('.actions-cell');
@@ -590,6 +396,11 @@ document.getElementById('btnAddSchool')    && document.getElementById('btnAddSch
         e.preventDefault();
         smClearAlert();
 
+        if (!schoolForm.checkValidity()) {
+            schoolForm.reportValidity();
+            return;
+        }
+
         var fd   = new FormData(schoolForm);
         var csrf = getCsrf();
         if (csrf.name && !fd.get(csrf.name)) fd.append(csrf.name, csrf.token);
@@ -607,8 +418,7 @@ document.getElementById('btnAddSchool')    && document.getElementById('btnAddSch
         .then(function (data) {
             if (data.success) {
                 smClose();
-                showAlert(data.message || 'School saved successfully.', 'success');
-                schoolDtRedraw();
+                toastAndReload(data.message || 'School saved successfully.', 'success');
                 return;
             }
             smOpenAlert(data.message || 'Save failed.');
@@ -664,13 +474,11 @@ document.getElementById('btnAddSchool')    && document.getElementById('btnAddSch
                 showAlert(data.message || 'Import successful.', 'success');
                 setTimeout(function () { window.location.reload(); }, 1200);
             } else {
-                importAlert.innerHTML = '<div class="vs-alert vs-alert-error mb-3">' + escHtml(data.message || 'Import failed.') +
-                    '<button type="button" class="vs-alert-dismiss" onclick="this.closest(\'.vs-alert\').remove()">×</button></div>';
+                showToast(data.message || 'Import failed.', 'error');
             }
         })
         .catch(function () {
-            importAlert.innerHTML = '<div class="vs-alert vs-alert-error mb-3">An error occurred during import.' +
-                '<button type="button" class="vs-alert-dismiss" onclick="this.closest(\'.vs-alert\').remove()">×</button></div>';
+            showToast('An error occurred during import.', 'error');
         })
         .finally(function () {
             siSubmitBtn.disabled       = false;

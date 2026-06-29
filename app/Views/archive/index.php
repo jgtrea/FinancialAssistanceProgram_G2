@@ -87,9 +87,8 @@
                         <th>JHS</th>
                         <th>SHS</th>
                         <th>Remarks</th>
-                        <th>Printed</th>
-                        <th>Last Printed</th>
                         <th>Status</th>
+                        <th>School Year</th>
                     </tr>
                 </thead>
                 <tbody></tbody>
@@ -120,60 +119,94 @@ document.addEventListener('DOMContentLoaded', function () {
     var filterParams = {};
     try { filterParams = JSON.parse(table.dataset.filterParams || '{}'); } catch (e) {}
 
-    $(table).DataTable({
-        destroy:    true,
-        serverSide: true,
-        processing: true,
-        ajax: {
-            url:  url,
-            type: 'GET',
-            data: function (d) { Object.assign(d, filterParams); },
-        },
-        columns: [
-            { data: 'voucher_no' },
-            { data: 'name' },
-            { data: 'name_sort', visible: false },
-            { data: 'rank_no' },
-            { data: 'jhs' },
-            { data: 'shs' },
-            { data: 'remarks' },
-            { data: 'printed' },
-            { data: 'last_generated' },
-            { data: 'voucher_status' },
-        ],
-        order:      [[2, 'asc']],
-        columnDefs: [
-            { orderData: [2], targets: [1] },
-            { className: 'text-start', targets: [1] },
-        ],
-        dom:        window.VS.dtBodyDom,
-        pageLength: 10,
-        lengthMenu: window.VS.dtLengthMenuSS,
-        autoWidth:  false,
-        language:   window.VS.dtLanguage({
-            info:       'Showing _START_ to _END_ of _TOTAL_ matching',
-            emptyTable: 'No archived records found for the selected filters.',
-            zeroRecords:'No archived records found for the selected filters.',
-        }),
-    });
+    var dt = null;
+    var currentMode = null;
 
-    var dt = $(table).DataTable();
+    function buildArchiveDt() {
+        var mobile = window.VS.isMobileTableMode(table);
+        var mode = mobile ? 'mobile' : 'desktop';
+        if (dt && currentMode === mode) return;
 
-    var archiveSearch = document.getElementById('customArchiveSearch');
-    if (archiveSearch && window.VS && window.VS.bindFullTableSearch) {
-        window.VS.bindFullTableSearch(dt, archiveSearch);
+        if (dt) {
+            dt.destroy();
+            dt = null;
+        } else if ($.fn.DataTable.isDataTable(table)) {
+            $(table).DataTable().destroy();
+        }
+
+        var mobileColDefs = window.VS.mobilePrimaryColumnDefs(table, mobile);
+
+        dt = $(table).DataTable({
+            destroy:    true,
+            serverSide: true,
+            processing: true,
+            ajax: {
+                url:  url,
+                type: 'GET',
+                data: function (d) { Object.assign(d, filterParams); },
+            },
+            columns: [
+                { data: 'voucher_no' },
+                { data: 'name' },
+                { data: 'name_sort', visible: false },
+                { data: 'rank_no' },
+                { data: 'jhs' },
+                { data: 'shs' },
+                { data: 'remarks' },
+                { data: 'voucher_status' },
+                { data: 'sy' },
+            ],
+            order:      [[2, 'asc']],
+            columnDefs: [
+                ...mobileColDefs,
+                { orderData: [2], targets: [1] },
+                { className: 'text-start', targets: [1] },
+            ],
+            dom:        window.VS.dtBodyDom,
+            pageLength: 10,
+            lengthMenu: window.VS.dtLengthMenuSS,
+            autoWidth:  false,
+            responsive: false,
+            language:   window.VS.dtLanguage({
+                info:       'Showing _START_ to _END_ of _TOTAL_ matching',
+                emptyTable: 'No archived records found for the selected filters.',
+                zeroRecords:'No archived records found for the selected filters.',
+            }),
+        });
+
+        currentMode = mode;
+
+        var wrapper = dt.table().container();
+        if (wrapper) wrapper.classList.add('vs-mobile-primary-wrapper');
+
+        var archiveSearch = document.getElementById('customArchiveSearch');
+        if (archiveSearch && window.VS.bindFullTableSearch) {
+            window.VS.bindFullTableSearch(dt, archiveSearch);
+        }
+
+        if (!window._archiveLenBound) {
+            window._archiveLenBound = true;
+            var archiveLengthInput = document.getElementById('archiveLengthInput');
+            if (archiveLengthInput) {
+                function applyArchiveLen() {
+                    var v = parseInt(archiveLengthInput.value, 10);
+                    if (!isNaN(v) && v > 0 && dt) dt.page.len(v).draw();
+                }
+                archiveLengthInput.addEventListener('change', applyArchiveLen);
+                archiveLengthInput.addEventListener('keydown', function (e) {
+                    if (e.key === 'Enter') applyArchiveLen();
+                });
+            }
+        }
     }
 
-    var archiveLengthInput = document.getElementById('archiveLengthInput');
-    if (archiveLengthInput) {
-        function applyArchiveLen() {
-            var v = parseInt(archiveLengthInput.value, 10);
-            if (!isNaN(v) && v > 0) dt.page.len(v).draw();
-        }
-        archiveLengthInput.addEventListener('change', applyArchiveLen);
-        archiveLengthInput.addEventListener('keydown', function (e) {
-            if (e.key === 'Enter') applyArchiveLen();
-        });
+    buildArchiveDt();
+    window.VS.bindMobilePrimaryDetails(table, function () { return dt; });
+
+    var breakpoint = window.matchMedia ? window.matchMedia(window.VS.dtMobileQuery) : null;
+    if (breakpoint) {
+        if (breakpoint.addEventListener) breakpoint.addEventListener('change', buildArchiveDt);
+        else if (breakpoint.addListener)  breakpoint.addListener(buildArchiveDt);
     }
 });
 </script>
@@ -277,6 +310,13 @@ document.addEventListener('vs:modals:ready', function () {
         }
 
         btnApply && btnApply.addEventListener('click', function () {
+            var syEl = document.getElementById('afSchoolYear');
+            if (!syEl || !syEl.value) {
+                syEl && syEl.focus();
+                var syLabel = document.querySelector('label[for="afSchoolYear"]');
+                if (syLabel) syLabel.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                return;
+            }
             syncFormFromModal();
             filterForm.submit();
         });
@@ -343,11 +383,11 @@ document.addEventListener('vs:modals:ready', function () {
         .then(function (data) {
             btnArchiveCurrent.disabled = false;
             if (!data.success) {
-                alert(data.message || 'Could not load preview.');
+                showToast(data.message || 'Could not load preview.', 'error');
                 return;
             }
             if (!data.count) {
-                alert('No active students match the current filters — nothing to archive.');
+                showToast('No active students match the current filters — nothing to archive.', 'info');
                 return;
             }
 
@@ -369,7 +409,7 @@ document.addEventListener('vs:modals:ready', function () {
         })
         .catch(function () {
             btnArchiveCurrent.disabled = false;
-            alert('An error occurred while loading preview.');
+            showToast('An error occurred while loading preview.', 'error');
         });
     });
 
@@ -396,7 +436,7 @@ document.addEventListener('vs:modals:ready', function () {
         .then(function (data) {
             closeArchCurrentModal();
             if (!data.success) {
-                alert(data.message || 'Archive failed.');
+                showToast(data.message || 'Archive failed.', 'error');
                 return;
             }
             // Archiving runs on the background worker now — show a live progress
@@ -404,15 +444,15 @@ document.addEventListener('vs:modals:ready', function () {
             // reflects the moved rows.
             if (data.queued && data.status_url && typeof trackArchiveJob === 'function') {
                 trackArchiveJob(data.status_url, data.count || 0, {
-                    jobId:   data.job_id,    // survive page navigation
-                    onDone:  function () { location.reload(); },
-                    onError: function (msg) { alert('Archive failed: ' + msg); },
+                    jobId:   data.job_id,
+                    onDone:  function () { toastAndReload('Students archived successfully.', 'error'); },
+                    onError: function (msg) { showToast('Archive failed: ' + msg, 'error'); },
                 });
                 return;
             }
-            location.reload();
+            toastAndReload('Students archived successfully.', 'error');
         })
-        .catch(function () { alert('An error occurred.'); })
+        .catch(function () { showToast('An error occurred.', 'error'); })
         .finally(function () {
             archCurrentConfirm.disabled = false;
             if (archCurrentBtnText) archCurrentBtnText.style.display = 'inline';

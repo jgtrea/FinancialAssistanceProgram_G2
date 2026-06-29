@@ -276,12 +276,12 @@ var ModalInstance = (function () {
                         <select id="vmJuniorHs" name="junior_high_school" class="vs-input js-school-select vs-uppercase" data-placeholder="Select Junior High School" required><option></option></select>
                       </div>
                       <div class="col-12">
-                        <label class="form-label" for="vmPreferredHs">Preferred Senior High School</label>
-                        <select id="vmPreferredHs" name="preferred_senior_high_school" class="vs-input js-school-select vs-uppercase" data-placeholder="Select Preferred Senior High School"><option></option></select>
+                        <label class="form-label required" for="vmPreferredHs">Preferred Senior High School</label>
+                        <select id="vmPreferredHs" name="preferred_senior_high_school" class="vs-input js-school-select vs-uppercase" data-placeholder="Select Preferred Senior High School" required><option></option></select>
                       </div>
                       <div class="col-4">
-                        <label class="form-label" for="vmRemarks">Remarks</label>
-                        <select id="vmRemarks" name="remarks_status" class="vs-input js-school-select vs-uppercase" data-placeholder="Select Remarks" data-no-search="1">
+                        <label class="form-label required" for="vmRemarks">Remarks</label>
+                        <select id="vmRemarks" name="remarks_status" class="vs-input js-school-select vs-uppercase" data-placeholder="Select Remarks" data-no-search="1" required>
                           <option></option><option value="COMPLETE">COMPLETE</option><option value="INCOMPLETE">INCOMPLETE</option><option value="OTHERS">OTHERS</option>
                         </select>
                       </div>
@@ -432,6 +432,11 @@ var ModalInstance = (function () {
                   <div class="modal-body">
                     <div class="row g-3">
                       <div class="col-6">
+                        <label class="form-label required" for="afSchoolYear">School Year</label>
+                        <select id="afSchoolYear" class="vs-input js-filter-select" data-placeholder="Select School Year" required><option></option></select>
+                      </div>
+                      <div class="col-6"></div>
+                      <div class="col-6">
                         <label class="form-label" for="afJuniorHs">Junior High School</label>
                         <select id="afJuniorHs" class="vs-input js-filter-select" data-placeholder="Select Junior High School"><option></option></select>
                       </div>
@@ -464,10 +469,6 @@ var ModalInstance = (function () {
                         <select id="afRemarks" class="vs-input js-filter-select" data-placeholder="Select Remarks" data-no-search="1">
                           <option></option><option value="COMPLETE">COMPLETE</option><option value="INCOMPLETE">INCOMPLETE</option><option value="OTHERS">OTHERS</option>
                         </select>
-                      </div>
-                      <div class="col-6">
-                        <label class="form-label" for="afSchoolYear">School Year</label>
-                        <select id="afSchoolYear" class="vs-input js-filter-select" data-placeholder="Select School Year"><option></option></select>
                       </div>
                       <div class="col-12">
                         <label class="form-label" for="afOtherRemarks">Other Remarks</label>
@@ -901,8 +902,8 @@ var ModalInstance = (function () {
                                 </div>
                             </form>
                         </div>
-                        <div class="modal-footer d-flex justify-content-end gap-2">
-                            <button type="button" class="vs-btn vs-btn-danger" id="accountModalCancel">Close</button>
+                        <div class="modal-footer d-flex justify-content-end gap-1 py-2">
+                            <button type="button" class="btn btn-danger px-4" id="accountModalCancel">Close</button>
                             <button type="button" class="btn btn-primary px-4" id="accountModalSave">Save</button>
                         </div>
                     </div>
@@ -1200,11 +1201,10 @@ var ModalInstance = (function () {
           return r.json();
         })
         .then(function (data) {
-          msgBox.style.display = "";
           if (data.csrf_value) csrfInput.value = data.csrf_value;
           if (data.success) {
-            msgBox.className = "mb-3 vs-alert vs-alert-success";
-            msgBox.textContent = data.message;
+            msgBox.style.display = "none";
+            showToast(data.message || "Account updated successfully.", "success");
             if (data.full_name) {
               openBtn.textContent = (
                 data.full_name.trim().charAt(0) || "U"
@@ -1212,9 +1212,10 @@ var ModalInstance = (function () {
               openBtn.title = data.full_name;
             }
           } else {
-            msgBox.className = "mb-3 vs-alert vs-alert-error";
             var msg = data.message || "An error occurred.";
             if (data.errors) msg += " " + Object.values(data.errors).join(" ");
+            msgBox.style.display = "";
+            msgBox.className = "mb-3 vs-alert vs-alert-error";
             msgBox.textContent = msg;
           }
         })
@@ -1225,7 +1226,7 @@ var ModalInstance = (function () {
         })
         .finally(function () {
           saveBtn.disabled = false;
-          saveBtn.textContent = "Save Account";
+          saveBtn.textContent = "Save";
         });
     });
   }

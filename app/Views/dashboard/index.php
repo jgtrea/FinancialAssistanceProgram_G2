@@ -64,7 +64,7 @@
             <div class="vs-card-body">
                 <div class="vs-page-header vs-dashboard-table-header mb-3">
                     <div>
-                        <h4 class="vs-page-title">Recent Vouchers</h4>
+                        <h4 class="vs-page-title">Recent Students</h4>
                     </div>
                     <?php $voucherPrefix = session()->get('role') === 'admin' ? 'admin' : 'user'; ?>
                     <a href="<?= site_url($voucherPrefix . '/students') ?>" class="vs-btn vs-btn-outline">See All</a>

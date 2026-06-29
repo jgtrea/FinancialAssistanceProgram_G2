@@ -73,7 +73,7 @@ table.js-data-table .vs-tbl-btn-actions {
 @media (min-width: 768px) {
   .vs-dt-table-row,
   .dataTables_wrapper .table-responsive {
-    overflow-x: hidden;
+    overflow-x: auto;
   }
 
   .vs-datatable,
@@ -317,7 +317,7 @@ table.js-data-table tbody tr.vs-row-archived img {
 .vs-mobile-primary tr.child ul.dtr-details {
   display: grid;
   gap: 0.65rem;
-  grid-template-columns: 1fr;
+  grid-template-columns: repeat(2, 1fr);
   list-style: none;
   margin: 0;
   max-width: 100%;
@@ -508,6 +508,9 @@ table.js-data-table tbody tr.vs-row-archived img {
     border-color: var(--navy-md) !important;
     color: #fff !important;
     content: "-" !important;
+  }
+  .vs-mobile-primary thead th.dtr-control {
+    padding-left: 2.4rem !important;
   }
   .vs-mobile-primary thead th,
   .vs-mobile-primary tbody td {

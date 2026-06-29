@@ -869,9 +869,7 @@ class Voucher extends Controller
             'incomplete'     => true,
             'edit_school_id' => $first['school_id'],
             'remaining'      => \count($incomplete),
-            'message'        => 'The ' . ($first['school_level'] ?: 'school') . ' "' . $label
-                . '" is missing its ' . $fields . '. The acronym starts the voucher number and the '
-                . 'name prints on the voucher, so update it before generating.',
+            'message'        => '"' . $label . '" is missing its ' . $fields . '. Update the school before generating.',
         ]);
     }
 

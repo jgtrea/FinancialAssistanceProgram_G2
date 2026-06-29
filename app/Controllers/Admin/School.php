@@ -116,7 +116,7 @@ class School extends Controller
 
         return $this->response->setJSON([
             'success' => true,
-            'message' => "{$count} school(s) archived successfully.",
+            'message' => "{$count} school(s) deactivated successfully.",
         ]);
     }
 
