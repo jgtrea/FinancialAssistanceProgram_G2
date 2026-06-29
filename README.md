@@ -1,4 +1,4 @@
-# Financial Assistance Program — Voucher Management System
+# Voucher Management System
 
 ![PHP](https://img.shields.io/badge/PHP-8.2+-777BB4?style=flat-square&logo=php&logoColor=white)
 ![CodeIgniter](https://img.shields.io/badge/CodeIgniter-4-EF4223?style=flat-square&logo=codeigniter&logoColor=white)
@@ -42,11 +42,11 @@
 
 ## Quick Start
 
-```bash
+```powershell
 git clone https://github.com/jgtrea/FinancialAssistanceProgram_G2.git
 cd FinancialAssistanceProgram_G2
 composer install
-cp env .env          # edit .env with your DB credentials
+New-Item .env -ItemType File; notepad .env   # fill in DB credentials
 php spark migrate
 php spark serve      # open http://localhost:8080
 ```
