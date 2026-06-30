@@ -82,12 +82,17 @@ class SignatoryController extends BaseController
             $signatory = $signatoryModel->find($id);
         }
 
+        $oom = new OthersOptionsModel();
+
         return view('signatories/form', [
-            'title' => $signatory ? 'Edit Signatory' : 'Add Signatory',
-            'signatory' => $signatory,
+            'title'         => $signatory ? 'Edit Signatory' : 'Add Signatory',
+            'signatory'     => $signatory,
             'prefixOptions' => self::PREFIX_OPTIONS,
             'suffixOptions' => self::SUFFIX_OPTIONS,
             'degreeOptions' => self::DEGREE_OPTIONS,
+            'customPrefixes' => $oom->getOptions('prefix'),
+            'customSuffixes' => $oom->getOptions('suffix'),
+            'customDegrees'  => $oom->getOptions('degree'),
         ]);
     }
 
@@ -129,7 +134,8 @@ class SignatoryController extends BaseController
         }
 
         $degree = trim((string) $this->request->getPost('degree')) ?: 'None';
-        if (!in_array($degree, self::DEGREE_OPTIONS, true)) {
+        $customDegrees = (new OthersOptionsModel())->getOptions('degree');
+        if (!in_array($degree, self::DEGREE_OPTIONS, true) && !in_array($degree, $customDegrees, true)) {
             return $this->signatorySaveError('Please select a valid degree.', $id, $isAjax);
         }
         if ($degree === 'Other') {

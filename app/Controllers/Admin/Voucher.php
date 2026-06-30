@@ -24,9 +24,11 @@ class Voucher extends Controller
 
     protected function getSchoolDropdownData(): array
     {
+        $oom = new OthersOptionsModel();
         return [
             'juniorHighSchools' => $this->schoolOptionModel->getJuniorHighSchools(),
             'seniorHighSchools' => $this->schoolOptionModel->getSeniorHighSchools(),
+            'customSuffixes'    => $oom->getOptions('suffix'),
         ];
     }
 

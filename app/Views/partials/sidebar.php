@@ -52,7 +52,11 @@ $icon = static fn (string $name): string => asset_icon($name, ['class' => 'vs-si
                 <a class="nav-link <?= $isActive('admin/user_management') ?>" href="<?= site_url('admin/user_management') ?>">
                     <div class="sb-nav-link-icon"><?= $icon('users') ?></div>
                     Users
-                </a>                
+                </a>
+                <a class="nav-link <?= $isActive('admin/others-options') ?>" href="<?= site_url('admin/others-options') ?>">
+                    <div class="sb-nav-link-icon"><?= $icon('logs') ?></div>
+                    Other Options
+                </a>
                 <a class="nav-link <?= $isActive('admin/audit-logs') ?>" href="<?= site_url('admin/audit-logs') ?>">
                     <div class="sb-nav-link-icon"><?= $icon('logs') ?></div>
                     Audit Logs

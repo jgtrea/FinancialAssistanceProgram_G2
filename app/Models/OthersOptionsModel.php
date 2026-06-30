@@ -26,4 +26,24 @@ class OthersOptionsModel extends Model
             [$context, $value, $userId]
         );
     }
+
+    public function getOptions(string $context): array
+    {
+        $rows = $this->where('context', $context)
+                     ->orderBy('value', 'ASC')
+                     ->findAll();
+        return array_column($rows, 'value');
+    }
+
+    public function getAllGrouped(): array
+    {
+        $rows = $this->orderBy('context', 'ASC')
+                     ->orderBy('value', 'ASC')
+                     ->findAll();
+        $grouped = [];
+        foreach ($rows as $row) {
+            $grouped[$row['context']][] = $row;
+        }
+        return $grouped;
+    }
 }

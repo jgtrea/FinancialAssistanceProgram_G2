@@ -7,6 +7,7 @@
   $prefix = $role === 'admin' ? 'admin' : 'user';
   $suffix = old('suffix', $voucher['suffix'] ?? '');
   $remarks = old('remarks_status', $voucher['remarks_status'] ?? '');
+  $customSuffixes = $customSuffixes ?? [];
   $selectedJuniorHighSchool = old('junior_high_school', $voucher['junior_high_school'] ?? '');
   $selectedSeniorHighSchool = old('preferred_senior_high_school', $voucher['preferred_senior_high_school'] ?? '');
 ?>
@@ -73,7 +74,7 @@
           <?php
             $suffixOtherVal = '';
             $suffixSelectVal = $suffix;
-            $knownSuffixes = ['JR.','SR.','II','III','IV','__OTHER__',''];
+            $knownSuffixes = array_merge(['JR.','SR.','II','III','IV','__OTHER__',''], $customSuffixes);
             if ($suffix !== '' && !in_array($suffix, $knownSuffixes)) {
                 $suffixOtherVal = $suffix;
                 $suffixSelectVal = '__OTHER__';
@@ -86,6 +87,11 @@
             <option value="II"  <?= $suffixSelectVal === 'II'  ? 'selected' : '' ?>>II</option>
             <option value="III" <?= $suffixSelectVal === 'III' ? 'selected' : '' ?>>III</option>
             <option value="IV"  <?= $suffixSelectVal === 'IV'  ? 'selected' : '' ?>>IV</option>
+            <?php foreach ($customSuffixes as $cs): ?>
+              <?php if (!in_array($cs, ['JR.','SR.','II','III','IV',''])): ?>
+                <option value="<?= esc($cs) ?>" <?= $suffixSelectVal === $cs ? 'selected' : '' ?>><?= esc($cs) ?></option>
+              <?php endif ?>
+            <?php endforeach ?>
             <option value="__OTHER__" <?= $suffixSelectVal === '__OTHER__' ? 'selected' : '' ?>>OTHERS</option>
           </select>
           <div id="suffixOtherWrap" style="<?= $suffixSelectVal === '__OTHER__' ? '' : 'display:none' ?>" class="mt-2">
@@ -179,6 +185,12 @@
                  value="<?= old('evaluated_by', $voucher['evaluated_by'] ?? '') ?>">
         </div>
 
+        <div id="otherRemarksWrap" class="vs-span-4" style="<?= in_array($remarks, ['OTHERS','INCOMPLETE']) ? '' : 'display:none' ?>">
+          <label class="vs-label" for="other_remarks">Other Remarks</label>
+          <textarea id="other_remarks" name="other_remarks" class="vs-input vs-uppercase" maxlength="255" rows="3"
+                    style="resize:vertical"><?= esc(old('other_remarks', $voucher['other_remarks'] ?? '')) ?></textarea>
+        </div>
+
         <?php if (false): ?>
         <div>
           <label class="vs-label" for="eligibility_status">Eligibility</label>
@@ -206,6 +218,22 @@
     document.addEventListener('DOMContentLoaded', function () {
         if (typeof initOtherInput === 'function') {
             initOtherInput('suffix', 'suffixOtherWrap', 'suffixOther');
+        }
+
+        var remarksEl = document.getElementById('remarks_status');
+        var wrapEl    = document.getElementById('otherRemarksWrap');
+        var textEl    = document.getElementById('other_remarks');
+
+        function toggleOtherRemarks() {
+            var val  = String((remarksEl ? remarksEl.value : '') || '').toUpperCase();
+            var show = val === 'OTHERS' || val === 'INCOMPLETE';
+            if (wrapEl) wrapEl.style.display = show ? '' : 'none';
+            if (textEl && !show) textEl.value = '';
+        }
+
+        if (remarksEl) {
+            remarksEl.addEventListener('change', toggleOtherRemarks);
+            if (window.jQuery) jQuery(remarksEl).on('change.select2', toggleOtherRemarks);
         }
     });
 }());

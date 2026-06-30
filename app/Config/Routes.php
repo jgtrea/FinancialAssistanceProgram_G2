@@ -88,6 +88,11 @@ $routes->group('admin', ['filter' => 'role:admin'], function ($routes) {
     $routes->get('schools/import-template',       'Admin\School::importTemplate');
     $routes->get('schools/options',               'Admin\School::optionsJson');
 
+    // Other Options (custom dropdown values)
+    $routes->get('others-options',                'Admin\OthersOptions::index');
+    $routes->post('others-options/save',          'Admin\OthersOptions::save');
+    $routes->post('others-options/delete/(:num)', 'Admin\OthersOptions::delete/$1');
+
     // Archive & Logs
     $routes->get('archive', 'ArchiveController::index');
     $routes->get('archive/datatable', 'ArchiveController::datatable');
