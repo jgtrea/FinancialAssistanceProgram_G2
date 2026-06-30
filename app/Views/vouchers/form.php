@@ -70,14 +70,27 @@
 
         <div>
           <label class="vs-label" for="suffix">Suffix</label>
-          <select id="suffix" name="suffix" class="vs-input js-filter-select" data-placeholder="- SELECT -" data-no-search="1">
-            <option></option>
-            <option value="JR." <?= $suffix === 'JR.' ? 'selected' : '' ?>>JR.</option>
-            <option value="SR." <?= $suffix === 'SR.' ? 'selected' : '' ?>>SR.</option>
-            <option value="II"  <?= $suffix === 'II'  ? 'selected' : '' ?>>II</option>
-            <option value="III" <?= $suffix === 'III' ? 'selected' : '' ?>>III</option>
-            <option value="IV"  <?= $suffix === 'IV'  ? 'selected' : '' ?>>IV</option>
+          <?php
+            $suffixOtherVal = '';
+            $suffixSelectVal = $suffix;
+            $knownSuffixes = ['JR.','SR.','II','III','IV','__OTHER__',''];
+            if ($suffix !== '' && !in_array($suffix, $knownSuffixes)) {
+                $suffixOtherVal = $suffix;
+                $suffixSelectVal = '__OTHER__';
+            }
+          ?>
+          <select id="suffix" data-field-name="suffix" <?= $suffixSelectVal !== '__OTHER__' ? 'name="suffix"' : '' ?> class="vs-input js-filter-select" data-placeholder="- SELECT -" data-no-search="1">
+            <option value="">None</option>
+            <option value="JR." <?= $suffixSelectVal === 'JR.' ? 'selected' : '' ?>>JR.</option>
+            <option value="SR." <?= $suffixSelectVal === 'SR.' ? 'selected' : '' ?>>SR.</option>
+            <option value="II"  <?= $suffixSelectVal === 'II'  ? 'selected' : '' ?>>II</option>
+            <option value="III" <?= $suffixSelectVal === 'III' ? 'selected' : '' ?>>III</option>
+            <option value="IV"  <?= $suffixSelectVal === 'IV'  ? 'selected' : '' ?>>IV</option>
+            <option value="__OTHER__" <?= $suffixSelectVal === '__OTHER__' ? 'selected' : '' ?>>OTHERS</option>
           </select>
+          <div id="suffixOtherWrap" style="<?= $suffixSelectVal === '__OTHER__' ? '' : 'display:none' ?>" class="mt-2">
+            <input id="suffixOther" <?= $suffixSelectVal === '__OTHER__' ? 'name="suffix"' : '' ?> type="text" class="vs-input vs-uppercase" placeholder="Other suffix" value="<?= esc($suffixOtherVal) ?>">
+          </div>
         </div>
 
         <div>
@@ -188,6 +201,15 @@
   </div>
 </div>
 
+<script>
+(function () {
+    document.addEventListener('DOMContentLoaded', function () {
+        if (typeof initOtherInput === 'function') {
+            initOtherInput('suffix', 'suffixOtherWrap', 'suffixOther');
+        }
+    });
+}());
+</script>
 <script>
 (function () {
     function initPicker(id) {

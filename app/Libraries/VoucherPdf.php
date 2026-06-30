@@ -292,8 +292,8 @@ class VoucherPdf
 
     /**
      * Normalize a student's full name for the recipient line: collapse runs of
-     * whitespace, title-case (Unicode-aware where possible), then re-fix the
-     * roman-numeral suffixes that title-casing would have broken ("Iii" → "III").
+     * whitespace, then fully uppercase (Unicode-aware). Preserves special chars
+     * like ñ/Ñ, tildes, and diacritics supported by the UTF-8 font stack.
      */
     protected static function formatVoucherName(string $name): string
     {
@@ -301,11 +301,6 @@ class VoucherPdf
         if ($name === '') {
             return '';
         }
-
-        $name = function_exists('mb_convert_case')
-            ? mb_convert_case($name, MB_CASE_TITLE, 'UTF-8')
-            : ucwords(strtolower($name));
-
-        return str_replace([' Jr.', ' Sr.', ' Ii', ' Iii', ' Iv'], [' Jr.', ' Sr.', ' II', ' III', ' IV'], $name);
+        return function_exists('mb_strtoupper') ? mb_strtoupper($name, 'UTF-8') : strtoupper($name);
     }
 }

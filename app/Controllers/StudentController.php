@@ -8,6 +8,7 @@ use App\Models\SchoolOptionModel;
 use App\Models\SignatoryModel;
 use App\Models\GenerationHistoryModel;
 use App\Models\VoucherModel;
+use App\Models\OthersOptionsModel;
 
 class StudentController extends BaseController
 {
@@ -131,6 +132,14 @@ class StudentController extends BaseController
             $this->writeAuditLog('VOUCHER_CREATED', 'Created voucher for ' . $this->formatStudentName($data) . ' (ID #' . $newStudentId . ').', null, $newStudentId ? (int) $newStudentId : null);
             $message = 'Student added successfully.';
         }
+
+        $oom = new OthersOptionsModel();
+        $uid = session()->get('user_id');
+        if (!empty($data['suffix'])) $oom->saveOption('suffix', $data['suffix'], $uid);
+        $rawJhs = trim((string) $this->request->getPost('junior_high_school'));
+        $rawShs = trim((string) $this->request->getPost('preferred_senior_high_school'));
+        if ($rawJhs !== '') $oom->saveOption('jhs', strtoupper($rawJhs), $uid);
+        if ($rawShs !== '') $oom->saveOption('shs', strtoupper($rawShs), $uid);
 
         return $this->response->setJSON([
             'status' => 'success',
@@ -298,7 +307,7 @@ class StudentController extends BaseController
             'first_name'                   => 'required|max_length[100]',
             'middle_name'                  => 'permit_empty|max_length[100]',
             'last_name'                    => 'required|max_length[100]',
-            'suffix'                       => 'permit_empty|in_list[JR.,SR.,II,III,IV]',
+            'suffix'                       => 'permit_empty|max_length[50]',
             'rank_no'                      => 'required|decimal|greater_than[0]|less_than_equal_to[999999]',
             'gwa'                          => 'required|decimal|greater_than_equal_to[0]|less_than_equal_to[100]',
             'gender'                       => 'permit_empty|in_list[MALE,FEMALE]',
@@ -335,7 +344,7 @@ class StudentController extends BaseController
             'preferred_senior_high_school' => (new SchoolOptionModel())->resolveSchoolId('SHS', $this->request->getPost('preferred_senior_high_school'), true),
             'contact_number'               => $this->cleanText($this->request->getPost('contact_number')),
             'remarks_status'               => $remarksStatus,
-            'other_remarks'                 => $remarksStatus === 'OTHERS' ? $otherRemarks : null,
+            'other_remarks'                 => in_array($remarksStatus, ['OTHERS', 'INCOMPLETE'], true) ? $otherRemarks : null,
             // 'eligibility_status'           => $this->request->getPost('eligibility_status') ?: 'eligible',
             'voucher_status'               => $existingVoucherStatus !== '' ? $existingVoucherStatus : 'not_generated',
         ];

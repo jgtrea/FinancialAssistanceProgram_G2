@@ -349,6 +349,62 @@ document.addEventListener("DOMContentLoaded", function () {
   initAlertDismiss();
 });
 
+/* ── "Others" select pattern helpers ────────────────────────────────────── */
+// Selects that support a custom-value "Others" option carry data-field-name="fieldname".
+// When value="__OTHER__", the name attr swaps to the text input so FormData
+// submits the typed value under the original field name.
+
+window.initOtherInput = function (selectId, wrapperId, inputId) {
+  var sel  = document.getElementById(selectId);
+  var wrap = document.getElementById(wrapperId);
+  var inp  = document.getElementById(inputId);
+  if (!sel || !wrap || !inp) return;
+  var fieldName = sel.dataset.fieldName || '';
+
+  function toggle() {
+    var isOther = sel.value === '__OTHER__';
+    wrap.style.display = isOther ? '' : 'none';
+    if (isOther) {
+      if (fieldName) { sel.removeAttribute('name'); inp.name = fieldName; }
+      setTimeout(function () { inp.focus(); }, 0);
+    } else {
+      if (fieldName) { sel.name = fieldName; inp.removeAttribute('name'); }
+      inp.value = '';
+    }
+  }
+
+  sel.addEventListener('change', toggle);
+  if (window.jQuery) jQuery(sel).on('change.select2', toggle);
+};
+
+window.applySelectOrOther = function (selectId, wrapperId, inputId, value) {
+  var sel  = document.getElementById(selectId);
+  var wrap = document.getElementById(wrapperId);
+  var inp  = document.getElementById(inputId);
+  if (!sel) return;
+  var fieldName = sel.dataset.fieldName || '';
+  var val = value || '';
+  var hasOpt = val === '' || Array.from(sel.options).some(function (o) {
+    return o.value === val && o.value !== '__OTHER__';
+  });
+  if (val && !hasOpt) {
+    sel.value = '__OTHER__';
+    if (wrap) wrap.style.display = '';
+    if (inp && fieldName) { inp.name = fieldName; inp.value = val; }
+    if (fieldName) sel.removeAttribute('name');
+  } else {
+    sel.value = val;
+    if (wrap) wrap.style.display = 'none';
+    if (inp) { inp.removeAttribute('name'); inp.value = ''; }
+    if (fieldName) sel.name = fieldName;
+  }
+  if (window.jQuery) jQuery(sel).trigger('change.select2');
+};
+
+window.resetOtherInput = function (selectId, wrapperId, inputId) {
+  window.applySelectOrOther(selectId, wrapperId, inputId, '');
+};
+
 // Allow Bootstrap dropdowns to overflow .vs-card (overflow:hidden) while open.
 document.addEventListener("show.bs.dropdown", function (e) {
   e.target.closest(".vs-card")?.classList.add("vs-card--dropdown-open");

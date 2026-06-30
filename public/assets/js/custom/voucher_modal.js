@@ -39,6 +39,10 @@ document.addEventListener("DOMContentLoaded", function () {
       var el = document.getElementById(id);
       snap[id] = el ? el.value : "";
     });
+    ["vmSuffixOther", "vmJuniorHsOther", "vmPreferredHsOther"].forEach(function (id) {
+      var el = document.getElementById(id);
+      snap[id] = el ? el.value : "";
+    });
     return JSON.stringify(snap);
   }
 
@@ -171,8 +175,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
   function vmToggleOtherRemarks() {
     var remarksEl = document.getElementById("vmRemarks");
-    var isOther =
-      remarksEl && String(remarksEl.value || "").toUpperCase() === "OTHERS";
+    var val = remarksEl ? String(remarksEl.value || "").toUpperCase() : "";
+    var isOther = val === "OTHERS" || val === "INCOMPLETE";
     if (vmOtherRemarksWrap)
       vmOtherRemarksWrap.style.display = isOther ? "" : "none";
     if (vmOtherRemarksInput) {
@@ -180,6 +184,7 @@ document.addEventListener("DOMContentLoaded", function () {
       vmOtherRemarksInput.disabled = !isOther;
       if (!isOther) vmOtherRemarksInput.value = "";
     }
+    if (typeof scanRequiredLabels === "function") scanRequiredLabels(voucherModal);
   }
 
   function vmSetFieldValue(el, value) {
@@ -261,10 +266,13 @@ document.addEventListener("DOMContentLoaded", function () {
     vmFieldIds.forEach(function (id) {
       vmSetFieldValue(document.getElementById(id), "");
     });
+    if (typeof resetOtherInput === "function") {
+      resetOtherInput("vmSuffix", "vmSuffixOtherWrap", "vmSuffixOther");
+      resetOtherInput("vmJuniorHs", "vmJuniorHsOtherWrap", "vmJuniorHsOther");
+      resetOtherInput("vmPreferredHs", "vmPreferredHsOtherWrap", "vmPreferredHsOther");
+    }
     var vmEvaluatedByRo = document.getElementById("vmEvaluatedByRo");
     if (vmEvaluatedByRo) vmEvaluatedByRo.textContent = "—";
-    // document.getElementById('vmEligibility').value = '';
-    // vmUpdateRemarksOptions('');
     if (vmLastGeneratedByEl) vmLastGeneratedByEl.textContent = "-";
     if (vmLastGeneratedAtEl) vmLastGeneratedAtEl.textContent = "";
     if (vmGenerationHistoryDetails) vmGenerationHistoryDetails.open = false;
@@ -274,19 +282,18 @@ document.addEventListener("DOMContentLoaded", function () {
 
   function vmPopulateFields(student) {
     document.getElementById("vmStudentId").value = student.student_id || "";
-    /* Set eligibility first so remarks options update correctly before remarks value is set.
-    var eligEl = document.getElementById('vmEligibility');
-    if (eligEl) {
-      vmSetFieldValue(eligEl, student.eligibility_status || '');
-      vmUpdateRemarksOptions(eligEl.value);
-    }
-    */
     vmFieldIds.forEach(function (id) {
-      // if (id === 'vmEligibility') return; // already handled above
+      if (id === "vmSuffix") return; // handled below via applySelectOrOther
       var el = document.getElementById(id);
       if (!el) return;
       vmSetFieldValue(el, student[vmFieldToName[id]]);
     });
+    if (typeof applySelectOrOther === "function") {
+      applySelectOrOther("vmSuffix", "vmSuffixOtherWrap", "vmSuffixOther", student.suffix || "");
+    } else {
+      var sfxEl = document.getElementById("vmSuffix");
+      if (sfxEl) vmSetFieldValue(sfxEl, student.suffix || "");
+    }
     var vmEvaluatedByRo = document.getElementById("vmEvaluatedByRo");
     if (vmEvaluatedByRo)
       vmEvaluatedByRo.textContent = student.evaluated_by || "—";
@@ -377,6 +384,16 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   }
 
+  function _appendOthersOption(sel) {
+    if (!sel) return;
+    if (!Array.from(sel.options).some(function (o) { return o.value === "__OTHER__"; })) {
+      var opt = document.createElement("option");
+      opt.value = "__OTHER__";
+      opt.textContent = "OTHERS";
+      sel.appendChild(opt);
+    }
+  }
+
   function loadSchoolOptions(selectedJhs, selectedShs) {
     var jhsSel = document.getElementById("vmJuniorHs");
     var shsSel = document.getElementById("vmPreferredHs");
@@ -398,12 +415,14 @@ document.addEventListener("DOMContentLoaded", function () {
           Array.isArray(data.shs) ? data.shs : [],
           selectedShs || "",
         );
+        _appendOthersOption(jhsSel);
+        _appendOthersOption(shsSel);
         initOrRefreshSelect2(jhsSel);
         initOrRefreshSelect2(shsSel);
       })
       .catch(function () {
-        // Even if the AJAX fails, keep Select2 active on whatever the server
-        // pre-rendered so the user can still type a custom value.
+        _appendOthersOption(jhsSel);
+        _appendOthersOption(shsSel);
         initOrRefreshSelect2(jhsSel);
         initOrRefreshSelect2(shsSel);
       });
@@ -414,6 +433,11 @@ document.addEventListener("DOMContentLoaded", function () {
   function initModalExtraSelects() {
     if (typeof window.initVsSelect2 === "function") {
       window.initVsSelect2(voucherModal);
+    }
+    if (typeof initOtherInput === "function") {
+      initOtherInput("vmSuffix",     "vmSuffixOtherWrap",     "vmSuffixOther");
+      initOtherInput("vmJuniorHs",   "vmJuniorHsOtherWrap",   "vmJuniorHsOther");
+      initOtherInput("vmPreferredHs","vmPreferredHsOtherWrap","vmPreferredHsOther");
     }
   }
 

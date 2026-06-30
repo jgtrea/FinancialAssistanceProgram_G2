@@ -3,6 +3,7 @@
 namespace App\Controllers;
 
 use App\Models\SignatoryModel;
+use App\Models\OthersOptionsModel;
 
 class SignatoryController extends BaseController
 {
@@ -106,12 +107,12 @@ class SignatoryController extends BaseController
 
         $validation = \Config\Services::validation();
         $validation->setRules([
-            'prefix'         => 'permit_empty|in_list[DR.,ENGR.,HON.,MR.,MRS.,MS.,PROF.]',
+            'prefix'         => 'permit_empty|max_length[50]',
             'first_name'     => 'required|max_length[100]',
             'middle_name'    => 'permit_empty|max_length[100]',
             'last_name'      => 'required|max_length[100]',
-            'suffix'         => 'permit_empty|in_list[JR.,SR.,II,III,IV,V]',
-            'degree'         => 'permit_empty|in_list[None,MPA,BSc,BA,Master,MSc,MA,MBA,Doctorate,PhD,MD,JD,LLB,DDS,EdD,Other]',
+            'suffix'         => 'permit_empty|max_length[50]',
+            'degree'         => 'permit_empty|max_length[100]',
             'degree_other'   => 'permit_empty|max_length[100]',
             'position_title' => 'required|max_length[200]',
             'is_active'      => 'permit_empty|in_list[0,1]',
@@ -125,14 +126,6 @@ class SignatoryController extends BaseController
                 $isAjax,
                 $errors
             );
-        }
-
-        if (!in_array($prefix, self::PREFIX_OPTIONS, true)) {
-            return $this->signatorySaveError('Please select a valid prefix.', $id, $isAjax);
-        }
-
-        if (!in_array($suffix, self::SUFFIX_OPTIONS, true)) {
-            return $this->signatorySaveError('Please select a valid suffix.', $id, $isAjax);
         }
 
         $degree = trim((string) $this->request->getPost('degree')) ?: 'None';
@@ -228,6 +221,11 @@ class SignatoryController extends BaseController
         } elseif ($removeSignature) {
             $data['signature_image'] = null;
         }
+
+        $oom = new OthersOptionsModel();
+        if ($prefix !== '') $oom->saveOption('prefix', $prefix, $userId);
+        if ($suffix !== '') $oom->saveOption('suffix', $suffix, $userId);
+        if (!in_array($degree, ['None', ''], true)) $oom->saveOption('degree', $degree, $userId);
 
         if ($id) {
             $signatoryModel->update($id, $data);

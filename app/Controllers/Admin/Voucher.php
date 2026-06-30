@@ -6,6 +6,7 @@ use App\Libraries\VoucherPdf;
 use App\Models\ArchiveModel;
 use App\Models\SchoolOptionModel;
 use App\Models\VoucherModel;
+use App\Models\OthersOptionsModel;
 use CodeIgniter\Controller;
 
 class Voucher extends Controller
@@ -43,7 +44,7 @@ class Voucher extends Controller
             'first_name'                   => 'required|max_length[100]',
             'middle_name'                  => 'permit_empty|max_length[100]',
             'last_name'                    => 'required|max_length[100]',
-            'suffix'                       => 'permit_empty|in_list[JR.,SR.,II,III,IV]',
+            'suffix'                       => 'permit_empty|max_length[50]',
             'rank_no'                      => 'permit_empty|decimal|greater_than[0]|less_than_equal_to[999999]',
             'gwa'                          => 'permit_empty|decimal|greater_than_equal_to[0]|less_than_equal_to[100]',
             'gender'                       => 'permit_empty|in_list[MALE,FEMALE]',
@@ -84,7 +85,7 @@ class Voucher extends Controller
             'preferred_senior_high_school' => $this->schoolOptionModel->resolveSchoolId('SHS', $this->request->getPost('preferred_senior_high_school'), false),
             'contact_number'               => $this->cleanText($this->request->getPost('contact_number')),
             'remarks_status'               => strtoupper($this->cleanText($this->request->getPost('remarks_status'))),
-            'other_remarks'                 => strtoupper($this->cleanText($this->request->getPost('remarks_status'))) === 'OTHERS'
+            'other_remarks'                 => in_array(strtoupper($this->cleanText($this->request->getPost('remarks_status'))), ['OTHERS', 'INCOMPLETE'], true)
                 ? $this->cleanText($this->request->getPost('other_remarks'))
                 : null,
             // 'eligibility_status'           => $this->request->getPost('eligibility_status') ?: 'eligible',
@@ -543,9 +544,16 @@ class Voucher extends Controller
         $data = $this->getStudentPayload();
         $this->voucherModel->update($id, $data);
 
+        $oom = new OthersOptionsModel();
+        $uid = $this->getCurrentUserId();
+        if (!empty($data['suffix'])) $oom->saveOption('suffix', $data['suffix'], $uid);
+        $rawJhs = trim((string) $this->request->getPost('junior_high_school'));
+        $rawShs = trim((string) $this->request->getPost('preferred_senior_high_school'));
+        if ($rawJhs !== '') $oom->saveOption('jhs', strtoupper($rawJhs), $uid);
+        if ($rawShs !== '') $oom->saveOption('shs', strtoupper($rawShs), $uid);
+
         $name = trim($data['first_name'] . ' ' . $data['last_name']);
-        log_action($this->getCurrentUserId(), 'UPDATE_STUDENT',
-            "Updated student {$name}", $id);
+        log_action($uid, 'UPDATE_STUDENT', "Updated student {$name}", $id);
 
         return redirect()->to(site_url('admin/students'))->with('message', 'Student voucher updated successfully.');
     }

@@ -168,6 +168,8 @@ document.addEventListener('vs:modals:ready', function () {
             var el = document.getElementById(id);
             snap[id] = el ? el.value : '';
         });
+        var sfxOther = document.getElementById('umSuffixOther');
+        snap['umSuffixOther'] = sfxOther ? sfxOther.value : '';
         return JSON.stringify(snap);
     }
     var umPasswordLabel = document.getElementById('umPasswordLabel');
@@ -193,6 +195,7 @@ document.addEventListener('vs:modals:ready', function () {
 
     function umInitSelects() {
         if (typeof window.initVsSelect2 === 'function') window.initVsSelect2(userModal);
+        if (typeof initOtherInput === 'function') initOtherInput('umSuffix', 'umSuffixOtherWrap', 'umSuffixOther');
     }
 
     function umRefreshSelects() {
@@ -209,15 +212,19 @@ document.addEventListener('vs:modals:ready', function () {
     }
 
     function umPopulate(user) {
-        document.getElementById('umUserId').value    = user.user_id    || '';
+        document.getElementById('umUserId').value     = user.user_id    || '';
         document.getElementById('umFirstName').value  = user.first_name  || '';
         document.getElementById('umMiddleName').value = user.middle_name || '';
         document.getElementById('umLastName').value   = user.last_name   || '';
         document.getElementById('umUsername').value   = user.username    || '';
         document.getElementById('umEmail').value      = user.email       || '';
         document.getElementById('umRole').value       = user.role        || 'user';
-        var umSuffixEl = document.getElementById('umSuffix');
-        if (umSuffixEl) { umSuffixEl.value = user.suffix || ''; }
+        if (typeof applySelectOrOther === 'function') {
+            applySelectOrOther('umSuffix', 'umSuffixOtherWrap', 'umSuffixOther', user.suffix || '');
+        } else {
+            var umSuffixEl = document.getElementById('umSuffix');
+            if (umSuffixEl) umSuffixEl.value = user.suffix || '';
+        }
         umPassword.value = '';
         umRefreshSelects();
     }

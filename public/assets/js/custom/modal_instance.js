@@ -247,10 +247,14 @@ var ModalInstance = (function () {
                       </div>
                       <div class="col-4">
                         <label class="form-label" for="vmSuffix">Suffix</label>
-                        <select id="vmSuffix" name="suffix" class="vs-input js-school-select vs-uppercase" data-placeholder="Select Suffix" data-no-search="1">
-                          <option></option><option value="JR.">JR.</option><option value="SR.">SR.</option>
+                        <select id="vmSuffix" name="suffix" data-field-name="suffix" class="vs-input js-school-select vs-uppercase" data-placeholder="Select Suffix" data-no-search="1">
+                          <option value="">None</option><option value="JR.">JR.</option><option value="SR.">SR.</option>
                           <option value="II">II</option><option value="III">III</option><option value="IV">IV</option>
+                          <option value="__OTHER__">OTHERS</option>
                         </select>
+                        <div id="vmSuffixOtherWrap" style="display:none" class="mt-2">
+                          <input id="vmSuffixOther" type="text" class="vs-input vs-uppercase" placeholder="Other suffix">
+                        </div>
                       </div>
                       <div class="col-4">
                         <label class="form-label" for="vmGender">Sex</label>
@@ -273,11 +277,17 @@ var ModalInstance = (function () {
                       <div class="col-4"></div>
                       <div class="col-12">
                         <label class="form-label required" for="vmJuniorHs">Junior High School</label>
-                        <select id="vmJuniorHs" name="junior_high_school" class="vs-input js-school-select vs-uppercase" data-placeholder="Select Junior High School" required><option></option></select>
+                        <select id="vmJuniorHs" name="junior_high_school" data-field-name="junior_high_school" class="vs-input js-school-select vs-uppercase" data-placeholder="Select Junior High School" required><option value="">None</option></select>
+                        <div id="vmJuniorHsOtherWrap" style="display:none" class="mt-2">
+                          <input id="vmJuniorHsOther" type="text" class="vs-input vs-uppercase" placeholder="Other junior high school">
+                        </div>
                       </div>
                       <div class="col-12">
                         <label class="form-label required" for="vmPreferredHs">Preferred Senior High School</label>
-                        <select id="vmPreferredHs" name="preferred_senior_high_school" class="vs-input js-school-select vs-uppercase" data-placeholder="Select Preferred Senior High School" required><option></option></select>
+                        <select id="vmPreferredHs" name="preferred_senior_high_school" data-field-name="preferred_senior_high_school" class="vs-input js-school-select vs-uppercase" data-placeholder="Select Preferred Senior High School" required><option value="">None</option></select>
+                        <div id="vmPreferredHsOtherWrap" style="display:none" class="mt-2">
+                          <input id="vmPreferredHsOther" type="text" class="vs-input vs-uppercase" placeholder="Other senior high school">
+                        </div>
                       </div>
                       <div class="col-4">
                         <label class="form-label required" for="vmRemarks">Remarks</label>
@@ -337,9 +347,13 @@ var ModalInstance = (function () {
                       </div>
                       <div class="col-6">
                         <label class="form-label" for="umSuffix">Suffix</label>
-                        <select id="umSuffix" name="suffix" class="vs-input js-filter-select" data-placeholder="Select Suffix" data-no-search="1">
-                          <option></option><option value="JR.">JR.</option><option value="SR.">SR.</option><option value="II">II</option><option value="III">III</option><option value="IV">IV</option><option value="V">V</option>
+                        <select id="umSuffix" name="suffix" data-field-name="suffix" class="vs-input js-filter-select" data-placeholder="Select Suffix" data-no-search="1">
+                          <option value="">None</option><option value="JR.">JR.</option><option value="SR.">SR.</option><option value="II">II</option><option value="III">III</option><option value="IV">IV</option><option value="V">V</option>
+                          <option value="__OTHER__">OTHERS</option>
                         </select>
+                        <div id="umSuffixOtherWrap" style="display:none" class="mt-2">
+                          <input id="umSuffixOther" type="text" class="vs-input vs-uppercase" placeholder="Other suffix">
+                        </div>
                       </div>
                       <div class="col-6 ">
                         <label class="form-label required" for="umEmail">Email</label>
@@ -734,9 +748,12 @@ var ModalInstance = (function () {
                     <div class="row g-3">                    
                       <div class="col-6">
                         <label class="form-label" for="smPrefix">Prefix</label>
-                        <select id="smPrefix" name="prefix" class="vs-input js-filter-select" data-placeholder="Select Prefix" data-no-search="1">
-                          <option></option>${_staticOpts(prefixOpts)}
+                        <select id="smPrefix" name="prefix" data-field-name="prefix" class="vs-input js-filter-select" data-placeholder="Select Prefix" data-no-search="1">
+                          <option value="">None</option>${_staticOpts(prefixOpts)}<option value="__OTHER__">OTHERS</option>
                         </select>
+                        <div id="smPrefixOtherWrap" style="display:none" class="mt-2">
+                          <input id="smPrefixOther" type="text" class="vs-input vs-uppercase" placeholder="Other prefix">
+                        </div>
                       </div>
                       <div class="col-6"></div>
                       <div class="col-6">
@@ -753,16 +770,21 @@ var ModalInstance = (function () {
                       </div>                      
                       <div class="col-6">
                         <label class="form-label" for="smSuffix">Suffix</label>
-                        <select id="smSuffix" name="suffix" class="vs-input js-filter-select" data-placeholder="Select Suffix" data-no-search="1">
-                          <option></option>${_staticOpts(suffixOpts)}
+                        <select id="smSuffix" name="suffix" data-field-name="suffix" class="vs-input js-filter-select" data-placeholder="Select Suffix" data-no-search="1">
+                          <option value="">None</option>${_staticOpts(suffixOpts)}<option value="__OTHER__">OTHERS</option>
                         </select>
+                        <div id="smSuffixOtherWrap" style="display:none" class="mt-2">
+                          <input id="smSuffixOther" type="text" class="vs-input vs-uppercase" placeholder="Other suffix">
+                        </div>
                       </div>
                       <div class="col-6">
                         <label class="form-label" for="smDegree">Degree</label>
-                        <select id="smDegree" name="degree" class="vs-input js-filter-select" data-placeholder="Select Degree">
-                          <option></option>${_staticOpts(degreeOpts)}
+                        <select id="smDegree" name="degree" data-field-name="degree" class="vs-input js-filter-select" data-placeholder="Select Degree">
+                          <option value="">None</option>${_staticOpts(degreeOpts)}<option value="__OTHER__">OTHERS</option>
                         </select>
-                        <input id="smDegreeOther" name="degree_other" type="text" class="vs-input mt-2" placeholder="Specify degree" style="display:none">
+                        <div id="smDegreeOtherWrap" style="display:none" class="mt-2">
+                          <input id="smDegreeOther" type="text" class="vs-input vs-uppercase" placeholder="Other degree">
+                        </div>
                       </div>
                       <div class="col-6">
                         <label class="form-label required" for="smPositionTitle">Position Title</label>
@@ -872,9 +894,13 @@ var ModalInstance = (function () {
                                                 </div>
                                                 <div class="col-6">
                                                     <label class="form-label fw-semibold small text-uppercase" for="amSuffix">Suffix</label>
-                                                    <select id="amSuffix" name="suffix" class="form-control js-filter-select" data-placeholder="Select Suffix" data-no-search="1">
-                                                        <option></option><option value="JR.">JR.</option><option value="SR.">SR.</option><option value="II">II</option><option value="III">III</option><option value="IV">IV</option><option value="V">V</option>
+                                                    <select id="amSuffix" name="suffix" data-field-name="suffix" class="form-control js-filter-select" data-placeholder="Select Suffix" data-no-search="1">
+                                                        <option value="">None</option><option value="JR.">JR.</option><option value="SR.">SR.</option><option value="II">II</option><option value="III">III</option><option value="IV">IV</option><option value="V">V</option>
+                                                        <option value="__OTHER__">OTHERS</option>
                                                     </select>
+                                                    <div id="amSuffixOtherWrap" style="display:none" class="mt-2">
+                                                        <input id="amSuffixOther" type="text" class="form-control vs-uppercase" placeholder="Other suffix">
+                                                    </div>
                                                 </div>
                                                 <div id="amRole" style="display:none"></div>
                                             </div>
@@ -1159,13 +1185,15 @@ var ModalInstance = (function () {
     var _amSnapshot = null;
 
     function _amSnapshotForm() {
+      var sfx = (document.getElementById("amSuffix") || {}).value || "";
+      var sfxOther = (document.getElementById("amSuffixOther") || {}).value || "";
       return JSON.stringify({
         username:    (document.getElementById("amUsername")   || {}).value || "",
         email:       (document.getElementById("amEmail")      || {}).value || "",
         first_name:  (document.getElementById("amFirstName")  || {}).value || "",
         middle_name: (document.getElementById("amMiddleName") || {}).value || "",
         last_name:   (document.getElementById("amLastName")   || {}).value || "",
-        suffix:      (document.getElementById("amSuffix")     || {}).value || "",
+        suffix:      sfx === "__OTHER__" ? "__OTHER__:" + sfxOther : sfx,
       });
     }
 
@@ -1188,10 +1216,14 @@ var ModalInstance = (function () {
           document.getElementById("amFirstName").value = d.first_name || "";
           document.getElementById("amMiddleName").value = d.middle_name || "";
           document.getElementById("amLastName").value = d.last_name || "";
-          var amSuffixEl = document.getElementById("amSuffix");
-          if (amSuffixEl) {
-            amSuffixEl.value = d.suffix || "";
-            if (window.jQuery) jQuery(amSuffixEl).trigger("change.select2");
+          if (typeof applySelectOrOther === 'function') {
+            applySelectOrOther('amSuffix', 'amSuffixOtherWrap', 'amSuffixOther', d.suffix || '');
+          } else {
+            var amSuffixEl = document.getElementById("amSuffix");
+            if (amSuffixEl) {
+              amSuffixEl.value = d.suffix || "";
+              if (window.jQuery) jQuery(amSuffixEl).trigger("change.select2");
+            }
           }
           setTimeout(function () { _amSnapshot = _amSnapshotForm(); }, 100);
         });
@@ -1291,7 +1323,10 @@ var ModalInstance = (function () {
     _syncFilterInputs();
     _initOtherRemarksFilters();
 
-    if (_rendered.accountModal) _initAccountModal();
+    if (_rendered.accountModal) {
+      _initAccountModal();
+      if (typeof initOtherInput === 'function') initOtherInput('amSuffix', 'amSuffixOtherWrap', 'amSuffixOther');
+    }
     if (window.initVsSelect2) window.initVsSelect2(document.body);
     document.dispatchEvent(new CustomEvent("vs:modals:ready"));
   }
