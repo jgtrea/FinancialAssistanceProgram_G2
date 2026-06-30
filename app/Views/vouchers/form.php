@@ -16,7 +16,7 @@
     <h4 class="vs-page-title"><?= esc($title) ?></h4>
     <p class="vs-page-sub">Enter Student And Voucher Details.</p>
   </div>
-  <a href="<?= site_url($prefix . '/students') ?>" class="vs-btn vs-btn-outline">Back to Vouchers</a>
+  <a href="<?= site_url($prefix . '/students') ?>" class="btn btn-secondary">Back to Vouchers</a>
 </div>
 
 <div class="vs-card">
@@ -181,8 +181,8 @@
       </div>
 
       <div class="mt-4 d-flex gap-2">
-        <button type="submit" class="vs-btn vs-btn-primary"><?= !empty($voucher['student_id'] ?? null) ? 'Update' : esc($title) ?></button>
-        <a href="<?= site_url($prefix . '/students') ?>" class="vs-btn vs-btn-outline">Cancel</a>
+        <button type="submit" class="btn btn-primary"><?= !empty($voucher['student_id'] ?? null) ? 'Update' : esc($title) ?></button>
+        <a href="<?= site_url($prefix . '/students') ?>" class="btn btn-secondary">Cancel</a>
       </div>
     </form>
   </div>

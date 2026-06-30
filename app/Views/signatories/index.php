@@ -28,7 +28,7 @@
     <!-- Action bar — shown when rows are checked -->
     <div class="vs-action-bar" id="sigActionBar" style="display:none">
         <span class="vs-action-bar-count"><span id="sigSelectedCount">0</span> selected</span>
-        <button class="vs-btn vs-btn-danger" id="btnArchiveSelected">
+        <button class="btn btn-danger" id="btnArchiveSelected">
             <?= asset_icon('archive') ?>
             Deactivate
         </button>
@@ -202,6 +202,18 @@ document.addEventListener('vs:modals:ready', function () {
     var sigSaveUrl      = '<?= base_url('signatories/save') ?>';
     var sigFetchUrl     = '<?= base_url('signatories/json') ?>';
 
+    var _smSnapshot  = null;
+    var _smEditingId = null;
+
+    function smSnapshotForm() {
+        var snap = {};
+        ['smPrefix','smFirstName','smMiddleName','smLastName','smSuffix','smDegree','smPositionTitle'].forEach(function (id) {
+            var el = document.getElementById(id);
+            snap[id] = el ? el.value : '';
+        });
+        return JSON.stringify(snap);
+    }
+
     var smFieldIds = ['smPrefix', 'smFirstName', 'smMiddleName', 'smLastName', 'smSuffix', 'smDegree', 'smPositionTitle'];
     var smFieldToName = {
         smPrefix:        'prefix',
@@ -219,7 +231,7 @@ document.addEventListener('vs:modals:ready', function () {
 
     function smRefreshSelects() {
         if (window.jQuery) {
-            $('#smPrefix, #smSuffix, #smDegree').trigger('change.select2');
+            $('#smPrefix, #smSuffix, #smDegree, #smPositionTitle').trigger('change.select2');
         }
     }
 
@@ -230,18 +242,16 @@ document.addEventListener('vs:modals:ready', function () {
     }
 
     function smShowAlert(msg, type, errors) {
-        var html = '<div class="vs-alert vs-alert-' + (type || 'error') + ' mb-3">' + escapeHtml(msg);
+        var toastMsg = escapeHtml(msg);
         if (errors && Object.keys(errors).length) {
-            html += '<ul class="mb-0 mt-2">';
-            Object.keys(errors).forEach(function (field) {
-                html += '<li><strong>' + escapeHtml(field) + ':</strong> ' + escapeHtml(errors[field]) + '</li>';
+            var fieldMsgs = Object.keys(errors).map(function (field) {
+                return escapeHtml(field) + ': ' + escapeHtml(errors[field]);
             });
-            html += '</ul>';
+            toastMsg += ' — ' + fieldMsgs.join('; ');
         }
-        html += '<button type="button" class="vs-alert-dismiss" onclick="this.closest(\'.vs-alert\').remove()">×</button></div>';
-        sigModalAlert.innerHTML = html;
+        showToast(toastMsg, type || 'error');
     }
-    function smClearAlert() { sigModalAlert.innerHTML = ''; }
+    function smClearAlert() {}
 
     function smResetForm() {
         sigModalForm.reset();
@@ -260,7 +270,8 @@ document.addEventListener('vs:modals:ready', function () {
             var el = document.getElementById(id);
             if (!el) return;
             var val = sig[smFieldToName[id]];
-            el.value = (val === null || val === undefined) ? '' : val;
+            val = (val === null || val === undefined) ? '' : val;
+            el.value = (id === 'smPositionTitle') ? String(val).toUpperCase() : val;
         });
 
         applyDegreeValue(sig.degree || '');
@@ -313,14 +324,18 @@ document.addEventListener('vs:modals:ready', function () {
         smClearAlert();
         smInitSelects();
         smResetForm();
+        _smSnapshot  = null;
+        _smEditingId = null;
 
         if (mode === 'add') {
             sigModalTitle.textContent = 'Add Signatory';
             smSubmitText.textContent = 'Save';
             sigModal.style.display = 'flex';
+            if (typeof scanRequiredLabels === 'function') scanRequiredLabels(sigModal);
             return;
         }
 
+        _smEditingId = sigId;
         sigModalTitle.textContent = 'Edit Signatory';
         smSubmitText.textContent = 'Update';
         sigModal.style.display = 'flex';
@@ -333,6 +348,10 @@ document.addEventListener('vs:modals:ready', function () {
                     return;
                 }
                 smPopulate(data.signatory);
+                setTimeout(function () {
+                    _smSnapshot = smSnapshotForm();
+                    if (typeof scanRequiredLabels === 'function') scanRequiredLabels(sigModal);
+                }, 100);
             })
             .catch(function () {
                 smShowAlert('Failed to load signatory.', 'error');
@@ -360,6 +379,14 @@ document.addEventListener('vs:modals:ready', function () {
 
         if (!sigModalForm.checkValidity()) {
             sigModalForm.reportValidity();
+            return;
+        }
+
+        var sigFileInput = document.getElementById('smSignatureImage');
+        var hasNewFile = sigFileInput && sigFileInput.files && sigFileInput.files.length > 0;
+        if (_smSnapshot !== null && _smEditingId && smSnapshotForm() === _smSnapshot && !hasNewFile) {
+            smClose();
+            showToast('No changes were made.', 'info');
             return;
         }
 

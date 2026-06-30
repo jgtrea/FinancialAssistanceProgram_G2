@@ -6,7 +6,7 @@
         <h4 class="vs-page-title"><?= isset($user) ? 'Edit User' : 'Add User' ?></h4>
         <p class="vs-page-sub">Manage Login Details And Account Access.</p>
     </div>
-    <a href="<?= base_url('admin/user_management') ?>" class="vs-btn vs-btn-outline">Back to users</a>
+    <a href="<?= base_url('admin/user_management') ?>" class="btn btn-secondary">Back to users</a>
 </div>
 
 <div id="alertBox"></div>
@@ -48,10 +48,10 @@
     </div>
 
     <div class="mt-4 d-flex gap-2">
-        <button type="submit" class="vs-btn vs-btn-primary">
+        <button type="submit" class="btn btn-primary">
             <?= isset($user) ? 'Update User' : 'Save User' ?>
         </button>
-        <a href="<?= base_url('admin/user_management') ?>" class="vs-btn vs-btn-outline">Cancel</a>
+        <a href="<?= base_url('admin/user_management') ?>" class="btn btn-secondary">Cancel</a>
     </div>
 </form>
 

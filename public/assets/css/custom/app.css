@@ -666,9 +666,13 @@
   color: #dc3545;
   font-weight: 700;
 }
-.form-label.required.vm-filled::after {
-  display: none;
-}
+.form-label.required.vm-filled::after { display: none; }
+
+/* ── Modal footer btn normalization ─────────────────────────────────────── */
+.modal-footer .btn { min-width: 80px; padding: 6px 16px; display: inline-flex; align-items: center; justify-content: center; gap: 4px; }
+
+/* ── Position title always uppercase in table ────────────────────────────── */
+.sig-position-value { text-transform: uppercase; }
 
 /* ── btn-warning white text ─────────────────────────────────────────────── */
 .btn-warning,

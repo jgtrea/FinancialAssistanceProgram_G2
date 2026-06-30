@@ -9,7 +9,7 @@
     <h4 class="vs-page-title">Voucher Details</h4>
     <p class="vs-page-sub">Review The Student Voucher Data.</p>
   </div>
-  <a href="<?= site_url($prefix . '/students') ?>" class="vs-btn vs-btn-outline">Back to Vouchers</a>
+  <a href="<?= site_url($prefix . '/students') ?>" class="btn btn-secondary">Back to Vouchers</a>
 </div>
 
 <div class="vs-card">
@@ -89,8 +89,8 @@
     </div>
 
     <div class="mt-4 d-flex gap-2">
-      <a href="<?= site_url($prefix . '/students/edit/' . $voucher['student_id']) ?>" class="vs-btn vs-btn-primary">Edit</a>
-      <a href="<?= site_url($prefix . '/students') ?>" class="vs-btn vs-btn-outline">Cancel</a>
+      <a href="<?= site_url($prefix . '/students/edit/' . $voucher['student_id']) ?>" class="btn btn-primary">Edit</a>
+      <a href="<?= site_url($prefix . '/students') ?>" class="btn btn-secondary">Cancel</a>
     </div>
   </div>
 </div>

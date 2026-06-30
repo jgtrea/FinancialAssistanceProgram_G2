@@ -21,14 +21,14 @@
 
   <div class="vs-action-bar" id="actionBar" style="display:none">
     <span class="vs-action-bar-count"><span id="selectedCount">0</span> selected</span>
-    <button class="vs-btn vs-btn-blue" id="btnGeneratePdf">
+    <button class="btn btn-primary" id="btnGeneratePdf">
       <?= asset_icon('voucher_add') ?>
       Generate
     </button>
-    <button type="button" class="vs-btn vs-btn-outline" id="btnOpenStatus">
+    <button type="button" class="btn btn-secondary" id="btnOpenStatus">
       Status
     </button>
-    <button type="button" class="vs-btn vs-btn-warning" id="btnOpenExport">
+    <button type="button" class="btn btn-warning" id="btnOpenExport">
       <?= asset_icon('export') ?>
       Export
     </button>

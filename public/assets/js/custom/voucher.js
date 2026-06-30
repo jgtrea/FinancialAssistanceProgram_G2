@@ -530,7 +530,7 @@ document.addEventListener("DOMContentLoaded", function () {
     // invocation's action onto the fresh node.
     var fresh = confirmBtn.cloneNode(false);
     fresh.id = "bulkAllConfirm";
-    fresh.className = opts.btnClass || "vs-btn vs-btn-primary";
+    fresh.className = opts.btnClass || "btn btn-primary";
     fresh.textContent = opts.confirmLabel || "Confirm";
     confirmBtn.parentNode.replaceChild(fresh, confirmBtn);
 
@@ -642,17 +642,20 @@ document.addEventListener("DOMContentLoaded", function () {
           toast.remove();
           // A referenced school is missing its acronym/name — block generation
           // and open that school's edit modal so it can be fixed, then retried.
-          if (
-            data.incomplete &&
-            data.edit_school_id &&
-            typeof window.vsOpenSchoolEdit === "function"
-          ) {
-            showAlert(
-              data.message ||
-                "A school needs its acronym/name before generating.",
-              "warning",
-            );
-            window.vsOpenSchoolEdit(data.edit_school_id);
+          if (data.incomplete && data.edit_school_id) {
+            if (typeof window.vsOpenSchoolEdit === "function") {
+              showAlert(
+                data.message ||
+                  "A school needs its acronym/name before generating.",
+                "warning",
+              );
+              window.vsOpenSchoolEdit(data.edit_school_id);
+            } else {
+              showToast(
+                "Missing school name or acronym — contact admin to update the school.",
+                "error",
+              );
+            }
             return;
           }
           showAlert(data.message || "PDF generation failed.", "error");
@@ -713,7 +716,7 @@ document.addEventListener("DOMContentLoaded", function () {
         if (data.skipped && data.skipped > 0) {
           showAlert(
             data.skipped +
-              " selected student(s) were skipped — inactive or missing a preferred senior high school.",
+              " selected student(s) were skipped. Missing school name — contact admin to update.",
             "warning",
           );
         }
@@ -770,7 +773,7 @@ document.addEventListener("DOMContentLoaded", function () {
         plain:
           "Print vouchers for " + selectedIds.size + " selected student(s)?",
         confirmLabel: "Print",
-        btnClass: "vs-btn vs-btn-success",
+        btnClass: "btn btn-success",
         onConfirm: doGeneratePdf,
       });
     });

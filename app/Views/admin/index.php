@@ -23,7 +23,7 @@
         <input type="text" name="q" class="form-control vs-advanced-search-input" placeholder="Enter keyword to search (name, email)" value="<?= esc((string) ($keyword ?? ''), 'attr') ?>">
     </div>
     <div class="col-6 col-lg-auto">
-        <select id="ufRole" name="role" class="js-filter-select" data-placeholder="Select Role" data-no-search="1" data-width="100%" style="min-width:120px">
+        <select id="ufRole" name="role" class="js-filter-select" data-placeholder="Select Level" data-no-search="1" data-width="100%" style="min-width:120px">
             <option value=""></option>
             <option value="admin" <?= ($filterRole ?? '') === 'admin' ? 'selected' : '' ?>>Admin</option>
             <option value="user"  <?= ($filterRole ?? '') === 'user'  ? 'selected' : '' ?>>User</option>
@@ -103,11 +103,11 @@
                                 <button type="button" class="vs-tbl-btn vs-tbl-btn-actions dropdown-toggle"
                                         data-bs-toggle="dropdown" data-bs-popper-config='{"strategy":"fixed"}' aria-expanded="false">Actions</button>
                                 <ul class="dropdown-menu dropdown-menu-end">
-                                    <li>
+                                    <li class="js-edit-li"<?= $isActive ? '' : ' style="display:none"' ?>>
                                         <button type="button" class="dropdown-item js-user-edit"
                                                 data-id="<?= $uid ?>">Edit</button>
                                     </li>
-                                    <li><hr class="dropdown-divider"></li>
+                                    <li class="js-edit-divider"<?= $isActive ? '' : ' style="display:none"' ?>><hr class="dropdown-divider"></li>
                                     <li>
                                         <button type="button"
                                                 class="dropdown-item js-user-toggle<?= $isActive ? ' text-danger' : '' ?>"
@@ -159,6 +159,17 @@ document.addEventListener('vs:modals:ready', function () {
     var btnAddUser      = document.getElementById('btnAddUser');
     var userSaveUrl     = '<?= base_url('admin/user_management/save') ?>';
     var userFetchUrl    = '<?= base_url('admin/user_management/json') ?>';
+    var _umSnapshot     = null;
+    var _umEditingId    = null;
+
+    function umSnapshotForm() {
+        var snap = {};
+        ['umFirstName','umMiddleName','umLastName','umSuffix','umEmail','umRole','umUsername'].forEach(function (id) {
+            var el = document.getElementById(id);
+            snap[id] = el ? el.value : '';
+        });
+        return JSON.stringify(snap);
+    }
     var umPasswordLabel = document.getElementById('umPasswordLabel');
     var umPassword      = document.getElementById('umPassword');
 
@@ -169,18 +180,16 @@ document.addEventListener('vs:modals:ready', function () {
     }
 
     function umShowAlert(msg, type, errors) {
-        var html = '<div class="vs-alert vs-alert-' + (type || 'error') + ' mb-3">' + escapeHtml(msg);
+        var toastMsg = escapeHtml(msg);
         if (errors && Object.keys(errors).length) {
-            html += '<ul class="mb-0 mt-2">';
-            Object.keys(errors).forEach(function (field) {
-                html += '<li><strong>' + escapeHtml(field) + ':</strong> ' + escapeHtml(errors[field]) + '</li>';
+            var fieldMsgs = Object.keys(errors).map(function (field) {
+                return escapeHtml(field) + ': ' + escapeHtml(errors[field]);
             });
-            html += '</ul>';
+            toastMsg += ' — ' + fieldMsgs.join('; ');
         }
-        html += '<button type="button" class="vs-alert-dismiss" onclick="this.closest(\'.vs-alert\').remove()">×</button></div>';
-        userModalAlert.innerHTML = html;
+        showToast(toastMsg, type || 'error');
     }
-    function umClearAlert() { userModalAlert.innerHTML = ''; }
+    function umClearAlert() {}
 
     function umInitSelects() {
         if (typeof window.initVsSelect2 === 'function') window.initVsSelect2(userModal);
@@ -229,6 +238,8 @@ document.addEventListener('vs:modals:ready', function () {
         umClearAlert();
         umInitSelects();
         umResetForm();
+        _umSnapshot = null;
+        _umEditingId = null;
 
         if (mode === 'add') {
             userModalTitle.textContent = 'Add User';
@@ -238,6 +249,7 @@ document.addEventListener('vs:modals:ready', function () {
             return;
         }
 
+        _umEditingId = userId;
         userModalTitle.textContent = 'Edit User';
         umSubmitText.textContent = 'Update';
         umSetPasswordMode(true);
@@ -251,6 +263,7 @@ document.addEventListener('vs:modals:ready', function () {
                     return;
                 }
                 umPopulate(data.user);
+                setTimeout(function () { _umSnapshot = umSnapshotForm(); }, 100);
             })
             .catch(function () {
                 umShowAlert('Failed to load user.', 'error');
@@ -278,6 +291,12 @@ document.addEventListener('vs:modals:ready', function () {
 
         if (!userModalForm.checkValidity()) {
             userModalForm.reportValidity();
+            return;
+        }
+
+        if (_umSnapshot !== null && _umEditingId && umSnapshotForm() === _umSnapshot && !umPassword.value) {
+            umClose();
+            showToast('No changes were made.', 'info');
             return;
         }
 
@@ -366,6 +385,10 @@ document.addEventListener('vs:modals:ready', function () {
                 row.setAttribute('data-active', nowActive ? '1' : '0');
                 if (nowActive) row.classList.remove('vs-row-archived');
                 else           row.classList.add('vs-row-archived');
+                var editLi      = row.querySelector('.js-edit-li');
+                var editDivider = row.querySelector('.js-edit-divider');
+                if (editLi)      editLi.style.display      = nowActive ? '' : 'none';
+                if (editDivider) editDivider.style.display = nowActive ? '' : 'none';
                 if (window.jQuery && $.fn.DataTable) {
                     var tbl = document.getElementById('userManagementTable');
                     if (tbl && $.fn.DataTable.isDataTable(tbl)) {

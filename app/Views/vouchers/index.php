@@ -70,9 +70,11 @@
           <button type="button" class="btn btn-success w-100" style="min-width:110px" id="btnGenerateAll">Print Voucher</button>
         </div>
 <?php else: ?>
+        <?php if ($role === 'admin'): ?>
         <div class="col">
           <button type="button" class="btn btn-warning w-100" style="min-width:90px" id="btnOpenImport">Import</button>
         </div>
+        <?php endif ?>
         <div class="col">
           <button type="button" class="btn btn-success w-100" style="min-width:110px" id="btnAddVoucher" data-mode="add">Add Student</button>
         </div>
@@ -682,7 +684,7 @@ document.addEventListener('vs:modals:ready', function () {
   function openBulkAllModal(action, count) {
     var titleMap = { activate: 'Activate All', deactivate: 'Deactivate All', archive: 'Archive All', generate: 'Generate Vouchers' };
     var verbMap  = { activate: 'activate', deactivate: 'deactivate', archive: 'archive', generate: 'generate vouchers for' };
-    var btnClass = action === 'archive' ? 'vs-btn vs-btn-danger' : (action === 'generate' ? 'vs-btn vs-btn-success' : 'vs-btn vs-btn-primary');
+    var btnClass = action === 'archive' ? 'btn btn-danger' : (action === 'generate' ? 'btn btn-success' : 'btn btn-primary');
 
     bulkAllTitle.textContent   = titleMap[action] || 'Confirm';
     bulkAllCount.textContent   = count;
@@ -804,10 +806,8 @@ document.addEventListener('vs:modals:ready', function () {
       .catch(function () { btnRestoreAllArchive.disabled = false; showInfo('An error occurred. Please try again.', 'Error'); });
   });
 
-  // ── School edit modal (reused from the schools page) ──────────────────────
-  // Generation is blocked when a referenced JHS/SHS is missing its acronym or
-  // name. The generate flow (voucher.js) calls window.vsOpenSchoolEdit(id) so
-  // the user can fix that school inline, then retry Generate.
+  <?php if ($role === 'admin'): ?>
+  // ── School edit modal (admin only) ───────────────────────────────────────
   var schoolJsonUrl = '<?= site_url($prefix . '/schools/json') ?>';
   var schoolSaveUrl = '<?= site_url($prefix . '/schools/save') ?>';
 
@@ -901,6 +901,7 @@ document.addEventListener('vs:modals:ready', function () {
         });
     });
   })();
+  <?php endif ?>
 });
 </script>
 

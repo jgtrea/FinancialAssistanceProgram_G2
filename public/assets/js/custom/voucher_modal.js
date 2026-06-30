@@ -31,6 +31,17 @@ document.addEventListener("DOMContentLoaded", function () {
   var vmOtherRemarksWrap = document.getElementById("vmOtherRemarksWrap");
   var vmOtherRemarksInput = document.getElementById("vmOtherRemarks");
 
+  var _vmSnapshot = null;
+
+  function vmSnapshotForm() {
+    var snap = {};
+    vmFieldIds.forEach(function (id) {
+      var el = document.getElementById(id);
+      snap[id] = el ? el.value : "";
+    });
+    return JSON.stringify(snap);
+  }
+
   var vmFieldIds = [
     "vmControlNo",
     "vmVoucherDate",
@@ -136,25 +147,14 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   function vmShowAlert(msg, type, errors) {
-    var html =
-      '<div class="vs-alert vs-alert-' +
-      (type || "error") +
-      ' mb-3">' +
-      escapeHtml(msg);
+    var toastMsg = escapeHtml(msg);
     if (errors && Object.keys(errors).length) {
-      html += '<ul class="mb-0 mt-2">';
-      Object.keys(errors).forEach(function (f) {
-        html +=
-          "<li><strong>" +
-          escapeHtml(f) +
-          ":</strong> " +
-          escapeHtml(errors[f]) +
-          "</li>";
+      var fieldMsgs = Object.keys(errors).map(function (f) {
+        return escapeHtml(f) + ": " + escapeHtml(errors[f]);
       });
-      html += "</ul>";
+      toastMsg += " — " + fieldMsgs.join("; ");
     }
-    html += "</div>";
-    voucherModalAlert.innerHTML = html;
+    showToast(toastMsg, type || "error");
   }
 
   function vmUpdateCsrfToken(token) {
@@ -166,7 +166,7 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   }
   function vmClearAlert() {
-    voucherModalAlert.innerHTML = "";
+    if (voucherModalAlert) voucherModalAlert.innerHTML = "";
   }
 
   function vmToggleOtherRemarks() {
@@ -419,6 +419,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
   function vmOpen(mode, studentId) {
     vmCurrentStudentId = studentId || null;
+    _vmSnapshot = null;
     voucherModal.classList.remove("vm-view-mode");
     vmClearAlert();
     vmClearFields();
@@ -457,6 +458,9 @@ document.addEventListener("DOMContentLoaded", function () {
         }
         vmPopulateFields(data.student);
         vmUpdateRequiredIndicators();
+        if (mode === "edit") {
+          setTimeout(function () { _vmSnapshot = vmSnapshotForm(); }, 100);
+        }
         if (mode === "view") {
           if (vmVoucherNoDisplay)
             vmVoucherNoDisplay.textContent = data.student.voucher_no || "—";
@@ -480,20 +484,9 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   function vmUpdateRequiredIndicators() {
-    if (!voucherModalForm) return;
-    voucherModalForm.querySelectorAll("[required]").forEach(function (field) {
-      var label = voucherModalForm.querySelector('label[for="' + field.id + '"]');
-      if (label) label.classList.toggle("vm-filled", field.value.trim() !== "");
-    });
+    if (typeof scanRequiredLabels === 'function') scanRequiredLabels(voucherModal);
   }
-
-  function vmBindRequiredIndicators() {
-    if (!voucherModalForm) return;
-    voucherModalForm.querySelectorAll("[required]").forEach(function (field) {
-      field.addEventListener("input", vmUpdateRequiredIndicators);
-      field.addEventListener("change", vmUpdateRequiredIndicators);
-    });
-  }
+  function vmBindRequiredIndicators() {}
 
   function vmClose() {
     voucherModal.style.display = "none";
@@ -580,6 +573,12 @@ document.addEventListener("DOMContentLoaded", function () {
         return;
       }
 
+      if (_vmSnapshot !== null && vmCurrentStudentId && vmSnapshotForm() === _vmSnapshot) {
+        vmClose();
+        showToast("No changes were made.", "info");
+        return;
+      }
+
       if (typeof refreshCsrfToken === "function") refreshCsrfToken();
       var fd = new FormData(voucherModalForm);
       var csrf = getCsrfToken && getCsrfToken();
@@ -599,7 +598,7 @@ document.addEventListener("DOMContentLoaded", function () {
           if (typeof refreshCsrfToken === "function") refreshCsrfToken();
           if (data.status === "success") {
             vmClose();
-            location.reload();
+            toastAndReload(data.message || "Student saved successfully.", "success");
             return;
           }
           vmShowAlert(data.message || "Save failed.", "error", data.errors);

@@ -225,6 +225,27 @@ function showAlert(message, type, opts) {
   showToast(message, type || "success", opts || {});
 }
 
+function scanRequiredLabels(container) {
+  (container || document).querySelectorAll('label.form-label.required[for]').forEach(function (lbl) {
+    var el = document.getElementById(lbl.getAttribute('for'));
+    if (!el) return;
+    el.value ? lbl.classList.add('vm-filled') : lbl.classList.remove('vm-filled');
+  });
+}
+
+document.addEventListener('input', function (e) {
+  if (!e.target || !e.target.id) return;
+  var lbl = document.querySelector('label.form-label.required[for="' + e.target.id + '"]');
+  if (!lbl) return;
+  e.target.value ? lbl.classList.add('vm-filled') : lbl.classList.remove('vm-filled');
+});
+document.addEventListener('change', function (e) {
+  if (!e.target || !e.target.id) return;
+  var lbl = document.querySelector('label.form-label.required[for="' + e.target.id + '"]');
+  if (!lbl) return;
+  e.target.value ? lbl.classList.add('vm-filled') : lbl.classList.remove('vm-filled');
+});
+
 function ajaxOptions(options = {}) {
   refreshCsrfToken();
   return {

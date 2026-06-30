@@ -22,7 +22,7 @@
     <h4 class="vs-page-title"><?= esc($title) ?></h4>
     <p class="vs-page-sub">Enter Signatory Details And Upload A Signature Image.</p>
   </div>
-  <a href="<?= base_url('/signatories') ?>" class="vs-btn vs-btn-outline">Back to signatories</a>
+  <a href="<?= base_url('/signatories') ?>" class="btn btn-secondary">Back to signatories</a>
 </div>
 
 <?php if (session()->getFlashdata('error')): ?>
@@ -131,10 +131,10 @@
       </div>
 
       <div class="mt-4 d-flex gap-2">
-        <button type="submit" class="vs-btn vs-btn-primary">
+        <button type="submit" class="btn btn-primary">
           <?= $signatory ? 'Update' : 'Save' ?>
         </button>
-        <a href="<?= base_url('/signatories') ?>" class="vs-btn vs-btn-outline">Cancel</a>
+        <a href="<?= base_url('/signatories') ?>" class="btn btn-secondary">Cancel</a>
       </div>
     </form>
   </div>

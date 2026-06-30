@@ -339,10 +339,9 @@ document.addEventListener('vs:modals:ready', function () {
     }
 
     function smOpenAlert(msg, type) {
-        schoolAlert.innerHTML = '<div class="vs-alert vs-alert-' + (type || 'error') + ' mb-3">' + escHtml(msg) +
-            '<button type="button" class="vs-alert-dismiss" onclick="this.closest(\'.vs-alert\').remove()">×</button></div>';
+        showToast(msg, type || 'error');
     }
-    function smClearAlert() { schoolAlert.innerHTML = ''; }
+    function smClearAlert() {}
 
     function smReset() {
         schoolForm.reset();
