@@ -74,23 +74,16 @@
           <?php
             $suffixOtherVal = '';
             $suffixSelectVal = $suffix;
-            $knownSuffixes = array_merge(['JR.','SR.','II','III','IV','__OTHER__',''], $customSuffixes);
-            if ($suffix !== '' && !in_array($suffix, $knownSuffixes)) {
+            $allSuffixVals = array_map('strtoupper', $customSuffixes);
+            if ($suffix !== '' && !in_array(strtoupper($suffix), $allSuffixVals)) {
                 $suffixOtherVal = $suffix;
                 $suffixSelectVal = '__OTHER__';
             }
           ?>
           <select id="suffix" data-field-name="suffix" <?= $suffixSelectVal !== '__OTHER__' ? 'name="suffix"' : '' ?> class="vs-input js-filter-select" data-placeholder="- SELECT -" data-no-search="1">
             <option value="">None</option>
-            <option value="JR." <?= $suffixSelectVal === 'JR.' ? 'selected' : '' ?>>JR.</option>
-            <option value="SR." <?= $suffixSelectVal === 'SR.' ? 'selected' : '' ?>>SR.</option>
-            <option value="II"  <?= $suffixSelectVal === 'II'  ? 'selected' : '' ?>>II</option>
-            <option value="III" <?= $suffixSelectVal === 'III' ? 'selected' : '' ?>>III</option>
-            <option value="IV"  <?= $suffixSelectVal === 'IV'  ? 'selected' : '' ?>>IV</option>
             <?php foreach ($customSuffixes as $cs): ?>
-              <?php if (!in_array($cs, ['JR.','SR.','II','III','IV',''])): ?>
-                <option value="<?= esc($cs) ?>" <?= $suffixSelectVal === $cs ? 'selected' : '' ?>><?= esc($cs) ?></option>
-              <?php endif ?>
+              <option value="<?= esc($cs) ?>" <?= strtoupper($suffixSelectVal) === strtoupper($cs) ? 'selected' : '' ?>><?= esc($cs) ?></option>
             <?php endforeach ?>
             <option value="__OTHER__" <?= $suffixSelectVal === '__OTHER__' ? 'selected' : '' ?>>OTHERS</option>
           </select>
@@ -103,7 +96,7 @@
           <label class="vs-label" for="gender">Sex</label>
           <?php $gender = old('gender', $voucher['gender'] ?? '') ?>
           <select id="gender" name="gender" class="vs-input js-filter-select" data-placeholder="MALE / FEMALE" data-no-search="1">
-            <option></option>
+            <option value="">None</option>
             <option value="MALE"   <?= $gender === 'MALE'   ? 'selected' : '' ?>>MALE</option>
             <option value="FEMALE" <?= $gender === 'FEMALE' ? 'selected' : '' ?>>FEMALE</option>
           </select>
@@ -140,10 +133,13 @@
               </div>
             </div>
             <ul class="vs-school-picker-list">
+              <li class="vs-sp-none" data-value="">None</li>
               <?php foreach (($juniorHighSchools ?? []) as $school): ?>
-                <li data-value="<?= esc($school['school_name'] ?? '') ?>"><?= esc($school['school_name'] ?? '') ?></li>
+                <?php $jhsAcr = trim((string)($school['acronym'] ?? '')); $jhsName = trim((string)($school['school_name'] ?? '')); ?>
+                <li data-value="<?= esc($jhsName) ?>"><?= esc($jhsAcr ? $jhsAcr . ' - ' . $jhsName : $jhsName) ?></li>
               <?php endforeach ?>
               <li class="vs-school-picker-no-results" style="display:none">No results found</li>
+              <li class="vs-school-picker-others">Others</li>
             </ul>
           </div>
         </div>
@@ -161,10 +157,13 @@
               </div>
             </div>
             <ul class="vs-school-picker-list">
+              <li class="vs-sp-none" data-value="">None</li>
               <?php foreach (($seniorHighSchools ?? []) as $school): ?>
-                <li data-value="<?= esc($school['school_name'] ?? '') ?>"><?= esc($school['school_name'] ?? '') ?></li>
+                <?php $shsAcr = trim((string)($school['acronym'] ?? '')); $shsName = trim((string)($school['school_name'] ?? '')); ?>
+                <li data-value="<?= esc($shsName) ?>"><?= esc($shsAcr ? $shsAcr . ' - ' . $shsName : $shsName) ?></li>
               <?php endforeach ?>
               <li class="vs-school-picker-no-results" style="display:none">No results found</li>
+              <li class="vs-school-picker-others">Others</li>
             </ul>
           </div>
         </div>
@@ -241,13 +240,14 @@
 <script>
 (function () {
     function initPicker(id) {
-        var picker  = document.getElementById(id);
+        var picker     = document.getElementById(id);
         if (!picker) return;
-        var input   = picker.querySelector('input');
-        var toggle  = picker.querySelector('.vs-school-picker-toggle');
-        var list    = picker.querySelector('.vs-school-picker-list');
-        var items   = list ? Array.from(list.querySelectorAll('li[data-value]')) : [];
-        var noRes   = list ? list.querySelector('.vs-school-picker-no-results') : null;
+        var input      = picker.querySelector('input');
+        var toggle     = picker.querySelector('.vs-school-picker-toggle');
+        var list       = picker.querySelector('.vs-school-picker-list');
+        var items      = list ? Array.from(list.querySelectorAll('li[data-value]')) : [];
+        var noRes      = list ? list.querySelector('.vs-school-picker-no-results') : null;
+        var othersItem = list ? list.querySelector('.vs-school-picker-others') : null;
 
         function open()  { if (list) list.classList.add('open'); }
         function close() { if (list) list.classList.remove('open'); }
@@ -256,9 +256,10 @@
             q = (q || '').trim().toUpperCase();
             var any = false;
             items.forEach(function (li) {
-                var show = !q || li.getAttribute('data-value').toUpperCase().indexOf(q) !== -1;
+                var isNone = li.classList.contains('vs-sp-none');
+                var show = isNone || !q || li.getAttribute('data-value').toUpperCase().indexOf(q) !== -1;
                 li.classList.toggle('vs-sp-hidden', !show);
-                if (show) any = true;
+                if (show && !isNone) any = true;
             });
             if (noRes) noRes.style.display = any ? 'none' : '';
         }
@@ -277,6 +278,15 @@
                 close();
             });
         });
+
+        if (othersItem) {
+            othersItem.addEventListener('mousedown', function (e) {
+                e.preventDefault();
+                input.value = '';
+                close();
+                input.focus();
+            });
+        }
 
         document.addEventListener('click', function (e) {
             if (!picker.contains(e.target)) close();

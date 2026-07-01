@@ -79,7 +79,7 @@ class Voucher extends Controller
             'first_name'                   => $this->cleanText($this->request->getPost('first_name')),
             'middle_name'                  => $this->cleanText($this->request->getPost('middle_name')),
             'last_name'                    => $this->cleanText($this->request->getPost('last_name')),
-            'suffix'                       => strtoupper($this->cleanText($this->request->getPost('suffix'))),
+            'suffix'                       => strtoupper($this->cleanText($this->request->getPost('suffix'))) ?: null,
             'rank_no'                      => $this->nullableFloat($this->request->getPost('rank_no')),
             'gwa'                          => $this->nullableFloat($this->request->getPost('gwa')),
             'gender'                       => strtoupper($this->cleanText($this->request->getPost('gender'))),
@@ -367,9 +367,10 @@ class Voucher extends Controller
         $lastName   = trim((string) ($v['last_name']   ?? ''));
         $firstName  = trim((string) ($v['first_name']  ?? ''));
         $middleName = trim((string) ($v['middle_name'] ?? ''));
-        $firstMid   = implode(' ', array_filter([$firstName, $middleName]));
-        $name       = esc($lastName !== '' ? $lastName . ($firstMid !== '' ? ', ' . $firstMid : '') : $firstMid);
-        $nameSort   = esc(trim($lastName . ' ' . $firstName . ' ' . $middleName));
+        $suffix     = trim((string) ($v['suffix']      ?? ''));
+        $firstMidSfx = implode(' ', array_filter([$firstName, $middleName, $suffix]));
+        $name       = esc($lastName !== '' ? $lastName . ($firstMidSfx !== '' ? ', ' . $firstMidSfx : '') : $firstMidSfx);
+        $nameSort   = esc(trim($lastName . ' ' . $firstName . ' ' . $middleName . ' ' . $suffix));
         $rank       = ($v['rank_no'] ?? null) !== null && (string) $v['rank_no'] !== '' ? esc($this->formatRank($v['rank_no'])) : '-';
         $jhsName    = (string) ($v['junior_high_school'] ?: '-');
         $shsName    = (string) ($v['preferred_senior_high_school'] ?? '-');
@@ -493,8 +494,16 @@ class Voucher extends Controller
 
         $studentId = (int) $this->voucherModel->insert($data);
 
+        $oom = new OthersOptionsModel();
+        $uid = $this->getCurrentUserId();
+        if (!empty($data['suffix'])) $oom->saveOption('suffix', $data['suffix'], $uid);
+        $rawJhs = trim((string) $this->request->getPost('junior_high_school'));
+        $rawShs = trim((string) $this->request->getPost('preferred_senior_high_school'));
+        if ($rawJhs !== '') $oom->saveOption('jhs', strtoupper($rawJhs), $uid);
+        if ($rawShs !== '') $oom->saveOption('shs', strtoupper($rawShs), $uid);
+
         $name = trim($data['first_name'] . ' ' . $data['last_name']);
-        log_action($this->getCurrentUserId(), 'CREATE_VOUCHER',
+        log_action($uid, 'CREATE_VOUCHER',
             "Created voucher for {$name}", $studentId);
 
         return redirect()->to(site_url('admin/students'))->with('message', 'Student voucher created successfully.');

@@ -332,8 +332,11 @@ document.addEventListener("DOMContentLoaded", function () {
   function rebuildSelectOptions(select, options, selected) {
     if (!select) return;
     while (select.firstChild) select.removeChild(select.firstChild);
-    // Blank option so placeholder shows when nothing selected.
-    select.appendChild(document.createElement("option"));
+    // "None" option — allows deselecting and acts as placeholder.
+    var noneOpt = document.createElement("option");
+    noneOpt.value = "";
+    noneOpt.textContent = "None";
+    select.appendChild(noneOpt);
     var seen = {};
     options.forEach(function (item) {
       var value = "";
@@ -381,6 +384,10 @@ document.addEventListener("DOMContentLoaded", function () {
       width: "100%",
       dropdownParent: $("#voucherModal"),
       minimumResultsForSearch: select.dataset.noSearch === "1" ? Infinity : 0,
+      templateResult: function (state) {
+        if (!state.id && !state.text) return null;
+        return state.text;
+      },
     });
   }
 

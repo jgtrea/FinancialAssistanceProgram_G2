@@ -303,6 +303,10 @@ window.initVsSelect2 = function initVsSelect2(root) {
         width: "100%",
         dropdownParent: $modal.length ? $modal : $(document.body),
         minimumResultsForSearch: noSearch ? Infinity : 0,
+        templateResult: function (state) {
+          if (!state.id && !state.text) return null;
+          return state.text;
+        },
         matcher: function (params, data) {
           if (!params.term || params.term.trim() === "") return data;
           var term = params.term.toUpperCase();
@@ -316,17 +320,9 @@ window.initVsSelect2 = function initVsSelect2(root) {
           ? function (params) {
               var term = params.term.trim();
               if (!term) return null;
-              // Prevent duplicate: check if term matches existing option (case-insensitive).
               var termUpper = term.toUpperCase();
-              var isDuplicate = false;
-              $(this.options.dropdownParent || "body")
-                .find("select")
-                .addBack("select")
-                .each(function () {
-                  // Check against the actual select element's options.
-                });
-              // Check the select element's current options.
               var $select = $el;
+              var isDuplicate = false;
               $select.find("option").each(function () {
                 if (
                   ($(this).val() || "").toUpperCase() === termUpper ||
@@ -339,6 +335,11 @@ window.initVsSelect2 = function initVsSelect2(root) {
               return { id: term, text: term, newTag: true };
             }
           : undefined,
+      }).on('select2:select', function (e) {
+        var id = e.params.data.id;
+        if (!id || id === '__NONE__') {
+          $(this).val(null).trigger('change');
+        }
       });
     });
 };

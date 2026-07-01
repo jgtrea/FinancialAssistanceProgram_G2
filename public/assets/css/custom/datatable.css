@@ -133,6 +133,10 @@ table.js-data-table tbody tr.vs-row-archived td {
 table.js-data-table tbody tr.vs-row-archived img {
   opacity: 0.55;
 }
+.vs-datatable tbody tr.vs-row-inactive td,
+table.js-data-table tbody tr.vs-row-inactive td {
+  background: #fff0f0;
+}
 .dataTables_wrapper .dataTables_filter input,
 .dataTables_wrapper .dataTables_length select {
   font-family: var(--font);

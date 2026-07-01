@@ -1,16 +1,6 @@
 <?= $this->extend('layouts/main') ?>
 
 <?= $this->section('content') ?>
-<?php
-    $prefixOptions = $prefixOptions ?? ['', 'DR.', 'ENGR.', 'HON.', 'MR.', 'MRS.', 'MS.', 'PROF.'];
-    $suffixOptions = $suffixOptions ?? ['', 'JR.', 'SR.', 'II', 'III', 'IV', 'V'];
-    $degreeOptions = $degreeOptions ?? [
-        'None', 'MPA', 'BSc', 'BA',
-        'Master', 'MSc', 'MA', 'MBA',
-        'Doctorate', 'PhD', 'MD', 'JD', 'LLB', 'DDS', 'EdD',
-        'Other',
-    ];
-?>
 
 <div class="vs-page-header mb-3">
         <div>
@@ -41,15 +31,15 @@
         <div class="col-6 col-lg-auto">
             <select id="sfStatus" name="status" class="js-filter-select" data-placeholder="Select Status" data-no-search="1" data-width="100%" style="min-width:120px">
                 <option></option>
-                <option value="active"   <?= ($filterStatus ?? '') === 'active'   ? 'selected' : '' ?>>Active</option>
-                <option value="inactive" <?= ($filterStatus ?? '') === 'inactive' ? 'selected' : '' ?>>Inactive</option>
+                <option value="active"   <?= ($filterStatus ?? '') === 'active'   ? 'selected' : '' ?>>ACTIVE</option>
+                <option value="inactive" <?= ($filterStatus ?? '') === 'inactive' ? 'selected' : '' ?>>INACTIVE</option>
             </select>
         </div>
         <div class="col-6 col-lg-auto">
             <select id="sfPosition" name="position" class="js-filter-select" data-placeholder="Select Position" data-width="100%" style="min-width:140px">
                 <option></option>
                 <?php foreach (($allPositions ?? []) as $pos): ?>
-                    <option value="<?= esc($pos) ?>" <?= ($filterPosition ?? '') === $pos ? 'selected' : '' ?>><?= esc($pos) ?></option>
+                    <option value="<?= esc($pos) ?>" <?= ($filterPosition ?? '') === $pos ? 'selected' : '' ?>><?= esc(strtoupper($pos)) ?></option>
                 <?php endforeach ?>
             </select>
         </div>
@@ -102,18 +92,21 @@
             <tbody>
                 <?php foreach ($signatories as $signatory): ?>
                     <?php
-                        $sLn = trim((string) ($signatory['last_name']   ?? ''));
-                        $sFn = trim((string) ($signatory['first_name']  ?? ''));
-                        $sMn = trim((string) ($signatory['middle_name'] ?? ''));
-                        $sFm = implode(' ', array_filter([$sFn, $sMn]));
-                        $fullName  = $sLn !== '' ? $sLn . ($sFm !== '' ? ', ' . $sFm : '') : $sFm;
-                        $sigDegree = trim((string) ($signatory['degree'] ?? ''));
+                        $sLn     = trim((string) ($signatory['last_name']   ?? ''));
+                        $sFn     = trim((string) ($signatory['first_name']  ?? ''));
+                        $sMn     = trim((string) ($signatory['middle_name'] ?? ''));
+                        $sPrefix = trim((string) ($signatory['prefix']      ?? ''));
+                        $sSuffix = trim((string) ($signatory['suffix']      ?? ''));
+                        $sFmSuffix  = implode(' ', array_filter([$sFn, $sMn, $sSuffix]));
+                        $sLnPrefix  = implode(' ', array_filter([$sPrefix, $sLn]));
+                        $fullName   = $sLnPrefix !== '' ? $sLnPrefix . ($sFmSuffix !== '' ? ', ' . $sFmSuffix : '') : $sFmSuffix;
+                        $sigDegree  = trim((string) ($signatory['degree'] ?? ''));
                         if ($sigDegree !== '' && strcasecmp($sigDegree, 'None') !== 0) {
                             $fullName .= ', ' . $sigDegree;
                         }
                         $isArchived  = empty($signatory['is_active']);
                         $sid         = (int) $signatory['signatory_id'];
-                        $nameSortKey = trim(implode(' ', array_filter([$sLn, $sFn, $sMn])));
+                        $nameSortKey = trim(implode(' ', array_filter([$sLn, $sFn, $sMn, $sSuffix])));
                     ?>
 
                     <tr id="sig-row-<?= $sid ?>" data-archived="<?= $isArchived ? '1' : '0' ?>"<?= $isArchived ? ' class="vs-row-archived"' : '' ?>>

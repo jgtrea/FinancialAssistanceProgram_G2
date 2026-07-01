@@ -248,8 +248,7 @@ var ModalInstance = (function () {
                       <div class="col-4">
                         <label class="form-label" for="vmSuffix">Suffix</label>
                         <select id="vmSuffix" name="suffix" data-field-name="suffix" class="vs-input js-school-select vs-uppercase" data-placeholder="Select Suffix" data-no-search="1">
-                          <option value="">None</option><option value="JR.">JR.</option><option value="SR.">SR.</option>
-                          <option value="II">II</option><option value="III">III</option><option value="IV">IV</option>
+                          <option value="">None</option>
                           <option value="__OTHER__">OTHERS</option>
                         </select>
                         <div id="vmSuffixOtherWrap" style="display:none" class="mt-2">
@@ -259,7 +258,7 @@ var ModalInstance = (function () {
                       <div class="col-4">
                         <label class="form-label" for="vmGender">Sex</label>
                         <select id="vmGender" name="gender" class="vs-input js-school-select" data-placeholder="Select Sex" data-no-search="1">
-                          <option></option><option value="MALE">MALE</option><option value="FEMALE">FEMALE</option>
+                          <option value="">None</option><option value="MALE">MALE</option><option value="FEMALE">FEMALE</option>
                         </select>
                       </div>
                       <div class="col-4">
@@ -292,7 +291,7 @@ var ModalInstance = (function () {
                       <div class="col-4">
                         <label class="form-label required" for="vmRemarks">Remarks</label>
                         <select id="vmRemarks" name="remarks_status" class="vs-input js-school-select vs-uppercase" data-placeholder="Select Remarks" data-no-search="1" required>
-                          <option></option><option value="COMPLETE">COMPLETE</option><option value="INCOMPLETE">INCOMPLETE</option><option value="OTHERS">OTHERS</option>
+                          <option value="">None</option><option value="COMPLETE">COMPLETE</option><option value="INCOMPLETE">INCOMPLETE</option><option value="OTHERS">OTHERS</option>
                         </select>
                       </div>
                       <div class="col-12" id="vmOtherRemarksWrap" style="display:none">
@@ -707,7 +706,6 @@ var ModalInstance = (function () {
       var prefixOpts = ["DR.", "ENGR.", "HON.", "MR.", "MRS.", "MS.", "PROF."];
       var suffixOpts = ["JR.", "SR.", "II", "III", "IV", "V"];
       var degreeOpts = [
-        "None",
         "MPA",
         "BSc",
         "BA",
@@ -722,7 +720,6 @@ var ModalInstance = (function () {
         "LLB",
         "DDS",
         "EdD",
-        "Other",
       ];
 
       function _staticOpts(arr) {
@@ -974,6 +971,12 @@ var ModalInstance = (function () {
     var blank = sel.options[0];
     sel.innerHTML = "";
     if (blank) sel.appendChild(blank);
+    // Explicit "None" with non-blank value so Select2's Placeholder module shows it
+    // (blank value="" options are hidden from dropdown results by Select2's Placeholder adapter)
+    var noneOpt = document.createElement("option");
+    noneOpt.value = "__NONE__";
+    noneOpt.textContent = "None";
+    sel.appendChild(noneOpt);
     (items || []).forEach(function (item) {
       var v = getVal(item),
         t = getTxt(item);
@@ -1015,14 +1018,14 @@ var ModalInstance = (function () {
           "filterJuniorHs",
           fo.junior_high_schools,
           _schoolVal,
-          _schoolTxt,
+          _schoolTxtFull,
           _urlParam("junior_hs"),
         );
         _buildOpts(
           "filterPreferredHs",
           fo.senior_high_schools,
           _schoolVal,
-          _schoolTxt,
+          _schoolTxtFull,
           _urlParam("preferred_hs"),
         );
         var forEl = document.getElementById("filterOtherRemarks");
@@ -1044,6 +1047,21 @@ var ModalInstance = (function () {
           _schoolTxtFull,
           null,
         );
+        (function () {
+          var vmSuf = document.getElementById("vmSuffix");
+          if (!vmSuf || !Array.isArray(data.customSuffixes)) return;
+          var othersOpt = vmSuf.querySelector('option[value="__OTHER__"]');
+          data.customSuffixes.forEach(function (s) {
+            s = (s || "").toUpperCase();
+            if (!s) return;
+            if (Array.from(vmSuf.options).some(function (o) { return o.value === s; })) return;
+            var opt = document.createElement("option");
+            opt.value = s;
+            opt.textContent = s;
+            if (othersOpt) vmSuf.insertBefore(opt, othersOpt);
+            else vmSuf.appendChild(opt);
+          });
+        })();
         break;
 
       case "archiveFilterModal":
@@ -1062,14 +1080,14 @@ var ModalInstance = (function () {
           "afJuniorHs",
           data.juniorHighSchools,
           _schoolName,
-          _schoolName,
+          _schoolTxtFull,
           _urlParam("junior_hs"),
         );
         _buildOpts(
           "afPreferredHs",
           data.seniorHighSchools,
           _schoolName,
-          _schoolName,
+          _schoolTxtFull,
           _urlParam("preferred_hs"),
         );
         break;

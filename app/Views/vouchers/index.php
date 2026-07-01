@@ -148,7 +148,10 @@
 <?php endif ?>
 
 <script>
-window.__VS.pageData = { filterOptions: <?= json_encode($filterOptions) ?> };
+window.__VS.pageData = {
+  filterOptions:  <?= json_encode($filterOptions) ?>,
+  customSuffixes: <?= json_encode($customSuffixes ?? []) ?>,
+};
 </script>
 
 <script>

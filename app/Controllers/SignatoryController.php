@@ -11,14 +11,6 @@ class SignatoryController extends BaseController
     private const MAX_SIGNATURE_BYTES = 2097152;
     private const ALLOWED_MIME = ['image/png', 'image/jpeg', 'image/jpg', 'image/webp'];
     private const ALLOWED_EXT = ['png', 'jpg', 'jpeg', 'webp'];
-    private const PREFIX_OPTIONS = ['', 'DR.', 'ENGR.', 'HON.', 'MR.', 'MRS.', 'MS.', 'PROF.'];
-    private const SUFFIX_OPTIONS = ['', 'JR.', 'SR.', 'II', 'III', 'IV', 'V'];
-    private const DEGREE_OPTIONS = [
-        'None', 'MPA', 'BSc', 'BA',
-        'Master', 'MSc', 'MA', 'MBA',
-        'Doctorate', 'PhD', 'MD', 'JD', 'LLB', 'DDS', 'EdD',
-        'Other',
-    ];
 
     public function index()
     {
@@ -66,9 +58,6 @@ class SignatoryController extends BaseController
             'filterStatus'   => $filterStatus,
             'filterPosition' => $filterPosition,
             'allPositions'   => array_column($allPositions, 'position_title'),
-            'prefixOptions'  => self::PREFIX_OPTIONS,
-            'suffixOptions'  => self::SUFFIX_OPTIONS,
-            'degreeOptions'  => self::DEGREE_OPTIONS,
         ]);
     }
 
@@ -87,12 +76,9 @@ class SignatoryController extends BaseController
         return view('signatories/form', [
             'title'         => $signatory ? 'Edit Signatory' : 'Add Signatory',
             'signatory'     => $signatory,
-            'prefixOptions' => self::PREFIX_OPTIONS,
-            'suffixOptions' => self::SUFFIX_OPTIONS,
-            'degreeOptions' => self::DEGREE_OPTIONS,
-            'customPrefixes' => $oom->getOptions('prefix'),
-            'customSuffixes' => $oom->getOptions('suffix'),
-            'customDegrees'  => $oom->getOptions('degree'),
+            'allPrefixes' => $oom->getOptions('prefix'),
+            'allSuffixes' => $oom->getOptions('suffix'),
+            'allDegrees'  => $oom->getOptions('degree'),
         ]);
     }
 
@@ -134,11 +120,8 @@ class SignatoryController extends BaseController
         }
 
         $degree = trim((string) $this->request->getPost('degree')) ?: 'None';
-        $customDegrees = (new OthersOptionsModel())->getOptions('degree');
-        if (!in_array($degree, self::DEGREE_OPTIONS, true) && !in_array($degree, $customDegrees, true)) {
-            return $this->signatorySaveError('Please select a valid degree.', $id, $isAjax);
-        }
-        if ($degree === 'Other') {
+        if ($degree === 'Others') {
+            // Static form: degree=Others + degree_other=custom_value
             $custom = trim((string) $this->request->getPost('degree_other'));
             if ($custom === '') {
                 return $this->signatorySaveError('Please specify a degree.', $id, $isAjax);
@@ -147,6 +130,8 @@ class SignatoryController extends BaseController
                 return $this->signatorySaveError('Custom degree must be 100 characters or fewer.', $id, $isAjax);
             }
             $degree = $custom;
+        } elseif ($degree !== 'None' && mb_strlen($degree) > 100) {
+            return $this->signatorySaveError('Degree must be 100 characters or fewer.', $id, $isAjax);
         }
 
         $data = [
@@ -154,8 +139,8 @@ class SignatoryController extends BaseController
             'first_name'     => trim((string) $this->request->getPost('first_name')),
             'middle_name'    => trim((string) $this->request->getPost('middle_name')),
             'last_name'      => trim((string) $this->request->getPost('last_name')),
-            'suffix'         => $suffix,
-            'degree'         => $degree,
+            'suffix'         => $suffix !== '' ? $suffix : null,
+            'degree'         => ($degree === 'None') ? null : $degree,
             'position_title' => trim((string) $this->request->getPost('position_title')),
             'is_active'      => $this->request->getPost('is_active') ?? ($existing ? ($existing['is_active'] ?? 0) : 0),
         ];

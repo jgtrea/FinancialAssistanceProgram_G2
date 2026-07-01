@@ -1,45 +1,34 @@
 <?= $this->extend('layouts/main') ?>
 <?= $this->section('content') ?>
 <?php
-  $prefixOptions  = $prefixOptions  ?? ['', 'DR.', 'ENGR.', 'HON.', 'MR.', 'MRS.', 'MS.', 'PROF.'];
-  $suffixOptions  = $suffixOptions  ?? ['', 'JR.', 'SR.', 'II', 'III', 'IV', 'V'];
-  $degreeOptions  = $degreeOptions  ?? [
-      'None', 'MPA', 'BSc', 'BA',
-      'Master', 'MSc', 'MA', 'MBA',
-      'Doctorate', 'PhD', 'MD', 'JD', 'LLB', 'DDS', 'EdD',
-      'Other',
-  ];
-  $customPrefixes = $customPrefixes ?? [];
-  $customSuffixes = $customSuffixes ?? [];
-  $customDegrees  = $customDegrees  ?? [];
+  $allPrefixes = $allPrefixes ?? [];
+  $allSuffixes = $allSuffixes ?? [];
+  $allDegrees  = $allDegrees  ?? [];
 
   $selectedPrefix = strtoupper((string) ($signatory['prefix'] ?? ''));
   $selectedSuffix = strtoupper((string) ($signatory['suffix'] ?? ''));
 
-  // Prefix: detect custom (not in known list)
-  $knownPrefixes   = array_merge(array_filter($prefixOptions), array_map('strtoupper', $customPrefixes));
+  // Prefix: custom if not in DB list
   $prefixOtherVal  = '';
   $prefixSelectVal = $selectedPrefix;
-  if ($selectedPrefix !== '' && !in_array($selectedPrefix, array_merge($knownPrefixes, ['__OTHER__', '']))) {
+  if ($selectedPrefix !== '' && !in_array($selectedPrefix, array_map('strtoupper', $allPrefixes))) {
       $prefixOtherVal  = $selectedPrefix;
       $prefixSelectVal = '__OTHER__';
   }
 
-  // Suffix: detect custom (not in known list)
-  $knownSuffixes   = array_merge(array_filter($suffixOptions), array_map('strtoupper', $customSuffixes));
+  // Suffix: custom if not in DB list
   $suffixOtherVal  = '';
   $suffixSelectVal = $selectedSuffix;
-  if ($selectedSuffix !== '' && !in_array($selectedSuffix, array_merge($knownSuffixes, ['__OTHER__', '']))) {
+  if ($selectedSuffix !== '' && !in_array($selectedSuffix, array_map('strtoupper', $allSuffixes))) {
       $suffixOtherVal  = $selectedSuffix;
       $suffixSelectVal = '__OTHER__';
   }
 
-  // Degree: known custom (in others_options) → select directly; unknown custom → show Other input
-  $rawDegree        = (string) ($signatory['degree'] ?? 'None');
-  $isCustomDegree   = $rawDegree !== '' && !in_array($rawDegree, $degreeOptions, true);
-  $isKnownCustom    = $isCustomDegree && in_array($rawDegree, $customDegrees, true);
-  $selectedDegree   = ($isCustomDegree && !$isKnownCustom) ? 'Other' : $rawDegree;
-  $degreeOtherValue = ($isCustomDegree && !$isKnownCustom) ? $rawDegree : '';
+  // Degree: custom if not in DB list and not empty/None
+  $rawDegree        = ($signatory['degree'] ?? null) ?: 'None';
+  $isKnownDegree    = ($rawDegree === 'None' || in_array($rawDegree, $allDegrees, true));
+  $selectedDegree   = $isKnownDegree ? $rawDegree : 'Others';
+  $degreeOtherValue = $isKnownDegree ? '' : $rawDegree;
 ?>
 
 <div class="vs-page-header mb-4">
@@ -66,11 +55,8 @@
           <label class="vs-label" for="prefix">Prefix</label>
           <select id="prefix" data-field-name="prefix" <?= $prefixSelectVal !== '__OTHER__' ? 'name="prefix"' : '' ?> class="vs-input js-filter-select" data-placeholder="- SELECT -" data-no-search="1">
             <option value="">None</option>
-            <?php foreach ($prefixOptions as $option): if ($option === '') continue; ?>
-              <option value="<?= esc($option) ?>" <?= $prefixSelectVal === $option ? 'selected' : '' ?>><?= esc($option) ?></option>
-            <?php endforeach ?>
-            <?php foreach ($customPrefixes as $cp): if (in_array($cp, $prefixOptions)) continue; ?>
-              <option value="<?= esc($cp) ?>" <?= $prefixSelectVal === $cp ? 'selected' : '' ?>><?= esc($cp) ?></option>
+            <?php foreach ($allPrefixes as $opt): ?>
+              <option value="<?= esc($opt) ?>" <?= $prefixSelectVal === strtoupper($opt) ? 'selected' : '' ?>><?= esc($opt) ?></option>
             <?php endforeach ?>
             <option value="__OTHER__" <?= $prefixSelectVal === '__OTHER__' ? 'selected' : '' ?>>OTHERS</option>
           </select>
@@ -104,11 +90,8 @@
           <label class="vs-label" for="suffix">Suffix</label>
           <select id="suffix" data-field-name="suffix" <?= $suffixSelectVal !== '__OTHER__' ? 'name="suffix"' : '' ?> class="vs-input js-filter-select" data-placeholder="- SELECT -" data-no-search="1">
             <option value="">None</option>
-            <?php foreach ($suffixOptions as $option): if ($option === '') continue; ?>
-              <option value="<?= esc($option) ?>" <?= $suffixSelectVal === $option ? 'selected' : '' ?>><?= esc($option) ?></option>
-            <?php endforeach ?>
-            <?php foreach ($customSuffixes as $cs): if (in_array($cs, $suffixOptions)) continue; ?>
-              <option value="<?= esc($cs) ?>" <?= $suffixSelectVal === $cs ? 'selected' : '' ?>><?= esc($cs) ?></option>
+            <?php foreach ($allSuffixes as $opt): ?>
+              <option value="<?= esc($opt) ?>" <?= $suffixSelectVal === strtoupper($opt) ? 'selected' : '' ?>><?= esc($opt) ?></option>
             <?php endforeach ?>
             <option value="__OTHER__" <?= $suffixSelectVal === '__OTHER__' ? 'selected' : '' ?>>OTHERS</option>
           </select>
@@ -121,14 +104,11 @@
           <label class="vs-label" for="degree">Degree</label>
           <select id="degree" name="degree" class="vs-input js-filter-select" data-placeholder="TYPE OR SELECT">
             <option></option>
-            <?php foreach ($degreeOptions as $option): ?>
-              <?php if ($option === 'Other'): ?>
-                <?php foreach ($customDegrees as $cd): if (in_array($cd, $degreeOptions)) continue; ?>
-                  <option value="<?= esc($cd) ?>" <?= $selectedDegree === $cd ? 'selected' : '' ?>><?= esc($cd) ?></option>
-                <?php endforeach ?>
-              <?php endif ?>
-              <option value="<?= esc($option) ?>" <?= $selectedDegree === $option ? 'selected' : '' ?>><?= esc($option) ?></option>
+            <option value="None" <?= $selectedDegree === 'None' ? 'selected' : '' ?>>None</option>
+            <?php foreach ($allDegrees as $opt): ?>
+              <option value="<?= esc($opt) ?>" <?= $selectedDegree === $opt ? 'selected' : '' ?>><?= esc($opt) ?></option>
             <?php endforeach ?>
+            <option value="Others" <?= $selectedDegree === 'Others' ? 'selected' : '' ?>>OTHERS</option>
           </select>
           <input id="degree_other" name="degree_other" type="text"
                  class="vs-input mt-2" placeholder="Specify degree"
@@ -197,7 +177,7 @@
     if (!sel || !oth) return;
 
     function toggleDegree() {
-      if (sel.value === 'Other') {
+      if (sel.value === 'Others') {
         oth.style.display = 'block';
         oth.focus();
       } else {

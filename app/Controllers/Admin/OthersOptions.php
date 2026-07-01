@@ -8,9 +8,9 @@ use CodeIgniter\Controller;
 class OthersOptions extends Controller
 {
     private const CONTEXTS = [
-        'suffix' => 'Suffix',
-        'prefix' => 'Prefix',
-        'degree' => 'Degree',
+        'suffix' => 'SUFFIX',
+        'prefix' => 'PREFIX',
+        'degree' => 'DEGREE',
     ];
 
     public function index()
@@ -19,7 +19,7 @@ class OthersOptions extends Controller
 
         return view('others_options/index', [
             'title'    => 'Other Options',
-            'grouped'  => $oom->getAllGrouped(),
+            'options'  => $oom->getAllForTable(),
             'contexts' => self::CONTEXTS,
         ]);
     }
@@ -34,7 +34,7 @@ class OthersOptions extends Controller
         $value   = strtoupper(trim((string) $this->request->getPost('value')));
 
         if (!array_key_exists($context, self::CONTEXTS)) {
-            return $this->response->setJSON(['success' => false, 'message' => 'Invalid context.']);
+            return $this->response->setJSON(['success' => false, 'message' => 'Invalid field.']);
         }
 
         if ($value === '' || $value === '__OTHER__') {
@@ -45,27 +45,90 @@ class OthersOptions extends Controller
             return $this->response->setJSON(['success' => false, 'message' => 'Value must be 255 characters or fewer.']);
         }
 
-        $oom = new OthersOptionsModel();
-        $oom->saveOption($context, $value, session()->get('user_id'));
+        $oom      = new OthersOptionsModel();
+        $existing = $oom->where('context', $context)->where('value', $value)->first();
+        if ($existing) {
+            $msg = (int) $existing['is_active']
+                ? 'This value already exists.'
+                : 'This value is deactivated. Activate it from the table.';
+            return $this->response->setJSON(['success' => false, 'message' => $msg]);
+        }
+
+        $oom->insert(['context' => $context, 'value' => $value, 'is_active' => 1, 'created_by' => session()->get('user_id')]);
 
         return $this->response->setJSON(['success' => true, 'message' => 'Option saved.', 'csrf_token' => csrf_hash()]);
     }
 
-    public function delete($id)
+    public function edit(int $id)
     {
         if (!$this->request->isAJAX()) {
             return redirect()->to(site_url('admin/others-options'));
         }
 
-        $oom  = new OthersOptionsModel();
-        $row  = $oom->find((int) $id);
+        $context = trim((string) $this->request->getPost('context'));
+        $value   = strtoupper(trim((string) $this->request->getPost('value')));
+        $oom     = new OthersOptionsModel();
+        $row     = $oom->find($id);
 
         if (!$row) {
             return $this->response->setJSON(['success' => false, 'message' => 'Option not found.']);
         }
 
-        $oom->delete((int) $id);
+        if (!array_key_exists($context, self::CONTEXTS)) {
+            return $this->response->setJSON(['success' => false, 'message' => 'Invalid field.']);
+        }
 
-        return $this->response->setJSON(['success' => true, 'message' => 'Option deleted.', 'csrf_token' => csrf_hash()]);
+        if ($value === '' || $value === '__OTHER__') {
+            return $this->response->setJSON(['success' => false, 'message' => 'Value cannot be empty.']);
+        }
+
+        if (mb_strlen($value) > 255) {
+            return $this->response->setJSON(['success' => false, 'message' => 'Value must be 255 characters or fewer.']);
+        }
+
+        // Exclude self only when context hasn't changed (same slot); if context changes, no exclusion needed
+        $excludeId = ($context === $row['context']) ? $id : null;
+        if ($oom->isDuplicate($context, $value, $excludeId)) {
+            return $this->response->setJSON(['success' => false, 'message' => 'This value already exists for this field.']);
+        }
+
+        $oom->update($id, ['context' => $context, 'value' => $value]);
+        return $this->response->setJSON(['success' => true, 'message' => 'Option updated.', 'csrf_token' => csrf_hash()]);
+    }
+
+    public function deactivate($id)
+    {
+        if (!$this->request->isAJAX()) {
+            return redirect()->to(site_url('admin/others-options'));
+        }
+
+        $oom = new OthersOptionsModel();
+        $row = $oom->find((int) $id);
+
+        if (!$row) {
+            return $this->response->setJSON(['success' => false, 'message' => 'Option not found.']);
+        }
+
+        $oom->deactivate((int) $id);
+
+        return $this->response->setJSON(['success' => true, 'message' => 'Option deactivated.', 'csrf_token' => csrf_hash()]);
+    }
+
+    public function activate($id)
+    {
+        if (!$this->request->isAJAX()) {
+            return redirect()->to(site_url('admin/others-options'));
+        }
+
+        $oom = new OthersOptionsModel();
+        $row = $oom->find((int) $id);
+
+        if (!$row) {
+            return $this->response->setJSON(['success' => false, 'message' => 'Option not found.']);
+        }
+
+        $oom->activate((int) $id);
+
+        return $this->response->setJSON(['success' => true, 'message' => 'Option activated.', 'csrf_token' => csrf_hash()]);
     }
 }

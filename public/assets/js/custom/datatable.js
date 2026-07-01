@@ -438,9 +438,10 @@ window.VS.bindCurrentPageSearch = function bindCurrentPageSearch(dt, input) {
     });
   }
 
-  input.addEventListener("input", applySearch);
+  input.addEventListener("keydown", function (e) {
+    if (e.key === "Enter") applySearch();
+  });
   dt.on("draw.dt page.dt order.dt length.dt", applySearch);
-  applySearch();
 };
 
 // Filters across the full set of rows loaded into the DataTable (not just the

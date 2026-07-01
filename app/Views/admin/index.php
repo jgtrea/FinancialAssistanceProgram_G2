@@ -25,15 +25,15 @@
     <div class="col-6 col-lg-auto">
         <select id="ufRole" name="role" class="js-filter-select" data-placeholder="Select Level" data-no-search="1" data-width="100%" style="min-width:120px">
             <option value=""></option>
-            <option value="admin" <?= ($filterRole ?? '') === 'admin' ? 'selected' : '' ?>>Admin</option>
-            <option value="user"  <?= ($filterRole ?? '') === 'user'  ? 'selected' : '' ?>>User</option>
+            <option value="admin" <?= ($filterRole ?? '') === 'admin' ? 'selected' : '' ?>>ADMIN</option>
+            <option value="user"  <?= ($filterRole ?? '') === 'user'  ? 'selected' : '' ?>>USER</option>
         </select>
     </div>
     <div class="col-6 col-lg-auto">
         <select id="ufStatus" name="status" class="js-filter-select" data-placeholder="Select Status" data-no-search="1" data-width="100%" style="min-width:120px">
             <option value=""></option>
-            <option value="active"   <?= ($filterStatus ?? '') === 'active'   ? 'selected' : '' ?>>Active</option>
-            <option value="inactive" <?= ($filterStatus ?? '') === 'inactive' ? 'selected' : '' ?>>Inactive</option>
+            <option value="active"   <?= ($filterStatus ?? '') === 'active'   ? 'selected' : '' ?>>ACTIVE</option>
+            <option value="inactive" <?= ($filterStatus ?? '') === 'inactive' ? 'selected' : '' ?>>INACTIVE</option>
         </select>
     </div>
     <div class="col-auto d-none d-lg-flex align-items-center">
