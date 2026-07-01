@@ -2,6 +2,7 @@
 
 namespace App\Controllers;
 
+use App\Models\OthersOptionsModel;
 use App\Models\UserLogin;
 
 class UsersController extends BaseController
@@ -33,10 +34,11 @@ class UsersController extends BaseController
         }
 
         $model->where('user_id !=', (int) session()->get('user_id'));
-        $data['users']        = $model->orderBy('is_active', 'DESC')->orderBy('user_id', 'DESC')->findAll();
-        $data['keyword']      = $keyword;
-        $data['filterRole']   = $filterRole;
-        $data['filterStatus'] = $filterStatus;
+        $data['users']          = $model->orderBy('is_active', 'DESC')->orderBy('user_id', 'DESC')->findAll();
+        $data['keyword']        = $keyword;
+        $data['filterRole']     = $filterRole;
+        $data['filterStatus']   = $filterStatus;
+        $data['customSuffixes'] = (new OthersOptionsModel())->getOptions('suffix');
         return view('admin/index', $data);
     }
 
@@ -191,6 +193,10 @@ class UsersController extends BaseController
         }
 
         $adminId = session()->get('user_id');
+
+        if ($data['suffix'] !== '') {
+            (new OthersOptionsModel())->saveOption('suffix', $data['suffix'], $adminId);
+        }
 
         if ($id) {
             $model->update($id, $data);

@@ -39,7 +39,7 @@ document.addEventListener("DOMContentLoaded", function () {
       var el = document.getElementById(id);
       snap[id] = el ? el.value : "";
     });
-    ["vmSuffixOther", "vmJuniorHsOther", "vmPreferredHsOther"].forEach(function (id) {
+    ["vmSuffixOther"].forEach(function (id) {
       var el = document.getElementById(id);
       snap[id] = el ? el.value : "";
     });
@@ -268,8 +268,6 @@ document.addEventListener("DOMContentLoaded", function () {
     });
     if (typeof resetOtherInput === "function") {
       resetOtherInput("vmSuffix", "vmSuffixOtherWrap", "vmSuffixOther");
-      resetOtherInput("vmJuniorHs", "vmJuniorHsOtherWrap", "vmJuniorHsOther");
-      resetOtherInput("vmPreferredHs", "vmPreferredHsOtherWrap", "vmPreferredHsOther");
     }
     var vmEvaluatedByRo = document.getElementById("vmEvaluatedByRo");
     if (vmEvaluatedByRo) vmEvaluatedByRo.textContent = "—";
@@ -304,10 +302,7 @@ document.addEventListener("DOMContentLoaded", function () {
     vmFieldIds.forEach(function (id) {
       var el = document.getElementById(id);
       if (!el) return;
-      if (
-        el.tagName === "SELECT" &&
-        el.classList.contains("js-school-select")
-      ) {
+      if (el.tagName === "SELECT") {
         // <select> has no readOnly — disable instead. Form still submits the
         // value because Select2 keeps the option selected when re-enabled.
         el.disabled = readOnly;
@@ -391,16 +386,6 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   }
 
-  function _appendOthersOption(sel) {
-    if (!sel) return;
-    if (!Array.from(sel.options).some(function (o) { return o.value === "__OTHER__"; })) {
-      var opt = document.createElement("option");
-      opt.value = "__OTHER__";
-      opt.textContent = "OTHERS";
-      sel.appendChild(opt);
-    }
-  }
-
   function loadSchoolOptions(selectedJhs, selectedShs) {
     var jhsSel = document.getElementById("vmJuniorHs");
     var shsSel = document.getElementById("vmPreferredHs");
@@ -422,14 +407,10 @@ document.addEventListener("DOMContentLoaded", function () {
           Array.isArray(data.shs) ? data.shs : [],
           selectedShs || "",
         );
-        _appendOthersOption(jhsSel);
-        _appendOthersOption(shsSel);
         initOrRefreshSelect2(jhsSel);
         initOrRefreshSelect2(shsSel);
       })
       .catch(function () {
-        _appendOthersOption(jhsSel);
-        _appendOthersOption(shsSel);
         initOrRefreshSelect2(jhsSel);
         initOrRefreshSelect2(shsSel);
       });
@@ -442,9 +423,7 @@ document.addEventListener("DOMContentLoaded", function () {
       window.initVsSelect2(voucherModal);
     }
     if (typeof initOtherInput === "function") {
-      initOtherInput("vmSuffix",     "vmSuffixOtherWrap",     "vmSuffixOther");
-      initOtherInput("vmJuniorHs",   "vmJuniorHsOtherWrap",   "vmJuniorHsOther");
-      initOtherInput("vmPreferredHs","vmPreferredHsOtherWrap","vmPreferredHsOther");
+      initOtherInput("vmSuffix", "vmSuffixOtherWrap", "vmSuffixOther");
     }
   }
 
@@ -604,7 +583,8 @@ document.addEventListener("DOMContentLoaded", function () {
         return;
       }
 
-      if (_vmSnapshot !== null && vmCurrentStudentId && vmSnapshotForm() === _vmSnapshot) {
+      var vmSuffixNeedsSync = typeof isAnyOtherActive === "function" && isAnyOtherActive(["vmSuffix"]);
+      if (_vmSnapshot !== null && vmCurrentStudentId && vmSnapshotForm() === _vmSnapshot && !vmSuffixNeedsSync) {
         vmClose();
         showToast("No changes were made.", "info");
         return;

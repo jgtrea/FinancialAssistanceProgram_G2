@@ -65,7 +65,9 @@ class OthersOptionsModel extends Model
     public function getAllForTable(): array
     {
         return $this->db->query(
-            "SELECT * FROM others_options ORDER BY is_active DESC, FIELD(context, 'suffix', 'prefix', 'degree') ASC, value ASC"
+            "SELECT * FROM others_options
+             WHERE context IN ('suffix', 'prefix', 'degree')
+             ORDER BY is_active DESC, FIELD(context, 'suffix', 'prefix', 'degree') ASC, value ASC"
         )->getResultArray();
     }
 

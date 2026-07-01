@@ -165,6 +165,14 @@
 <?= pre_modal('signatories') ?>
 
 <script>
+window.__VS.pageData = {
+  allPrefixes: <?= json_encode($allPrefixes ?? []) ?>,
+  allSuffixes: <?= json_encode($allSuffixes ?? []) ?>,
+  allDegrees:  <?= json_encode($allDegrees ?? []) ?>,
+};
+</script>
+
+<script>
 document.addEventListener('vs:modals:ready', function () {
     var csrfName = '<?= csrf_token() ?>';
     var csrfHash = '<?= csrf_hash() ?>';
@@ -225,6 +233,12 @@ document.addEventListener('vs:modals:ready', function () {
 
     function smInitSelects() {
         if (typeof window.initVsSelect2 === 'function') window.initVsSelect2(sigModal);
+        if (typeof mergeCustomOptions === 'function') {
+            var pd = window.__VS.pageData || {};
+            mergeCustomOptions('smPrefix', pd.allPrefixes);
+            mergeCustomOptions('smSuffix', pd.allSuffixes);
+            mergeCustomOptions('smDegree', pd.allDegrees);
+        }
         if (typeof initOtherInput === 'function') {
             initOtherInput('smPrefix', 'smPrefixOtherWrap', 'smPrefixOther');
             initOtherInput('smSuffix', 'smSuffixOtherWrap', 'smSuffixOther');
@@ -363,7 +377,8 @@ document.addEventListener('vs:modals:ready', function () {
 
         var sigFileInput = document.getElementById('smSignatureImage');
         var hasNewFile = sigFileInput && sigFileInput.files && sigFileInput.files.length > 0;
-        if (_smSnapshot !== null && _smEditingId && smSnapshotForm() === _smSnapshot && !hasNewFile) {
+        var smOtherNeedsSync = typeof isAnyOtherActive === 'function' && isAnyOtherActive(['smPrefix', 'smSuffix', 'smDegree']);
+        if (_smSnapshot !== null && _smEditingId && smSnapshotForm() === _smSnapshot && !hasNewFile && !smOtherNeedsSync) {
             smClose();
             showToast('No changes were made.', 'info');
             return;

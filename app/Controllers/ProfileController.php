@@ -3,6 +3,7 @@
 namespace App\Controllers;
 
 use App\Libraries\SessionValidator;
+use App\Models\OthersOptionsModel;
 use App\Models\UserLogin;
 
 class ProfileController extends BaseController
@@ -28,6 +29,7 @@ class ProfileController extends BaseController
             'middle_name' => $user['middle_name'] ?? '',
             'last_name'   => $user['last_name'] ?? '',
             'suffix'      => $user['suffix'] ?? '',
+            'customSuffixes' => (new OthersOptionsModel())->getOptions('suffix'),
         ]);
     }
 
@@ -129,6 +131,10 @@ class ProfileController extends BaseController
         }
 
         $model->update($userId, $data);
+
+        if ($data['suffix'] !== '') {
+            (new OthersOptionsModel())->saveOption('suffix', $data['suffix'], $userId);
+        }
 
         $updated = $model->find($userId);
         $validator = new SessionValidator();

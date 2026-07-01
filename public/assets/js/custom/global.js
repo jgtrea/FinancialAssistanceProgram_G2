@@ -374,6 +374,15 @@ window.initOtherInput = function (selectId, wrapperId, inputId) {
     }
   }
 
+  // Modals re-call initOtherInput() on every open. Without this, each open
+  // stacks another 'change'/'change.select2' listener on the same <select>
+  // (they're never garbage collected since the element persists across
+  // opens), so the Nth open fires the toggle N times per change.
+  if (sel._otherToggle) {
+    sel.removeEventListener('change', sel._otherToggle);
+    if (window.jQuery) jQuery(sel).off('change.select2', sel._otherToggle);
+  }
+  sel._otherToggle = toggle;
   sel.addEventListener('change', toggle);
   if (window.jQuery) jQuery(sel).on('change.select2', toggle);
 };
@@ -404,6 +413,39 @@ window.applySelectOrOther = function (selectId, wrapperId, inputId, value) {
 
 window.resetOtherInput = function (selectId, wrapperId, inputId) {
   window.applySelectOrOther(selectId, wrapperId, inputId, '');
+};
+
+// True if any of the given selects is currently resolved to the "Other"
+// free-text fallback (value === '__OTHER__'). Save handlers use this to
+// bypass their "no changes were made" shortcut — a value can land in Other
+// mode simply because it's no longer an active others_options catalog entry
+// (e.g. deactivated/deleted), in which case submitting must still reach the
+// server so saveOption() can resync the catalog, even though nothing on the
+// form visibly changed from what was loaded.
+window.isAnyOtherActive = function (selectIds) {
+  return (selectIds || []).some(function (id) {
+    var el = document.getElementById(id);
+    return el && el.value === '__OTHER__';
+  });
+};
+
+// Merge DB-backed custom values (from the `others_options` table, via
+// OthersOptionsModel::getOptions()) into a select that carries an
+// value="__OTHER__" option, inserting new <option>s just before it.
+window.mergeCustomOptions = function (selectId, values) {
+  var sel = document.getElementById(selectId);
+  if (!sel || !Array.isArray(values)) return;
+  var othersOpt = sel.querySelector('option[value="__OTHER__"]');
+  values.forEach(function (v) {
+    v = (v || '').toUpperCase();
+    if (!v) return;
+    if (Array.from(sel.options).some(function (o) { return o.value === v; })) return;
+    var opt = document.createElement('option');
+    opt.value = v;
+    opt.textContent = v;
+    if (othersOpt) sel.insertBefore(opt, othersOpt);
+    else sel.appendChild(opt);
+  });
 };
 
 // Allow Bootstrap dropdowns to overflow .vs-card (overflow:hidden) while open.

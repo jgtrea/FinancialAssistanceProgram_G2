@@ -132,6 +132,12 @@
 <?= pre_modal('users') ?>
 
 <script>
+window.__VS.pageData = {
+  customSuffixes: <?= json_encode($customSuffixes ?? []) ?>,
+};
+</script>
+
+<script>
 document.addEventListener('vs:modals:ready', function () {
     var csrfName = '<?= csrf_token() ?>';
     var csrfHash = '<?= csrf_hash() ?>';
@@ -195,6 +201,9 @@ document.addEventListener('vs:modals:ready', function () {
 
     function umInitSelects() {
         if (typeof window.initVsSelect2 === 'function') window.initVsSelect2(userModal);
+        if (typeof mergeCustomOptions === 'function') {
+            mergeCustomOptions('umSuffix', (window.__VS.pageData || {}).customSuffixes);
+        }
         if (typeof initOtherInput === 'function') initOtherInput('umSuffix', 'umSuffixOtherWrap', 'umSuffixOther');
     }
 
@@ -301,7 +310,8 @@ document.addEventListener('vs:modals:ready', function () {
             return;
         }
 
-        if (_umSnapshot !== null && _umEditingId && umSnapshotForm() === _umSnapshot && !umPassword.value) {
+        var umSuffixNeedsSync = typeof isAnyOtherActive === 'function' && isAnyOtherActive(['umSuffix']);
+        if (_umSnapshot !== null && _umEditingId && umSnapshotForm() === _umSnapshot && !umPassword.value && !umSuffixNeedsSync) {
             umClose();
             showToast('No changes were made.', 'info');
             return;

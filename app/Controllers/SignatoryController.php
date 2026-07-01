@@ -48,6 +48,8 @@ class SignatoryController extends BaseController
             ->orderBy('position_title', 'ASC')
             ->findAll();
 
+        $oom = new OthersOptionsModel();
+
         return view('signatories/index', [
             'title'          => 'Signatories',
             'signatories'    => $signatoryModel
@@ -58,6 +60,9 @@ class SignatoryController extends BaseController
             'filterStatus'   => $filterStatus,
             'filterPosition' => $filterPosition,
             'allPositions'   => array_column($allPositions, 'position_title'),
+            'allPrefixes'    => $oom->getOptions('prefix'),
+            'allSuffixes'    => $oom->getOptions('suffix'),
+            'allDegrees'     => $oom->getOptions('degree'),
         ]);
     }
 
